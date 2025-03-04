@@ -1224,7 +1224,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   if isempty(dims) return Matrix{Int}[] end
   tt=refltype(W)
   mm=map((t,j)->getchev(t,:Representation,j),tt,lin2cart(dims,i))
-  if any(isnothing,mm) error("no representation for ",W) end
+  if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
     FF=map(x->x[:F],mm)
     if !(FF[1] isa AbstractMatrix) FF=map(toM,FF) end

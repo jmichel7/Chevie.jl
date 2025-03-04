@@ -22,7 +22,7 @@ end)
 
 chevieset(:E7,:NrConjugacyClasses, 60)
 
-chevieset(:E7,:WordsClassRepresentatives,map(x->GAPENV.Replace(x,[0],[7,6,5,4,3,2,1]),
+chevieset(:E7,:WordsClassRepresentatives,map(x->Replace(x,[0],[7,6,5,4,3,2,1]),
   [[],[7,6,7,5,6,7,4,5,6,7,2,4,5,6,7,3,4,5,6,7,2,4,5,6,3,4,5,2,4,3],
    [5,4,5,2,4,5,3,4,5,2,4,3],[7,5],[7,5,2,3],[7,6],
    [6,5,6,4,5,6,2,4,3,4,5,6,2,4,5,3,1,3,4,5,2,4,3,1],[7,6,4,2],[5,4,5,2,4,3],
@@ -85,7 +85,7 @@ chevieset(:E7, :CharInfo, function ()
     "512_a'"],:hgal=>perm"(59,60)",:extRefl=>[1,4,7,14,13,8,3,2])
 
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

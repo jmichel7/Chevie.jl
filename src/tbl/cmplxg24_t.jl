@@ -64,7 +64,7 @@ chevieset(:G24, :CharInfo, function ()
                                      [6,2],[6,9],[7,6],[7,3],[8,4],[8,5]],
    :hgal => perm"(11,12)", :extRefl => [1, 4, 5, 2])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 
@@ -124,14 +124,14 @@ end)
 chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
   f1(r)=map(x->[r;;],1:3)
   f3(p,r,a)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
-            [1,3,p,-r],[2,3,r*(1-a)//2,-p*(a+1)//2]]],[p,r])*p^0*r^0
+    [1,3,p,-r],[2,3,r*(1-a)//2,-p*(a+1)//2]]],[p,r]).*(p^0*r^0)
   f7(p,r)=WGraph2Representation([[[2,3],[2,3],[1,3],[1,3],[1,2],[1,2]],
     [[1,4,r,-p],[1,5,r,-p],[2,3,r,-p],[2,6,p,-r],[3,5,-p,0],[3,6,-2p,r],
-     [4,5,r,0],[4,6,2r,0]]],[r,p])*p^0*r^0
+     [4,5,r,0],[4,6,2r,0]]],[r,p]).*(p^0*r^0)
   f9(r,p)=WGraph2Representation([[[1],[1,2],[1,3],[2],[2],[3],[3]],
    [[1,2,0,-r],[1,3,0,p],[1,4,p,-r],[1,5,0,-r],[1,6,-p,r],[2,5,-p,0],[2,7,-p,r],
     [3,4,-p,0],[3,5,p,-r],[3,6,p,0],[3,7,p,0],[4,6,0,-p],[4,7,-r,p],[5,6,-r,p],
-    [5,7,-r,0]]], [p,r])*p^0*r^0
+    [5,7,-r,0]]], [p,r]).*(p^0*r^0)
   function f11(x, y, e)
     v=e*root(-x*y)
     expandrep(3,8,Tuple{typeof(v),Vector{Int64}}[(-v*y,[105]),(-v*y+x*y,
@@ -157,7 +157,7 @@ chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
   end
 end)
 
-(CHEVIE[:families])[:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat =>
+CHEVIE[:families][:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat =>
    [-1//2 1//2 root(-7)//2 root(-7)//2 -1 -1 -1;
     1//2 -1//2 root(-7)//2 root(-7)//2 1 1 1;
     root(-7)//2 root(-7)//2 root(-7)//2 -root(-7)//2 0 0 0;

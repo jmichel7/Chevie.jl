@@ -51,7 +51,7 @@ chevieset(:G25, :CharInfo, function ()
 # phi{6,4}' is complexconjugate of phi{6,2}
    :extRefl=>[1,12,8,3])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

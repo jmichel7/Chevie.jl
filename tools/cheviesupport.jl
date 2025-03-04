@@ -1,3 +1,11 @@
+"""
+The  module GAPENV creates a GAP3-like environment by extending locally the
+base  functions `*, +, -, ^, isless, copy, //, inv, length` to their
+GAP3  semantics and defining  quite a few  other GAP3 functions, then loads
+the Chevie database in that environment.
+"""
+module GAPENV
+include("gap3support.jl")
 # --------- pirating extensions to get closer to GAP semantics -------------
 # The  idea how to implement base function pirating restricted to the current
 # module is due to Max Horn.
@@ -115,10 +123,6 @@ ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 StringToDigits(s)=collect(s).-'0'
-function TeXIndex(s)
-  s=string(s)
-  length(s)==1  ? "_"*s : "_{"*s*"}"
-end
 Weyl.torus(m::Vector{<:Vector})=torus(toM(m))
 function CoxeterGroup(S::String,s...)
  res=coxgroup(Symbol(S),Int(s[1])) 
@@ -126,62 +130,6 @@ function CoxeterGroup(S::String,s...)
  res
 end
 
-function Replace(s,p...)
-# print("Replace s=$s p=$p")
-  for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
-    if s isa String 
-      s=replace(s,src=>tgt)
-      continue
-    end
-    res=empty(s)
-    i=0
-    while i+length(src)<=length(s)
-      if @views src==s[i+1:i+length(src)]
-        append!(res,tgt)
-        i+=length(src)
-      else
-        push!(res,s[i+1])
-        i+=1
-      end
-    end
-    @views append!(res,s[i+1:end])
-    s=res
-  end
-# println("=>",s)
-  s
-end
-
-"""
-`CycPol(v::AbstractVector)`
-
-This  form is an  compact way unsed  in the Chevie  library of specifying a
-`CycPol`  with only  positive multiplicities:  `v` should  be a vector. The
-first  element is taken as the `.coeff`  of the `CycPol`, the second as the
-`.valuation`.   Subsequent  elements  are   rationals  `i//d`  representing
-`(q-E(d)^i)` or are integers `d` representing `Φ_d(q)`.
-
-```julia-repl
-julia>Pol(:q);
-
-julia> CycPol([3,-5,6,3//7])
-3q⁻⁵Φ₆(q-ζ₇³)
-```
-"""
-function CycPols.CycPol(v::AbstractVector)
-  coeff=v[1]
-  valuation=convert(Int,v[2])
-  vv=Pair{Rational{Int},Int}[]
-  v1=convert.(Rational{Int},v[3:end])
-  for i in v1
-    if denominator(i)==1
-      k=convert(Int,i)
-      for j in prime_residues(k) push!(vv,j//k=>1) end
-    else
-      push!(vv,i=>1)
-    end
-  end
-  CycPol(coeff,valuation,ModuleElt(vv))
-end
 #-------------------------------------------------------------------------
 #  dummy translations of GAP3 functions
 Format(x)=string(x)
@@ -201,12 +149,6 @@ end
 Unbind(x)=x
 #-------------------------------------------------------------------------
 Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))
-
-function exceptioCharName(para)
-  res="\\phi_{"*string(para[1])*","*string(para[2])*"}"
-  if length(para)==3 res*="'"^para[3] end
-  res
-end
 #-----------------------------------------------------------------------
 #if false
 #"""
@@ -249,3 +191,4 @@ end
 Unknown()=missing
 Base.:*(a::Missing,b)=a
 #end
+end

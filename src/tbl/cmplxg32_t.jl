@@ -77,7 +77,7 @@ chevieset(:G32, :CharInfo, function ()
   :hgal=>perm"(93,96)(94,95)(100,102,101)",
   :extRefl=>[1,9,17,5,3])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

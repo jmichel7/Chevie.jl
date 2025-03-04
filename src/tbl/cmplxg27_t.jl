@@ -70,7 +70,7 @@ chevieset(:G27, :CharInfo, function ()
 # is labelled with ', the other with ''
   :hgal=>perm"(19,20)(21,22)(23,28,26)(24,25,27)",:extRefl=>[1,5,10,2])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

@@ -49,7 +49,7 @@ chevieset(Symbol("2I"), :CharInfo, function(m)
     res[:charparams]=vcat([[1,0],[1,m]],map(i->[2,i],1:div(m-1,2)))
     res[:b]=map(x->x[2], res[:charparams])
     res[:B]=vcat([0,m],map(i->m-i,1:div(m-1,2)))
-    res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+    res[:charnames]=exceptioCharName.(res[:charparams])
   end
   res
 end)

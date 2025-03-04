@@ -22,7 +22,7 @@ chevieset(Symbol("2F4"), :CharInfo, function ()
   res[:charRestrictions]=map(x->findfirst(==(x),resparams),res[:charparams])
   res[:nrGroupClasses]=length(resparams)
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   return res
 end)
 

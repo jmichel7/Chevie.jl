@@ -81,7 +81,7 @@ chevieset(:G33, :CharInfo,function()
  # phi_40,5' tensored by sign is phi_40,14'
    :hgal => perm"(37,38)", :extRefl => [1, 4, 9, 12, 5, 2])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

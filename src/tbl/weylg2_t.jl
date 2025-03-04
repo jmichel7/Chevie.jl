@@ -41,7 +41,7 @@ chevieset(:G2, :CharInfo, function ()
   # charnames in Spaltenstein's "Sous-groupes de Borel et classes unipotentes"
   res[:spaltenstein]=["1","\\varepsilon","\\varepsilon_l","\\varepsilon_c","\\theta'","\\theta''"]
   res[:lusztig]=["1","\\varepsilon","\\varepsilon'","\\varepsilon''","\\theta'","\\theta''"]
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res[:charSymbols]=[[[0],[0],[0],[0],[0],[2]],
    [[0,1],[0,1],[0,1],[0,1],[0,1],[1,2]],[[0],[0],[1],2,0],[[0],[0],[1],2,1],
    [[0],[0],[0],[0],[1],[1]],[[0],[0],[0],[1],[0],[1]]]

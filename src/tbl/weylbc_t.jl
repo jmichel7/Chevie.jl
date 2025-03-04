@@ -24,24 +24,24 @@ chevieset(:B, :ReflectionName, function(r,option,cartantype=2)
   if cartantype==2
     if haskey(option,:TeX)
       if haskey(option,:Au) "D_8"
-      else string("B",GAPENV.TeXIndex(r))
+      else string("B",TeXIndex(r))
       end
     elseif haskey(option,:Au) "D8"
     elseif haskey(option,:arg) string("\"B\",",r)
     else string("B",r)
     end
   elseif cartantype==1
-    if haskey(option,:TeX) string("C",GAPENV.TeXIndex(r))
+    if haskey(option,:TeX) string("C",TeXIndex(r))
     elseif haskey(option,:arg) string("\"C\",", r)
     else string("C", r)
     end
   elseif cartantype==root(2)
-    if haskey(option,:TeX) string("B^{\\hbox{sym}}",GAPENV.TeXIndex(r))
+    if haskey(option,:TeX) string("B^{\\hbox{sym}}",TeXIndex(r))
     elseif haskey(option,:arg) string("\"Bsym\",",r)
     else string("Bsym",r)
     end
   elseif haskey(option,:TeX)
-    string("B^?_",GAPENV.TeXIndex(r),"(",xrepr(cartantype;option...),")")
+    string("B^?_",TeXIndex(r),"(",xrepr(cartantype;option...),")")
   elseif haskey(option,:arg) string("\"B?\",", r, ",", cartantype)
   else string("B?",r,"(",xrepr(cartantype),")")
   end
@@ -152,14 +152,14 @@ end)
 
 chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
-  for d in (0:div(-1+GAPENV.RootInt(1+4rank,2),2)).*2 .+1
+  for d in (0:div(-1+isqrt(1+4rank),2)).*2 .+1
     r=div(d^2-1,4)
     s=Dict{Symbol, Any}()
     s[:relativeType]=TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r)
     s[:levi]=1:r
     s[:eigenvalue]=(-1)^div(d+1,4)
     s[:parameterExponents]=vcat([d],fill(1,max(0,rank-1-r)))
-    s[:cuspidalName]=string("B",GAPENV.TeXIndex(r))
+    s[:cuspidalName]=string("B",TeXIndex(r))
     push!(uc[:harishChandra], s)
     symbols = BDSymbols(rank, d)
     s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])

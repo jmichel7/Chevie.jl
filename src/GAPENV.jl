@@ -1,22 +1,6 @@
-"""
-The  module GAPENV creates a GAP3-like environment by extending locally the
-base  functions `*, +, -, ^, isless, copy, //, inv, length` to their
-GAP3  semantics and defining  quite a few  other GAP3 functions, then loads
-the Chevie database in that environment.
-"""
-module GAPENV
-using ..Chevie
-include("../tools/gap3support.jl")
-include("cheviesupport.jl")
 
-const tbl=[  ("G₃₄","cmplxg34")]
-println("reading transpiled data:")
-foreach(tbl)do (e,f)
-  print("for ",rpad(e,16))
-  t=@elapsed include(string("tbl/",f,".jl"))
-  println(rpad(string(round(t;digits=3)),5,'0')," seconds")
-end
-end
+include("tbl/util.jl")
+
 #-- translations are loaded outside of GAPENV since they don't need it --
 const tbl_t=[("G(de,e,n)","cmplximp_t"),
   ("Aₙ","weyla_t"), ("Bₙ and Cₙ","weylbc_t"),("Dₙ","weyld_t"),
@@ -30,7 +14,7 @@ const tbl_t=[("G(de,e,n)","cmplximp_t"),
   ("G₃₂","cmplxg32_t"),("G₃₃","cmplxg33_t"),("G₃₄","cmplxg34_t"), 
   ("E₆","weyle6_t"),("²E₆","weyl2e6_t"),("E₇","weyle7_t"),
   ("E₈","weyle8_t"), ("several groups","exceptio_t")]
-println("reading translated data:")
+println("reading Chevie data:")
 foreach(tbl_t) do (e,f)
   print("for ",rpad(e,16))
   t=@elapsed include(string("tbl/",f,".jl"))

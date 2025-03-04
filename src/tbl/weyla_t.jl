@@ -10,7 +10,7 @@ chevieset(:A, :ReflectionName, function(r,option)
   if haskey(option, :arg) return string("\"A\",", r)
   elseif haskey(option, :TeX)
       if haskey(option, :Au) return ["Z_2", "S_3", "S_4", "S_5"][r]
-      else return string("A",GAPENV.TeXIndex(r))
+      else return string("A",TeXIndex(r))
       end
   elseif haskey(option, :Au) return ["Z2", "S3", "S4", "S5"][r]
   else return string("A", r)
@@ -235,7 +235,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
     end
   end
   for ss in uc[:springerSeries][2:end] ss[:hc]=0 end
-  uc[:orderClasses] = hasse(Poset(map(x->
-    map(y->dominates(y[:parameter],x[:parameter]),uc[:classes]),uc[:classes])))
+  uc[:orderClasses]=hasse(Poset(CPoset(
+   [dominates(y[:parameter],x[:parameter]) for x in uc[:classes], y in uc[:classes]])))
   uc
 end)

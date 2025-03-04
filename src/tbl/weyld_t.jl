@@ -193,13 +193,13 @@ chevieset(:D,:FakeDegree,(n,c,q)->fegsymbol(symbol_partition_tuple(c, 0))(q))
 
 chevieset(:D,:UnipotentCharacters,function(rank)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
-  for d in 0:4:4*GAPENV.RootInt(div(rank,4),2)
+  for d in 0:4:4*isqrt(div(rank,4))
     r=div(d^2,4)
     s=Dict{Symbol, Any}(:relativeType=> 
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>(-1)^div(d+1,4), 
       :parameterExponents=>vcat(d,fill(1,max(0, rank-1-r))))
-    s[:cuspidalName] = string("D",GAPENV.TeXIndex(r))
+    s[:cuspidalName] = string("D",TeXIndex(r))
     if d==0
       s[:relativeType].series=:D
       s[:cuspidalName]=""

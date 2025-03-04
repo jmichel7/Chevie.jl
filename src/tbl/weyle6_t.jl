@@ -59,7 +59,7 @@ chevieset(:E6, :CharInfo, function ()
     "60_s", "80_s", "90_s", "60_p", "60_p'", "64_p", "64_p'", "81_p", "81_p'"],
   :extRefl=>[1, 4, 7, 6, 8, 5, 2])
   res[:b]=map(x->x[2], res[:charparams])
-  res[:charnames] = GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames] = exceptioCharName.(res[:charparams])
   res
 end)
 

@@ -1184,7 +1184,7 @@ Dict{Symbol,  Any}(:charparams=>[[1, 0], [1, 6], [1,  8], [1, 14], [1, 16],
 chevieset(:G4_22, :CharInfo, function(ST)
   res=CharInfo4_22[ST-3]
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 
@@ -1219,33 +1219,6 @@ const ReflectionDegrees4_22=[[4,6],[6,12],[4,12],[12,12],[8,12],[8,24],[12,24],
   [24,24],[6,8],[8,12],[6,24],[12,24],[20,30],[20,60],[30,60],[60,60],[12,30],
   [12,60],[12,20]]
 chevieset(:G4_22, :ReflectionDegrees,ST->ReflectionDegrees4_22[ST-3])
-
-# make a cuspidal harish-chandra series record
-function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
-  if n==28 name="F_4"
-  elseif n==30 name="H_4"
-  elseif n>=36 name="E_"*string(n-29)
-  else name="G_{"*string(n)*"}"
-  end
-  if no!=0 name*="^"*string(no) end
-  if E4 && eig==E(4) name*="[i]"
-  elseif E4 && eig==E(4,3) name*="[-i]"
-  else name*="["*xrepr(eig,TeX=true)*"]"
-  end
-  res=Dict(:relativeType=>TypeIrred(series=:A,indices=Int[],rank=0),
-    :parameterExponents=>Int[],:charNumbers=>[charnum],
-    :eigenvalue=>eig,:cuspidalName=>name)
-  if n<=22 res[:levi]=1:2
-  elseif n<=27 res[:levi]=1:3
-  elseif n<=32 res[:levi]=1:4
-  elseif n<=33 res[:levi]=1:5
-  elseif n<=35 res[:levi]=1:6
-  elseif n<=36 res[:levi]=1:7
-  else res[:levi]=1:8
-  end
-  if qeig!=0 res[:qEigen]=qeig end
-  res
-end
 
 let r3=root(-3), r6=root(6), r2=root(-2)
 CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24*
@@ -1941,7 +1914,7 @@ chevieset(:G4_22, :ClassInfo, function(ST)
   res = Dict{Symbol, Any}()
   g(a,b)=filter(i->mod(p[i][2],a)==b[p[i][1]],1:length(p))
   f(class,z)=vcat([Int[],[1],[2],[3],[3,3]][class[1]],repeat(z,class[2]))
-  h(z,l)=map(x->GAPENV.Replace(f(x, z), l...),p[res[:indexclasses]])
+  h(z,l)=map(x->Replace(f(x, z), l...),p[res[:indexclasses]])
   if ST==4
     res[:indexclasses] = g(6, [0, 3, 2, 0])
     res[:classtext] = h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
@@ -1980,7 +1953,7 @@ chevieset(:G4_22, :ClassInfo, function(ST)
     z = "123123123123"
   elseif ST == 13
     res[:indexclasses] = g(6, [0, 0, 2, 3, 0])
-    res[:classtext] = map(x->GAPENV.Replace(x,[0],[1,2,3,1,2,3,1,2,3]),
+    res[:classtext] = map(x->Replace(x,[0],[1,2,3,1,2,3,1,2,3]),
       [Int[],[0],[0,0],[0,0,0],[2],[2,0],[3,1,2],[3,1,2,0],[3,1,2,0,0],[3,1,2,0,0,0],[2,3,1,2,1],[2,3,1,2,1,0],[2,3,1,2,1,0,0],[2,3,1,2,1,0,0,0],[1],[1,0]])
       z = "123123123"
   elseif ST == 14
@@ -2067,7 +2040,7 @@ chevieset(Symbol("2G5"), :CharInfo, function()
     [3,2],[3,4],[3,6]],:extRefl=>[1,6,2],:b=>[0,8,16,9,5,1,2,4,12],
     :B=>[0,8,16,15,11,7,14,4,12],:charRestrictions=>[1,5,9,10,14,18,20,19,21],
     :nrGroupClasses=>21)
-  res[:charnames] = map(GAPENV.exceptioCharName, res[:charparams])
+  res[:charnames] = map(exceptioCharName, res[:charparams])
   return res
 end)
 

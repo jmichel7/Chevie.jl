@@ -121,7 +121,7 @@ function (l,param,rootparam)
   para=partition_tuples(l,2)
   chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
   tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(
-   Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],GAPENV.Replace(x,[1],[1,2,1]))...),
+   Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
    toM(hi[:irreducibles][chr])),tbl[:classtext]))))
   chevieget(:compat,:AdjustHeckeCharTable)(tbl,param)
   tbl
@@ -131,13 +131,13 @@ chevieset(Symbol("2D"),:CharTable,l->chevieget(Symbol("2D"),:HeckeCharTable)(l,f
 
 chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
   uc=Dict{Symbol,Any}(:harishChandra=>[],:charSymbols=>[],:almostHarishChandra=>[])
-  for d in (2:4div(GAPENV.RootInt(rank)-1,2)+2)
+  for d in (2:4div(isqrt(rank)-1,2)+2)
     r=div(d^2,4)
     s=Dict{Symbol, Any}(:relativeType=>
      TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>1,# see Geck-malle
       :parameterExponents=>vcat(d,fill(1,max(0,rank-1-r))))
-    s[:cuspidalName]=string("{}^2D",GAPENV.TeXIndex(r))
+    s[:cuspidalName]=string("{}^2D",TeXIndex(r))
     push!(uc[:harishChandra],s)
     if d==2
       s[:levi]=Int[]
@@ -152,12 +152,12 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
   uc[:A]=degree_gendeg_symbol.(uc[:charSymbols])
   uc[:almostCharSymbols]=map(i->[[0],[0]],1:sum(x->length(x[:charNumbers]),
                                                 uc[:harishChandra]))
-  for d in  4*(0:GAPENV.RootInt(div(rank,4),2))
+  for d in  4*(0:isqrt(div(rank,4)))
     r=div(d^2,4)
     s=Dict{Symbol, Any}(:relativeType=>
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>(-1)^div(d+1,4))
-    s[:cuspidalName]=string("D",GAPENV.TeXIndex(r))
+    s[:cuspidalName]=string("D",TeXIndex(r))
     r=s[:relativeType][:rank]
     symbols=BDSymbols(rank,d)
     if isodd(div(d+1,4)) symbols=reverse.(symbols) end

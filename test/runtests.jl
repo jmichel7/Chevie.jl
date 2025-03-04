@@ -977,9 +977,6 @@ end
 @test mytest("Weyl.jl","elW=word.(Ref(W),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [2]\n [1, 2, 1, 2, 1]\n [1, 2, 1, 2, 1, 2]")
 @test mytest("Weyl.jl","map(w->H(w...),elH)==map(w->W(w...),elW)","true")
 end
-@testset "cheviesupport.jl" begin
-@test mytest("cheviesupport.jl","CycPol([3,-5,6,3//7])","3q⁻⁵Φ₆(q-ζ₇³)")
-end
 @testset "cp.jl" begin
 @test mytest("cp.jl","C=CorranPicantinMonoid(3,3)","CorranPicantinMonoid(3,3,3)")
 @test mytest("cp.jl","word(C(C.δ))","6-element Vector{Int64}:\n 1\n 3\n 4\n 1\n 3\n 4")

@@ -17,7 +17,7 @@ chevieset(:E8, :GeneratingRoots, [
 
 chevieset(:E8, :NrConjugacyClasses, 112)
 
-chevieset(:E8, :WordsClassRepresentatives, map(x->GAPENV.Replace(x, [0], 1:8), 
+chevieset(:E8, :WordsClassRepresentatives, map(x->Replace(x, [0], 1:8), 
   [Int[],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,3,4,2,3,4,5,4,2,3,4,5],[1,6],
    [2,3,4,2,3,4,5,4,2,3,4,5,6,5,4,2,3,4,5,6,7,6,5,4,2,3,4,5,6,7],
    [2,3,1,4,2,3,1,4,5,4,2,3,4,5,6,5,4,2,3,4,5,7,6,5,4,8,7,6,0,0,0,0],[2,3,5,7],
@@ -143,7 +143,7 @@ chevieset(:E8, :CharInfo, function ()
   :hgal => perm"( 62,105)( 63,106)",
   :extRefl => [1, 68, 3, 70, 7, 71, 4, 69, 2])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

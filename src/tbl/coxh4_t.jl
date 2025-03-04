@@ -52,7 +52,7 @@ chevieset(:H4,:words,[[],[1],[1,2],[1,3],[2,3],[1,2,3],[1,2,4],[1,3,4],[2,4,3],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]])
 
 chevieset(:H4, :WordsClassRepresentatives,
-          map(x->GAPENV.Replace(x,[0],1:4), chevieget(:H4, :words)))
+          map(x->Replace(x,[0],1:4), chevieget(:H4, :words)))
 
 chevieset(:H4, :NrConjugacyClasses, 34)
 
@@ -88,7 +88,7 @@ chevieset(:H4, :CharInfo, function ()
           "48_{rr}"],
   :hgal => perm"(18,20)(19,21)", :extRefl => [1, 3, 7, 4, 2])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

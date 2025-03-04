@@ -47,7 +47,7 @@ chevieset(:H3, :CharInfo, function ()
     :gp=>["1_r'","1_r","5_r'","5_r","3_s","\\overline{3}_s","3_s'","\\overline{3}_s'","4_r'","4_r"],
     :hgal=> perm"(9,10)", :extRefl => [2, 7, 5, 1])
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 

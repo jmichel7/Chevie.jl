@@ -66,7 +66,7 @@ chevieset(:G29, :CharInfo, function ()
 # phi_{6,10''''} is the complex conjugate.
    :hgal => perm"(24,26)(25,27)", :extRefl => [1, 5, 14, 8, 2])
   res[:b]=map(x->x[2], res[:charparams])
-  res[:charnames] = GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames] = exceptioCharName.(res[:charparams])
   res
 end)
 

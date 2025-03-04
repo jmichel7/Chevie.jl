@@ -46,7 +46,7 @@ chevieset(:F4,:NrConjugacyClasses, 25)
 
 chevieset(:F4,:ClassInfo, function ()
 # representatives are "very good" see Geck-Michel
-  res=Dict{Symbol,Any}(:classtext=>map(x->GAPENV.Replace(x,[0],1:4),
+  res=Dict{Symbol,Any}(:classtext=>map(x->Replace(x,[0],1:4),
     [[],[0,0,0,0,0,0],[2,3,2,3],[2,1],[0,2,3,2,3,4,3],[0,0,0],[4,3],
      [1,2,1,3,2,3,0],[0,0,0,0],[0,0],[0],[1],[2,3,2,3,4,3,2,3,4],[1,4,3],
      [4,3,2],[2,3,2,1,3],[3],[1,2,1,3,2,1,3,2,3],[2,1,4],[3,2,1],[2,4,3,2,3],
@@ -82,7 +82,7 @@ chevieset(:F4, :CharInfo, function ()
     "9_3","9_2","9_4","6_1","6_2","12","4_2","4_4","4_3","4_5","8_3","8_4",
     "8_1","8_2","16"]
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
+  res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
 
