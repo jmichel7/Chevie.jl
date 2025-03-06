@@ -352,33 +352,31 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       for s in cl addSpringer(s, length(uc[:classes]), cc) end
     end
   end
-  if char == 2 # see [Spaltenstein] 2.10 page 24
-    uc[:orderClasses] = hasse(CPoset(toM(map(uc[:classes])do x
-                                    map(uc[:classes])do y
-      m = max(x[:parameter][1][1], y[:parameter][1][1])
-      f = x-> map(i-> sum(filter(<(i),x))+i*count(>=(i),x) , 1:m)
-      fx = f(x[:parameter][1])
-      fy = f(y[:parameter][1])
+  if char==2 # see [Spaltenstein] 2.10 page 24
+    uc[:orderClasses]=hasse(Poset(uc[:classes])do x,y
+      xp=x[:parameter] 
+      yp=y[:parameter] 
+      m=max(xp[1][1], yp[1][1])
+      f=x->map(i->sum(filter(<(i),x))+i*count(>=(i),x),1:m)
+      fx=f(xp[1])
+      fy=f(yp[1])
       for i in 1:m
-        if fx[i] < fy[i] return false
-        elseif fx[i] == fy[i] && i in (y[:parameter])[2]
-          if i in setdiff(x[:parameter][1], x[:parameter][2]) return false end
+        if fx[i]<fy[i] return false
+        elseif fx[i]==fy[i] && i in yp[2]
+          if i in setdiff(xp[1], xp[2]) return false end
           if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
         end
       end
-      if x[:parameter] == y[:parameter] && x != y return false end
-      return true
-    end
-    end)))
+      xp!=yp || x==y
+    end)
   else
-    uc[:orderClasses]=hasse(toM(map(eachindex(uc[:classes]))do i
-                                  map(eachindex(uc[:classes]))do j
-      dominates(uc[:classes][j][:parameter], uc[:classes][i][:parameter]) && 
-      (uc[:classes][j][:parameter]!=uc[:classes][i][:parameter] || i==j)
-                     end
-                    end))
+    uc[:orderClasses]=hasse(Poset(uc[:classes])do x,y
+      xp=x[:parameter] 
+      yp=y[:parameter] 
+      dominates(yp,xp) && (xp!=yp || x==y)
+    end)
   end
-  if char != 2
+  if char!=2
     d = 0
     while 4*d^2-d <= n
      i = 4*d^2-d

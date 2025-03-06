@@ -233,7 +233,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters,function(e)
 # Modified 25-8-2004 to fit with H3, H4
 # Asterisque, Geck-Malle, H4 in Duke are like the old version
 # 'Unipotente Grade' and I2, imprimitive, current H3 H4 agree with new version
-    uc[:families][3]=uc[:families][3]^13
+    uc[:families][3]=galois(uc[:families][3],13)
     for c in uc[:harishChandra]
       c[:eigenvalue]=galois(c[:eigenvalue],13)
     end

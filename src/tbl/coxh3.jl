@@ -5,10 +5,12 @@ chevieset(:H3, :ReflectionDegrees, [2, 6, 10])
 chevieset(:H3, :Size, 120)
 
 # from Humphreys, "Reflection Groups and Coxeter Groups"
-chevieset(:H3, :GeneratingRoots, function ()
-  a=-E(5,2)-E(5,3)
-  [[a,-1,a-1],[-a,1,a-1],[1,a-1,-a]]//2
-end)
+let a=-E(5,2)-E(5,3)
+chevieset(:H3, :GeneratingRoots,
+          [[a,-1,a-1],
+           [-a,1,a-1],
+           [1,a-1,-a]]//2)
+end
 
 # The Galois-invariant model is PRG(roots,coroots) given below
 chevieset(:H3, :InvariantModel, Dict{Symbol, Any}(

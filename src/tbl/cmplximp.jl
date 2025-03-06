@@ -1419,13 +1419,11 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     t=partition_tuples(2,p)[i]
     if count(!isempty,t)==1
       p=findfirst(!isempty,t)
-      if t[p]==[2] return x1^0*[[Y[p];;],[x1;;]]
-      else return x1^0*[[Y[p];;],[x2;;]]
-      end
+      return (0+x1^0)*[[Y[p];;],[t[p]==[2] ? x1 : x2;;]]
     else
       p=findall(!isempty,t)
       y1,y2=Y[p]
-      return x1^0*[[[y1,0],[-1,y2]],[[x1,x1*y1+x2*y2],[0,x2]]]
+      return x1^0*[[y1 0;-1 y2],[x1 x1*y1+x2*y2;0 x2]]
     end
   elseif [p,q,r]==[3,3,3]
     x=-para[2][1]//para[2][2]
@@ -2048,7 +2046,8 @@ end)
 
 chevieset(:imp, :Representation, function (p, q, r, i)
   o=denominator.(chevieget(:imp, :EigenvaluesGeneratingReflections)(p,q,r))
-  chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->E.(x,0:x-1),o),[],i)
+  chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->
+                x==2 ? [1,-1] : E.(x,0:x-1),o),[],i)
 end)
 
 function MakeFamilyImprimitive(S, uc)

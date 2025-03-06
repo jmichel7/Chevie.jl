@@ -142,7 +142,7 @@ chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
 end)
 
 chevieset(:A, :Representation, function (n, i)
-  chevieget(:imp, :Representation)(1, 1, n + 1, i)[2:n + 1]
+  chevieget(:A, :HeckeRepresentation)(n,fill([1,-1],n),fill(1,n),i)
 end)
 
 chevieset(:A, :FakeDegree, function (n, p, q)
@@ -235,7 +235,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
     end
   end
   for ss in uc[:springerSeries][2:end] ss[:hc]=0 end
-  uc[:orderClasses]=hasse(Poset(CPoset(
-   [dominates(y[:parameter],x[:parameter]) for x in uc[:classes], y in uc[:classes]])))
+  uc[:orderClasses]=hasse(Poset((x,y)->dominates(y,x),
+                                map(x->x[:parameter],uc[:classes])))
   uc
 end)

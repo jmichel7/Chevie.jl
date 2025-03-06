@@ -3305,8 +3305,7 @@ chevieset(:E8, :UnipotentClasses, function(p)
       :relgroup=>coxgroup(:F, 4), :levi => 2:5, :Z => [],
       :locsys => map(1:length(l))do i
          s=findfirst(x->x[3]==chevieget(:F4, :CharInfo)()[:kondo][i],l)
-         [findfirst(i->UnipotentClassOps[:Name](i,
-                 Dict{Symbol, Any}(:mizuno=>true))==l[s][1],uc[:classes]),
+         [findfirst(i->Ucl.nameclass(i;mizuno=true)==l[s][1],uc[:classes]),
           l[s][2]]
        end, :hc => 4))
     append!(uc[:springerSeries], [Dict{Symbol, Any}(
@@ -3345,8 +3344,7 @@ chevieset(:E8, :UnipotentClasses, function(p)
       Dict{Symbol, Any}(:relgroup => coxgroup(), :levi => 1:8, :Z => [], :locsys => [[1, 5]], :hc => 13)])
     end
     uc[:orderClasses]=map(c->map(n->
-       findfirst( c->UnipotentClassOps[:Name](c)==n,uc[:classes]),c[:succ]),
-                          uc[:classes])
+       findfirst( c->Ucl.nameclass(c)==n,uc[:classes]),c[:succ]),uc[:classes])
     for c in uc[:classes]
       delete!(c, :succ)
       if !haskey(c, :red) c[:red]=Z(1) end

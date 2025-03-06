@@ -1,13 +1,16 @@
 """
-This is my attempt to port the Chevie package from GAP3 to Julia. I started
-this  project at the end of  2018 and it is still  in flux so some function
-names or interfaces may still change. Pull requests and issues are welcome.
+The  Chevie package started as a port to Julia of the GAP3 package with the
+same name. This port started at the end of 2018 and the package is still in
+flux  so some function names or  interfaces may still change. Pull requests
+and issues are welcome.
 
-I  have implemented the  GAP functionality (infrastructure)  needed to make
-Chevie  work.  I  have  already  registered  most of this infrastructure as
-separate  packages; the  following packages  are loaded  and re-exported so
-that  their functionality is automatically available when you use `Chevie`.
-In other words, `Chevie` is a meta-package for the following packages:
+I  have implemented the GAP functionality  needed to make Chevie work; most
+of  this infrastructure is  already registered as  separate packages. These
+packages  may have advantages compared to  other Julia packages providing a
+similar  functionality; you should have a  look at them. These packages are
+loaded  and  re-exported  so  that  their  functionality  is  automatically
+available when you use `Chevie`. In other words, `Chevie` is a meta-package
+for the following packages:
 
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions when there are no fractional exponents)
@@ -22,7 +25,7 @@ In other words, `Chevie` is a meta-package for the following packages:
   * [FinitePosets](https://github.com/jmichel7/FinitePosets.jl) (finite posets)
   * [FiniteFields](https://github.com/jmichel7/FiniteFields.jl) (finite fields)
   * [GroupPresentations](https://github.com/jmichel7/GroupPresentations.jl) (presentations of groups, and groups defined by generators and relations)
-  * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose several packages)
+  * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose a package with the current environment)
 
 Have  a look at the  documentation of the above  packages to see how to use
 their   features.  
@@ -40,21 +43,23 @@ with  naive  but  easy-to-write  methods  suitable  only  for  small groups
 Otherwise  the infrastructure code  is often competitive  with GAP, despite
 using  much less code (often  100 lines of Julia  replace 1000 lines of C);
 and I am sure it could be optimised better than I did. Comments on code and
-design  are welcome. For functions that are too inefficient or difficult to
-implement (such as character tables of arbitrary groups), `Chevie` uses the
-`GAP`  package  as  an  extension.  This  means  that if you have the `GAP`
-package  installed,  `Chevie`  will  automatically  call `GAP` to implement
-these functions. 
+design  are  welcome.  For  functions  that  are too inefficient or I found
+difficult  to  implement  (such  as  character tables of arbitrary groups),
+`Chevie`  uses the `GAP`  package as an  extension. This means  that if you
+have the `GAP` package installed, `Chevie` will automatically call `GAP` to
+implement these functions.
 
 Functions  in the  `Chevie.jl` package  are often  10 times faster than the
 equivalent functions in GAP3/Chevie (after the maddeningly long compilation
 time on the first run --- Julia's TTFP).
 
-The  `Chevie`  package  currently  contains  about  95%  of the GAP3 Chevie
-functionality.  If you  are a  user of  GAP3/Chevie, the `gap` function can
-help  you to  find the  equivalent functionality  in `Chevie.jl`  to a Gap3
-function:  it takes a string and  gives you Julia translations of functions
-in Gap3 that match that string.
+The  `Chevie` package  currently implements  almost all  of the GAP3 Chevie
+functionality  (as well  as some  functionality from  the GAP3  Algebra and
+VKcurve  packages). It has also some  new functionality not present in GAP3
+Chevie.  If you are a user of  GAP3/Chevie, the `gap` function can help you
+to  find the equivalent functionality in `Chevie.jl` to a GAP3 function: it
+takes  a string and gives you Julia  translations of functions in GAP3 that
+match that string (it is case-insensitive).
 
 ```julia-rep1
 julia> gap("words")
@@ -63,12 +68,6 @@ CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l]))
 GarsideWords             =>  elements
 ```
 You can then access online help for the functions you have found.
-
-The  port to Julia is not complete in the sense that 80% of the code is the
-data library from Chevie, which was automatically ported by a transpiler so
-its  code is "strange".  When the need  to maintain the  `GAP3` and `Julia`
-versions  simultaneously subsides,  I will  do a  proper translation of the
-data library, which should give an additional speed boost.
 
 ### Installing
 
@@ -153,20 +152,20 @@ include("dSeries.jl");@reexport using .dSeries
 include("Sscoset.jl");@reexport using .Sscoset
 include("gendec.jl"); # for now no module
 include("tbl/util.jl")
-const tbl_t=[("G(de,e,n)","cmplximp_t"),
-  ("Aₙ","weyla_t"), ("Bₙ and Cₙ","weylbc_t"),("Dₙ","weyld_t"),
-  ("³D₄","weyl3d4_t"), ("²Aₙ","weyl2a_t"), ("²Dₙ","weyl2d_t"),
-  ("ᵗG(e,e,n)","cmpxtimp_t"), ("G₂","weylg2_t"), 
-  ("I₂(e)","coxi_t"), ("²I₂(e)","cox2i_t"),
-  ("G₄-G₂₂","cmp4_22_t"),("H₃","coxh3_t"),
-  ("G₂₄","cmplxg24_t"),("G₂₅","cmplxg25_t"),("G₂₆","cmplxg26_t"),
-  ("G₂₇","cmplxg27_t"), ("F₄","weylf4_t"), ("²F₄","weyl2f4_t"),
-  ("G₂₉","cmplxg29_t"), ("H₄","coxh4_t"), ("G₃₁","cmplxg31_t"),
-  ("G₃₂","cmplxg32_t"),("G₃₃","cmplxg33_t"),("G₃₄","cmplxg34_t"), 
-  ("E₆","weyle6_t"),("²E₆","weyl2e6_t"),("E₇","weyle7_t"),
-  ("E₈","weyle8_t"), ("several groups","exceptio_t")]
+const cheviedata=[("G(de,e,n)","cmplximp"),
+  ("Aₙ","weyla"), ("Bₙ and Cₙ","weylbc"),("Dₙ","weyld"),
+  ("³D₄","weyl3d4"), ("²Aₙ","weyl2a"), ("²Dₙ","weyl2d"),
+  ("ᵗG(e,e,n)","cmpxtimp"), ("G₂","weylg2"), 
+  ("I₂(e)","coxi"), ("²I₂(e)","cox2i"),
+  ("G₄-G₂₂","cmp4_22"),("H₃","coxh3"),
+  ("G₂₄","cmplxg24"),("G₂₅","cmplxg25"),("G₂₆","cmplxg26"),
+  ("G₂₇","cmplxg27"), ("F₄","weylf4"), ("²F₄","weyl2f4"),
+  ("G₂₉","cmplxg29"), ("H₄","coxh4"), ("G₃₁","cmplxg31"),
+  ("G₃₂","cmplxg32"),("G₃₃","cmplxg33"),("G₃₄","cmplxg34"), 
+  ("E₆","weyle6"),("²E₆","weyl2e6"),("E₇","weyle7"),
+  ("E₈","weyle8"), ("several groups","exceptio")]
 println("reading Chevie data:")
-foreach(tbl_t) do (e,f)
+foreach(cheviedata) do (e,f)
   print("for ",rpad(e,16))
   t=@elapsed include(string("tbl/",f,".jl"))
   println(rpad(string(round(t;digits=3)),5,'0')," seconds")

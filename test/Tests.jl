@@ -379,7 +379,7 @@ function Tunipotentclasses(W,p=nothing)
     o=map(i->map(j->any(a->any(b->!iszero(t.scalar[a,b]),
                         findall(x->x[1]==j,l)),findall(x->x[1]==i,l)),
         eachindex(uc.classes)),eachindex(uc.classes))
-    Poset(o)
+    Poset(CPoset(toM(o)))
   end
   if W isa Spets WF=W;W=Group(WF)
   else WF=spets(W)
@@ -635,7 +635,7 @@ function Tcharparams(W)
   n=repr(W;context=rio())
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
     if length(l[1])>=4 return end
-    nm=map(Format.TeXstrip∘GAPENV.exceptioCharName,l)
+    nm=map(Format.TeXstrip∘Chevie.exceptioCharName,l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
   elseif n[1] in "EFGH" && length(n)<4
     l=filter(x->x[2]>1,tally(charinfo(W)[:charparams]))

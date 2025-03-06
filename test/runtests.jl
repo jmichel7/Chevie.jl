@@ -32,7 +32,7 @@ end
 @test mytest("Chars.jl","ct.charnames","6-element Vector{String}:\n \"\\\\phi_{1,0}\"\n \"\\\\phi_{1,6}\"\n \"\\\\phi_{1,3}'\"\n \"\\\\phi_{1,3}''\"\n \"\\\\phi_{2,1}\"\n \"\\\\phi_{2,2}\"")
 @test mytest("Chars.jl","ct.classnames","6-element Vector{String}:\n \"A_0\"\n \"\\\\tilde A_1\"\n \"A_1\"\n \"G_2\"\n \"A_2\"\n \"A_1+\\\\tilde A_1\"")
 @test mytest("Chars.jl","m=cartan(:A,3)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
-@test mytest("Chars.jl","schur_functor(m,[2,2])","6×6 Matrix{Rational{Int64}}:\n   9   -6    4  3//2   -2    1\n -12   16  -16  -4      8   -4\n   4   -8   16   2     -8    4\n  12  -16   16  10    -16   12\n  -4    8  -16  -4     16  -12\n   1   -2    4  3//2   -6    9")
+@test mytest("Chars.jl","schur_functor(m,[2,2])","6×6 Matrix{Rational{Int64}}:\n   9    -6    4   3    -2    1\n -12    16  -16  -8     8   -4\n   4    -8   16   4    -8    4\n -3//2  -1    2  7//2  -3   5//2\n  -4     8  -16  -8    16  -12\n   1    -2    4   3    -6    9")
 @test mytest("Chars.jl","fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))","Pol{Int64}: q²+q")
 @test mytest("Chars.jl","fakedegrees(coxgroup(:A,2),Pol(:q))","3-element Vector{Pol{Int64}}:\n q³\n q²+q\n 1")
 @test mytest("Chars.jl","charinfo(coxgroup(:G,2)).charparams","6-element Vector{Vector{Vector{Int64}}}:\n [[1, 0]]\n [[1, 6]]\n [[1, 3, 1]]\n [[1, 3, 2]]\n [[2, 1]]\n [[2, 2]]")
@@ -307,8 +307,6 @@ end
 @test mytest("Format.jl","joindigits([1,10,3,5])","\"(1,10,3,5)\"")
 @test mytest("Format.jl","joindigits([1,10,3,5],\"[]\";sep=\"-\")","\"[1-10-3-5]\"")
 end
-@testset "GAPENV.jl" begin
-end
 @testset "Garside.jl" begin
 @test mytest("Garside.jl","W=coxgroup(:A,4)","A₄")
 @test mytest("Garside.jl","B=BraidMonoid(W)","BraidMonoid(A₄)")
@@ -527,7 +525,7 @@ end
 @test mytest("HeckeAlgebras.jl","CharTable(HF)","CharTable(hecke(u₃,v²,rootpara=v))\n┌───┬──────────┐\n│   │ 111 21  3│\n├───┼──────────┤\n│111│  -1  1 -1│\n│21 │-2v³  .  v│\n│3  │  v⁶  1 v²│\n└───┴──────────┘")
 @test mytest("HeckeAlgebras.jl","WF=rootdatum(\"2B2\")","²B₂")
 @test mytest("HeckeAlgebras.jl","H=hecke(WF,Pol(:x)^2;rootpara=Pol())","hecke(²B₂,x²,rootpara=x)")
-@test mytest("HeckeAlgebras.jl","representations(H)","3-element Vector{NamedTuple{(:gens, :F)}}:\n (gens = Matrix{Pol{Int64}}[[x²;;], [x²;;]], F = [1;;])\n (gens = [[-1;;], [-1;;]], F = [1;;])\n (gens = Matrix{Pol{Cyc{Int64}}}[[-1 0; √2x x²], [x² √2x; 0 -1]], F = [0 -1; -1 0])")
+@test mytest("HeckeAlgebras.jl","representations(H)","3-element Vector{NamedTuple{(:gens, :F)}}:\n (gens = Matrix{Pol{Int64}}[[x²;;], [x²;;]], F = [1;;])\n (gens = Matrix{Pol{Int64}}[[-1;;], [-1;;]], F = [1;;])\n (gens = Matrix{Pol{Cyc{Int64}}}[[-1 0; √2x x²], [x² √2x; 0 -1]], F = [0 -1; -1 0])")
 end
 @testset "InitChevie.jl" begin
 end

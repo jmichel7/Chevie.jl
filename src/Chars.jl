@@ -424,12 +424,12 @@ julia> m=cartan(:A,3)
 
 julia> schur_functor(m,[2,2])
 6×6 Matrix{Rational{Int64}}:
-   9   -6    4  3//2   -2    1
- -12   16  -16  -4      8   -4
-   4   -8   16   2     -8    4
-  12  -16   16  10    -16   12
-  -4    8  -16  -4     16  -12
-   1   -2    4  3//2   -6    9
+   9    -6    4   3    -2    1
+ -12    16  -16  -8     8   -4
+   4    -8   16   4    -8    4
+ -3//2  -1    2  7//2  -3   5//2
+  -4     8  -16  -8    16  -12
+   1    -2    4   3    -6    9
 ```
 """
 function schur_functor(A,la)
@@ -1087,7 +1087,7 @@ end
 
 function CharTable(t::TypeIrred;opt...)
   ct=getchev(t,:CharTable)
-  if ct[:irreducibles] isa Matrix irr=ct[:irreducibles] 
+  if ct[:irreducibles] isa Matrix irr=ct[:irreducibles]
   else irr=toM(ct[:irreducibles]) end
   irr=improve_type(irr)
   CharTable(irr,charnames(t;opt...,TeX=true),classnames(t;opt...,TeX=true),
@@ -1375,12 +1375,12 @@ function WGraph2Representation(a,vars)
     end
     p
   end
-  flat(l)=l[1] isa Vector ? flat(reduce(vcat,l)) : l
+  flat(l)=any(x->x isa Vector,l) ? flat(reduce(vcat,l)) : l
   rk=maximum(Int.(flat(nodes))) # ngens(W)
   dim=length(nodes)
   R=map(j->map(k->vars[varno(nodes[k],j)],1:dim),1:rk)
-  R=Array.(Diagonal.(R))
-  R=map(x->x.+0*E(1)//1,R)
+  T=eltype(flat(a[2]))
+  R=Array.(Diagonal.(map(x->T.(x),R)))
 # println("R=$(typeof(R))$R")
   for r in a[2]
 #   println("r=$r")

@@ -287,8 +287,7 @@ function Base.show(io::IO,r::ClassTypes)
           push!(row_labels," ")
           if classes push!(v,"") end
         end
-        push!(v,Ucl.nameclass(merge(c.class.prop,Dict(:name=>c.class.name)),
-                              merge(io.dict,Dict(:class=>c.AuNo))))
+        push!(v,Ucl.nameclass(c.class;io.dict...,class=c.AuNo))
         push!(v,xrepr(io,x.cent//c.card))
         push!(t,v)
       end

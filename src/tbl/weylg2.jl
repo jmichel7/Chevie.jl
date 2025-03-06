@@ -213,7 +213,7 @@ chevieset(:G2, :UnipotentClasses, function(p,cartantype) # cartantype not used
         :levi=>[1,2],:Z=>Int[],:locsys=>[[5,c]],:hc=>2c-2))
     end
   end
-  uc[:orderClasses]=map(c->map(n->findfirst(c->UnipotentClassOps[:Name](c)==n,
+  uc[:orderClasses]=map(c->map(n->findfirst(c->Ucl.nameclass(c)==n,
                      uc[:classes]),c[:succ]),uc[:classes])
   for c in uc[:classes]
     delete!(c,:succ)

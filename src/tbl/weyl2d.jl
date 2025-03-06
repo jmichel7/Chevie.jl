@@ -241,13 +241,13 @@ chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
     cc[:red]=coxgroup()
     for j in tally(cc[:parameter])
       d=div(j[2],2)
-      if iseven(j[1]) cc[:red]*=coxgroup(:C,d)
+      if iseven(j[1]) cc[:red]=Cosets.extprod(cc[:red],coxgroup(:C,d))
       elseif isodd(j[2])
         if j[2]>1 cc[:red]=Cosets.extprod(cc[:red],coxgroup(:B,d)) end
       elseif j[2]>2
         cc[:red]=Cosets.extprod(cc[:red],d==3 ? rootdatum(:psu,4) :
                                               rootdatum("pso-",2*d))
-      else cc[:red]=Cosets.extprod(cc[:red],torus([[-1]]))
+      else cc[:red]=Cosets.extprod(cc[:red],torus([-1;;]))
       end
     end
   end

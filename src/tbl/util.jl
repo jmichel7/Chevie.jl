@@ -1,6 +1,3 @@
-Base.:*(a::AbstractArray,b::Union{Pol,Frac,Mvp})=a.*b
-Base.:*(a::Union{Pol,Frac,Mvp},b::AbstractArray)=a.*b
-
 function expandrep(r,d,l)
   T=reduce(promote_type,typeof.(first.(l)))
   m=fill(zero(T),d*d*r)

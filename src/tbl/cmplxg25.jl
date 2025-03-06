@@ -56,9 +56,7 @@ chevieset(:G25, :CharInfo, function ()
 end)
 
 chevieset(:G25, :HeckeCharTable, function (para, root)
-  u=para[1][1]
-  v=para[1][2]
-  w=para[1][3]
+  u,v,w=para[1]
   c=(u*v*w)^0
   res=Dict{Symbol, Any}(:name => "H(G25)", :identifier => "H(G25)",
     :parameter => para, :size => 648, :order => 648, :dim => 3,
@@ -202,7 +200,7 @@ chevieset(:G25, :HeckeRepresentation, function (para, root, i)
      [4,5,[1,0,3,-w],u],[4,6,-a*w,0],[4,7,[1,-w,3,0],u],[4,8,a*w,0],
      [4,9,u+a^2*v,0],[5,6,-u,v],[5,9,0,w],[7,8,u,-v],[7,9,u,0],
      [8,9,-a*v,a^2*w]]],[u,v,w])
-  u,v,w=para[1]
+  u,v,w=para[1].+0
   if     i==1 f1(u)
   elseif i==2 f1(w)
   elseif i==3 f1(v)

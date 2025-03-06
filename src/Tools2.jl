@@ -18,8 +18,6 @@ using ..Chevie: Chevie, root, gap, Cyc, conductor
 using ..Util: toL
 using GroupPresentations: Presentation
 
-Base.isfinite(x::Mvp)=true # backport to PuiseuxPolynomials
-
 #----------------------------------------------------------------------
 """
 `blocks(G::Group,p::Integer)`

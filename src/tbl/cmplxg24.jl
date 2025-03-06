@@ -123,8 +123,8 @@ end)
 
 chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
   f1(r)=map(x->[r;;],1:3)
-  f3(p,r,a)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
-    [1,3,p,-r],[2,3,r*(1-a)//2,-p*(a+1)//2]]],[p,r]).*(p^0*r^0)
+  f3(p,r,b)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
+    [1,3,p,-r],[2,3,r*(b+1),p*b]]],[p,r]).*(p^0*r^0)
   f7(p,r)=WGraph2Representation([[[2,3],[2,3],[1,3],[1,3],[1,2],[1,2]],
     [[1,4,r,-p],[1,5,r,-p],[2,3,r,-p],[2,6,p,-r],[3,5,-p,0],[3,6,-2p,r],
      [4,5,r,0],[4,6,2r,0]]],[r,p]).*(p^0*r^0)
@@ -144,10 +144,10 @@ chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
   r,p=para[1]
   if     i==1  f1(r)
   elseif i==2  f1(p)
-  elseif i==3  f3(p, r, root(-7))
-  elseif i==4  f3(r, p, root(-7))
-  elseif i==5  f3(p, r, -root(-7))
-  elseif i==6  f3(r, p, -root(-7))
+  elseif i==3  f3(p, r, E(7,3)+E(7,5)+E(7,6))
+  elseif i==4  f3(r, p, E(7,3)+E(7,5)+E(7,6))
+  elseif i==5  f3(p, r, conj(E(7,3)+E(7,5)+E(7,6)))
+  elseif i==6  f3(r, p, conj(E(7,3)+E(7,5)+E(7,6)))
   elseif i==7  f7(p, r)
   elseif i==8  f7(r, p)
   elseif i==9  f9(p, r)

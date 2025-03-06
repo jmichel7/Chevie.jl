@@ -366,8 +366,8 @@ chevieset(:G26, :HeckeRepresentation, function (para, rt, i)
     241]),(y,[1,31,61,91,151,185,211]),(-1,[30,188]),(1,[35,116,
     202]),(u^-1*v,[167]),(u^-1*w*x,[94]),(u^-1,[170])])
   end
-  x,y=para[1]
-  u,v,w=para[2]
+  x,y=para[1].+0
+  u,v,w=para[2].+0
   if     i==1  f10(x,u)
   elseif i==2  f10(y,u)
   elseif i==3  f10(y,w)

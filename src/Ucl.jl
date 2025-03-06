@@ -340,11 +340,11 @@ module Ucl
 
 using ..Chevie
 
-export UnipotentClasses, UnipotentClass, UnipotentClassOps, ICCTable, XTable,
+export UnipotentClasses, UnipotentClass, ICCTable, XTable,
  GreenTable, UnipotentValues, induced_linear_form, special_pieces, name,
  distinguished_parabolics, representative
 
-@GapObj struct UnipotentClass
+@GapObj mutable struct UnipotentClass
   name::String
   parameter::Any
   dimBu::Int
@@ -381,11 +381,11 @@ it for some types and some characteristics but sometimes much less)
   springerseries::Vector{Dict}
 end
 
-function nameclass(u::Dict,opt=Dict{Symbol,Any}())
+function nameclass(u;opt...)
 # println("u=$u, opt=$opt")
   if haskey(opt,:mizuno) && haskey(u,:mizuno) n=u[:mizuno]
   elseif haskey(opt,:shoji) && haskey(u,:shoji) n=u[:shoji]
-  else n=u[:name]
+  else n=u isa Dict ? u[:name] : u.name
   end
   TeX=haskey(opt,:TeX)
   n=fromTeX(n;opt...)
@@ -403,9 +403,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   n
 end
 
-function name(io::IO,u::UnipotentClass)
-  nameclass(merge(u.prop,Dict(:name=>u.name)),IOContext(io).dict)
-end
+name(io::IO,u::UnipotentClass)=nameclass(u;IOContext(io).dict...)
 
 name(u;opt...)=name(IOContext(stdout,opt...),u)
 
@@ -414,8 +412,6 @@ function Base.show(io::IO,u::UnipotentClass)
 end
 
 representative(W,u::UnipotentClass)=prod(UnipotentGroup(W),u.rep)
-
-const UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
 
 """
 `induced_linear_form(W, H, h)`
@@ -643,6 +639,54 @@ function AdjustAu!(classes,springerseries)
   end
 end
 
+# unipotent classes for the simply connected quasisimple group of type t
+function UnipotentClasses(t::TypeIrred,p=0)
+  uc=getchev(t,:UnipotentClasses,p)
+  if uc===nothing error("no UnipotentClasses for ",t) end
+  uc[:orderClasses]=map(uc[:orderClasses])do v
+    if v isa String && isempty(v) return Int[] end
+    Vector{Int}(v)
+  end
+  rank=PermRoot.rank(t)
+  c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
+  rr=toM(roots(c))
+  classes=map(uc[:classes])do u # fill omitted fields
+    name=u[:name]
+    parameter= haskey(u,:parameter) ? u[:parameter] : u[:name]
+    dimBu= haskey(u,:dimBu)  ? u[:dimBu] : -1
+    delete!.(Ref(u),[:name,:parameter,:dimBu])
+    cl=UnipotentClass(name,parameter,dimBu,u)
+    if haskey(cl,:dynkin)
+      weights=rr*cl.dynkin
+      n0=count(iszero,weights)
+      if cl.dimBu==-1 cl.dimBu=n0+div(count(isone,weights),2)
+      elseif cl.dimBu!=n0+div(count(isone,weights),2) error("theory")
+      end
+      n0=2*n0-count(==(2),weights)
+      cl.dimunip=2*cl.dimBu-n0
+      cl.dimred=n0+rank
+    elseif haskey(cl,:red)
+      cl.dimred=dimension(cl.red)
+      cl.dimunip=2*cl.dimBu+rank-cl.dimred
+    elseif haskey(cl,:dimred)
+      cl.dimunip=2*cl.dimBu+rank-cl.dimred
+    end
+    cl
+  end
+  springerseries=uc[:springerSeries]
+  for s in springerseries
+    if isempty(s[:levi]) s[:levi]=Int[] end
+#   s[:levi]=indices(t)[s[:levi]]
+    s[:locsys]=Vector{Int}.(s[:locsys])
+  end
+  orderclasses=Poset(CPoset(uc[:orderClasses]),classes)
+  delete!.(Ref(uc),[:classes,:orderClasses,:springerSeries])
+# uc[:spets]=t
+  UnipotentClasses(classes,p,orderclasses,springerseries,uc)
+end
+
+Base.length(uc::UnipotentClasses)=length(uc.classes)
+
 """
 `UnipotentClasses(W[,p])`
 
@@ -750,53 +794,6 @@ julia> xdisplay(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
 └──────┴─────────────────────────────────────────────────────┘
 ```
 """
-function UnipotentClasses(t::TypeIrred,p=0)
-  uc=getchev(t,:UnipotentClasses,p)
-  if uc===nothing error("no UnipotentClasses for ",t) end
-  uc[:orderClasses]=map(uc[:orderClasses])do v
-    if v isa String && isempty(v) return Int[] end
-    Vector{Int}(v)
-  end
-  rank=PermRoot.rank(t)
-  classes=UnipotentClass[]
-  c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
-  rr=toM(roots(c))
-  for u in uc[:classes] # fill omitted fields
-    name=u[:name]
-    parameter= haskey(u,:parameter) ? u[:parameter] : u[:name]
-    dimBu= haskey(u,:dimBu)  ? u[:dimBu] : -1
-    if haskey(u,:dynkin)
-      weights=rr*u[:dynkin]
-      n0=count(iszero,weights)
-      if dimBu==-1 dimBu=n0+div(count(isone,weights),2)
-      elseif dimBu!=n0+div(count(isone,weights),2) error("theory")
-      end
-      n0=2*n0-count(==(2),weights)
-      u[:dimunip]=2*dimBu-n0
-      u[:dimred]=n0+rank
-    elseif haskey(u,:red)
-      u[:dimred]=dimension(u[:red])
-      u[:dimunip]=2*dimBu+rank-u[:dimred]
-    elseif haskey(u,:dimred)
-      u[:dimunip]=2*dimBu+rank-u[:dimred]
-    end
-    delete!.(Ref(u),[:name,:parameter,:dimBu])
-    push!(classes,UnipotentClass(name,parameter,dimBu,u))
-  end
-  springerseries=uc[:springerSeries]
-  for s in springerseries
-    if isempty(s[:levi]) s[:levi]=Int[] end
-#   s[:levi]=indices(t)[s[:levi]]
-    s[:locsys]=Vector{Int}.(s[:locsys])
-  end
-  orderclasses=Poset(CPoset(Vector{Vector{Int}}(uc[:orderClasses])),classes)
-  delete!.(Ref(uc),[:classes,:orderClasses,:springerSeries])
-# uc[:spets]=t
-  UnipotentClasses(classes,p,orderclasses,springerseries,uc)
-end
-
-Base.length(uc::UnipotentClasses)=length(uc.classes)
-
 function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
 # println("UnipotentClasses(",W,")")
   if !(p in (W isa Spets ? badprimes(Group(W)) : badprimes(W))) p=0 end

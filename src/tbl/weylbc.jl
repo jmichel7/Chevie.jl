@@ -307,23 +307,22 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     push!(uc[:classes], cc)
     for s in cl addSpringer1(s,cc) end
   end
-  uc[:orderClasses] = hasse(toM(map(x->
-    map(function(y)
-      if char!=2 return dominates(y[:parameter], x[:parameter]) end
-      # cf. [S] 2.10 page 24
-      m=max(x[:parameter][1][1], y[:parameter][1][1])
-      f=x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
-      fx=f(x[:parameter][1])
-      fy=f(y[:parameter][1])
-      for i in 1:m
-        if fx[i]<fy[i] return false
-        elseif fx[i]==fy[i] && i in y[:parameter][2]
-          if i in setdiff(x[:parameter][1],x[:parameter][2]) return false end
-          if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
-        end
+  uc[:orderClasses]=hasse(Poset(map(x->x[:parameter],uc[:classes]))do x,y
+    if char!=2 return dominates(y, x) end
+    # cf. [S] 2.10 page 24
+    m=max(x[1][1], y[1][1])
+    f=x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
+    fx=f(x[1])
+    fy=f(y[1])
+    for i in 1:m
+      if fx[i]<fy[i] return false
+      elseif fx[i]==fy[i] && i in y[2]
+        if i in setdiff(x[1],x[2]) return false end
+        if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
       end
-      return true
-    end, uc[:classes]), uc[:classes])))
+    end
+    return true
+  end)
   if char!=2 && ctype==2
     function LuSpin(p) # cf [Lu] 14.2
       sort!(p)

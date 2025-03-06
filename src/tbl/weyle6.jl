@@ -672,7 +672,7 @@ chevieset(:E6, :UnipotentClasses, function(p)
           :levi => 1:6, :Z => [1], :locsys => [[1, c]], :hc => c + 1))
       end
   end
-  uc[:orderClasses] = map(c->map(n->findfirst(c->UnipotentClassOps[:Name](c)==n,
+  uc[:orderClasses] = map(c->map(n->findfirst(c->Ucl.nameclass(c)==n,
                         uc[:classes]) , c[:succ]) , uc[:classes])
   for c = uc[:classes]
       delete!(c, :succ)
