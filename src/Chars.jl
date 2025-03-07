@@ -474,7 +474,7 @@ function fakedegree(t::TypeIrred,p,q=Pol())
   if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
   elseif haskey(t,:orbit) q=q^length(t.orbit)
   end
-  getchev(t,:FakeDegree,p,q)
+  chevieget(t,:FakeDegree,p,q)
 end
 
 """
@@ -528,16 +528,16 @@ end
 charnumbers(d::Dict)=d[:charNumbers]
 
 function charinfo(t::TypeIrred)
-  c=CharInfo(copy(getchev(t,:CharInfo)))
+  c=CharInfo(copy(chevieget(t,:CharInfo)))
   c.positionId=c.extRefl[1]
   c.positionDet=c.extRefl[end]
   if !haskey(c,:charnames) error("charnames(",t,") missing") end
-  if !haskey(c,:b) c.b=getchev(t,:LowestPowerFakeDegrees) end
-  if !haskey(c,:B) c.B=getchev(t,:HighestPowerFakeDegrees) end
-  if !haskey(c,:a) c.a=getchev(t,:LowestPowerGenericDegrees) end
-  if !haskey(c,:A) c.A=getchev(t,:HighestPowerGenericDegrees) end
+  if !haskey(c,:b) c.b=chevieget(t,:LowestPowerFakeDegrees) end
+  if !haskey(c,:B) c.B=chevieget(t,:HighestPowerFakeDegrees) end
+  if !haskey(c,:a) c.a=chevieget(t,:LowestPowerGenericDegrees) end
+  if !haskey(c,:A) c.A=chevieget(t,:HighestPowerGenericDegrees) end
   if isnothing(c.a)
-    uc=getchev(t,:UnipotentCharacters)
+    uc=chevieget(t,:UnipotentCharacters)
     if !isnothing(uc) && uc!=false
 #     printstyled(rio(),"using UniChars\n";color=:red)
       if haskey(uc,:almostHarishChandra)
@@ -551,7 +551,7 @@ function charinfo(t::TypeIrred)
       para=ordergens(t)
       if !isnothing(para)
         para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
-        s=map(p->getchev(t,:SchurElement,p,para,Any[]),c.charparams)
+        s=map(p->chevieget(t,:SchurElement,p,para,Any[]),c.charparams)
         c.a=-valuation.(s)
         c.a.+=valuation(s[c.positionId])
         c.A=-degree.(s)
@@ -840,7 +840,7 @@ end
 end
 
 function classinfo(t::TypeIrred)
-  cl=deepcopy(convert(Dict{Symbol,Any},getchev(t,:ClassInfo)))
+  cl=deepcopy(convert(Dict{Symbol,Any},chevieget(t,:ClassInfo)))
   if haskey(t,:orbit)
      l=length(t.orbit)
      t=t.orbit[1]
@@ -857,7 +857,7 @@ function classinfo(t::TypeIrred)
   ClassInfo(cl)
 end
 
-Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
+Groups.nconjugacy_classes(t::TypeIrred)=chevieget(t,:NrConjugacyClasses)
 
 """
 `classinfo(W)`
@@ -1086,7 +1086,7 @@ function Base.show(io::IO, ::MIME"text/plain", ct::CharTable)
 end
 
 function CharTable(t::TypeIrred;opt...)
-  ct=getchev(t,:CharTable)
+  ct=chevieget(t,:CharTable)
   if ct[:irreducibles] isa Matrix irr=ct[:irreducibles]
   else irr=toM(ct[:irreducibles]) end
   irr=improve_type(irr)
@@ -1220,10 +1220,10 @@ julia> representation(complex_reflection_group(24),3)
 ```
 """
 function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
-  dims=getchev(W,:NrConjugacyClasses)
-  if isempty(dims) return Matrix{Int}[] end
   tt=refltype(W)
-  mm=map((t,j)->getchev(t,:Representation,j),tt,lin2cart(dims,i))
+  if isempty(tt) return Matrix{Int}[] end
+  dims=chevieget.(tt,:NrConjugacyClasses)
+  mm=map((t,j)->chevieget(t,:Representation,j),tt,lin2cart(dims,i))
   if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
     FF=map(x->x[:F],mm)
@@ -1475,7 +1475,7 @@ charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 charnames(t::TypeIrred;opt...)=charnames(IOContext(stdout,opt...),t)
 
 function charnames(io::IO,t::TypeIrred)
-  ci=getchev(t,:CharInfo)
+  ci=chevieget(t,:CharInfo)
   cn=ci[:charnames]
   for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig, :carter]
     if get(io,k,false) && haskey(ci,k) cn=string.(ci[k]) end
@@ -1757,17 +1757,17 @@ Mvp{Int64}: x³-y²
 function LaurentPolynomials.discriminant(W::Group)
   t=refltype(W)
   if isempty(t) return ()->Mvp(1)
-  elseif length(t)==1 return getchev(t[1],:Discriminant)
+  elseif length(t)==1 return chevieget(t[1],:Discriminant)
   else error("not implemented for non-irreducible ",W)
   end
 end
 
 function decomposition_matrix(t::TypeIrred,p)
-  m=getchev(t,:DecompositionMatrix,p)
+  m=chevieget(t,:DecompositionMatrix,p)
   if m==false
     error("decomposition_matrix(",t,",",p,") not implemented")
   end
-  n=getchev(t,:NrConjugacyClasses)
+  n=chevieget(t,:NrConjugacyClasses)
   append!(m,map(i->[[i],[[1]]],setdiff(1:n,union(first.(m)))))
   res=cat(map(x->toM(x[2]),m)...;dims=(1,2))
   res[sortperm(vcat(first.(m)...)),:]

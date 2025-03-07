@@ -26,7 +26,6 @@ function TeXIndex(s)
 end
 
 function Replace(s,p...)
-# print("Replace s=$s p=$p")
   for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
     res=empty(s)
     i=0
@@ -71,6 +70,22 @@ function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
   end
   if qeig!=0 res[:qEigen]=qeig end
   res
+end
+
+# adjust table prepared for [qₛ,-1]-Hecke algebra to more general [xₛ,yₛ]
+function AdjustHeckeCharTable(tbl,param)
+  param=improve_type(param)
+  for (i,w) in enumerate(tbl[:classtext])
+    f=prod(-last.(param[w]))
+    if tbl[:irreducibles] isa Matrix
+       tbl[:irreducibles][:,i].*=f
+    else
+      for j in eachindex(tbl[:classtext])
+        tbl[:irreducibles][j][i]*=f
+      end
+    end
+  end
+  tbl
 end
 
 """

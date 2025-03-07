@@ -850,7 +850,7 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
     end
     p//q*chevieget(:imp,:SchurElement)(p,1,r,phi,para,[])//m
   else
-    chevieget(:compat,:InfoChevie)("# SchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+    InfoChevie("# SchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
     false
   end
 end)

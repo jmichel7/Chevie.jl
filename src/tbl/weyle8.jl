@@ -2852,8 +2852,7 @@ chevieset(:E8,:HeckeCharTable,function(para,sqrtpara)
     end
   end
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
-  CHEVIE[:compat][:AdjustHeckeCharTable](tbl, para)
-  tbl
+  AdjustHeckeCharTable(tbl, para)
 end)
 
 chevieset(:E8, :WGraphs, 

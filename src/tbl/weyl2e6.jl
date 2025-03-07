@@ -269,8 +269,7 @@ chevieset(Symbol("2E6"), :HeckeCharTable, function (param, rootparam)
     :irredinfo=>chevieget(Symbol("2E6"), :IrredInfo))
   merge!(tbl,chevieget(Symbol("2E6"),:ClassInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
-  chevieget(:compat,:AdjustHeckeCharTable)(tbl, param)
-  tbl
+  AdjustHeckeCharTable(tbl, param)
 end)
 
 chevieset(Symbol("2E6"),:HeckeRepresentation,function(param,sqrtparam,i)

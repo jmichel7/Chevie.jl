@@ -221,8 +221,7 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
    -(u^2)*(v-1)*(-2*u*v^2+3*u^2*v+3v-2*u*v-2u),(u^2-3u+1)*(v-1),
    -u*v+u,-2*u*v*(v-1),4*(v-1)*(u-1),2*(v-1)*(u-1),0,0]]*u^0*v^0
   tbl[:irredinfo] = chevieget(:F4, :IrredInfo)
-  chevieget(:compat,:AdjustHeckeCharTable)(tbl,param)
-  tbl
+  AdjustHeckeCharTable(tbl,param)
 end)
 
 chevieset(:F4, :PoincarePolynomial, function (param,)

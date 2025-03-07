@@ -500,7 +500,7 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
     if isempty(refltype(W)) ct=prod(CharTable[])
     else
       ct=prod(map(refltype(W))do t
-        ct=getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
+        ct=chevieget(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
                  rootpara(H)[t.indices] : fill(nothing,length(H.para)))
         CharTable(improve_type(toM(ct[:irreducibles])),
                   charnames(t;opt...,TeX=true),
@@ -562,11 +562,11 @@ julia> representation(H,7)
 ```
 """
 function Chars.representation(H::HeckeAlgebra,i::Integer)
-  dims=getchev(H.W,:NrConjugacyClasses)
-  if isempty(dims) return Matrix{Int}[] end
   tt=refltype(H.W)
+  if isempty(tt) return Matrix{Int}[] end
+  dims=chevieget.(tt,:NrConjugacyClasses)
   rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
-  mm=map((t,j)->getchev(t,:HeckeRepresentation,H.para[t.indices],rp,j),tt,
+  mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],rp,j),tt,
                                                     lin2cart(dims,i))
   if any(==(false),mm) return nothing end
   if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
@@ -1141,7 +1141,7 @@ function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
 end
 
 function schur_element(H::HeckeAlgebra,p)
-  t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices],
+  t=map((t,phi)->chevieget(t,:SchurElement,phi,H.para[t.indices],
       haskey(H,:rootpara) ?  H.rootpara[t.indices] :
       fill(nothing,length(H.para))),
       refltype(H.W),p)
@@ -1397,7 +1397,7 @@ julia> factorized_schur_element(H,[[2,5]])
 """
 function factorized_schur_element(H::HeckeAlgebra,phi)
   t=map(refltype(H.W),phi)do t,psi
-     getchev(t,:FactorizedSchurElement,psi,H.para[t.indices],
+     chevieget(t,:FactorizedSchurElement,psi,H.para[t.indices],
     haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
   end
   if false in t return false
@@ -1508,7 +1508,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices
-      ct=getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ?
+      ct=chevieget(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ?
                rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
       else                     names=charnames(t;opt...,TeX=true)
@@ -1527,12 +1527,12 @@ function Chars.CharTable(H::HeckeCoset;opt...)
 end
 
 function Chars.representation(H::HeckeCoset,i::Int)
-  dims=getchev(H.W,:NrConjugacyClasses)
-  if isempty(dims) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
   tt=refltype(H.W)
+  if isempty(tt) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
+  dims=chevieget.(tt,:NrConjugacyClasses)
   rp=haskey(H.H,:rootpara) ? rootpara(H.H) : fill(nothing,length(H.H.para))
   mm=map(tt,lin2cart(dims,i)) do t,j
-    r=getchev(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rp,j)
+    r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rp,j)
     if r==false return nothing
     elseif r isa Vector
       if !(r[1] isa Matrix) r=toM.(r) end

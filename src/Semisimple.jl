@@ -567,7 +567,7 @@ Dict{Symbol, Array} with 8 entries:
 ```
 """
 function weightinfo(t::TypeIrred)
-  r=getchev(t,:WeightInfo)
+  r=chevieget(t,:WeightInfo)
   if isnothing(r)
     r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
          :minusculeWeights=>Vector{Int}[])

@@ -296,7 +296,7 @@ cartanmats[:isym]=cartanmats[:Isym]=function(r,bond)
   [2 c;c 2]
 end
 cartanmats[:i]=cartanmats[:I]=function(r,bond,cartanType=1)
-  if r!=2 error("$r should be 2") end
+  if r!=2 error("type :I is defined only for rank 2") end
   if isodd(bond) cartanmats[:Isym](2,bond)
   elseif bond==2 
     [2 0;0 2]
@@ -1192,7 +1192,7 @@ function Groups.position_class(W::FiniteCoxeterGroup,w)
   ww=word(W,w)
   iw=map(refltype(W))do t
     v=map(i->findfirst(==(i),t.indices),filter(i->i in t.indices,ww))
-    getchev(t,:ClassParameter,v)
+    chevieget(t,:ClassParameter,v)
   end
   if any(isnothing,iw) return position_class(W.G,w) end
   findfirst(==(iw),map(x->x.param,conjugacy_classes(W)))

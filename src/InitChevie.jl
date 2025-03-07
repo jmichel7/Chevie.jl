@@ -1,33 +1,20 @@
-# mostly translations of chevie/init.g and chevie/tbl/compat3.g
+# ways to set and access the Chevie data stored in CHEVIE
 module InitChevie
 
 using ..Chevie
-export CHEVIE, chevieget, chevieset, getchev
+export CHEVIE, chevieget, chevieset, InfoChevie
 
-const CHEVIE=Dict{Symbol,Any}(
-  :compat=>Dict{Symbol,Any}(:MakeCharacterTable=>x->x),
-  :info=>false
-)
+const CHEVIE=Dict{Symbol,Any}(:info=>true,:infoget=>false)
 
-CHEVIE[:compat][:AdjustHeckeCharTable]=function(tbl,param)
-  r=eachindex(tbl[:classtext])
-  param=improve_type(param)
-  for i in r 
-    f=prod(-last.(param[tbl[:classtext][i]]))
-    for j in r 
-      if tbl[:irreducibles] isa Matrix
-        tbl[:irreducibles][j,i]*=f
-      else tbl[:irreducibles][j][i]*=f
-      end
-    end
-  end
+function InfoChevie(a...)
+  if CHEVIE[:info] xprint(a...) end
 end
 
-" chevieget(t,w) returns CHEVIE[Symbol(t)][w]"
+" chevieget(t,w) returns CHEVIE[Symbol(t)][w] or nothing if absent"
 function chevieget(t::Symbol,w::Symbol)
 # println("chevieget(",t,",",w,")")
   get!(CHEVIE[t],w)do
-    if CHEVIE[:info] println("CHEVIE[$t] has no $w") end
+    if CHEVIE[:infoget] println("CHEVIE[$t] has no $w") end
   end
 end
 
@@ -95,8 +82,8 @@ const needcartantype=Set([:Invariants,
 
 debug::Bool=false # time each call
 
-"`getchev(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
-function getchev(t::TypeIrred,f::Symbol,extra...)
+"`chevieget(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
+function chevieget(t::TypeIrred,f::Symbol,extra...)
   n,args...=field(t)
 # println("d=$d f=$f extra=$extra")
   o=chevieget(n,f)
@@ -120,10 +107,6 @@ end
   elseif o===false return nothing
   else o
   end
-end
-
-function getchev(W,f::Symbol,extra...)
-  [getchev(ti,f::Symbol,extra...) for ti in refltype(W)]
 end
 
 end

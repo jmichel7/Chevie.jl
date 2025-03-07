@@ -119,7 +119,7 @@ export Series, ennola
 function SpetsEnnola(t::TypeIrred;sperm=true)
   if haskey(t,:orbit) z=gcd(first.(degrees(t))) else z=gcd(degrees(t)) end
   ξ=E(z,-1)
-  uc=getchev(t,:UnipotentCharacters)
+  uc=chevieget(t,:UnipotentCharacters)
   ff=improve_type(uc[:families])
   fd=fill(Pol(0),length(uc[:a]))
   l=haskey(uc,:almostHarishChandra) ? uc[:almostHarishChandra] : uc[:harishChandra]
@@ -227,7 +227,7 @@ For a non-irreducible group, `z`-ennola is defined if `z` can be considered
 an element of the the centre of each irreducible component.
 """
 function ennola(t::TypeIrred)
-  res=getchev(t,:Ennola)
+  res=chevieget(t,:Ennola)
   if res!==nothing return res end
   InfoChevie("#using SpetsEnnola\n")
   SpetsEnnola(t)

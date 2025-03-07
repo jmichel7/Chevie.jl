@@ -130,8 +130,7 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
    :parameter=>[u,v],:powermap=>[],:irreducibles=>ct*v^0)
   merge!(tbl, cl)
   tbl[:centralizers]= div.(tbl[:size],tbl[:classes])
-  chevieget(:compat,:AdjustHeckeCharTable)(tbl, para)
-  tbl
+  AdjustHeckeCharTable(tbl, para)
 end)
 
 #  The  characters of I_2(m) are uniquely  parametrized by [d,b] where d is

@@ -9,14 +9,14 @@ export complex_reflection_group, crg, diagram, degrees, codegrees,
 
 # roots for the adjoint group
 PermRoot.simpleroots(t::TypeIrred)=
-  t.series==:ST ? toM(getchev(t,:GeneratingRoots)) : one(cartan(t))
+  t.series==:ST ? toM(chevieget(t,:GeneratingRoots)) : one(cartan(t))
 
 # coroots for the adjoint group
 function PermRoot.simplecoroots(t::TypeIrred)
   if t.series==:ST
-    cr=getchev(t,:GeneratingCoRoots)
+    cr=chevieget(t,:GeneratingCoRoots)
     if isnothing(cr)
-      r=getchev(t,:GeneratingRoots)
+      r=chevieget(t,:GeneratingRoots)
       cr=coroot.(r,E.(ordergens(t)))
     end
     toM(map(x->convert.(Cyc{Rational{Int}},x),cr))
@@ -216,8 +216,8 @@ function degrees(W::Spets)
 end
 
 function degrees(t::TypeIrred)
-  if !haskey(t,:orbit) return getchev(t,:ReflectionDegrees) end
-  d=getchev(t.orbit[1],:ReflectionDegrees)
+  if !haskey(t,:orbit) return chevieget(t,:ReflectionDegrees) end
+  d=chevieget(t.orbit[1],:ReflectionDegrees)
 # Let t.scalar=[s₁,…,sᵣ], where r=length(t.orbit) and ζ=prod(t.scalar). let
 # p  be the PhiFactor of t.twist associated  to the reflection degree dᵢ of
 # t.orbit[1].   If   G0   is   the   Spets  described  by  t.orbit[1],  and
@@ -226,7 +226,7 @@ function degrees(t::TypeIrred)
 # G0;  and  by  spets  1.5  or  [Digne-Michel,  parabolic  A.1] those of an
 # a-descent of scalars are ζₐʲζᵢ^{1/a} (all the a-th roots of ζᵢ).
   if order(t.twist)>1
-   f=getchev(t,:PhiFactors)
+   f=chevieget(t,:PhiFactors)
    if isnothing(f) return nothing end
   else f=fill(1,length(d))
   end
@@ -242,22 +242,22 @@ end
 
 function codegrees(t::TypeIrred)
   if !haskey(t,:orbit)
-    d=getchev(t,:ReflectionCoDegrees)
+    d=chevieget(t,:ReflectionCoDegrees)
     if !isnothing(d) return d
     else
-      d=getchev(t,:ReflectionDegrees)
+      d=chevieget(t,:ReflectionDegrees)
       return reverse(maximum(d).-d)
     end
   end
-  d=getchev(t,:ReflectionCoDegrees)
+  d=chevieget(t,:ReflectionCoDegrees)
   if isnothing(d)
-    d=getchev(t.orbit[1],:ReflectionDegrees)
+    d=chevieget(t.orbit[1],:ReflectionDegrees)
     a=argmax(d)
     d=reverse(d[a].-d)
     if order(t.twist)==1
       f=fill(1,length(d))
     else
-      f=getchev(t,:PhiFactors)
+      f=chevieget(t,:PhiFactors)
       if isnothing(f) return f end
       f=Cyc.(improve_type(reverse(map(x->f[a]//x,f))))
     end

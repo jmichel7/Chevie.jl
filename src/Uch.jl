@@ -316,7 +316,7 @@ end
 almostcharnames(io::IO,uc::UnipotentCharacters)=SerNames(io,uc.almostHarishChandra)
 
 function UnipotentCharacters(t::TypeIrred)
-  uc=getchev(t,:UnipotentCharacters)
+  uc=chevieget(t,:UnipotentCharacters)
   if uc===nothing || uc==false
     println("Warning: $t is not a Spets!!")
     return

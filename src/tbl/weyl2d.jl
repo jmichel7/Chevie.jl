@@ -123,8 +123,7 @@ function (l,param,rootparam)
   tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(
    Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
    toM(hi[:irreducibles][chr])),tbl[:classtext]))))
-  chevieget(:compat,:AdjustHeckeCharTable)(tbl,param)
-  tbl
+  AdjustHeckeCharTable(tbl,param)
 end)
 
 chevieset(Symbol("2D"),:CharTable,l->chevieget(Symbol("2D"),:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))

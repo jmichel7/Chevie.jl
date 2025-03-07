@@ -134,14 +134,14 @@ function chard(n,q)
   end
   [[value(lambda,mu) for mu in ci[:classparams]] for lambda in chp]
 end
-   tbl[:irreducibles]=chard(n,q)
-   tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
+  tbl[:irreducibles]=chard(n,q)
+  tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
 #  tbl[:irredinfo]=List(chevieget(:D,:CharInfo)(n).charparams,p->
 #     rec(charparam:=p,charname:=string_partition_tuple(p)));
-   merge!(tbl,ci)
-   chevieget(:compat,:AdjustHeckeCharTable)(tbl,para);
-   tbl
-  end)
+  merge!(tbl,ci)
+  AdjustHeckeCharTable(tbl,para)
+end)
+
 chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
 
 chevieset(:D,:CycPolPoincarePolynomial,n->CycPol(Pol()^n-1)*

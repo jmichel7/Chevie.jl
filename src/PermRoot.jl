@@ -680,9 +680,9 @@ end
 
 function cartan(t::TypeIrred;permute=false)
   if t.series==:ST 
-    m=getchev(t,:CartanMat)
+    m=chevieget(t,:CartanMat)
     if !(m isa Matrix) m=toM(m) end
-    return improve_type(m) end
+    return m end
   C=haskey(t,:bond) ? haskey(t,:cartanType) ? 
      cartan(t.series,rank(t),t.bond,t.cartanType) : 
      cartan(t.series,rank(t),t.bond) : 
@@ -855,7 +855,7 @@ end
 
 function Groups.ordergens(t::TypeIrred)
   t.series in [:E,:F,:G,:H] ? fill(2,rank(t)) :
-    Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
+    Int.(inv.(chevieget(t,:EigenvaluesGeneratingReflections)))
 end
 
 # g is a sublist of 1:length(H.roots). Returns sublist k of g such that
@@ -937,7 +937,7 @@ end
 # returns [p, diagonal of D]
 function findgensDiagCartan2(H,C)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
-  # here CartanMat(H,l) is conjugate by Diagonal(d) to beginning of C
+  # here cartan(H,l) is conjugate by Diagonal(d) to beginning of C
   function complete(l,d)
     local r,c,cc,n
     if length(l)==size(C,1) return (l,d) end
@@ -965,7 +965,7 @@ function findgensDiagCartan(H,C,p)
   d=zeros(eltype(CH),size(CH,1))
   d[1]=1
   for n in 2:size(C,1)
-  # here CartanMat(H,l) is conjugate by Diagonal(d) to beginning of C
+  # here cartan(H,l) is conjugate by Diagonal(d) to beginning of C
     l=filter(i->ratio(roots(H,p[n]),roots(H,i))!==nothing,eachindex(roots(H)))
     cc=map(r->vcat(map(i->f(d[i]*C[i,n],cartan(H,p[i],r)),1:n-1),
                    map(i->f(d[i]*cartan(H,r,p[i]),C[n,i]),1:n-1)),l)
@@ -1487,7 +1487,7 @@ julia> parabolic_reps(complex_reflection_group(3,3,3),2)
 """
 parabolic_reps(W)=vcat(parabolic_reps.(Ref(W),0:semisimplerank(W))...)
 
-parabolic_reps(t::TypeIrred,s)=getchev(t,:ParabolicRepresentatives,s)
+parabolic_reps(t::TypeIrred,s)=chevieget(t,:ParabolicRepresentatives,s)
 
 function recompute_parabolic_reps(W) # W irreducible
   by=1+ngens(W)-semisimplerank(W)
@@ -2183,7 +2183,7 @@ function invariants(W::PermRootGroup)
       error("non standard Cartan matrix: invariants not implemented")
     end
     ir=independent_roots(H)
-    li=getchev(t,:Invariants)
+    li=chevieget(t,:Invariants)
     if li==false return false end
     append!(i,map(f->function(arg...)
          return f(improve_type(inv(E(1).*toM(coroots(H)[ir])*1//1)*

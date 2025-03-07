@@ -729,8 +729,7 @@ chevieset(:E7, :HeckeCharTable, function (para, sqrtpara)
     end
   end
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
-  CHEVIE[:compat][:AdjustHeckeCharTable](tbl, para)
-  tbl
+  AdjustHeckeCharTable(tbl, para)
 end)
 
 # The W-graphs  for E7  were sent in  december 2003  by Bob

@@ -698,7 +698,7 @@ end
 function LeftCellRepresentatives(W)
   res=map(refltype(W))do t
     R=reflection_group(t)
-    rr=getchev(t,:KLeftCellRepresentatives)
+    rr=chevieget(t,:KLeftCellRepresentatives)
     if isnothing(rr) return nothing end
     return map(rr)do r
       r=copy(r)
@@ -717,7 +717,7 @@ function LeftCellRepresentatives(W)
   end
   if isempty(res) return res end
   if nothing in res return nothing end
-  n=getchev(W,:NrConjugacyClasses)
+  n=chevieget.(refltype(W),:NrConjugacyClasses)
   return map(cartesian(res...)) do l
     duflo=W(vcat(map(x->x[:duflo],l)...)...)
     reps=map(v->W(vcat(v...)...),cartesian(map(x->x[:reps],l)...))
@@ -954,7 +954,7 @@ Only implemented for irreducible groups of type `E`, `F` or `H`.
 function Wgraph(W,i)
   t=refltype(W)
   if length(t)!=1 error(W," should be irreducible") end
-  g=getchev(t[1],:WGraph,i)
+  g=chevieget(t[1],:WGraph,i)
   if isnothing(g) error(W," should be of type `E`, `F` or `H`.") end
   g
 end

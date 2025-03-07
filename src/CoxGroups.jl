@@ -789,7 +789,7 @@ equal  to the product according to the  indices on the right side. See also
 `diagram`.
 """
 function braid_relations(t::TypeIrred)
-  r=if t.series==:ST Tuple.(getchev(t,:BraidRelations))
+  r=if t.series==:ST Tuple.(chevieget(t,:BraidRelations))
   else
     m=coxmat(cartan(t))
     p(i,j)=map(k->iszero(k%2) ? j : i,1:m[i,j])

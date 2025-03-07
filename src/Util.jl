@@ -4,13 +4,9 @@ code.  Maybe some  of them  exist in  some Julia  module I am not aware of;
 please tell me.
 """
 module Util
-export InfoChevie, ds
+export ds
 
-using ..Format: xprint, xprintln
-info::Bool=true
-function InfoChevie(a...)
-  if Util.info xprint(a...) end
-end
+using ..Format: xprintln
 
 function ds(s;types=false) # "dump struct"; not recursive like dump
   println(typeof(s),":")

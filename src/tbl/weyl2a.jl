@@ -84,8 +84,7 @@ chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   qE=central_monomials(hecke(W,v))
   a=(-1).^a .* qE
   tbl[:irreducibles]=map((x,y)->x.*y,a,tbl[:irreducibles])
-  chevieget(:compat,:AdjustHeckeCharTable)(tbl, param)
-  tbl
+  AdjustHeckeCharTable(tbl, param)
 end)
 
 chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)

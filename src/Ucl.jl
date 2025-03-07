@@ -641,7 +641,7 @@ end
 
 # unipotent classes for the simply connected quasisimple group of type t
 function UnipotentClasses(t::TypeIrred,p=0)
-  uc=getchev(t,:UnipotentClasses,p)
+  uc=chevieget(t,:UnipotentClasses,p)
   if uc===nothing error("no UnipotentClasses for ",t) end
   uc[:orderClasses]=map(uc[:orderClasses])do v
     if v isa String && isempty(v) return Int[] end
@@ -950,7 +950,7 @@ end
 FinitePosets.Poset(uc::UnipotentClasses)=uc.orderclasses
 
 function reflection_name(io::IO,W)
-  r=join(getchev(W,:ReflectionName,IOContext(io,:TeX=>true).dict),"×")
+ r=join(chevieget.(refltype(W),:ReflectionName,Ref(IOContext(io,:TeX=>true).dict)),"×")
   fromTeX(io,r)
 end
 

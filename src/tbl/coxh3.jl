@@ -118,8 +118,7 @@ chevieset(:H3, :HeckeCharTable, function (param, sqrtparam)
     :irredinfo => chevieget(:H3, :IrredInfo))
   merge!(tbl, ci)
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
-  chevieget(:compat,:AdjustHeckeCharTable)(tbl, param)
-  tbl
+  AdjustHeckeCharTable(tbl, param)
 end)
 
 # W-graphs given by Ivan Marin. see ?WGraphToRepresentation for the format.
