@@ -339,9 +339,9 @@ function harish_chandra_induction_table(HF, WF)
       else Wi=rootdatum(cat(cartan.(ser[:relativeType])...;dims=(1,2)))
       end
       if !isone(op)
-        rh=gens(relative_group(H, h[:levi]))
-        rh=filter(a->order.(gens(Wi)[a])==order.(rh),
-          arrangements(eachindex(gens(Wi)), length(rh)))
+        rh=relative_group(H, h[:levi])
+        rh=filter(a->ordergens(Wi)[a]==ordergens(rh),
+          arrangements(eachindex(gens(Wi)), ngens(rh)))
         if length(rh)>1 ChevieErr("WARNING: embedding ambiguous:",rh,"\n") end
         Hi=reflection_subgroup(Wi,rh[1])
       else

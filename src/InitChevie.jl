@@ -42,7 +42,19 @@ function field(t::TypeIrred)
     orderphi=1
   end
   s=t.series
-  if s in [:A,:B,:D] 
+  if s==:ST 
+    if haskey(t,:ST)
+      if orderphi!=1 return (Symbol(orderphi,"G",t.ST),)
+      elseif 4<=t.ST<=22 return (:G4_22,t.ST)
+      else return (Symbol("G",t.ST),)
+      end
+    elseif orderphi!=1
+      return (:timp, t.p, t.q, t.rank, phi)
+    else
+      return (:imp, t.p, t.q, t.rank)
+    end
+  elseif s==:I return (orderphi==1 ? s : Symbol(2,s),t.bond)
+  elseif s in [:A,:B,:D] 
      if orderphi==1 return (s,PermRoot.rank(t))
      elseif orderphi==2 
        if s==:B return (Symbol(2,:I),4)
@@ -55,18 +67,6 @@ function field(t::TypeIrred)
     elseif s==:G return (Symbol(2,:I),6)
     else return (Symbol(orderphi,s,PermRoot.rank(t)),) 
     end
-  elseif s==:ST 
-    if haskey(t,:ST)
-      if orderphi!=1 return (Symbol(orderphi,"G",t.ST),)
-      elseif 4<=t.ST<=22 return (:G4_22,t.ST)
-      else return (Symbol("G",t.ST),)
-      end
-    elseif orderphi!=1
-      return (:timp, t.p, t.q, t.rank, phi)
-    else
-      return (:imp, t.p, t.q, t.rank)
-    end
-  elseif s==:I return (orderphi==1 ? s : Symbol(2,s),t.bond)
   else return (Symbol(s,PermRoot.rank(t)),) 
   end
   end

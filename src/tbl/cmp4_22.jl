@@ -1411,12 +1411,10 @@ mkcuspidal(14,45,E(24,17))],
        23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,25,26,26,26,26,26,26,
        27,27,27,27,27,27,28])]
 
-chevieset(:G4_22, :UnipotentCharacters, function(ST)
+chevieset(:G4_22,:UnipotentCharacters,function(ST)
   p=findfirst(==(ST),[4,6,8,14])
-  if isnothing(p) return false
-  else return UnipotentCharacters4_22[p]
-  end
-  end)
+  if !isnothing(p) UnipotentCharacters4_22[p] end
+end)
 
 const Invariants4_22=[
   [(x,y)->x^4-8*x*y^3,
@@ -2008,7 +2006,7 @@ end)
 
 chevieset(:G4_22, :Ennola, function(ST)
   uc=chevieget(:G4_22, :UnipotentCharacters)(ST)
-  if uc==false return false end
+  if uc===nothing return nothing end
   res=fill(0,length(uc[:a]))
   for f in uc[:families]
     b=basis(Zbasedring(f))

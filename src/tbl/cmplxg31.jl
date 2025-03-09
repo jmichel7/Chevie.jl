@@ -2287,9 +2287,9 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
   elseif i==36 f35(x,y,1)
   elseif i==37 f37(x,y)
   elseif i==38 f37(y,x)
-  elseif i==39 false
-  elseif i==40 false
-  elseif i==41 false
+  elseif i==39 nothing
+  elseif i==40 nothing
+  elseif i==41 nothing
   elseif i==42 f42(x,y,1)
   elseif i==43 f42(y,x,1)
   elseif i==44 f42(x,y,-1)
@@ -2298,22 +2298,22 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
   elseif i==47 f46(y,x)
   elseif i==48 f48(x,y,-1)
   elseif i==49 f48(x,y,1)
-  elseif i==50 false
-  elseif i==51 false
-  elseif i==52 false
-  elseif i==53 false
+  elseif i==50 nothing
+  elseif i==51 nothing
+  elseif i==52 nothing
+  elseif i==53 nothing
   elseif i==54 f54(x,y)
   elseif i==55 f54(y,x)
   elseif i==56 f56(x,y)
   elseif i==57 f56(y,x)
-  elseif i==58 false
-  elseif i==59 false
+  elseif i==58 nothing
+  elseif i==59 nothing
   end
 end)
 
 chevieset(:G31, :Representation, function (i,)
   r=chevieget(:G31,:HeckeRepresentation)(fill([1,-1]//1,5),[],i)
-  if r!=false return r end
+  if !isnothing(r) return r end
   f(j)=chevieget(:G31, :Representation)(j)
   #if i=27 map(kron,f(3),f(7))
   #if i=31 map(kron,f(3),f(9))

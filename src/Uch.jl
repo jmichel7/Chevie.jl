@@ -317,8 +317,8 @@ almostcharnames(io::IO,uc::UnipotentCharacters)=SerNames(io,uc.almostHarishChand
 
 function UnipotentCharacters(t::TypeIrred)
   uc=chevieget(t,:UnipotentCharacters)
-  if uc===nothing || uc==false
-    println("Warning: $t is not a Spets!!")
+  if uc===nothing
+    InfoChevie("# $t is not spetsial!!")
     return
   end
   uc=deepcopy(uc)
@@ -571,10 +571,8 @@ function UnipotentCharacters(WF::Spets)
     end
     if any(x->haskey(x,:qEigen),sers)
       ser[:qEigen]=sum(sers)do x
-       if !haskey(x,:qEigen) return 0
-       elseif x[:qEigen]==false return false
-       else return x[:qEigen]
-       end end
+        haskey(x,:qEigen) ? x[:qEigen] : 0
+      end
     else
       ser[:qEigen]=0
     end

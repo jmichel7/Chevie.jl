@@ -1355,8 +1355,7 @@ end
 #       possibly: root, rootCoeff, rootUnity
 # data=rec(order: perm same length as para,:name,
 #          possibly: rootPower, :rootUnityPower)
-# u is always nothing
-function VFactorSchurElement(para,r,data=nothing,u=nothing)
+function VFactorSchurElement(para,r,data=nothing)
   if data!==nothing para=para[data[:order]] end
   function monomial(v)
     res=prod(map((x,p)->(x*1//1)^p,para,v))

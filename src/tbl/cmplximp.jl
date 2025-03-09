@@ -98,22 +98,20 @@ end)
 chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
   if q==1
     if p==1
-      if s==0 return [Int[]] end
-      return map(j->vcat(map(k->(sum(j[1:k-1])+k-1).+(1:j[k]),1:length(j))...),
+      if s==0 
+           [Int[]]
+      else map(j->vcat(map(k->(sum(j[1:k-1])+k-1).+(1:j[k]),1:length(j))...),
                     vcat(map(i->partitions(s,i),1:r+1-s)...))
-    else return vcat(map(i->map(j->vcat(1:i,i+1 .+j), 
+      end
+    else vcat(map(i->map(j->vcat(1:i,i+1 .+j), 
         chevieget(:imp, :ParabolicRepresentatives)(1,1,r-i-1,s-i)),0:s)...)
     end
   elseif r==2
-    if q==2
-      return [[Int[]], [[1], [2], [3]], [1:3]][s + 1]
+    if q==2 
+      [[Int[]], [[1], [2], [3]], [1:3]][s + 1]
     elseif p==q
-      if iseven(p) return [[Int[]], [[1], [2]], [[1, 2]]][s + 1]
-      else         return [[Int[]], [[1]], [[1, 2]]][s + 1]
-      end
-    else return false
+      [[Int[]],iseven(p) ?  [[1], [2]] : [[1]], [1:2]][s+1]
     end
-  else return false
   end
 end)
 
@@ -411,25 +409,21 @@ end)
 
 chevieset(:imp, :LowestPowerFakeDegrees, function (p, q, r)
   if q==1 || p==q error("should not be called") end
-  return false
 end)
 
 chevieset(:imp, :HighestPowerFakeDegrees, function (p, q, r)
   if q==1 || p==q error("should not be called") end
-  return false
 end)
 
 chevieset(:imp, :CharSymbols, function (p, q, r)
   if q==1 return symbols(p,r,1)
   elseif q==p return symbols(p, r, 0)
-  else return false
   end
 end)
 
 chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
   if q==1 c=fegsymbol(symbol_partition_tuple(c,1))
   elseif q==p c=fegsymbol(symbol_partition_tuple(c,fill(0,p)))
-  else return false
   end
   c(v)
 end)
@@ -850,7 +844,6 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
     p//q*chevieget(:imp,:SchurElement)(p,1,r,phi,para,[])//m
   else
     InfoChevie("# SchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
-    false
   end
 end)
 
@@ -875,7 +868,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
     end
     if para[1]!=para[2]
       InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
-      return false
+      return nothing
     end
     F=chevieget(:imp,:FactorizedSchurElement)(p,1,r,phi,vcat([E.(p,0:p-1)],
                                                            para[2:end]), [])
@@ -898,7 +891,6 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
     F
   else
     InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
-    false
   end
 end)
 
@@ -2061,7 +2053,7 @@ function MakeFamilyImprimitive(ct::Vector{<:Integer},charsymbols)
 end
 
 chevieset(:imp, :UnipotentCharacters, function (p, q, r)
-  if !(q in [1,p]) return false end
+  if !(q in [1,p]) return nothing end
   uc=Dict{Symbol, Any}(:charSymbols=>chevieget(:imp, :CharSymbols)(p, q, r))
   csy=uc[:charSymbols]
   uc[:a]=valuation_gendeg_symbol.(csy)

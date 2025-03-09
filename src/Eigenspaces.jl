@@ -392,10 +392,10 @@ function relative_root(W,L,i)
 # xprintln("W=",W," i=",i," L=",L)
   N=normalizer(reflection_subgroup(W,vcat(inclusiongens(L,W),[i])),L)
   if length(N)==length(L) error("N(L)==L") end
-  F=N/L
+  F=N/L;F.length=div(length(N),length(L))
 # xprintln(abelian_gens(elements(F)))
-  if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
   d=length(F)
+  if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
 # println("d=$d ",order.(elements(F)))
   for rc in filter(x->order(x)==d,elements(F))
     m=central_action(L,reflrep(L,rc.phi))

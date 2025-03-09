@@ -223,7 +223,7 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
 end)
 
 chevieset(:F4, :PoincarePolynomial, function (param,)
-  chevieget(:F4, :SchurElement)([1, 0], param, false)
+  chevieget(:F4, :SchurElement)([1, 0], param)
 end)
 
 chevieset(:F4, :SchurModels,

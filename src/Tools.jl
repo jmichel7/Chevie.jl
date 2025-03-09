@@ -6,7 +6,7 @@ using ModuleElts
 using PuiseuxPolynomials
 using Combinat: tally
 using PermGroups: Group, Groups, gens, word, PermGroup, elements,
-         minimal_words, isabelian
+         minimal_words, isabelian, ordergens
 using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor, Root1, num
 using ..FiniteFields: FiniteFields, FFE, Z
@@ -135,12 +135,14 @@ julia> abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])
 """
 abelian_gens(l::Vector)=isempty(l) ? l : abelian_gens(Group(l))
 function abelian_gens(G::Group) # thanks to Klaus Lux for the algorithm
-  l=filter(!isone,gens(G))
+  l=gens(G)
   if isempty(l) return l end
+  ol=ordergens(G)
+  if length(G) in ol return [l[findfirst(x->x==length(G),ol)]] end
   rels=fill(0,length(l),length(l))
   for i in eachindex(l)
     H=i==1 ? Group([one(l[1])]) : Group(l[1:i-1])
-    d=findfirst(o->l[i]^o in H,1:order(l[i]))
+    d=findfirst(o->l[i]^o in H,1:ol[i])
     rel=fill(0,length(l))
     for p in tally(word(H,l[i]^d)) rel[p[1]]=p[2] end
     rel[i]=-d

@@ -17,7 +17,7 @@ chevieset(:G25,:ReflectionDegrees, [6, 9, 12])
 chevieset(:G25,:NrConjugacyClasses, 24)
 
 chevieset(:G25,:ParabolicRepresentatives,s->
-     [[Int[]], [[1]], [[1, 2], [1, 3]], [1:3]][s + 1])
+  [[Int[]],[[1]],[[1,2],[1,3]],[1:3]][s+1])
 
 # position in classes of G26
 # [1,4,7,8,11,13,15,17,19,21,24,27,28,29,32,34,36,37,39,40,42,43,45,47]

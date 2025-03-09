@@ -229,8 +229,8 @@ using ..Chevie
 the coroot for a unitary reflection of root `r` and eigenvalue `λ`.
 """
 function coroot(root::AbstractVector,eigen::Number=-1)
-  cr=conj.(root)
-  cr.*((1-eigen)//(transpose(cr)*root))
+  cr=conj(root)
+  cr*((1-eigen)//(transpose(cr)*root))
 end
 
 """
@@ -283,8 +283,8 @@ reflectionMatrix(r::AbstractVector,cr::AbstractVector)=I-cr*transpose(r)
 
 returns the matrix of the unitary complex reflection determined by the root
 `r` and the eigenvalue `ζ`, that is, when the vector space and its dual are
-identified  via the scalar product  `<x,y>=transpose(x)*y`; the coroot `rᵛ`
-is then equal to the linear form `x->(1-ζ)<x,r>/<r,r>`.
+identified  via the scalar product `<x,y>=transpose(x)*conj(y)`; the coroot
+`rᵛ` is then equal to the linear form `x->(1-ζ)<x,r>/<r,r>`.
 ```julia-repl
 julia> reflectionMatrix([1,0,-E(3,2)])
 3×3 Matrix{Cyc{Rational{Int64}}}:
@@ -293,7 +293,10 @@ julia> reflectionMatrix([1,0,-E(3,2)])
  ζ₃  0    0
 ```
 """
-reflectionMatrix(r::AbstractVector,l::Number=-1)=I-(1-l)*transpose(r*r')//(r'*r)
+function reflectionMatrix(r::AbstractVector,l::Number=-1)
+  r1=conj(r)
+  I-(r1*transpose(r))*((1-l)//(transpose(r)*r1))
+end
 
 """
 `asreflection(s::Matrix [,r::AbstractVector])`
@@ -332,8 +335,7 @@ function asreflection(m::AbstractMatrix,r::AbstractVector)
   if isnothing(zeta) return end
   rzeta=Root1(zeta)
   if isnothing(rzeta) return end
-  orth=(rc*(r'*r)==(1-zeta)*conj(r))
-  (root=r,coroot=rc,eig=rzeta,isunitary=orth)
+  (root=r,coroot=rc,eig=rzeta,isunitary=rc*(r'*r)==(1-zeta)*conj(r))
 end
 
 function asreflection(m::AbstractMatrix)
@@ -1538,7 +1540,7 @@ function parabolic_reps(W::PermRootGroup,s)
   vcat(map(sols)do c
         map(x->vcat(x...),cartesian(map(eachindex(c))do i
     r=parabolic_reps(t[i],c[i])
-    if r==false
+    if r===nothing
       R=reflection_subgroup(W,t[i].indices)
       return recompute_parabolic_reps(R)[c[i]+1]
     elseif all(x->all(y->y in 1:t[i].rank,x),r)
@@ -2178,7 +2180,7 @@ function invariants(W::PermRootGroup)
     end
     ir=independent_roots(H)
     li=chevieget(t,:Invariants)
-    if li==false return false end
+    if li===nothing return false end
     append!(i,map(f->function(arg...)
          return f(improve_type(inv(E(1).*toM(coroots(H)[ir])*1//1)*
     toM(coroots(V,inclusion(W,t.indices[ir]))))*collect(arg)...) end, li))

@@ -782,9 +782,10 @@ function Weyl.relative_group(s::Series)
     res=Dict{Symbol, Any}(:refs=>inclusiongens(H))
     if H isa CoxeterGroup H=H.G end
     H=intersect(H, N)
-    if length(L)!=1 H=H/L end
+    lH=length(H)
+    if lH==length(L) error("H=L") end
+    if length(L)!=1 H=H/L; H.length=div(lH,length(L)) end
   # if length(L)!=1 H=H/Group(gens(L)) end # until problem in G333
-    if length(H)==1 error("H=L") end
     gen=abelian_gens(H)
     if length(gen)>1 error("H not cyclic |H|=",length(H),order.(gen)) end
     res[:hom]=only(gen)
@@ -811,9 +812,9 @@ function Weyl.relative_group(s::Series)
       WGL=PRG(rr,crr)
       reflist=Vtoglobal.(reflrep(WGL))
       reflist=map(h->rrefs[findfirst(rr->hplane(rr[1])==h,rrefs)], reflist)
-      WGL.reflists = map(getreflection, reflist)
-      WGL.toparent = map(x->x[:hom], WGL.reflists)
-      WGL.reflists = map(x->x[:refs], WGL.reflists)
+      WGL.reflists=getreflection.(reflist)
+      WGL.toparent=map(x->x[:hom], WGL.reflists)
+      WGL.reflists=map(x->x[:refs], WGL.reflists)
       s.WGLdims=CharTable(WGL).irr[:,1]
       s.e=length(WGL)
       return WGL

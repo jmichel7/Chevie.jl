@@ -9301,13 +9301,12 @@ x^-1*y^3, [26844, 44659, 48472]), (-x^-1*y^2, [38721, 47362]), (-x^-1*y,
   elseif i==36 f33(p, r, E(3, 2))
   elseif i==37 f37(r, p)
   elseif i==38 f37(p, r)
-  else false
   end
 end)
 
 chevieset(:G34, :Representation, function (i)
   r=chevieget(:G34,:HeckeRepresentation)(fill([1,-1],6),[],i)
-  if r!=false return r end
+  if !isnothing(r) return r end
   f(i)=chevieget(:G34,:Representation)(i)
 #if i=23 return SymmetricPower.(f(4),3)
 #if i=29 return SchurFunctor.(f(4),[2,1])
@@ -10460,7 +10459,6 @@ chevieset(:G34, :Representation, function (i)
   elseif i==155 return -f(156)
   elseif i==156 return conj(f(154))
   elseif i==157 return -f(154)
-  else return false
   end
 end)
 

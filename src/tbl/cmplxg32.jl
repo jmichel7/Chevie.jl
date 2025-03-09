@@ -2187,16 +2187,14 @@ chevieset(:G32, :HeckeRepresentation, function (para, rt, i)
        [f5,w,u,v],[f6,v,w],[f6,u,v],[f6,w,u],[f10,u,w,v],[f10,w,v,u],
        [f10,v,u,w],[f10,u,v,w],[f10,v,w,u],[f10,w,u,v],[f15a,v,u,w],
        [f15b,v,w,u],[f15a,v,w,u],[f15a,u,v,w],[f15b,u,v,w],[f15b,w,u,v]]
-  if i<=length(rep) rep[i][1](rep[i][2:end]...)
-  else false
-  end
+  if i<=length(rep) rep[i][1](rep[i][2:end]...) end
 end)
 
 const G32cachedreps=Dict{Int,Any}()
 
 chevieset(:G32, :Representation, function(i)
   r=chevieget(:G32,:HeckeRepresentation)(fill([1,E(3),E(3,2)],4),[],i)
-  if r!=false return r end
+  if !isnothing(r) return r end
   function f(i)
     get!(G32cachedreps,i)do
       InfoChevie("#I calling rep(",i,")\n")

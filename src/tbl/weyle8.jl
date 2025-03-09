@@ -2970,10 +2970,7 @@ chevieset(:E8, :HeckeRepresentation, function (para, sqrtpara, i)
     if y!=-1 v//=-y end
   else v=root(q)
   end
-  gr=chevieget(:E8,:WGraph)(i)
-  if gr==false return false
-  else -y*WGraphToRepresentation(8,gr,v)
-  end
+  -y*WGraphToRepresentation(8,chevieget(:E8,:WGraph)(i),v)
 end)
 
 CHEVIE[:families][:S5] = Dict{Symbol, Any}(

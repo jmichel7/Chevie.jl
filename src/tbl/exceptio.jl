@@ -162,8 +162,7 @@ function (phi,para,arg...)
   i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
   Y=vcat(para[chevieget(t,:HyperplaneRepresentatives)]...)
   ci=chevieget(t,:SchurData)[i]
-  VFactorSchurElement(Y,chevieget(t,:SchurModels)[Symbol(ci[:name])],ci,
-                      arg[3:end]...)
+  VFactorSchurElement(Y,chevieget(t,:SchurModels)[Symbol(ci[:name])],ci)
 end)
 
 chevieset([:F4,:G25,:G26,:G32],:SchurElement,t->
