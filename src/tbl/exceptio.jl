@@ -1,15 +1,15 @@
-# Hand-translated part of chevie/tbl/exceptio.jl
-# (C) Jean Michel 1999-2017
 # data common to several (but not all) types of reflection groups
+# chevie/tbl/exceptio.jl (C) Jean Michel 1999-
 
-# an addition
-chevieset([:A,:B,:D],:EigenvaluesGeneratingReflections,t->r->fill(1//2,r))
+chevieset([:A,:B,:D],:ordergens,t->r->fill(2,r))
+
+chevieset([:E6,:E7,:E8,:F4,:G2,:H3,:H4],:ordergens,t->fill(2,string(t)[end]-'0'))
 
 chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat,
   function(t)
     r=chevieget(t,:GeneratingRoots)
-    eig=map(x->Root1(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
-    toL(toM(coroot.(r,eig))*transpose(toM(r)))
+    eig=E.(chevieget(t,:ordergens))
+    convert(Matrix{Cyc{Int}},toM(coroot.(r,eig))*transpose(toM(r)))
   end)
 
 chevieset([:E7, :E8, :H3, :H4], :Invariants, t->
@@ -64,15 +64,24 @@ chevieset([Symbol("3D4"),:E6,Symbol("2E6"),:E7,:E8,:F4,Symbol("2F4"),:G2,:H3,:H4
 end
 )
 
+chevieset([:G24,:G27,:G29,:G33],:CharTable,t->function()
+  ngens=length(chevieget(t,:GeneratingRoots))
+  res=chevieget(t,:HeckeCharTable)(fill([1,-1],ngens),fill(1,ngens))
+  res[:powermap]=chevieget(t,:PowerMaps)
+  res[:galomorphisms]=chevieget(t,:galomorphisms)
+  res[:identifier]=res[:name]=t
+  res
+end)
+
 chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:PoincarePolynomial,t->
 function(q)
   prod(x->sum(y->(-q[1][1]//q[1][2])^y,0:x-1),chevieget(t,:ReflectionDegrees))
 end)
 
-chevieset([:E6,:F4,:G2,:H3,:G24,:G27,:G29],:Representation,t->
-function(i)
-  rk=length(chevieget(t,:GeneratingRoots))
-  chevieget(t,:HeckeRepresentation)(fill([1,-1],rk),fill(1,rk),i)
+chevieset([:E6,:E7,:E8,:F4,:G2,:H3,:H4,:G24,:G27,:G29,:G33],:Representation,
+  function(t)
+  ngens=length(chevieget(t,:GeneratingRoots))
+  i->chevieget(t,:HeckeRepresentation)(fill([1,-1],ngens),fill(1,ngens),i)
 end)
 
 chevieset(["3D4","2E6","2F4"],:Representation,t->
@@ -83,15 +92,12 @@ end)
 
 chevieset([:G25,:G26],:Representation,t->
 function(i)
-  para=denominator.(chevieget(t,:EigenvaluesGeneratingReflections))
-  chevieget(t,:HeckeRepresentation)(map(x->E.(x,0:x-1),para),[],i)
+  para=map(x->E.(x,0:x-1),chevieget(t,:ordergens))
+  chevieget(t,:HeckeRepresentation)(para,[],i)
 end)
 
-chevieset([:G2,:F4,:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34],:SemisimpleRank,function(t)
-  r=chevieget(t, :GeneratingRoots)
-  if r isa Function r=r() end
-  length(r[1])
-end)
+chevieset([:G2,:F4,:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34],
+  :SemisimpleRank,t->length(chevieget(t,:GeneratingRoots)[1]))
 
 chevieset([:A,:B,:D],:SemisimpleRank,t->(r->r))
 

@@ -113,14 +113,43 @@ end)
 
 chevieset(:G4_22, :SemisimpleRank, 2)
 
-chevieset(:G4_22,:Size,ST->
-  24*[1,3,2,6,4,8,12,24,2,4,6,12,25,50,75,150,15,30,10][ST-3])
-
 chevieset(:G4_22,:NrConjugacyClasses,ST->
   [7,21,14,42,16,32,48,96,8,16,24,48,45,90,135,270,27,54,18][ST-3])
 
 chevieset(:G4_22, :CartanMat,ST->toM(chevieget(:G4_22,:GeneratingCoRoots)(ST))*
           transpose(toM(chevieget(:G4_22,:GeneratingRoots)(ST))))
+
+# for the braid relations see Bessis-Bonnafe-Rouquier
+const BraidRelations4_22=[[[[1,2,1],[2,1,2]]],
+  [[[1,2,1,2],[2,1,2,1]]],
+  [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
+  [[[1,2,3],[2,3,1]],[[1,2,3],[3,1,2]]],
+  [[[1,2,1],[2,1,2]]],
+  [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
+  [[[1,2,1,2],[2,1,2,1]]],
+  [[[1,2,3],[2,3,1]],[[1,2,3],[3,1,2]]],
+  [[[1,2,3,1],[2,3,1,2]],[[1,2,3,1],[3,1,2,3]]],
+  [[[3,1,2,3],[2,3,1,2]],[[1,2,3,1,2],[3,1,2,3,1]]],
+  [[[1,2,1,2,1,2,1,2],[2,1,2,1,2,1,2,1]]],
+  [[[3,1,2],[1,2,3]],[[2,3,1,2,1],[3,1,2,1,2]]],
+  [[[1,2,1],[2,1,2]]],
+  [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
+  [[[1,2,1,2],[2,1,2,1]]],
+  [[[1,2,3],[2,3,1]],[[1,2,3],[3,1,2]]],
+  [[[1,2,1,2,1],[2,1,2,1,2]]],
+  [[[1,2,1,2,1,2,1,2,1,2],[2,1,2,1,2,1,2,1,2,1]]],
+  [[[1,2,3,1,2],[2,3,1,2,3]],[[1,2,3,1,2],[3,1,2,3,1]]]]
+chevieset(:G4_22, :BraidRelations,ST->BraidRelations4_22[ST-3])
+
+const ordergens4_22=[[3,3],[3,3],[2,3],[2,3,3],[4,4],
+  [2,4],[3,4],[2,3,4],[2,2,2],[2,2,2],[2,3],[2,3,2],[5,5],[2,5],[3,5],[2,3,5],
+  [3,3],[2,3],[2,2,2]]
+chevieset(:G4_22,:ordergens,ST->ordergens4_22[ST-3])
+
+const ReflectionDegrees4_22=[[4,6],[6,12],[4,12],[12,12],[8,12],[8,24],[12,24],
+  [24,24],[6,8],[8,12],[6,24],[12,24],[20,30],[20,60],[30,60],[60,60],[12,30],
+  [12,60],[12,20]]
+chevieset(:G4_22, :ReflectionDegrees,ST->ReflectionDegrees4_22[ST-3])
 
 chevieset(:G4_22,:ReflectionCoDegrees,ST->[0,
   [2,6,8,12,4,16,12,24,10,16,18,24,10,40,30,60,18,48,28][ST-3]])
@@ -328,7 +357,7 @@ mallechars4_22=[
        cartesian([5],1:5,1:2,1:3),cartesian([6],1:6,1:5))]
 chevieset(:G4_22,:mallechars,ST->mallechars4_22[G4_22type(ST)])
 
-# sepcialization of para=params(G4_22Generic) for Hecke(ST)
+# specialization of para=params(generic group G7, G11 or G19) for Hecke(ST)
 chevieset(:G4_22, :ParamSpecialization, function (ST, para)
   function f(p)
     p=root.(p)
@@ -819,12 +848,13 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
     G4_22IndexChars_dict[ST][res[:parameter]]=l
   end
   ci=test_indexchars(res,rows,ci[:indexchars])
+  res[:irreducibles]=toM(res[:irreducibles])
   if ci!=true res[:indexchars]=ci end
   res
 end)
 chevieset(:G4_22,:CharTable,function(ST)
-  para=denominator.(chevieget(:G4_22, :EigenvaluesGeneratingReflections)(ST))
-  chevieget(:G4_22,:HeckeCharTable)(ST,map(x->E.(x,0:x-1),para),nothing)
+  para=map(x->E.(x,0:x-1),chevieget(:G4_22, :ordergens)(ST))
+  chevieget(:G4_22,:HeckeCharTable)(ST,para,[])
 end)
 
 const CharInfo4_22=[
@@ -1187,38 +1217,6 @@ chevieset(:G4_22, :CharInfo, function(ST)
   res[:charnames]=exceptioCharName.(res[:charparams])
   res
 end)
-
-# for the braid relations see Bessis-Bonnafe-Rouquier
-const BraidRelations4_22=[[[[1,2,1],[2,1,2]]],
-  [[[1,2,1,2],[2,1,2,1]]],
-  [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
-  [[[1,2,3],[2,3,1]],[[1,2,3],[3,1,2]]],
-  [[[1,2,1],[2,1,2]]],
-  [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
-  [[[1,2,1,2],[2,1,2,1]]],
-  [[[1,2,3],[2,3,1]],[[1,2,3],[3,1,2]]],
-  [[[1,2,3,1],[2,3,1,2]],[[1,2,3,1],[3,1,2,3]]],
-  [[[3,1,2,3],[2,3,1,2]],[[1,2,3,1,2],[3,1,2,3,1]]],
-  [[[1,2,1,2,1,2,1,2],[2,1,2,1,2,1,2,1]]],
-  [[[3,1,2],[1,2,3]],[[2,3,1,2,1],[3,1,2,1,2]]],
-  [[[1,2,1],[2,1,2]]],
-  [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
-  [[[1,2,1,2],[2,1,2,1]]],
-  [[[1,2,3],[2,3,1]],[[1,2,3],[3,1,2]]],
-  [[[1,2,1,2,1],[2,1,2,1,2]]],
-  [[[1,2,1,2,1,2,1,2,1,2],[2,1,2,1,2,1,2,1,2,1]]],
-  [[[1,2,3,1,2],[2,3,1,2,3]],[[1,2,3,1,2],[3,1,2,3,1]]]]
-chevieset(:G4_22, :BraidRelations,ST->BraidRelations4_22[ST-3])
-
-const EigenvaluesGeneratingReflections4_22=[[3,3],[3,3],[2,3],[2,3,3],[4,4],
-  [2,4],[3,4],[2,3,4],[2,2,2],[2,2,2],[2,3],[2,3,2],[5,5],[2,5],[3,5],[2,3,5],
-  [3,3],[2,3],[2,2,2]]
-chevieset(:G4_22, :EigenvaluesGeneratingReflections,ST->
-          map(x->1//x,EigenvaluesGeneratingReflections4_22[ST-3]))
-const ReflectionDegrees4_22=[[4,6],[6,12],[4,12],[12,12],[8,12],[8,24],[12,24],
-  [24,24],[6,8],[8,12],[6,24],[12,24],[20,30],[20,60],[30,60],[60,60],[12,30],
-  [12,60],[12,20]]
-chevieset(:G4_22, :ReflectionDegrees,ST->ReflectionDegrees4_22[ST-3])
 
 let r3=root(-3), r6=root(6), r2=root(-2)
 CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24*
@@ -1676,8 +1674,7 @@ chevieset(:G4_22, :HeckeRepresentation, function(ST,para,roots,i)
 end)
 
 chevieset(:G4_22,:Representation,function(ST,i)
-  para=denominator.(chevieget(:G4_22,:EigenvaluesGeneratingReflections)(ST))
-  para=map(x->E.(x,0:x-1),para)
+  para=map(x->E.(x,0:x-1),chevieget(:G4_22,:ordergens)(ST))
   chevieget(:G4_22,:HeckeRepresentation)(ST,para,[],i)
 end)
 
@@ -1872,26 +1869,26 @@ const SchurModels4_22=[[
 
 chevieset(:G4_22,:SchurModels,ST->SchurModels4_22[G4_22type(ST)])
 
+# index in "generic group" G7, G11 or G19
+chevieset(:G4_22,:index,ST->
+  [6, 2, 3, 1, 6, 3, 2, 1, 12, 6, 4, 2, 6, 3, 2, 1, 10, 5, 15][ST-3])
+
 chevieset(:G4_22,:FactorizedSchurElement,function(ST,charpara,para,rootpara)
-  g=G4_22Generic(ST)
-  index=div(chevieget(:G4_22,:Size)(g),chevieget(:G4_22,:Size)(ST))
   Y=vcat(chevieget(:G4_22,:ParamSpecialization)(ST,para)...)
   ci=chevieget(:G4_22,:CharInfo)(ST)
   ind=G4_22FetchIndexChars(ST,para)[findfirst(==(charpara),ci[:charparams])]
   data=chevieget(:G4_22,:SchurData)(ST)[ind]
   model=chevieget(:G4_22,:SchurModels)(ST)[charpara[1]]
-  VFactorSchurElement(Y,model,data)//index
+  VFactorSchurElement(Y,model,data)//chevieget(:G4_22,:index)(ST)
 end)
 
 chevieset(:G4_22,:SchurElement,function(ST,charpara,para,rootpara)
-  g=G4_22Generic(ST)
-  index=div(chevieget(:G4_22,:Size)(g),chevieget(:G4_22,:Size)(ST))
   Y=vcat(chevieget(:G4_22,:ParamSpecialization)(ST,para)...)
   ci=chevieget(:G4_22,:CharInfo)(ST)
   ind=G4_22FetchIndexChars(ST,para)[findfirst(==(charpara),ci[:charparams])]
   data=chevieget(:G4_22,:SchurData)(ST)[ind]
   model=chevieget(:G4_22,:SchurModels)(ST)[charpara[1]]
-  VcycSchurElement(Y,model,data)//index
+  VcycSchurElement(Y,model,data)//chevieget(:G4_22,:index)(ST)
 end)
 
 malleclasses4_22=[

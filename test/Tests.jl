@@ -956,7 +956,7 @@ function EigenAndDegHecke(s)
   d=s.d
   zeta=Cyc(d)
   W=H.W
-  xprintln("H=",H)
+# xprintln("H=",H)
   ct=CharTable(H).irr
   ct1=CharTable(W).irr
   n=axes(ct1,1)

@@ -8,7 +8,7 @@ chevieset(:G26,:GeneratingRoots,
 
 chevieset(:G26,:HyperplaneRepresentatives, [1, 2])
 
-chevieset(:G26,:EigenvaluesGeneratingReflections, [1 // 2, 1 // 3, 1 // 3])
+chevieset(:G26,:ordergens,[2,3,3])
 
 chevieset(:G26,:BraidRelations,[[[1,2,1,2],[2,1,2,1]],[[1,3],[3,1]],
                                 [[2,3,2],[3,2,3]]])
@@ -20,8 +20,6 @@ chevieset(:G26,:ReflectionName, function (opt,type_=1)
   else string("G(", type_, ")26")
   end
 end)
-
-chevieset(:G26, :Size, 1296)
 
 chevieset(:G26, :ReflectionDegrees, [6, 12, 18])
 
@@ -203,7 +201,7 @@ chevieset(:G26, :HeckeCharTable, function (para, rt)
     -(j^2)*p^4*r^8*u^9*v^9*w^9,j*r*u*v*w]*c
   r,p=para[1]
   u,v,w=para[2]
-  res[:irreducibles]=[f10(r,u),f10(p,u),f10(p,w),f10(p,v),f10(r,w),f10(r,v),
+  res[:irreducibles]=toM([f10(r,u),f10(p,u),f10(p,w),f10(p,v),f10(r,w),f10(r,v),
     f23(p,r,v,w,u),f23(r,p,v,w,u),f23(p,r,u,v,w),f23(r,p,u,v,w),f23(p,r,u,w,v),
     f23(r,p,u,w,v),f36(r,p,u,v,w),f36(p,r,u,v,w),f31(p,r,v,u,w),f31(r,p,v,u,w),
     f31(p,r,u,w,v),f31(r,p,u,w,v),f31(p,r,w,v,u),f31(r,p,w,v,u),f31(p,r,w,u,v),
@@ -213,7 +211,7 @@ chevieset(:G26, :HeckeCharTable, function (para, rt)
     f62(r,p,u,w,v),f62(p,r,u,w,v),f83(r,p,u,v,w,1),f83(r,p,u,v,w,-1),
     f83(r,p,w,v,u,-1),f83(r,p,w,v,u,1),f83(r,p,v,u,w,1),f83(r,p,v,u,w,-1),
     f97(p,r,u,v,w,E(3,2)),f97(r,p,u,v,w,E(3,2)),f97(p,r,u,v,w,E(3)),
-    f97(r,p,u,v,w,E(3))]
+    f97(r,p,u,v,w,E(3))])
   res
 end)
 

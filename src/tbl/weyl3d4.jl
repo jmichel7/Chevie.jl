@@ -43,7 +43,7 @@ chevieset(Symbol("3D4"),:CharInfo,function()
 end)
 
 chevieset(Symbol("3D4"), :HeckeCharTable, function (param, sqrtparam)
-  q=-param[1][1]//param[1][2]
+           q=improve_type(-param[1][1]//param[1][2])
   tbl=Dict{Symbol, Any}(:identifier => "H(3D4)", :parameter=>[q,q,q,q],
     :sqrtparameter=>[],:cartan=>chevieget(Symbol("3D4"),:CartanMat),:size=>192,
     :irreducibles=> 
@@ -53,7 +53,7 @@ chevieset(Symbol("3D4"), :HeckeCharTable, function (param, sqrtparam)
      0 0 q^4-2*q^3+q^2 0 -q 3*q^4 3*q^2; 
      q 1 q^5-2*q^4 -1 0 -2*q^6 2*q^3; 
      -1 1 -2*q^2+q q 0 -2*q^2 2q; 
-     q-1 2 -q^4-q^2 q-1 0 2*q^4 -2*q^2]*q^0,
+     q-1 2 -q^4-q^2 q-1 0 2*q^4 -2*q^2],
     :irredinfo => chevieget(Symbol("3D4"), :IrredInfo))
   merge!(tbl,chevieget(Symbol("3D4"),:ClassInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])

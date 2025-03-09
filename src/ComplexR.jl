@@ -250,7 +250,7 @@ function codegrees(t::TypeIrred)
     end
   end
   d=chevieget(t,:ReflectionCoDegrees)
-  if isnothing(d)
+  if isnothing(d) # if it has no Chevie data it is well generated
     d=chevieget(t.orbit[1],:ReflectionDegrees)
     a=argmax(d)
     d=reverse(d[a].-d)

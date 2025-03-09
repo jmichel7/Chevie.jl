@@ -50,7 +50,7 @@ chevieset(Symbol("2A"),:CharTable,function(r)
   tbl=copy(chevieget(:A,:CharTable)(r))
   tbl[:identifier]="W(^2A_$r)"
   A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
-  tbl[:irreducibles]=(-1).^A .*tbl[:irreducibles]
+  tbl[:irreducibles]=Diagonal((-1).^A)*tbl[:irreducibles]
   merge!(tbl,chevieget(Symbol("2A"),:ClassInfo)(r))
 end)
 

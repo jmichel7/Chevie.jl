@@ -2,8 +2,6 @@
 #  Copyright (C) 1992 - 2004  The CHEVIE Team
 chevieset(:H3, :ReflectionDegrees, [2, 6, 10])
 
-chevieset(:H3, :Size, 120)
-
 # from Humphreys, "Reflection Groups and Coxeter Groups"
 let a=-E(5,2)-E(5,3)
 chevieset(:H3, :GeneratingRoots,
@@ -117,6 +115,7 @@ chevieset(:H3, :HeckeCharTable, function (param, sqrtparam)
             end,i), chevieget(:H3, :vpolheckeirreducibles)),
     :irredinfo => chevieget(:H3, :IrredInfo))
   merge!(tbl, ci)
+  tbl[:irreducibles]=improve_type(tbl[:irreducibles])
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)

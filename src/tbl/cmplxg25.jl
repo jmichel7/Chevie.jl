@@ -5,14 +5,12 @@ chevieset(:G25,:GeneratingRoots, [[0, 0, -1],
                                    -(2*E(3,2)+1)//3*[1, 1, 1],
                                    [0, 1, 0]])
 
-chevieset(:G25,:EigenvaluesGeneratingReflections, [1//3, 1//3, 1//3])
+chevieset(:G25,:ordergens,fill(3,3))
 
 chevieset(:G25,:HyperplaneRepresentatives, [1])
 
 chevieset(:G25,:BraidRelations,
           [[[1,2,1],[2,1,2]],[[1,3],[3,1]],[[2,3,2],[3,2,3]]])
-
-chevieset(:G25,:Size, 648)
 
 chevieset(:G25,:ReflectionDegrees, [6, 9, 12])
 
@@ -101,7 +99,7 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
   res[:centralizers]=div.(res[:order],res[:classes])
   # position in chars of G26
 # [1,3,4,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47]
-  res[:irreducibles]=[f10(u),f10(w),f10(v),f23(v,w,u),f23(u,v,w),f23(u,w,v),
+  res[:irreducibles]=toM([f10(u),f10(w),f10(v),f23(v,w,u),f23(u,v,w),f23(u,w,v),
   [3,3*u^2*v^2*w^2,u^2+v^2+w^2,u^4+v^4+w^4,u^4*v^4+u^4*w^4+v^4*w^4,
    u^2*v^2+u^2*w^2+v^2*w^2,0,0,3*u^4*v^4*w^4,3*u^8*v^8*w^8,
    u^2*v^2*w^3+u^2*v^3*w^2+u^3*v^2*w^2,u*v^2*w^2+u^2*v*w^2+u^2*v^2*w,
@@ -109,7 +107,8 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
    u^2*w^2+v^2*w^2,0,0,u^6*v^6+u^6*w^6+v^6*w^6,3*u^2*v^2*w^2,
    -u*v*w,-u*v*w,-(u^5)*v^5*w^5],f31(v,u,w),f31(u,w,v),f31(w,v,u),f31(w,u,v),
   f31(u,v,w),f31(v,w,u),f62(w,u,v),f62(v,w,u),f62(u,v,w),f62(v,u,w),f62(w,v,u),
-  f62(u,w,v),f83(u,v,w),f83(w,v,u),f83(v,u,w),f97(u,v,w,E(3,2)),f97(u,v,w,E(3))]*c
+  f62(u,w,v),f83(u,v,w),f83(w,v,u),f83(v,u,w),
+  f97(u,v,w,E(3,2)),f97(u,v,w,E(3))])*c
   res
 end)
 

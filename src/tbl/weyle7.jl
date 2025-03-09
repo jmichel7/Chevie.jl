@@ -2,8 +2,6 @@
 #Y  Copyright (C) 1994-  The CHEVIE Team
 chevieset(:E7, :ReflectionDegrees, [2, 6, 8, 10, 12, 14, 18])
 
-chevieset(:E7, :Size, 2903040)
-
 chevieset(:E7, :GeneratingRoots, [
   [1, -1, -1, -1, -1, -1, -1, 1] // 2, 
   [1, 1, 0, 0, 0, 0, 0, 0], 
@@ -2870,9 +2868,6 @@ chevieset(:E7, :HeckeRepresentation, function (para, sqrtpara, i)
   end
   -y*WGraphToRepresentation(7,chevieget(:E7,:WGraph)(i),v)
 end)
-
-chevieset(:E7, :Representation,
-  i->chevieget(:E7, :HeckeRepresentation)(fill([1,-1],7),fill(1,7),i))
 
 chevieset(:E7, :DecompositionMatrix, function (p)
   if p==2

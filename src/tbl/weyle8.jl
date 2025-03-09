@@ -3,8 +3,6 @@
 
 chevieset(:E8, :ReflectionDegrees, [2, 8, 12, 14, 18, 20, 24, 30])
 
-chevieset(:E8, :Size, 696729600)
-
 chevieset(:E8, :GeneratingRoots, [
           [1, -1, -1, -1, -1, -1, -1, 1] // 2, 
           [1, 1, 0, 0, 0, 0, 0, 0], 
@@ -2977,9 +2975,6 @@ chevieset(:E8, :HeckeRepresentation, function (para, sqrtpara, i)
   else -y*WGraphToRepresentation(8,gr,v)
   end
 end)
-
-chevieset(:E8, :Representation,i->
-  chevieget(:E8,:HeckeRepresentation)(fill([1, -1],8),fill(1,8), i))
 
 CHEVIE[:families][:S5] = Dict{Symbol, Any}(
   :group => Group(perm"(1,5)", perm"(2,5)", perm"(3,5)", perm"(4,5)"),

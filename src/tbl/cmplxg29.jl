@@ -15,13 +15,11 @@ chevieset(:G29, :GeneratingRoots, [[0, 0, 0, -2],
                                    [1 - E(4), -1 + E(4), 0, 0],
                                    [0, 1 - E(4), -1 + E(4), 0]] // 2)
 
-chevieset(:G29, :EigenvaluesGeneratingReflections, [1//2,1//2,1//2,1//2])
+chevieset(:G29, :ordergens, fill(2,4))
 
 chevieset(:G29, :BraidRelations, [[[1, 2, 1], [2, 1, 2]], [[2, 4,2], [4, 2, 4]],
   [[3, 4, 3], [4, 3, 4]], [[2, 3, 2, 3], [3, 2, 3, 2]], [[1, 3], [3, 1]],
   [[1, 4], [4, 1]], [[4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4]]])
-
-chevieset(:G29, :Size, 7680)
 
 chevieset(:G29, :ReflectionDegrees, [4, 8, 12, 20])
 
@@ -230,27 +228,20 @@ chevieset(:G29, :HeckeCharTable, function (para, rt)
     q=-r//p
     adj(p,[30,-15+15q,(5-10q)+5*q^2,(3-8q)+3*q^2,(7-16q)+7*q^2,((2-5q)+5*q^2)-2*q^3,((-2+8q)-8*q^2)+2*q^3,2q-2*q^2,q-q^2,((-1+4q)-4*q^2)+q^3,(3-8*q^2)+3*q^4,0,0,((-q^10+4*q^11)-4*q^12)+q^13,((-q+4*q^2)-4*q^3)+q^4,3*q^2-3*q^3,(5*q^30-10*q^31)+5*q^32,q^5+q^7,0,(5*q^10-10*q^11)+5*q^12,(((((2-8q)+11*q^2)-12*q^3)+11*q^4)-8*q^5)+2*q^6,(-3*q^2+4*q^3)-3*q^4,2*q^11-2*q^12,((-2*q^10+8*q^11)-8*q^12)+2*q^13,((5*q^3-6*q^4)+6*q^5)-5*q^6,(5*q^20-10*q^21)+5*q^22,((2*q^20-5*q^21)+5*q^22)-2*q^23,((2*q^10-5*q^11)+5*q^12)-2*q^13,0,(7*q^10-16*q^11)+7*q^12,(3*q^10-8*q^12)+3*q^14,-15*q^10+15*q^11,((5*q^13-6*q^14)+6*q^15)-5*q^16,(-3*q^12+4*q^13)-3*q^14,30*q^10,30*q^30,30*q^20])
   end
-  tbl[:irreducibles] = [f1(r), f1(p), f3(r, p), f3(p, r), f5(r, p, E(4)), 
+  tbl[:irreducibles]=toM([f1(r), f1(p), f3(r, p), f3(p, r), f5(r, p, E(4)), 
     f5(p, r, E(4)), f5(r, p, -E(4)), f5(p, r, -E(4)), f9(r, p), f9(p, r),
     f11(r, p), f12(r, p), f12(p, r), f14(r, p, E(4)), f14(r, p, -E(4)),
     f17(r, p), f17(p, r), f18(r, p), f18(p, r), f22(r, p), f23(r, p),
     f22(p, r), f23(p, r), f24(r, p, 1), f24(p, r, 1), f24(r, p, -1),
     f24(p, r, -1), f28(r, p), f28(p, r), f30(r, p, E(4)), f30(p, r, E(4)),
     f30(r, p, -E(4)), f30(p, r, -E(4)), f34(r, p), f35(r, p, E(4)),
-    f35(r, p, -E(4)), f37(r, p)] * q ^ 0
+    f35(r, p, -E(4)), f37(r, p)])*q^0
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
   tbl[:irredinfo] = chevieget(:G29, :IrredInfo)
   tbl
 end)
 
-chevieset(:G29, :CharTable, function ()
-  res=chevieget(:G29,:HeckeCharTable)(fill([1, -1],4),[])
-  res[:identifier] = "G29"
-  res[:name] = "G29"
-  res[:galomorphisms] = Group(perm"(6,9)(12,13)(17,20)(21,22)(23,24)(27,28)(32,33)(35,36)")
-  res[:text] = "origin: HeckeCharTable"
-  res
-end)
+chevieset(:G29,:galomorphisms,perm"(6,9)(12,13)(17,20)(21,22)(23,24)(27,28)(32,33)(35,36)")
 
 # Completed JM dec. 2014 using Marin-Pfeiffer
 chevieset(:G29, :HeckeRepresentation, function (para, rt, i)

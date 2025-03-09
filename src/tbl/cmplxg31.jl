@@ -22,9 +22,7 @@ chevieset(:G31,:GeneratingRoots,[[E(4),0,0,0],
                                  [1,1,1,1]//2,
                                  [0,1+E(4),-(E(4))-1,0]//2])
 
-chevieset(:G31,:EigenvaluesGeneratingReflections,[1//2,1//2,1//2,1//2,1//2])
-
-chevieset(:G31,:Size, 46080)
+chevieset(:G31,:ordergens,fill(2,5))
 
 chevieset(:G31,:ReflectionCoDegrees, [0, 12, 16, 28])
 
@@ -778,7 +776,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   32*I*q^46,-8*q^30+16*q^31-8*q^32,-4*I*q^15+12*I*q^16-12*I*q^17+
   4*I*q^18,4*q^30-12*q^31+12*q^32-4*q^33,4*q^20,64*I*q^15,-64*I*q^45,-64*q^30])
   end
-  tbl[:irreducibles]=[f1(r),f1(p),f6(p,r,-1),f6(r,p,1),f6(p,r,1),f6(r,p,-1),
+  tbl[:irreducibles]=toM([f1(r),f1(p),f6(p,r,-1),f6(r,p,1),f6(p,r,1),f6(r,p,-1),
     f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-1),f11(r,p,1),f14(p,r),f14(r,p),
     f16(p,r),f16(r,p),f17(r,p,-1),f17(p,r,-1),f17(r,p,1),f17(p,r,1),f21(r,p),
     f21(p,r),f23(r,p),f23(p,r),f25(r,p),f26(r,p),f27(r,p,-1),f27(p,r,1),
@@ -786,29 +784,28 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
     f35(r,p,1),f35(r,p,-1),f37(r,p),f37(p,r),f39(r,p,1),f39(r,p,-1),f41(r,p),
     f42(r,p,1),f42(p,r,1),f42(r,p,-1),f42(p,r,-1),f46(r,p),f46(p,r),f48(r,p,-1),
     f48(r,p,1),f50(r,p,1),f50(p,r,1),f50(r,p,-1),f50(p,r,-1),f54(r,p),f54(p,r),
-    f56(r,p),f56(p,r),f58(r,p,E(4)),f58(r,p,-E(4))]
+    f56(r,p),f56(p,r),f58(r,p,E(4)),f58(r,p,-E(4))])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
   tbl[:irredinfo] = chevieget(:G31, :IrredInfo)
   tbl
 end)
 
-chevieset(:G31, :CharTable, let
+chevieset(:G31, :CharTable, function()
   res=chevieget(:G31, :HeckeCharTable)(map(x->[1,-1],1:4),[])
   res[:identifier]=res[:name]="G31"
   res[:galomorphisms] = Group(perm"(7,9)(8,12)(13,17)(15,16)(19,21)(20,23)(25,27)(26,28)(31,32)(35,37)(38,40)(42,45)(43,44)(46,49)(51,52)(54,55)(57,58)")
   res[:text]="origin: mostly CharTable(H(G31))"
-  l=vcat(39:41, 50:53, 58:59)
-  for i in l
-    res[:irreducibles][i][[14, 19, 21, 35, 37, 41]]=[
-       [1, E(4), -E(4), -E(4), E(4), -1], 
-       [1, -E(4), E(4), E(4), -E(4), -1], 
-       [0, 0, 0, 0, 0, 0], 
-       [0, E(4)+1, -E(4)+1, E(4)-1, -E(4)-1, 0], 
-       [0, -E(4)-1, E(4)-1, -E(4)+1, E(4)+1, 0], 
-       [0, -E(4)+1, E(4)+1, -E(4)-1, E(4)-1, 0], 
-       [0, E(4)-1, -E(4)-1, E(4)+1, -E(4)+1, 0], 
-       [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]][findfirst(==(i),l)]
-  end
+  res[:irreducibles][vcat(39:41, 50:53, 58:59),[14, 19, 21, 35, 37, 41]]=
+   [1 E(4) -E(4) -E(4) E(4) -1;
+    1 -E(4) E(4) E(4) -E(4) -1;
+    0 0 0 0 0 0;
+    0 E(4)+1 -E(4)+1 E(4)-1 -E(4)-1 0;
+    0 -E(4)-1 E(4)-1 -E(4)+1 E(4)+1 0;
+    0 -E(4)+1 E(4)+1 -E(4)-1 E(4)-1 0;
+    0 E(4)-1 -E(4)-1 E(4)+1 -E(4)+1 0;
+    0 0 0 0 0 0;
+    0 0 0 0 0 0]
+  res[:irreducibles]=Matrix{Cyc{Int}}(res[:irreducibles])
   res
 end)
 

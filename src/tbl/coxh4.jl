@@ -3,8 +3,6 @@
 
 chevieset(:H4, :ReflectionDegrees, [2, 12, 20, 30])
 
-chevieset(:H4, :Size, 14400)
-
 let a=-E(5,2)-E(5,3)
 # from Humphreys, "Reflection Groups and Coxeter Groups", 2.13
 chevieset(:H4, :GeneratingRoots,
@@ -743,9 +741,6 @@ chevieset(:H4, :HeckeRepresentation, function (param, sqrtparam, i)
   end
   -param[1][2]*WGraphToRepresentation(4,chevieget(:H4, :WGraph)(i), v)
 end)
-
-chevieset(:H4, :Representation,i->
-  chevieget(:H4,:HeckeRepresentation)(fill([1,-1],4),fill(1,4),i))
 
 CHEVIE[:families][:HS4] = Dict{Symbol, Any}(:group => "SL2(5)", :name => "H4",
   :explanation => "DrinfeldDouble(SL_2(5))?ER(5)",

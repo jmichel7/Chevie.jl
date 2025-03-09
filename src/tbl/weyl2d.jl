@@ -122,7 +122,7 @@ function (l,param,rootparam)
   chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
   tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(
    Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
-   toM(hi[:irreducibles][chr])),tbl[:classtext]))))
+   hi[:irreducibles][chr,:]),tbl[:classtext]))))
   AdjustHeckeCharTable(tbl,param)
 end)
 

@@ -38,8 +38,6 @@ chevieset(:F4,:ParabolicRepresentatives, function(s)
   t[s+1]
 end)
 
-chevieset(:F4,:Size, 1152)
-
 chevieset(:F4,:ReflectionDegrees, [2, 6, 8, 12])
 
 chevieset(:F4,:NrConjugacyClasses, 25)

@@ -59,8 +59,6 @@ chevieset(:B,:ParabolicRepresentatives,(l,s)->
 
 chevieset(:B,:ReflectionDegrees,n->2:2:2n)
 
-chevieset(:B,:Size,(r,arg...)->2^r*factorial(r))
-
 chevieset(:B,:NrConjugacyClasses,(r,arg...)->npartition_tuples(r,2))
 
 chevieset(:B,:WeightInfo,function(n,type_)

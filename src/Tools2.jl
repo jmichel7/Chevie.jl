@@ -10,13 +10,15 @@ using CycPols: CycPol
 using Primes: Primes
 using PermGroups: Group
 using Combinat: Combinat, collectby
-using LinearAlgebra: tr
+using LinearAlgebra: LinearAlgebra, tr
 using GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Chars: CharTable
 using ..Tools: improve_type
 using ..Chevie: Chevie, root, gap, Cyc, conductor
 using ..Util: toL
 using GroupPresentations: Presentation
+
+LinearAlgebra.tr(a::Mvp)=a # for tr(Diagonal(Mvp)) to work
 
 #----------------------------------------------------------------------
 """

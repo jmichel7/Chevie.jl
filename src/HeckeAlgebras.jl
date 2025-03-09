@@ -502,7 +502,9 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
       ct=prod(map(refltype(W))do t
         ct=chevieget(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
                  rootpara(H)[t.indices] : fill(nothing,length(H.para)))
-        CharTable(improve_type(toM(ct[:irreducibles])),
+        if ct[:irreducibles] isa Matrix irr=ct[:irreducibles] 
+        else error("should not happen") end
+        CharTable(irr,
                   charnames(t;opt...,TeX=true),
              string.(classnames(t;opt...,TeX=true)),Int.(ct[:centralizers]),
              Int(ct[:centralizers][1]),Dict{Symbol,Any}())
@@ -1514,10 +1516,10 @@ function Chars.CharTable(H::HeckeCoset;opt...)
       else                     names=charnames(t;opt...,TeX=true)
       end
       if ct[:irreducibles] isa Matrix irr=ct[:irreducibles] 
-      else irr=toM(ct[:irreducibles]) end
-      CharTable(improve_type(irr),names,
-         ct[:classnames],Int.(ct[:centralizers]),length(W),
-         Dict{Symbol,Any}(:name=>ct[:identifier]))
+      else error("should not happen") end
+      CharTable(irr,names,
+        ct[:classnames],Int.(ct[:centralizers]),length(W),
+        Dict{Symbol,Any}(:name=>ct[:identifier]))
     end
     ct=prod(cts)
     ct.name=xrepr(H;TeX=true)

@@ -46,9 +46,7 @@ chevieset(:I, :GeneratingRoots, function(m)
   [[1, 0],[r*(a + b)//2,r*(a-b)//2//E(4)]]
 end)
 
-chevieset(:I,:EigenvaluesGeneratingReflections,m->[1//2,1//2])
-
-chevieset(:I,:Size,(bond,arg...)->2*bond)
+chevieset(:I,:ordergens,m->fill(2,2))
 
 chevieset(:I,:ReflectionDegrees,m->[2,m])
 

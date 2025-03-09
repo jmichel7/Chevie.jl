@@ -73,7 +73,7 @@ end)
 
 chevieset(:A,:HeckeCharTable,
 function(n,para,root)
-  if n==1 Dict(:irreducibles=>[[1,para[1][2]],[1,para[1][1]]],
+  if n==1 Dict(:irreducibles=>[1 para[1][2];1 para[1][1]],
                :charnames=>["11","2"],
                :classnames=>["11","2"],
                :centralizers=>[2,2],

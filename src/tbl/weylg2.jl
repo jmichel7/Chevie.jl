@@ -1,5 +1,5 @@
 #  weylg2.jl   CHEVIE library         Meinolf Geck, Jean Michel
-chevieset(:G2, :CartanMat,(type_=1)->[[2,-type_], [-3//type_,2]])
+chevieset(:G2, :CartanMat,(type_=1)->[2 -type_;-3//type_ 2])
 
 chevieset(:G2, :ReflectionName, function (opt,type_=nothing)
   if type===nothing return "G2(?)" end
@@ -26,8 +26,6 @@ chevieset(:G2, :ParabolicRepresentatives, s->
 chevieset(:G2, :GeneratingRoots, [[1, -1, 0], [-2, 1, 1]])
 
 chevieset(:G2, :HyperplaneRepresentatives, [1, 2])
-
-chevieset(:G2, :Size, 12)
 
 chevieset(:G2, :ReflectionDegrees, [2, 6])
 
@@ -92,14 +90,14 @@ chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
   end
   tbl=Dict{Symbol, Any}(:identifier => "H(G2)", :parameter=>[[x,y],[z,t]],
     :size => 12, :powermap => chevieget(:G2, :PowerMaps),
-  :irreducibles=>[f1(x,z),f1(y,t),f1(y,z),f1(x,t),f2(x,y,z,t,1),f2(x,y,z,t,-1)],
+    :irreducibles=>toM([f1(x,z),f1(y,t),f1(y,z),f1(x,t),f2(x,y,z,t,1),f2(x,y,z,t,-1)]),
     :irredinfo => chevieget(:G2, :IrredInfo))
   merge!(tbl,chevieget(:G2,:ClassInfo))
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   tbl
 end)
 
-chevieset(:G2, :HeckeRepresentation, function (para, sqrtpara, i)
+chevieset(:G2, :HeckeRepresentation, function(para, sqrtpara, i)
   one = prod(para[1])^0*prod(para[2])^0
   x,y=para[1]
   z,t=para[2]
@@ -113,7 +111,7 @@ chevieset(:G2, :HeckeRepresentation, function (para, sqrtpara, i)
   end
 end)
 
-chevieset(:G2, :PoincarePolynomial, function (param,)
+chevieset(:G2, :PoincarePolynomial, function(param)
   u=-param[1][1]//param[1][2]
   v=-param[2][1]//param[2][2]
   (1+u)*(v+1)*(1+u*v+u^2*v^2)

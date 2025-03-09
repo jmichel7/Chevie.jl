@@ -1,19 +1,17 @@
 #  tbl/cmplxg32.jl      CHEVIE library       Gunter Malle and Jean Michel
 #  Copyright (C) 1998-  The CHEVIE Team
 
-chevieset(:G32, :GeneratingRoots, [[0, 0, -1, 0],
-                                   E(4)//root(3)*[1, 1, 1, 0],
-                                   [0, 1, 0, 0],
-                                   E(4)//root(3)*[1, -1, 0, -1]])
+chevieset(:G32,:GeneratingRoots, [[0, 0, -1, 0],
+                                  E(4)//root(3)*[1, 1, 1, 0],
+                                  [0, 1, 0, 0],
+                                  E(4)//root(3)*[1, -1, 0, -1]])
 
-chevieset(:G32, :EigenvaluesGeneratingReflections,[1//3,1//3,1//3,1//3])
+chevieset(:G32,:ordergens,fill(3,4))
 
-chevieset(:G32, :HyperplaneRepresentatives, [1])
+chevieset(:G32,:HyperplaneRepresentatives, [1])
 
 chevieset(:G32, :BraidRelations, [[[1,2,1], [2,1,2]], [[2,3,2], [3,2,3]],
   [[3, 4, 3], [4, 3, 4]], [[1, 3], [3, 1]], [[1, 4], [4, 1]], [[2, 4], [4, 2]]])
-
-chevieset(:G32, :Size, 155520)
 
 chevieset(:G32, :ReflectionDegrees, [12, 18, 24, 30])
 
@@ -1968,7 +1966,7 @@ u^20*v^20*w^20*(v^3-4*w*v*u+u^3+w^3),27*r*u^33*v^33*w^33*(w^2+v^2+u^2),9*r*u^13*
     :text => "origin: J.Michel, 2008/2012")
   merge!(res, chevieget(:G32, :ClassInfo))
   res[:centralizers]=div.(res[:order],res[:classes])
-  res[:irreducibles]=[f1(u), f1(w), f1(v), f4(v, w), f4(u, v), f4(w, u),
+  res[:irreducibles]=toM([f1(u), f1(w), f1(v), f4(v, w), f4(u, v), f4(w, u),
     f4(w, v), f4(u, w), f4(v, u), f5(u, v, w), f5(w, u, v), f5(v, w, u),
     f5(u, w, v), f5(v, u, w), f5(w, v, u), f6(v, w), f6(u, v), f6(w, u),
     f10(u, v, w), f10(w, u, v), f10(v, w, u), f10(u, w, v), f10(v, u, w),
@@ -1991,7 +1989,7 @@ u^20*v^20*w^20*(v^3-4*w*v*u+u^3+w^3),27*r*u^33*v^33*w^33*(w^2+v^2+u^2),9*r*u^13*
     f64(w, u, v, root(u * v)), f64(v, u, w, root(u * w)),
     f64(v, u, w, -root(u * w)), f64(w, u, v, -root(u * v)),
     f80(u, v, w), f80(v, u, w), f80(w, u, v), f81(u, v, w, root(u * v * w, 3)),
-    f81(u, v, w, E(3,2)*root(u*v*w,3)),f81(u, v, w, E(3) * root(u * v * w, 3))]
+    f81(u, v, w, E(3,2)*root(u*v*w,3)),f81(u, v, w, E(3) * root(u * v * w, 3))])
   res
 end)
 

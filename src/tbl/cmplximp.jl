@@ -2,12 +2,12 @@
 # (C) 1998 - 2011  Gunter Malle and  Jean Michel
 # data about imprimitive complex reflection groups
 
-chevieset(:imp, :SemisimpleRank,(p,q,r)->r)
+chevieset(:imp,:SemisimpleRank,(p,q,r)->r)
 
-chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
-  res=fill(1//2,r)
-  if q==1 res[1]=1//p
-  elseif q!=p pushfirst!(res,q//p)
+chevieset(:imp,:ordergens,function(p,q,r)
+  res=fill(2,r)
+  if q==1 res[1]=p
+  elseif q!=p pushfirst!(res,div(p,q))
   end
   res
 end)
@@ -59,8 +59,6 @@ chevieset(:imp, :BraidRelations, function (p, q, r)
   res
 end)
 
-chevieset(:imp, :Size, (p,q,r)->div(p^r*factorial(r),q))
-
 chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
   if [q,r]==[2,2] div(p*(p+6),4)
   elseif q==1 npartition_tuples(r,p)
@@ -81,16 +79,15 @@ chevieset(:imp, :ReflectionName, function (p,q,r,option,arg...)
   n
 end)
 
-chevieset(:imp, :CartanMat, function (p, q, r)
+chevieset(:imp,:CartanMat,function(p,q,r)
   rt=chevieget(:imp, :GeneratingRoots)(p,q,r)
   rbar=conj(rt)
-  e=chevieget(:imp, :EigenvaluesGeneratingReflections)(p, q, r)
-  e=1 .-map(x->E(denominator(x),numerator(x)),e)
+  e=1 .-E.(chevieget(:imp,:ordergens)(p,q,r))
   e=map(i->(e[i]*rbar[i])//sum(rbar[i].*rt[i]),1:length(e))
-  map(x->map(y->sum(x.*y),rt),e)
+  [Cyc{Int}(sum(x.*y)) for x in e, y in rt]
 end)
 
-chevieset(:imp, :ReflectionDegrees,(p, q, r)->vcat(p*(1:r-1),div(r*p,q)))
+chevieset(:imp,:ReflectionDegrees,(p,q,r)->vcat(p*(1:r-1),div(r*p,q)))
 
 chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
   res=collect(p*(0:r-1))
@@ -247,7 +244,7 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
   if r==1
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
-    res[:irreducibles]=map(i->map(j->para[1][i]^j,0:p-1),1:p)
+    res[:irreducibles]=[para[1][i]^j for i in 1:p, j in 0:p-1]
   elseif q==1
 # character table of the Hecke algebra of G(p,1,r) parameters v and [q,-1]
 # according to [Halverson-Ram]"Characters of Iwahori-Hecke algebras of G(r,p,n)"
@@ -354,7 +351,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
       end
     end
     pts=partition_tuples(r,p)
-    res[:irreducibles]=[entry.(pts,Ref(x)) for x in map(y->βset.(y),pts)]
+    res[:irreducibles]=toM([entry.(pts,Ref(x)) for x in map(y->βset.(y),pts)])
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
@@ -380,8 +377,8 @@ information   about  it  necessary   to  compute  the   function  Delta  in
         return w^class[1]*char
       end
     end
-    res[:irreducibles]=[entry2.(Ref(char),cl[:classparams]) for
-                                     char in ci[:charparams]]
+    res[:irreducibles]=toM([entry2.(Ref(char),cl[:classparams]) for
+                            char in ci[:charparams]])
   else
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
@@ -389,14 +386,16 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     res[:classes] = map(x->div(res[:size],x),res[:centralizers])
     reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i),
              1:length(res[:classes]))
-    if !(reps[1][1] isa AbstractMatrix) reps=map(x->map(toM,x),reps) end
-    res[:irreducibles]=map(i->traces_words_mats(improve_type(reps[i]),cl[:classtext]),
-                           1:length(res[:classes]))
+    if !(reps[1][1] isa AbstractMatrix) 
+      error("baaaaa")
+    end
+    res[:irreducibles]=toM(improve_type(map(reps)do r
+      traces_words_mats(r,cl[:classtext])
+    end))
   end
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])
   res[:parameter]=para
-  c=one(prod(prod,para))
-  res[:irreducibles]=improve_type(map(x->map(y->y*c,x),res[:irreducibles]))
+  res[:irreducibles]=improve_type(res[:irreducibles]*one(prod(prod,para)))
   res
 end)
 
@@ -404,7 +403,7 @@ const impchartableCache=Dict{Tuple{Int,Int,Int},Any}()
 
 chevieset(:imp, :CharTable, function (p, q, r)
   get!(impchartableCache,(p,q,r))do
-  oo=denominator.(chevieget(:imp,:EigenvaluesGeneratingReflections)(p,q,r))
+  oo=chevieget(:imp,:ordergens)(p,q,r)
   chevieget(:imp, :HeckeCharTable)(p,q,r,
             map(o->o==1 ? [1] : o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
   end
@@ -2028,24 +2027,24 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     p1=length(para[1])
     v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],
       findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]))
-    v=map(v)do m 
-      (m isa AbstractMatrix) ? m : toM(m)
+    for m in v
+     if !(m isa AbstractMatrix) error("baad") end
     end
     if p==q v=vcat([inv(v[1]//1)*v[2]*v[1]],v[2:end])
     elseif q>1 v=vcat([v[1]^q,inv(v[1]//1)*v[2]*v[1]],v[2:end])
     end
-    if extra==false return v end
+    if extra==false return improve_type(v) end
     T=tableaux(S)
     m=Perm(T,map(S->S[vcat(d+1:p,1:d)],T))
     m=orbits(m,1:length(T))
     l=map(i->extra^i,0:-1:1-p//d)
     m1=first.(m)
-    map(x->toM(map(c->sum(l.*map(y->y[m1],x[c])),m)),map(toL,v))
+    improve_type(map(x->toM(map(c->sum(l.*map(y->y[m1],x[c])),m)),map(toL,v)))
   end
 end)
 
 chevieset(:imp, :Representation, function (p, q, r, i)
-  o=denominator.(chevieget(:imp, :EigenvaluesGeneratingReflections)(p,q,r))
+  o=chevieget(:imp,:ordergens)(p,q,r)
   chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->
                 x==2 ? [1,-1] : E.(x,0:x-1),o),[],i)
 end)

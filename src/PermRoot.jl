@@ -679,10 +679,7 @@ function cartan(W::PermRootGroup{T,T1})where {T,T1}
 end
 
 function cartan(t::TypeIrred;permute=false)
-  if t.series==:ST 
-    m=chevieget(t,:CartanMat)
-    if !(m isa Matrix) m=toM(m) end
-    return m end
+  if t.series==:ST return chevieget(t,:CartanMat) end
   C=haskey(t,:bond) ? haskey(t,:cartanType) ? 
      cartan(t.series,rank(t),t.bond,t.cartanType) : 
      cartan(t.series,rank(t),t.bond) : 
@@ -853,10 +850,7 @@ function check_minimal_relation(gens,rel;verbose=false)
   false
 end
 
-function Groups.ordergens(t::TypeIrred)
-  t.series in [:E,:F,:G,:H] ? fill(2,rank(t)) :
-    Int.(inv.(chevieget(t,:EigenvaluesGeneratingReflections)))
-end
+Groups.ordergens(t::TypeIrred)=chevieget(t,:ordergens)
 
 # g is a sublist of 1:length(H.roots). Returns sublist k of g such that
 # refls(H,k) satisfy braid and order relations of type t

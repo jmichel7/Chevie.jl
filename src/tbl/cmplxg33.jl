@@ -39,18 +39,16 @@ chevieset(:G33, :GeneratingCoRoots, [
   [0, 0, 0, (3-root(-3))//2, (3+root(-3))//2], 
   [-1, -1, 1, -1, -1]] // 3)
 
-chevieset(:G33, :CartanMat,toM(chevieget(:G33, :GeneratingCoRoots))*
+chevieset(:G33,:CartanMat,toM(chevieget(:G33, :GeneratingCoRoots))*
        transpose(toM(chevieget(:G33, :GeneratingRoots))))
 
-chevieset(:G33, :EigenvaluesGeneratingReflections,[1//2,1//2,1//2,1//2,1//2])
+chevieset(:G33,:ordergens,fill(2,5))
 
-chevieset(:G33, :Size, 51840)
+chevieset(:G33,:ReflectionDegrees, [4, 6, 10, 12, 18])
 
-chevieset(:G33, :ReflectionDegrees, [4, 6, 10, 12, 18])
+chevieset(:G33,:NrConjugacyClasses, 40)
 
-chevieset(:G33, :NrConjugacyClasses, 40)
-
-chevieset(:G33, :ParabolicRepresentatives, s->
+chevieset(:G33,:ParabolicRepresentatives, s->
   [[Int[]],[[1]],[[1,2],[1,3]],[1:3,[1,3,5],[1,3,4],2:4],[[1,2,3,5],[1,3,5,10],1:4,[1,2,4,5]],[1:5]][s+1])
 
 chevieset(:G33, :ClassNames, [".", "1", "31", "12", "123", "234", "243", "341", "531", "1245", "1234", "1243", "5123", "ccccc", "c", "125z", "342312", "342342", "432432", "c4213", "5432412", "3452412", "3423412", "2431243", "34523412", "52431243", "453423121", "3124512342", "5342312432", "5423124321", "423124123121", "3245124324524", "32451243245124", "23452412345241", "z342342", "345243124532412", "ccc", "12z", "1z", "z"])
@@ -438,27 +436,19 @@ x^5*y^4, -x*y^6-x^2*y^5+2*x^4*y^3+2*x^5*y^2, 0,
  x^6*y^9-3*x^7*y^8-6*x^8*y^7-7*x^9*y^6-3*x^10*y^5-x^11*y^4,
 0,9*x^25*y^22+27*x^26*y^21+18*x^27*y^20,36*x^25*y^21+45*x^26*y^20,
 81*x^25*y^20]
-  tbl[:irreducibles]=[f1(x),f1(y),f3(x,y,E(3)),f3(y,x,E(3)),f3(x,y,E(3,2)),
+  tbl[:irreducibles]=toM([f1(x),f1(y),f3(x,y,E(3)),f3(y,x,E(3)),f3(x,y,E(3,2)),
     f3(y,x,E(3,2)),f7(x,y),f7(y,x),f9(x,y,E(3)),f9(y,x,E(3)),f9(x,y,E(3,2)),
     f9(y,x,E(3,2)),f13(x,y),f13(y,x),f15(x,y),f15(y,x),f17(x,y),f17(y,x),
     f19(x,y),f19(y,x),f21(x,y),f21(y,x),f23(x,y,E(3)),f23(y,x,E(3)),
     f23(x,y,E(3,2)),f23(y,x,E(3,2)),f27(x,y,E(3)),f27(y,x,E(3)),
     f27(x,y,E(3,2)),f27(y,x,E(3,2)),f31(x,y,E(3)),f31(y,x,E(3)),f31(x,y,E(3,2)),
-    f31(y,x,E(3,2)),f35(x,y),f35(y,x),f37(x,y,-1),f37(x,y,1),f39(x,y),f39(y,x)]
+    f31(y,x,E(3,2)),f35(x,y),f35(y,x),f37(x,y,-1),f37(x,y,1),f39(x,y),f39(y,x)])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
   tbl[:irredinfo]=chevieget(:G33,:IrredInfo)
   tbl
 end)
 
-chevieset(:G33, :CharTable, function ()
-  res=chevieget(:G33,:HeckeCharTable)(fill([1,-1],5),[])
-  res[:identifier] = "G33"
-  res[:name] = "G33"
-  res[:powermap] = chevieget(:G33, :PowerMaps)
-  res[:galomorphisms] = Group(perm"(4,5)(6,7)(10,11)(12,13)(14,15)(16,17)(18,19)(20,21)(25,26)(28,29)")
-  res[:text] = "origin: HeckeCharTable"
-  res
-end)
+chevieset(:G33,:galomorphisms,perm"(4,5)(6,7)(10,11)(12,13)(14,15)(16,17)(18,19)(20,21)(25,26)(28,29)")
 
 chevieset(:G33, :HeckeRepresentation, function (para, rt, i)
   r,p=para[1]
@@ -2504,9 +2494,6 @@ y^3, [208, 250, 537, 613, 655, 916, 1022, 1078, 1081, 1125, 1171, 1339, 1440,
   elseif i==40 f39(r, p)
   end
 end)
-
-chevieset(:G33, :Representation,i->
-  chevieget(:G33, :HeckeRepresentation)(fill([1,-1],5),[],i))
 
 chevieset(:G33, :UnipotentCharacters, function ()
   Dict{Symbol, Any}(:harishChandra=>[

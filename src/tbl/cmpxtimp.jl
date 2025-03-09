@@ -225,7 +225,7 @@ chevieset(:timp, :ReducedInRightCoset, function (W, phi)
   m1perm=mappingPerm(inclusion(W),invpermute(inclusion(W),m1perm))
   g=PermX(W,reflrep(W,phi)*reflrep(W,m1perm))
   if g in W return (gen=inclusion(W,1:3),phi=inv(g)*phi) end
-  # quads of roots which have the same CartanMat and are representatives of 
+  # quads of roots which have the same cartan mat and are representatives of 
   # <-1,W>-orbits of quads of reflections satisfying Corran-Picantin relations
   sets=[[1,2,3,44],[2,12,11,37],[3,11,2,36],[1,12,10,16]] # 3G333
   for g in [Perm(),m1perm], i in inclusion.(Ref(W),sets), 
@@ -233,7 +233,7 @@ chevieset(:timp, :ReducedInRightCoset, function (W, phi)
     e=transporting_elt(W,i[o],i.^(g*phi),(s,g)->s.^g)
     if !isnothing(e)return (gen=i[1:3],phi=phi/e) end
   end
-  # sextuples of roots which have the same CartanMat and are representatives of 
+  # sextuples of roots which have the same cartan mat and are representatives of 
   # W-orbits of each element of order 4 of G
   sets2=[[1,2,32,16,3,36,30,10],[3,10,30,36,17,21,53,38],
         [2,12,16,53,11,10,43,36],[2,44,16,37,3,43,30,11],

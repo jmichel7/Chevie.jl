@@ -2,9 +2,7 @@
 # (C) Jean Michel, Frank Luebeck, Goetz Pfeiffer 1994-2001
 # Data for type D
 
-chevieset(:D,:CartanMat,n->toL(cartan(:D,n)))
-
-chevieset(:D, :Size,(rk,arg...)->2^(rk-1)*factorial(rk))
+chevieset(:D,:CartanMat,n->cartan(:D,n))
 
 chevieset(:D, :GeneratingRoots, function (l)
   rts=Vector{Int}[]
@@ -108,12 +106,12 @@ function chard(n,q)
     n1=div(n,2)-1
     AHk=chevieget(:A,:HeckeCharTable)(n1,fill([q^2,-1],n1),[])[:irreducibles]
     pA=partitions(n1+1)
-    Airr(x,y)=AHk[findfirst(==(x),pA)][findfirst(==(y),pA)]
+    Airr(x,y)=AHk[findfirst(==(x),pA),findfirst(==(y),pA)]
   end
   BHk=isone(q) ? chevieget(:B,:CharTable)(n) :
       chevieget(:imp,:HeckeCharTable)(2,1,n,vcat([[1,-1]],fill([q,-1],n)),[])
   pB=chevieget(:B,:CharInfo)(n)[:charparams]
-  Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB)][findfirst(==(y),pB)]
+  Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB),findfirst(==(y),pB)]
   function value(lambda,mu)
     if length(lambda)>2
       delta=[lambda[1], lambda[1]]

@@ -32,9 +32,7 @@ chevieset(:G27,:GeneratingCoRoots,[
 chevieset(:G27, :CartanMat, function ()
   toM(chevieget(:G27, :GeneratingCoRoots))*transpose(toM(chevieget(:G27, :GeneratingRoots))) end)
 
-chevieset(:G27, :EigenvaluesGeneratingReflections, [1//2, 1//2, 1//2])
-
-chevieset(:G27, :Size, 2160)
+chevieset(:G27,:ordergens,fill(2,3))
 
 chevieset(:G27, :ReflectionDegrees, [6, 12, 30])
 
@@ -160,7 +158,7 @@ chevieset(:G27, :HeckeCharTable, function (para, rootpara)
     map((x, y)->x*(-p)^length(y),
 [15,-7+8q,(2-5q)+3*q^2,(2*q^3-3*q^2)+q,(1-4q)+2*q^2,((2*q^2-2q)+1)-q^3,0,q^2+(3*j^2+j)*q^4+2*j*q^5+2*q^6,(2-5q)+3*q^2,(1-4*q^2)+2*q^4,j*q^4,0,(-(j^2)*q^8+4*j^2*q^9)-2*j^2*q^10,(((1-2q)+(-4*j^2-2j)*q^2+(8*j^2+4j)*q^3+(-8*j^2-6j)*q^4)-4*q^5)+q^6,0,(-2*j^2*q^8+5*j^2*q^9)-3*j^2*q^10,-j*q^5,(j^2*q^32-4*j^2*q^33)+2*j^2*q^34,(-2*j^2*q^4+3*j^2*q^6)-j^2*q^8,0,(-2*j^2*q^8+5*j^2*q^9)-3*j^2*q^10,7*j^2*q^8-8*j^2*q^9,(j*q^16-4*j*q^18)+2*j*q^20,(-(j^2)*q^8+4*j^2*q^10)-2*j^2*q^12,-7*j*q^16+8*j*q^17,0,0,0,(-(q^24)+4*q^25)-2*q^26,-15*j^2*q^8,-15*j*q^40,15*j*q^16,15*j^2*q^32,-15*q^24],tbl[:classtext])
       end
-  tbl[:irreducibles] = [f1(r), f1(p), f3(r, p, E(3), root(5)), 
+  tbl[:irreducibles]=toM([f1(r), f1(p), f3(r, p, E(3), root(5)), 
     f3(p, r, E(3), root(5)), f3(r, p, E(3), -root(5)), 
     f3(p, r, E(3), -root(5)), f3(r, p, E(3, 2), root(5)), 
     f3(p, r, E(3, 2), root(5)), f3(r, p, E(3, 2), -root(5)), 
@@ -169,15 +167,14 @@ chevieset(:G27, :HeckeCharTable, function (para, rootpara)
     f19(r,p,root(5), 1), f19(r, p, root(5), -1), f19(r, p, -root(5), 1), 
     f19(r,p,-root(5), -1), f23(r, p, 1), f23(p, r, 1), f23(p, r, E(3, 2)), 
     f23(r,p,E(3,2)), f23(p, r, E(3)), f23(r, p, E(3)), f29(r, p), f29(p, r), 
-    f31(p,r,E(3)),f31(r, p, E(3)), f31(p, r, E(3, 2)), f31(r, p, E(3,2))]*q^0
+    f31(p,r,E(3)),f31(r, p, E(3)), f31(p, r, E(3, 2)), f31(r, p, E(3,2))])*q^0
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
   tbl[:irredinfo] = chevieget(:G27, :IrredInfo)
-  tbl[:galomorphisms] = Group(perm"(4,8)(6,19)(7,20)(12,28)(14,27)(15,26)", perm"(6,7)(11,13)(14,15)(17,18)(19,20)(22,23)(24,25)(26,27)(30,31)(32,33)")
   tbl
 end)
 
-chevieset(:G27, :CharTable, ()->
-  chevieget(:G27, :HeckeCharTable)([[1, -1], [1, -1], [1, -1]], []))
+chevieset(:G27, :galomorphisms,[perm"(4,8)(6,19)(7,20)(12,28)(14,27)(15,26)",
+  perm"(6,7)(11,13)(14,15)(17,18)(19,20)(22,23)(24,25)(26,27)(30,31)(32,33)"])
 
 chevieset(:G27, :HeckeRepresentation, function (para, rootpara, i)
   f1(r)=map(x->[r;;],1:3)

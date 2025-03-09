@@ -16,9 +16,9 @@ chevieset(:G24, :CartanMat, function()
            transpose(toM(chevieget(:G24,:GeneratingRoots)))
 end)
 
-chevieset(:G24, :EigenvaluesGeneratingReflections, [1//2, 1//2, 1//2])
+chevieset(:G24,:ordergens,fill(2,3))
 
-chevieset(:G24, :BraidRelations, [[[1, 2, 1], [2, 1, 2]],[[1, 3, 1], [3, 1, 3]],
+chevieset(:G24,:BraidRelations, [[[1, 2, 1], [2, 1, 2]],[[1, 3, 1], [3, 1, 3]],
   [[3, 2, 3, 2], [2, 3, 2, 3]],
   [[2, 3, 1, 2, 3, 1, 2, 3, 1], [3, 2, 3, 1, 2, 3, 1, 2, 3]]])
 # 14/1/2009 JM: changed generators to get presentation no.2 of  Bessis-Michel
@@ -34,8 +34,6 @@ chevieset(:G24, :AltPres, [Dict{Symbol, Any}(:gens => [[1], [2, 3, -2], [2]],
 #  For the last pres., one of the 3rd or 5th relation may be omitted
 
 chevieset(:G24, :ReflectionDegrees, [4, 6, 14])
-
-chevieset(:G24, :Size, prod(chevieget(:G24, :ReflectionDegrees)))
 
 chevieset(:G24, :NrConjugacyClasses, 12)
 
@@ -93,12 +91,11 @@ chevieset(:G24, :sparseFakeDegrees, [[1, 0], [1, 21], [1, 8, 1, 16, 1, 18],
 
 # Computed JM oct. 2005
 chevieset(:G24, :HeckeCharTable, function (param, roots)
-  r=param[1][1]
-  p=param[1][2]
+  r,p=param[1]
   u=root(-p*r)
   f1(r)=[1, r, r^2, r^2, r^9, r^3, r^4, r^7, r^18, r^6, r^11, r^21]
-  f3(p,r,a)=[3,2p+r,p^2,p*r+p^2,(-1-a)//2*p^6*r^3,(-1+a)//2*p^2*r,
-    -2*p^2*r^2+p^4,0,(-1-a)//2*p^12*r^6,(-1+a)//2*p^4*r^2,-p^7*r^4,3*p^14*r^7]
+  f3(p,r,b)=[3,2p+r,p^2,p*r+p^2,b*p^6*r^3,(-b-1)*p^2*r,
+             -2*p^2*r^2+p^4,0,b*p^12*r^6,(-b-1)*p^4*r^2,-p^7*r^4,3*p^14*r^7]
   f6(r,p)=[6,2p+4r,2*p*r+2*r^2,2*p*r+2*r^2,p^3*r^6,p*r^2,2*r^4,0,-p^6*r^12,
            -p^2*r^4,0,-6*p^7*r^14]
   f7(p,r)=[7,4p+3r,2*p*r+p^2,2*p*r+2*p^2+r^2,0,0,-2*p^2*r^2+p^4,p^4*r^3,0,0,
@@ -107,9 +104,12 @@ chevieset(:G24, :HeckeCharTable, function (param, roots)
    -2*p^2*r^2+p^4+r^4, p^3*r^3*u, -(p^9)*r^9, -(p^3)*r^3, 0, 8*p^10*r^10*u]
   tbl=Dict(:identifier=>"H(G24)",:name=>"H(G24)",:size=>336,:order=>336,
            :powermap=>chevieget(:G24,:PowerMaps),
-           :irreducibles=>[f1(r),f1(p),f3(p,r,root(-7)),f3(r,p,root(-7)),
-  f3(p,r,-root(-7)),f3(r,p,-root(-7)),f6(r,p),f6(p,r),f7(p,r),f7(r,p),
-  f8(p,r,u),f8(p,r,-u)]*p^0*r^0,
+           :irreducibles=>toM([f1(r),f1(p),
+           f3(p,r,E(7,3)+E(7,5)+E(7,6)),
+           f3(r,p,E(7,3)+E(7,5)+E(7,6)),
+           f3(p,r,conj(E(7,3)+E(7,5)+E(7,6))),
+           f3(r,p,conj(E(7,3)+E(7,5)+E(7,6))),
+  f6(r,p),f6(p,r),f7(p,r),f7(r,p),f8(p,r,u),f8(p,r,-u)]),
   :galomorphisms=>Group(perm"(5,6)(9,10)"),
   :irredinfo=>chevieget(:G24,:IrredInfo))
   merge!(tbl, chevieget(:G24, :ClassInfo))
@@ -117,9 +117,7 @@ chevieset(:G24, :HeckeCharTable, function (param, roots)
   tbl
 end)
 
-chevieset(:G24, :CharTable, function ()
-  chevieget(:G24, :HeckeCharTable)([[1, -1], [1, -1], [1, -1]], [])
-end)
+chevieset(:G24,:galomorphisms,perm"(5,6)(9,10)")
 
 chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
   f1(r)=map(x->[r;;],1:3)

@@ -75,15 +75,11 @@ end
 # adjust table prepared for [qₛ,-1]-Hecke algebra to more general [xₛ,yₛ]
 function AdjustHeckeCharTable(tbl,param)
   param=improve_type(param)
+  if !(tbl[:irreducibles] isa Matrix) 
+    tbl[:irreducibles]=toM(tbl[:irreducibles])
+  end
   for (i,w) in enumerate(tbl[:classtext])
-    f=prod(-last.(param[w]))
-    if tbl[:irreducibles] isa Matrix
-       tbl[:irreducibles][:,i].*=f
-    else
-      for j in eachindex(tbl[:classtext])
-        tbl[:irreducibles][j][i]*=f
-      end
-    end
+    tbl[:irreducibles][:,i].*=prod(-last.(param[w]))
   end
   tbl
 end
