@@ -38,23 +38,6 @@ chevieset([:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34,:H3,:H4,Symbol("2E6"),Sy
   map((x,y)->(charparam=x,charname=y),ci[:charparams],ci[:charnames])
 end)
 
-chevieset([:G24,:G25,:G27,:G29,:G31,:G32,:G33,:G34,:E6,:E7,:E8,Symbol("2E6"),Symbol("2F4"),Symbol("3D4"),:H3,:H4],:ReflectionName,t->
-function(option)
- i=[:G24,:G25,:G27,:G29,:G31,:G32,:G33,:G34,:E6,:E7,:E8,Symbol("2E6"),Symbol("2F4"),Symbol("3D4"),:H3,:H4]
-  o=["G_{24}","G_{25}","G_{27}","G_{29}","G_{31}","G_{32}","G_{33}","G_{34}","E_6","E_7","E_8","{}^2E_6","{}^2F_4","{}^3D_4","H_3","H_4"]
-  haskey(option,:TeX) ? o[findfirst(==(t),i)] : t
-end)
-
-chevieset([:D, Symbol("2A"), Symbol("2D")],:ReflectionName,t->
-function(r,option)
-  i=[:D,Symbol("2A"),Symbol("2D")]
-  o=["D","{}^2A","{}^2D"]
-  if haskey(option, :arg) string(t, ",", r)
-  elseif haskey(option,:TeX) o[findfirst(==(t),i)]*TeXIndex(r)
-  else string(t, r)
-  end
-end)
-
 chevieset([Symbol("3D4"),:E6,Symbol("2E6"),:E7,:E8,:F4,Symbol("2F4"),:G2,:H3,:H4],:CharTable,t->function()
   rank=string(t)[end]-'0'
   res=chevieget(t,:HeckeCharTable)(map(x->[1,-1],1:rank),map(x->1,1:rank))

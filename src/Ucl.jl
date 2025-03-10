@@ -949,18 +949,14 @@ end
 
 FinitePosets.Poset(uc::UnipotentClasses)=uc.orderclasses
 
-function reflection_name(io::IO,W)
- r=join(chevieget.(refltype(W),:ReflectionName,Ref(IOContext(io,:TeX=>true).dict)),"×")
-  fromTeX(io,r)
-end
-
 function showcentralizer(io::IO,u)
   c=""
   function AuName(u)
     if length(u.Au)==1 return "" end
     res=haskey(u,:AuAction) ||
         (haskey(u,:dimred) && iszero(u.dimred)) ? "." : "?"
-        res*=reflection_name(IOContext(io,:Au=>true),u.Au)
+    if any(isnothing,chevieget.(refltype(u.Au),:AuName)) error("HHHH") end
+    res*=fromTeX(io,join(chevieget.(refltype(u.Au),:AuName),"×"))
   end
   if haskey(u,:dimunip)
     if u.dimunip>0 c*=sprint(show,Mvp(:q)^u.dimunip;context=io) end

@@ -1,11 +1,5 @@
 #  tbl/cox2i.g         CHEVIE library         Meinolf Geck and Jean Michel
 #  Copyright (C) 1992 - 2001  The CHEVIE Team
-#
-chevieset(Symbol("2I"), :ReflectionName, function (m, option)
-  if haskey(option, :TeX) String("{}^2I_2(", m, ")")
-  else String("2I2(", m, ")")
-  end
-end)
 
 chevieset(Symbol("2I"), :NrConjugacyClasses,m->div(m+3,2))
 

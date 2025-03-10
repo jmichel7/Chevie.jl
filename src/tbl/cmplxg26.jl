@@ -13,14 +13,6 @@ chevieset(:G26,:ordergens,[2,3,3])
 chevieset(:G26,:BraidRelations,[[[1,2,1,2],[2,1,2,1]],[[1,3],[3,1]],
                                 [[2,3,2],[3,2,3]]])
 
-chevieset(:G26,:ReflectionName, function (opt,type_=1)
-  TeX=haskey(opt, :TeX)
-  if type_ == 1 TeX ? "G_{26}" : "G26"
-  elseif TeX string("G(", repr(type_;TeX=true), ")_{26}")
-  else string("G(", type_, ")26")
-  end
-end)
-
 chevieset(:G26, :ReflectionDegrees, [6, 12, 18])
 
 chevieset(:G26, :NrConjugacyClasses, 48)

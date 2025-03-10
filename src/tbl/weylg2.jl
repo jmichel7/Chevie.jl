@@ -1,26 +1,8 @@
 #  weylg2.jl   CHEVIE library         Meinolf Geck, Jean Michel
 chevieset(:G2, :CartanMat,(type_=1)->[2 -type_;-3//type_ 2])
 
-chevieset(:G2, :ReflectionName, function (opt,type_=nothing)
-  if type===nothing return "G2(?)" end
-  if type_==1
-    if haskey(opt, :TeX) "G_2"
-    elseif haskey(opt, :arg) "\"G\",2"
-    else "G2"
-    end
-  elseif type_==root(3)
-    if haskey(opt, :TeX) "G_{\\hbox{sym}2}"
-    elseif haskey(opt, :arg) "\"Gsym\",2"
-    else "Gsym2"
-    end
-  elseif haskey(opt,:TeX) string("G_2(",xrepr(type_^2//3;opt...),")")
-  elseif haskey(opt,:arg) string("\"G\",2,",xrepr(type_^2//3;opt...))
-  else string("G2(",xrepr(type_^2//3;opt...),")")
-  end
-end)
-
 chevieset(:G2, :ParabolicRepresentatives, s->
-  chevieget(:imp, :ParabolicRepresentatives)(6, 6, 2, s))
+  chevieget(:imp,:ParabolicRepresentatives)(6,6,2,s))
 
 # in dim 3, as in Bourbaki
 chevieset(:G2, :simpleroots, [1 -1 0;-2 1 1])

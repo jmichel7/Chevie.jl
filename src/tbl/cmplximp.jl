@@ -1,6 +1,5 @@
-# Hand-translated from chevie/tbl/cmplximp.g 
-# (C) 1998 - 2011  Gunter Malle and  Jean Michel
-# data about imprimitive complex reflection groups
+# cmplximp.jl Imprimitive groups  G_{p,q,r} Chevie Library
+# (C) 1998-  Gunter Malle and  Jean Michel
 
 chevieset(:imp,:SemisimpleRank,(p,q,r)->r)
 
@@ -67,19 +66,6 @@ chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
   end
 end)
 
-chevieset(:imp, :ReflectionName, function (p,q,r,option,arg...)
-  if r==1 && q==1
-    if haskey(option, :TeX) return string("Z_{",p,"}")
-    else return string("Z",p)
-    end
-  end
-  if haskey(option, :TeX) n=string("G_{",join([p,q,r],","),"}")
-  else n=string("G",joindigits([p,q,r]))
-  end
-  if length(arg)>0 n*=string("(",xrepr(arg[1];option),")") end
-  n
-end)
-
 chevieset(:imp,:CartanMat,function(p,q,r)
   rt=chevieget(:imp, :simpleroots)(p,q,r)
   rbar=conj(rt)
@@ -94,6 +80,11 @@ chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
   res=collect(p*(0:r-1))
   if p==q && p>=2 && r>2 res[r]-=r end
   res
+end)
+
+chevieset(:imp,:AuName,function(p,q,r)
+  if q!=1 || r!=1 error("pas prevu") end
+  "Z"*TeXIndex(p)
 end)
 
 chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)

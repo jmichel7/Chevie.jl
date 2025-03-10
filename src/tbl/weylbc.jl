@@ -20,30 +20,11 @@ chevieset(:B, :CartanMat, function(n,ct=2)
   improve_type(a)
 end)
 
-chevieset(:B, :ReflectionName, function(r,option,cartantype=2)
+chevieset(:B, :Auname, function(r,option,cartantype=2)
   if cartantype==2
-    if haskey(option,:TeX)
-      if haskey(option,:Au) "D_8"
-      else string("B",TeXIndex(r))
-      end
-    elseif haskey(option,:Au) "D8"
-    elseif haskey(option,:arg) string("\"B\",",r)
-    else string("B",r)
+    if haskey(option,:TeX) "D_8"
+    else "D8"
     end
-  elseif cartantype==1
-    if haskey(option,:TeX) string("C",TeXIndex(r))
-    elseif haskey(option,:arg) string("\"C\",", r)
-    else string("C", r)
-    end
-  elseif cartantype==root(2)
-    if haskey(option,:TeX) string("B^{\\hbox{sym}}",TeXIndex(r))
-    elseif haskey(option,:arg) string("\"Bsym\",",r)
-    else string("Bsym",r)
-    end
-  elseif haskey(option,:TeX)
-    string("B^?_",TeXIndex(r),"(",xrepr(cartantype;option...),")")
-  elseif haskey(option,:arg) string("\"B?\",", r, ",", cartantype)
-  else string("B?",r,"(",xrepr(cartantype),")")
   end
 end)
 

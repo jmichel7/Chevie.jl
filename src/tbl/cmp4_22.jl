@@ -133,16 +133,6 @@ const simplecoroots4_22=
   (-E(20,17)-E(20,16)-4E(20,13)-2E(20,12)-2E(20,9)-3E(20,8)+E(20,4)-3E(20))//5 (2E(20,17)+2E(20,16)-2E(20,13)-E(20,12)-E(20,9)+E(20,8)+3E(20,4)+E(20))//5]]
 chevieset(:G4_22,:simplecoroots,ST->simplecoroots4_22[ST-3])
 
-chevieset(:G4_22,:ReflectionName, function(ST,option,arg)
-  if haskey(option, :TeX) n=string("G_{",ST,"}")
-  else n=string("G",ST)
-  end
-  if !isempty(arg)
-    n*=string("(",xrepr(arg[1];option...),")")
-  end
-  n
-end)
-
 chevieset(:G4_22, :SemisimpleRank, 2)
 
 chevieset(:G4_22,:NrConjugacyClasses,ST->

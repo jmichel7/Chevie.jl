@@ -6,15 +6,8 @@ chevieset(:A, :CartanMat, n->Weyl.cartanmats[:A](n))
 
 chevieset(:A, :ReflectionDegrees, n->2:n+1)
 
-chevieset(:A, :ReflectionName, function(r,option)
-  if haskey(option, :arg) return string("\"A\",", r)
-  elseif haskey(option, :TeX)
-      if haskey(option, :Au) return ["Z_2", "S_3", "S_4", "S_5"][r]
-      else return string("A",TeXIndex(r))
-      end
-  elseif haskey(option, :Au) return ["Z2", "S3", "S4", "S5"][r]
-  else return string("A", r)
-  end
+chevieset(:A, :AuName, function(r)
+  ["Z_2", "S_3", "S_4", "S_5"][r]
 end)
 
 # roots for GL_n

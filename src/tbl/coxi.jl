@@ -10,31 +10,6 @@ chevieset(:I,:CartanMat,function(bond,cartantype=iseven(bond) ? 1 : E(2bond)+E(2
   m
 end)
 
-chevieset(:I, :ReflectionName, function(bond,opt,cartantype=iseven(bond) ? 1 : E(2bond)+E(2bond,-1))
-  c=xrepr(cartantype^2//(2+E(bond)+E(bond,-1));opt...)
-  if cartantype==1
-    if haskey(opt, :TeX) string("I_2(", bond, ")")
-    elseif haskey(opt, :arg) string("\"I\",2,", bond)
-    else string("I2(", bond, ")")
-    end
-  elseif cartantype == E(2bond) + E(2bond, -1)
-    if mod(bond, 2) == 1
-      if haskey(opt, :TeX) string("I_2(", bond, ")")
-      elseif haskey(opt, :arg) string("\"I\",2,", bond)
-      else string("I2(", bond, ")")
-      end
-    else
-      if haskey(opt, :TeX) string("I_{\\hbox{sym}2}(", bond, ")")
-      elseif haskey(opt, :arg) string("\"Isym\",2,", bond)
-      else string("Isym2(", bond, ")")
-      end
-    end
-  elseif haskey(opt, :TeX) string("I_?(",c,")(",bond,")")
-  elseif haskey(opt, :arg) string("\"Isym\",2,",bond,",",c)
-  else string("I?(",c,")(",bond,")")
-  end
-end)
-
 chevieset(:I, :SemisimpleRank, 2)
 
 chevieset(:I, :simpleroots, function(m)

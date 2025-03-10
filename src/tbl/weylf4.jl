@@ -10,24 +10,6 @@ chevieset(:F4, :CartanMat,function(cartantype=1)
   [2 -1 0 0;-1 2 -cartantype 0;0 -2//cartantype 2 -1;0 0 -1 2]
 end)
 
-chevieset(:F4, :ReflectionName, function(opt,cartantype=0)
-  if cartantype==0 return "F4(?)" end
-  if cartantype==1
-    if haskey(opt, :TeX) "F_4"
-    elseif haskey(opt, :arg) "\"F\",4"
-    else "F4"
-    end
-  elseif cartantype==root(2)
-    if haskey(opt, :TeX) "F_{\\hbox{sym}4}"
-    elseif haskey(opt, :arg) "\"Fsym\",4"
-    else "Fsym4"
-    end
-  elseif haskey(opt,:TeX) string("F_4(", xrepr(cartantype^2//2,opt),")")
-  elseif haskey(opt,:arg) string("\"F\",4,",xrepr(cartantype^2//2,opt))
-  else string("F4(",repr(cartantype^2//2),")")
-  end
-end)
-
 chevieset(:F4,:simpleroots,
  [0 1 -1 0;
   0 0 1 -1;
