@@ -47,11 +47,11 @@ chevieset(:B, :ReflectionName, function(r,option,cartantype=2)
   end
 end)
 
-chevieset(:B,:GeneratingRoots, function(l,type_)
-  rts=map(i->fill(0,l),1:l)
-  for i in 1:l-1 rts[i][i:i+1]=[1,-1] end
-  rts[l][l]=2//type_
-  rts[l:-1:1]
+chevieset(:B,:simpleroots, function(l,type_)
+  rts=fill(0,l,l)
+  for i in 1:l-1 rts[i,i:i+1]=[1,-1] end
+  rts[l,l]=2//type_
+  reverse(rts,dims=1)
 end)
 
 chevieset(:B,:ParabolicRepresentatives,(l,s)->
@@ -184,7 +184,7 @@ end)
 
 chevieset(:B,:Invariants,function(n,type_)
   m=fill(1,n);m[1]=2//type_
-  m=Diagonal(m)*toM(chevieget(:imp,:GeneratingRoots)(2,1,n))
+  m=Diagonal(m)*chevieget(:imp,:simpleroots)(2,1,n)
   map(f->(arg...)->f(transpose(collect(arg))*m...),CHEVIE[:imp][:Invariants](2,1,n))
 end)
 

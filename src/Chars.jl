@@ -1087,7 +1087,7 @@ end
 
 function CharTable(t::TypeIrred;opt...)
   ct=chevieget(t,:CharTable)
-  irr=ct[:irreducibles]
+  irr=collect(ct[:irreducibles]) # to make sure it is a abstractmatrix
   if !(irr isa Matrix) error("should not happen for $t") end
 # irr=improve_type(irr)
   CharTable(irr,charnames(t;opt...,TeX=true),classnames(t;opt...,TeX=true),

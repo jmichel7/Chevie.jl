@@ -78,12 +78,11 @@ chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   tbl[:centralizers]=ct.centralizers
   T=Tbasis(H)
   cl=map(x->T(W(x...)*longest(W)), tbl[:classtext])
-  tbl[:irreducibles]=toL(transpose(toM(char_values.(cl))))
+  tbl[:irreducibles]=transpose(toM(char_values.(cl)))
   charparams=chevieget(:A,:CharInfo)(r)[:charparams]
   a=chevieget(:A,:LowestPowerFakeDegree).(charparams)
   qE=central_monomials(hecke(W,v))
-  a=(-1).^a .* qE
-  tbl[:irreducibles]=map((x,y)->x.*y,a,tbl[:irreducibles])
+  tbl[:irreducibles]=Diagonal((-1).^a .* qE)*tbl[:irreducibles]
   AdjustHeckeCharTable(tbl, param)
 end)
 

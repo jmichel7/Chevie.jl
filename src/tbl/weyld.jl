@@ -4,17 +4,13 @@
 
 chevieset(:D,:CartanMat,n->cartan(:D,n))
 
-chevieset(:D, :GeneratingRoots, function (l)
-  rts=Vector{Int}[]
+chevieset(:D, :simpleroots, function (l)
+  r=fill(0,l,l)
   for i in 1:l-1
-    r=fill(0,l)
-    r[i:i+1]=[1,-1]
-    push!(rts, r)
+    r[i,i:i+1]=[1,-1]
   end
-  r=fill(0,l)
-  r[l-1:l]=[1,1]
-  push!(rts,r)
-  reverse(rts)
+  r[l,l-1:l]=[1,1]
+  reverse(r,dims=1)
 end)
 
 chevieset(:D, :ReflectionDegrees,n->vcat(2:2:2n-2,n))
@@ -179,10 +175,9 @@ end)
 chevieset(:D,:symbolcharparam,c->symbol_partition_tuple(c,0))
 
 chevieset(:D,:Invariants, function(n)
-  m=toM(chevieget(:imp,:GeneratingRoots)(2,2,n))
-  return map(f->function(arg...)
-              return f((transpose(collect(arg))*m)...)
-             end,chevieget(:imp,:Invariants)(2, 2, n))
+  m=chevieget(:imp,:simpleroots)(2,2,n)
+  map(f->function(arg...) return f((transpose(collect(arg))*m)...)
+    end,chevieget(:imp,:Invariants)(2,2,n))
 end)
 
 chevieset(:D,:CycPolGenericDegree,c->gendeg_symbol(symbol_partition_tuple(c,0)))

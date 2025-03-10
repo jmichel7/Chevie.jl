@@ -332,7 +332,7 @@ ChevieDict::Dict{String,String}=Dict(
 "ReflectionGroup"=>"reflection_group",
 "ReflectionLength(W,w)"=>"reflength(W,w)",
 #ReflectionWord
-"ReflectionName(W)"=>"repr(W;context=:limit=>true)",
+"ReflectionName(W)"=>"xrepr(W;limit=true)",
 "Reflections"=>"Perm.(reflections(W)[1:nhyp(W)])",
 #ReflectionSubCoset
 "ReflectionSubgroup"=>"reflection_subgroup",

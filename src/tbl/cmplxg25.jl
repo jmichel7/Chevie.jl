@@ -1,9 +1,9 @@
 #  tbl/cmplxg25.jl      CHEVIE library          Gunter Malle and Jean Michel
 #  Copyright (C) 1998-  The CHEVIE Team
 
-chevieset(:G25,:GeneratingRoots, [[0, 0, -1],
-                                   -(2*E(3,2)+1)//3*[1, 1, 1],
-                                   [0, 1, 0]])
+chevieset(:G25,:simpleroots,[0  0  -1;
+                         -(2*E(3,2)+1)//3 -(2*E(3,2)+1)//3 -(2*E(3,2)+1)//3;
+                         0 1 0])
 
 chevieset(:G25,:ordergens,fill(3,3))
 

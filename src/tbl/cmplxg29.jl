@@ -10,10 +10,10 @@ chevieset(:G29, :AltPres, [Dict{Symbol, Any}(
 # Our G29 is equal to reflection_subgroup(G31,[234,13,3,5])
 # This is also the subgroup which leaves invariant the Φ₁ of Maschke
 
-chevieset(:G29, :GeneratingRoots, [[0, 0, 0, -2], 
-                                   [-E(4), E(4), 1, 1],
-                                   [1 - E(4), -1 + E(4), 0, 0],
-                                   [0, 1 - E(4), -1 + E(4), 0]] // 2)
+chevieset(:G29, :simpleroots, [0 0 0 -2;
+                               -E(4) E(4) 1 1;
+                               1-E(4) -1+E(4) 0 0;
+                               0 1-E(4) -1+E(4) 0]//2)
 
 chevieset(:G29, :ordergens, fill(2,4))
 

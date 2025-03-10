@@ -18,9 +18,9 @@ chevieset(:A, :ReflectionName, function(r,option)
 end)
 
 # roots for GL_n
-chevieset(:A, :GeneratingRoots, function(n)
-  r=map(i->fill(0,n+1),1:n)
-  for i in 1:n r[i][[i,i+1]]=[1,-1] end
+chevieset(:A, :simpleroots, function(n)
+  r=fill(0,n,n+1)
+  for i in 1:n r[i,i:i+1].=[1,-1] end
   r
 end)
 
@@ -181,10 +181,10 @@ end)
 chevieset(:A, :Ennola, n->n==1 ? SPerm([-1, 2]) : SPerm())
 
 chevieset(:A, :Invariants, function(n)
-  m=CHEVIE[:A][:GeneratingRoots](n)
+  m=chevieget(:A,:simpleroots)(n)
   map(2:n+1)do i
     function(arg...)
-      v=sum(arg.*m)
+      v=sum(arg.*eachrow(m))
       sum(a->prod(v[a]),arrangements(1:n+1,i))
     end
   end

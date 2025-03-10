@@ -12,7 +12,7 @@ chevieset(:imp,:ordergens,function(p,q,r)
   res
 end)
 
-chevieset(:imp,:GeneratingRoots,function(p,q,r)
+chevieset(:imp,:simpleroots,function(p,q,r)
   if q==1 
     roots=[map(i->i==1 ? 1 : 0,1:r)]
   else
@@ -22,6 +22,7 @@ chevieset(:imp,:GeneratingRoots,function(p,q,r)
     if q==p roots=[v] else push!(roots, v) end
   end
   append!(roots,map(i->map(j->j==i-1 ? -1 : j==i ? 1 : 0,1:r),2:r))
+  toM(roots)
 end)
 
 chevieset(:imp, :BraidRelations, function (p, q, r)
@@ -80,11 +81,11 @@ chevieset(:imp, :ReflectionName, function (p,q,r,option,arg...)
 end)
 
 chevieset(:imp,:CartanMat,function(p,q,r)
-  rt=chevieget(:imp, :GeneratingRoots)(p,q,r)
+  rt=chevieget(:imp, :simpleroots)(p,q,r)
   rbar=conj(rt)
   e=1 .-E.(chevieget(:imp,:ordergens)(p,q,r))
-  e=map(i->(e[i]*rbar[i])//sum(rbar[i].*rt[i]),1:length(e))
-  [Cyc{Int}(sum(x.*y)) for x in e, y in rt]
+  e=map(i->(e[i]*rbar[i,:])//sum(rbar[i,:].*rt[i,:]),1:length(e))
+  [Cyc{Int}(sum(x.*y)) for x in e, y in eachrow(rt)]
 end)
 
 chevieset(:imp,:ReflectionDegrees,(p,q,r)->vcat(p*(1:r-1),div(r*p,q)))
@@ -349,7 +350,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
       end
     end
     pts=partition_tuples(r,p)
-    res[:irreducibles]=toM([entry.(pts,Ref(x)) for x in map(y->βset.(y),pts)])
+    res[:irreducibles]=[entry(pt,x) for x in map(y->βset.(y),pts), pt in pts]
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
@@ -375,8 +376,8 @@ information   about  it  necessary   to  compute  the   function  Delta  in
         return w^class[1]*char
       end
     end
-    res[:irreducibles]=toM([entry2.(Ref(char),cl[:classparams]) for
-                            char in ci[:charparams]])
+    res[:irreducibles]=[entry2(char,c) for char in ci[:charparams],
+                        c in cl[:classparams]]
   else
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
@@ -1405,7 +1406,7 @@ end
 
 chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
   if !(para isa Vector) para=[para] end
-  if [q,r]==[1,2]
+  if (q,r)==(1,2)
     Y,X=para;x1,x2=X
     t=partition_tuples(2,p)[i]
     if count(!isempty,t)==1
@@ -1416,7 +1417,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
       y1,y2=Y[p]
       return x1^0*[[y1 0;-1 y2],[x1 x1*y1+x2*y2;0 x2]]
     end
-  elseif [p,q,r]==[3,3,3]
+  elseif (p,q,r)==(3,3,3)
     x=-para[2][1]//para[2][2]
     f(x,j)=[[-1 0 0;0 0 1;0 x -1+x],[-1 0 0;x-x^2 -1+x j^2;j*x-j*x^2 j*x 0],
             [0 1 0;x -1+x 0;0 0 -1]]
@@ -1428,7 +1429,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
           -x*f(x^-1,E(3,2)),-x*f(x^-1,E(3)),
           [[-1 0;-1 x],[-1 0;-1 x],[x -x;0 -1]],[[x;;],[x;;],[x;;]]]
     return -para[2][2]*r[i]
-  elseif [p,q,r]==[2,2,4]
+  elseif (p,q,r)==(2,2,4)
     x=-para[1][1]//para[1][2]
     r=[x->[[-1+x -1 0;-x 0 0;x-x^2 -1+x -1],[0 1 0;x -1+x 0;0 0 -1],
            [-1 0 0;0 0 1;0 x -1+x],[0 1 0;x -1+x 0;0 0 -1]],
@@ -1466,7 +1467,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     if r[i] isa Integer return para[1][2]*x*r[r[i]](x^-1)
     else return -para[1][2]*r[i](x)*x^0
     end
-  elseif [p, q, r] == [3, 3, 4]
+  elseif (p, q, r) == (3, 3, 4)
     x=-para[2][1]//para[2][2]
     function m334(i)
       function f1(x) x^0*[[x -1 0 0 0 0 0 0 0 0 1-x-x^2+x^3 0;
@@ -1548,7 +1549,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
       return x^0*r[i]
     end
     return -para[2][2]*m334(i)
-  elseif [p,q,r]==[3,3,5]
+  elseif (p,q,r)==(3,3,5)
     function f2(q)
      [[-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
       -E(3)+root(-3)*q+E(3,2)*q^2 E(3,2)-E(3,2)*q 0 0 -E(3)+E(3)*q 0 root(-3)-E(3)*q^-1+E(3,2)*q -E(3,2)+E(3,2)*q^-1+E(3,2)*q 0 0 2*E(3)-E(3)*q^-1-E(3)*q 0 0 0 0 0 0 0 0 0;
@@ -1933,7 +1934,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     elseif i==36 res=[[x;;],[x;;],[x;;],[x;;],[x;;]]
     end
     return -para[2][2]*res
-  elseif[p q r]==[4 4 3]
+  elseif (p,q,r)==(4,4,3)
     x=-para[2][1]//para[2][2]
     r=x^0*[[[x -1 -1 0 0 0;0 -1 0 0 0 0;0 0 -1 0 0 0;0 0 0 -1 0 0;0 0 -1+x -1 x 0;0 1 -1 -1 0 x],
        [-1 0 0 0 0 0;-x x 0 0 0 x;0 0 0 0 -x 0;0 0 0 x 0 0;0 0 -1 0 -1+x 0;0 0 0 0 0 -1],
@@ -1963,8 +1964,8 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     ct(p)=para[1][p[1]]*(Q//1)^(p[3]-p[2])
     T=tableaux(S)
     return vcat([Diagonal(map(S->ct(pos(S,1)),T))], 
-    map(toM,map(2:r)do i
-      map(enumerate(T))do (j,t)
+    map(2:r)do i
+      toM(map(enumerate(T))do (j,t)
         a=pos(t,i);b=pos(t,i-1)
         t=map(l->map(copy,l),t)
         t[a[1]][a[2]][a[3]]=i-1;t[b[1]][b[2]][b[3]]=i #exchange i,i-1
@@ -1974,13 +1975,13 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
           end
         else tll=sum(para[2])//(1-ct(b)//ct(a))
         end
-        v=fill(0,length(T))//1*tll
+        v=fill(0//1,length(T))*tll
         v[j]=tll
         pp=findfirst(==(t),T)
         if !isnothing(pp) v[pp]=tll-para[2][2] end
         v
-      end
-     end)*prod(prod,para)^0)
+       end)*prod(prod,para)^0
+    end)
   else
     S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
     if p==q para=[E.(p,0:p-1),para[1]]
@@ -2019,19 +2020,15 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     p1=length(para[1])
     v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],
       findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]))
-    for m in v
-     if !(m isa AbstractMatrix) error("baad") end
-    end
-    if p==q v=vcat([inv(v[1]//1)*v[2]*v[1]],v[2:end])
-    elseif q>1 v=vcat([v[1]^q,inv(v[1]//1)*v[2]*v[1]],v[2:end])
-    end
+    v*=1//1
+    v[1]=inv(v[1])*v[2]*v[1]
+    if p!=q && q>1 v=vcat([v[1]^q],v) end
     if extra==false return improve_type(v) end
     T=tableaux(S)
-    m=Perm(T,map(S->S[vcat(d+1:p,1:d)],T))
-    m=orbits(m,1:length(T))
+    m=orbits(Perm(T,map(S->S[vcat(d+1:p,1:d)],T)),1:length(T))
     l=map(i->extra^i,0:-1:1-p//d)
     m1=first.(m)
-    improve_type(map(x->toM(map(c->sum(l.*map(y->y[m1],x[c])),m)),map(toL,v)))
+    improve_type(map(x->toM(map(c->transpose(x[c,m1])*l,m)),v))
   end
 end)
 

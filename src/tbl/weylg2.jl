@@ -23,7 +23,7 @@ chevieset(:G2, :ParabolicRepresentatives, s->
   chevieget(:imp, :ParabolicRepresentatives)(6, 6, 2, s))
 
 # in dim 3, as in Bourbaki
-chevieset(:G2, :GeneratingRoots, [[1, -1, 0], [-2, 1, 1]])
+chevieset(:G2, :simpleroots, [1 -1 0;-2 1 1])
 
 chevieset(:G2, :HyperplaneRepresentatives, [1, 2])
 

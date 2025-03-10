@@ -28,7 +28,11 @@ chevieset(:F4, :ReflectionName, function(opt,cartantype=0)
   end
 end)
 
-chevieset(:F4,:GeneratingRoots,[[0,1,-1,0],[0,0,1,-1],[0,0,0,1],[1,-1,-1,-1]//2])
+chevieset(:F4,:simpleroots,
+ [0 1 -1 0;
+  0 0 1 -1;
+  0 0 0 1;
+  1//2 -1//2 -1//2 -1//2])
 
 chevieset(:F4,:HyperplaneRepresentatives, [1, 3])
 

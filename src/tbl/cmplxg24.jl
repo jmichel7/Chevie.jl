@@ -1,20 +1,14 @@
 #  tbl/cmplxg24.jl            CHEVIE library       Gunter Malle, Jean Michel
 #  Copyright (C) 1998-2018
 
-chevieset(:G24, :GeneratingRoots,
-          [[1,root(-7), 0],
-           [1,-root(-7), 0],
-           [(-1-root(-7))//2,
-            (-7-3*root(-7))//6, -4//3]])
-chevieset(:G24, :GeneratingCoRoots,
-          [[1, (-3*root(-7))//7, 0],
-           [1, (3*root(-7))//7, 0],
-           [(-1+root(-7))//2,
-            (-7+3*root(-7))//14, -1//2]]//2)
-chevieset(:G24, :CartanMat, function()
-           toM(chevieget(:G24,:GeneratingCoRoots))*
-           transpose(toM(chevieget(:G24,:GeneratingRoots)))
-end)
+chevieset(:G24, :simpleroots,
+          [1 root(-7)  0;
+           1 -root(-7)  0;
+           (-1-root(-7))//2  (-7-3*root(-7))//6  -4//3])
+chevieset(:G24, :simplecoroots,
+          [1  (-3*root(-7))//7  0;
+           1  (3*root(-7))//7  0;
+           (-1+root(-7))//2  (-7+3*root(-7))//14  -1//2]//2)
 
 chevieset(:G24,:ordergens,fill(2,3))
 

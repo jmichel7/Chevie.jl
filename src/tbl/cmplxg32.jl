@@ -1,10 +1,10 @@
 #  tbl/cmplxg32.jl      CHEVIE library       Gunter Malle and Jean Michel
 #  Copyright (C) 1998-  The CHEVIE Team
 
-chevieset(:G32,:GeneratingRoots, [[0, 0, -1, 0],
-                                  E(4)//root(3)*[1, 1, 1, 0],
-                                  [0, 1, 0, 0],
-                                  E(4)//root(3)*[1, -1, 0, -1]])
+chevieset(:G32,:simpleroots,[0 0 -1 0;
+                             E(4)//root(3) E(4)//root(3) E(4)//root(3) 0;
+                             0 1 0 0;
+                             E(4)//root(3) -E(4)//root(3) 0 -E(4)//root(3)])
 
 chevieset(:G32,:ordergens,fill(3,4))
 

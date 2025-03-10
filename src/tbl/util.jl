@@ -20,10 +20,7 @@ function exceptioCharName(para)
   res
 end
 
-function TeXIndex(s)
-  s=string(s)
-  length(s)==1  ? "_"*s : "_{"*s*"}"
-end
+TeXIndex(n)=stringind(rio(TeX=true),n)
 
 function Replace(s,p...)
   for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
@@ -75,7 +72,7 @@ end
 # adjust table prepared for [qₛ,-1]-Hecke algebra to more general [xₛ,yₛ]
 function AdjustHeckeCharTable(tbl,param)
   param=improve_type(param)
-  if !(tbl[:irreducibles] isa Matrix) 
+  if !(tbl[:irreducibles] isa AbstractMatrix) 
     tbl[:irreducibles]=toM(tbl[:irreducibles])
   end
   for (i,w) in enumerate(tbl[:classtext])

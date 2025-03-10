@@ -9,17 +9,15 @@ export complex_reflection_group, crg, diagram, degrees, codegrees,
 
 # roots for the adjoint group
 PermRoot.simpleroots(t::TypeIrred)=
-  t.series==:ST ? toM(chevieget(t,:GeneratingRoots)) : one(cartan(t))
+  t.series==:ST ? chevieget(t,:simpleroots) : one(cartan(t))
 
 # coroots for the adjoint group
 function PermRoot.simplecoroots(t::TypeIrred)
   if t.series==:ST
-    cr=chevieget(t,:GeneratingCoRoots)
-    if isnothing(cr)
-      r=chevieget(t,:GeneratingRoots)
-      cr=coroot.(r,E.(ordergens(t)))
-    end
-    toM(map(x->convert.(Cyc{Rational{Int}},x),cr))
+    cr=chevieget(t,:simplecoroots)
+    if !isnothing(cr) return cr end
+    r=chevieget(t,:simpleroots)
+    toM(coroot.(eachrow(r),E.(ordergens(t))))
   else cartan(t)
   end
 end

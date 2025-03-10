@@ -5,11 +5,11 @@ chevieset(:H4, :ReflectionDegrees, [2, 12, 20, 30])
 
 let a=-E(5,2)-E(5,3)
 # from Humphreys, "Reflection Groups and Coxeter Groups", 2.13
-chevieset(:H4, :GeneratingRoots,
-        [[a, -1, a - 1, 0],
-         [-a, 1, a - 1, 0],
-         [1, a - 1, -a, 0],
-         [-1, -a, 0, a - 1]]//2)
+chevieset(:H4, :simpleroots,
+  [ a -1  a-1 0;
+   -a  1  a-1 0;
+    1 a-1 -a  0;
+   -1  -a 0  a-1]//2)
 end
 
 # The Galois-invariant model is CoxeterGroup(roots,coroots) given below

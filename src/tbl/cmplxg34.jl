@@ -11,13 +11,13 @@ chevieset(:G34, :BraidRelations, [[[1, 2, 1], [2, 1, 2]],
 # with the following choice of simple roots (of norm 6)
 # the set of all 756 roots are the short vectors of the Coxeter-Todd lattice
 # See Conway & Sloane Math.Proc.Camb.Phil.Soc. 93(1983) 421--440
-chevieset(:G34, :GeneratingRoots, [
-  [root(-3), -root(-3), 0, 0, 0, 0], 
-  [0, root(-3), 0, 0, 0, -root(-3)], 
-  [0, 0, 0, 0, -root(-3), root(-3)], 
-  [0, 0, 0, 0,-E(3)-2E(3,2), -2E(3)-E(3,2)], 
-  [-1, -1, -E(3), -E(3, 2), -1, -1], 
-  [0, 0,2E(3)+E(3,2),E(3)+2E(3,2), 0, 0]])
+chevieset(:G34, :simpleroots, 
+ [root(-3) -root(-3) 0 0 0 0;
+  0 root(-3) 0 0 0 -root(-3);
+  0 0 0 0 -root(-3) root(-3);
+  0 0 0 0 -E(3)-2E(3,2) -2E(3)-E(3,2);
+  -1 -1 -E(3) -E(3,2) -1 -1;
+  0 0 2E(3)+E(3,2) E(3)+2E(3,2) 0 0])
 
 chevieset(:G34,:ordergens,fill(2,6))
 

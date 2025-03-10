@@ -273,9 +273,9 @@ same as the one for `w`, etc…
 
 We associate to a Coxeter coset `Wϕ` a *twisted Dynkin diagram*, consisting
 of  the Dynkin diagram of `W` and  the graph automorphism induced by `ϕ` on
-this  diagram (this specifies the  group `W⋊ ⟨F⟩`, mentioned above, up
-to  isomorphism). See the  functions `ReflectionType`, `ReflectionName` and
-`diagram` for Coxeter cosets.
+this  diagram (this  specifies the  group `W⋊  ⟨F⟩`, mentioned above, up to
+isomorphism).  See  the  functions  `refltype`,  `print`  and `diagram` for
+Coxeter cosets.
 
 Below  is an example showing first how to *not* define, then how to define,
 the Weyl coset for a Suzuki group:

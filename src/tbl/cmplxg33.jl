@@ -25,22 +25,19 @@ chevieset(:G33,:AltPres,[Dict{Symbol,Any}(
 # definition field and invariants become worse).
 # The  group thus  defined agrees  with Burkhardt,  Math. Annalen  38 pp
 # 208--209 up to an interchange of x and z.
-chevieset(:G33, :GeneratingRoots, [
-  [root(-3), -root(-3), 0, 0, 0], 
-  [0, root(-3), 0, 0, -root(-3)], 
-  [0, 0, 0, -root(-3), root(-3)], 
-  [0, 0, 0, (3+root(-3))//2, (3-root(-3))//2], 
-  [-1, -1, 2, -1, -1]])
+chevieset(:G33, :simpleroots, 
+ [root(-3) -root(-3) 0 0 0; 
+  0 root(-3) 0 0 -root(-3); 
+  0 0 0 -root(-3) root(-3); 
+  0 0 0 (3+root(-3))//2 (3-root(-3))//2; 
+  -1 -1 2 -1 -1])
 
-chevieset(:G33, :GeneratingCoRoots, [
-  [-root(-3), root(-3), 0, 0, 0], 
-  [0, -root(-3), 0, 0, root(-3)], 
-  [0, 0, 0, root(-3), -root(-3)], 
-  [0, 0, 0, (3-root(-3))//2, (3+root(-3))//2], 
-  [-1, -1, 1, -1, -1]] // 3)
-
-chevieset(:G33,:CartanMat,toM(chevieget(:G33, :GeneratingCoRoots))*
-       transpose(toM(chevieget(:G33, :GeneratingRoots))))
+chevieset(:G33, :simplecoroots, 
+ [-root(-3) root(-3) 0 0 0; 
+  0 -root(-3) 0 0 root(-3); 
+  0 0 0 root(-3) -root(-3); 
+  0 0 0 (3-root(-3))//2 (3+root(-3))//2; 
+  -1 -1 1 -1 -1]//3)
 
 chevieset(:G33,:ordergens,fill(2,5))
 

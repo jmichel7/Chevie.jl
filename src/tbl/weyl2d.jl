@@ -102,7 +102,7 @@ chevieset(Symbol("2D"),:PhiFactors,n->vcat(fill(1,n-1),-1))
 # Alternatively  you can get the  *good* extension instead of *preferred*
 # extension by defining testchar appropriately.
 chevieset(Symbol("2D"),:HeckeCharTable,
-function (l,param,rootparam)
+function (l,param,sqrtpara)
   q=-param[1][1]//param[1][2]
   q=vcat([[q^0,-1]],map(i->[q,-1],2:l))
   hi=chevieget(:B,:HeckeCharTable)(l,q,Int[])
@@ -120,9 +120,10 @@ function (l,param,rootparam)
       :charname=>string_partition_tuple(para[i])),eachindex(para))
   para=partition_tuples(l,2)
   chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
-  tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(
-   Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
-   hi[:irreducibles][chr,:]),tbl[:classtext]))))
+  T=Tbasis(hecke(coxgroup(:B,l),q))
+  tbl[:irreducibles]=transpose(toM(map(x->char_values(
+    T(1,Replace(x,[1],[1,2,1])...),hi[:irreducibles][chr,:]),
+                                       tbl[:classtext])))
   AdjustHeckeCharTable(tbl,param)
 end)
 

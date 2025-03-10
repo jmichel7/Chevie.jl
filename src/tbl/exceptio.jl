@@ -5,22 +5,21 @@ chevieset([:A,:B,:D],:ordergens,t->r->fill(2,r))
 
 chevieset([:E6,:E7,:E8,:F4,:G2,:H3,:H4],:ordergens,t->fill(2,string(t)[end]-'0'))
 
-chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat,
-  function(t)
-    r=chevieget(t,:GeneratingRoots)
-    eig=E.(chevieget(t,:ordergens))
-    convert(Matrix{Cyc{Int}},toM(coroot.(r,eig))*transpose(toM(r)))
-  end)
+chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:simplecoroots,function(t)
+  eig=E.(chevieget(t,:ordergens))
+  toM(coroot.(eachrow(chevieget(t,:simpleroots)),eig))
+end)
 
-chevieset([:E7, :E8, :H3, :H4], :Invariants, t->
-  function()
-    C=chevieget(t, :CartanMat)
-    C=(C isa Matrix) ? C : toM(C)
-    r=toM(roots(C))*C
-    map(d->function(arg...)sum(a->sum(arg.*a)^d,eachrow(r)) end, 
-        chevieget(t, :ReflectionDegrees))
-  end
-)
+chevieset([:G24,:G27,:G33,:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat, t->
+  convert(Matrix{Cyc{Int}},chevieget(t,:simplecoroots)*
+         transpose(chevieget(t,:simpleroots))))
+
+chevieset([:E7, :E8, :H3, :H4], :Invariants, t->function()
+  C=chevieget(t, :CartanMat)
+  r=toM(roots(C))*C
+  map(d->function(arg...)sum((r*collect(arg)).^d) end, 
+      chevieget(t, :ReflectionDegrees))
+end)
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
   :FactorizedSchurElement, t->function(phi,para,arg...)
@@ -36,7 +35,7 @@ chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4],
 
 chevieset([:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34,:H3,:H4,Symbol("2E6"),Symbol("2F4"),Symbol("3D4"),:E6,:E7,:E8,:F4,:G2],:IrredInfo,function(t)
   ci=chevieget(t,:CharInfo)()
-  map((x,y)->Dict{Symbol,Any}(:charparam=>x,:charname=>y),ci[:charparams],ci[:charnames])
+  map((x,y)->(charparam=x,charname=y),ci[:charparams],ci[:charnames])
 end)
 
 chevieset([:G24,:G25,:G27,:G29,:G31,:G32,:G33,:G34,:E6,:E7,:E8,Symbol("2E6"),Symbol("2F4"),Symbol("3D4"),:H3,:H4],:ReflectionName,t->
@@ -65,7 +64,7 @@ end
 )
 
 chevieset([:G24,:G27,:G29,:G33],:CharTable,t->function()
-  ngens=length(chevieget(t,:GeneratingRoots))
+  ngens=size(chevieget(t,:simpleroots),1)
   res=chevieget(t,:HeckeCharTable)(fill([1,-1],ngens),fill(1,ngens))
   res[:powermap]=chevieget(t,:PowerMaps)
   res[:galomorphisms]=chevieget(t,:galomorphisms)
@@ -80,7 +79,7 @@ end)
 
 chevieset([:E6,:E7,:E8,:F4,:G2,:H3,:H4,:G24,:G27,:G29,:G33],:Representation,
   function(t)
-  ngens=length(chevieget(t,:GeneratingRoots))
+  ngens=size(chevieget(t,:simpleroots),1)
   i->chevieget(t,:HeckeRepresentation)(fill([1,-1],ngens),fill(1,ngens),i)
 end)
 
@@ -97,7 +96,7 @@ function(i)
 end)
 
 chevieset([:G2,:F4,:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34],
-  :SemisimpleRank,t->length(chevieget(t,:GeneratingRoots)[1]))
+  :SemisimpleRank,t->size(chevieget(t,:simpleroots),2))
 
 chevieset([:A,:B,:D],:SemisimpleRank,t->(r->r))
 

@@ -37,13 +37,13 @@ end)
 
 chevieset(:I, :SemisimpleRank, 2)
 
-chevieset(:I, :GeneratingRoots, function(m)
+chevieset(:I, :simpleroots, function(m)
   a=E(2m,m-1)
   b=conj(a)
   if iseven(m) r=root(m//2)
   else r=1
   end
-  [[1, 0],[r*(a + b)//2,r*(a-b)//2//E(4)]]
+  [1 0;r*(a+b)//2 r*(a-b)//2//E(4)]
 end)
 
 chevieset(:I,:ordergens,m->fill(2,2))
@@ -257,7 +257,7 @@ chevieset(:I, :FactorizedSchurElement, function(bond,phi,arg...)
 end)
 
 chevieset(:I,:Invariants,function(e,typ=iseven(e) ? 1 : -E(e,(e+1)//2)-E(e,(e+3)//2))
-  m=Diagonal([1+E(e,-1),-typ])*toM(chevieget(:imp,:GeneratingRoots)(e,e,2))
+  m=Diagonal([1+E(e,-1),-typ])*chevieget(:imp,:simpleroots)(e,e,2)
   map(f->(arg...)->f((transpose(collect(arg))*m)...),chevieget(:imp,:Invariants)(e,e,2))
 end)
 

@@ -10,17 +10,17 @@ chevieset(:G31,:BraidRelations,[[[1,4,1],[4,1,4]],[[2,4,2],[4,2,4]],
 # Borchardt'schen Moduln'', Math. Ann. 30 (1887) 496--515
 #
 # The group <T,U> described by Maschke where
-# T:=[[ -1, 1,  E(4), -E(4)],   U:=[[ E(4),    0,  0,  0],
-#     [  1, 1,  E(4),  E(4)],       [    0, E(4),  0,  0],
-#     [ -1, 1, -E(4),  E(4)],       [    0,    0,  1,  0],
-#     [  1, 1, -E(4), -E(4)]]/2;    [    0,    0,  0,  1]]/E(8);
+# T=[-1 1  E(4) -E(4);   U=[E(4)    0  0  0;
+#     1 1  E(4)  E(4);         0 E(4)  0  0;
+#    -1 1 -E(4)  E(4);         0    0  1  0;
+#     1 1 -E(4) -E(4)]//2      0    0  0  1]//E(8)
 # is *not* G31 which is in fact the group <T,U*E(8)>.
 
-chevieset(:G31,:GeneratingRoots,[[E(4),0,0,0],
-                                 [-1+E(4),-(E(4))-1,0,0]//2,
-                                 [1+E(4),-(E(4))-1,0,0]//2,
-                                 [1,1,1,1]//2,
-                                 [0,1+E(4),-(E(4))-1,0]//2])
+chevieset(:G31,:simpleroots,[2E(4) 0 0 0;
+                             -1+E(4) -E(4)-1 0 0;
+                             1+E(4) -E(4)-1 0 0;
+                             1 1 1 1;
+                             0 1+E(4) -E(4)-1 0]//2)
 
 chevieset(:G31,:ordergens,fill(2,5))
 
