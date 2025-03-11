@@ -397,7 +397,7 @@ two_tree=function(m::AbstractMatrix)
 end
 
 " TypeIrred or nothing for an irreducible Cartan matrix"
-function type_fincox_cartan(m::AbstractMatrix)
+function fincoxTypeIrred(m::AbstractMatrix)
   rank=size(m,1)
   if !all(==(2),diag(m)) return nothing end
   s=two_tree(m)
@@ -453,13 +453,13 @@ function type_fincox_cartan(m::AbstractMatrix)
 end
 
 """
-    type_cartan(C)
+    fincox_refltype(C)
 
  return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
 """
-function type_cartan(m::AbstractMatrix)
+function fincox_refltype(m::AbstractMatrix)
   map(diagblocks(m)) do I
-    t=type_fincox_cartan(m[I,I])
+    t=fincoxTypeIrred(m[I,I])
     if isnothing(t) return nothing end
     t[:indices].=I[t[:indices]]
     t
@@ -866,7 +866,7 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)
   G=PRG(gens,one(gens[1]),mats,r,coroots,
-        Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C)))
+        Dict{Symbol,Any}(:cartan=>C,:refltype=>fincox_refltype(C)))
   end
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
@@ -1104,7 +1104,7 @@ function PermRoot.reflection_subgroup(W::FCG,I::AbstractVector{<:Integer})
   end
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
-  refltypes=map(type_cartan(C)) do t
+  refltypes=map(fincox_refltype(C)) do t
     if (t.series in [:A,:D]) && rootlengths(W,inclusion[t.indices[1]])==1
       p=simple_reps(W)[inclusion[t.indices[1]]]
       for s in refltype(W)

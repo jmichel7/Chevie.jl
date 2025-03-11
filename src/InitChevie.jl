@@ -35,39 +35,40 @@ end
 function field(t::TypeIrred)
   get!(t,:field)do
   if haskey(t,:orbit)
-    phi=t.twist
+    phi=t.twist::Perm{Perms.Idef}
     orderphi=order(t.twist)
-    t=t.orbit[1]
+    t=t.orbit[1]::TypeIrred
   else
     orderphi=1
   end
-  s=t.series
+  s=t.series::Symbol
   if s==:ST 
     if haskey(t,:ST)
-      if orderphi!=1 return (Symbol(orderphi,"G",t.ST),)
-      elseif 4<=t.ST<=22 return (:G4_22,t.ST)
-      else return (Symbol("G",t.ST),)
+      if orderphi!=1 (Symbol(orderphi,"G",t.ST),)
+      elseif 4<=t.ST<=22 (:G4_22,t.ST)
+      else (Symbol("G",t.ST),)
       end
-    elseif orderphi!=1
-      return (:timp, t.p, t.q, t.rank, phi)
-    else
-      return (:imp, t.p, t.q, t.rank)
+    elseif orderphi!=1 (:timp, t.p, t.q, t.rank, phi)
+    else (:imp, t.p, t.q, t.rank)
     end
-  elseif s==:I return (orderphi==1 ? s : Symbol(2,s),t.bond)
+  elseif s==:I 
+    (orderphi==1 ? s : Symbol(2,s),t.bond)
   elseif s in [:A,:B,:D] 
-     if orderphi==1 return (s,PermRoot.rank(t))
+     if orderphi==1 (s,PermRoot.rank(t))
      elseif orderphi==2 
-       if s==:B return (Symbol(2,:I),4)
-       else return (Symbol(2,s),PermRoot.rank(t))
+       if s==:B 
+            (Symbol(2,:I),4)
+       else (Symbol(2,s),PermRoot.rank(t))
        end
-     elseif orderphi==3 return (Symbol("3D4"),)
+     elseif orderphi==3 (Symbol("3D4"),)
      end
   elseif s in [:E,:F,:G]
-    if orderphi==1 return (Symbol(s,PermRoot.rank(t)),)
-    elseif s==:G return (Symbol(2,:I),6)
-    else return (Symbol(orderphi,s,PermRoot.rank(t)),) 
+    if orderphi==1 (Symbol(s,PermRoot.rank(t)),)
+    elseif s==:G 
+         (Symbol(2,:I),6)
+    else (Symbol(orderphi,s,PermRoot.rank(t)),) 
     end
-  else return (Symbol(s,PermRoot.rank(t)),) 
+  else (Symbol(s,PermRoot.rank(t)),) 
   end
   end
 end
@@ -75,7 +76,6 @@ end
 # functions whose result depends on cartanType
 const needcartantype=Set([:Invariants,
                           :PrintDiagram,
-                          :ReflectionName,
                           :UnipotentClasses,
                           :WeightInfo,
                           :CartanMat])
@@ -84,7 +84,10 @@ debug::Bool=false # time each call
 
 "`chevieget(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
 function chevieget(t::TypeIrred,f::Symbol,extra...)
-  n,args...=field(t)
+  if haskey(t,:field) n,args...=t.field # faster than else!
+  else 
+    n,args...=field(t)
+  end
 # println("d=$d f=$f extra=$extra")
   o=chevieget(n,f)
   if o isa Function

@@ -1145,7 +1145,7 @@ end
 
 function Base.isfinite(W::MatCox)
   get!(W,:isfinite)do
-    !any(isnothing,Weyl.type_cartan(cartan(W)))
+    !any(isnothing,Weyl.fincox_refltype(cartan(W)))
   end::Bool
 end
 
