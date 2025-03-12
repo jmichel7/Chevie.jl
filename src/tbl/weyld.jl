@@ -192,7 +192,7 @@ chevieset(:D,:UnipotentCharacters,function(rank)
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>(-1)^div(d+1,4), 
       :parameterExponents=>vcat(d,fill(1,max(0, rank-1-r))))
-    s[:cuspidalName] = string("D",TeXIndex(r))
+    s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
     if d==0
       s[:relativeType].series=:D
       s[:cuspidalName]=""

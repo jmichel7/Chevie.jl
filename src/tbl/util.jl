@@ -20,8 +20,6 @@ function exceptioCharName(para)
   res
 end
 
-TeXIndex(n)=stringind(rio(TeX=true),n)
-
 function Replace(s,p...)
   for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
     res=empty(s)
@@ -43,28 +41,23 @@ function Replace(s,p...)
 end
 
 # make a cuspidal harish-chandra series record
-function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
-  if n==28 name="F_4"
-  elseif n==30 name="H_4"
-  elseif n>=36 name="E_"*string(n-29)
-  else name="G_{"*string(n)*"}"
-  end
-  if no!=0 name*="^"*string(no) end
-  if E4 && eig==E(4) name*="[i]"
-  elseif E4 && eig==E(4,3) name*="[-i]"
-  else name*="["*xrepr(eig,TeX=true)*"]"
+function mkcuspidal(name,charnum,eigen;no=0,qeig=0,eig=true)
+  cn=name
+  if eig # if only one cuspidal in W omit display of eigenvalue
+    if no!=0 cn*="^"*string(no) end
+    if eigen==E(4) cn*="[i]"
+    elseif eigen==E(4,3) cn*="[-i]"
+    else cn*="["*xrepr(eigen,TeX=true)*"]"
+    end
   end
   res=Dict(:relativeType=>TypeIrred(series=:A,indices=Int[],rank=0),
     :parameterExponents=>Int[],:charNumbers=>[charnum],
-    :eigenvalue=>eig,:cuspidalName=>name)
-  if n<=22 res[:levi]=1:2
-  elseif n<=27 res[:levi]=1:3
-  elseif n<=32 res[:levi]=1:4
-  elseif n<=33 res[:levi]=1:5
-  elseif n<=35 res[:levi]=1:6
-  elseif n<=36 res[:levi]=1:7
-  else res[:levi]=1:8
-  end
+    :eigenvalue=>eigen,:cuspidalName=>cn)
+  res[:levi]=1:Dict{String,Int}( "G_4"=>2, "G_6"=>2, "G_8"=>2, "G_{14}"=>2,
+ "H_3"=>3, "G_{24}"=>3, "G_{25}"=>3, "G_{26}"=>3, "G_{27}"=>3, "F_4"=>4,
+ "G_{29}"=>4, "H_4"=>4, "G_{32}"=>4, "G_{33}"=>5, "G_{34}"=>6, "E_6"=>6, 
+ "E_7"=>7, "E_8"=>8, "G_2"=>2, "{}^2F_4"=>4,"{}^2E_6"=>6,"{}^3G_{3,3,3}"=>3,
+ "G_{3,3,3}"=>3,"{}^4G_{3,3,3}"=>3,"{}^3D_4"=>4)[name]
   if qeig!=0 res[:qEigen]=qeig end
   res
 end

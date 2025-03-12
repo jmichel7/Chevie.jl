@@ -1,6 +1,7 @@
 # defines RG()
 module Tests
 using Chevie
+export RG
 
 const test=Dict{Symbol,@NamedTuple{applicable::Function,comment::String}}()
 
@@ -42,13 +43,13 @@ all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
 
 function tests()
-  for (s,t) in sort(collect(test),by=first)
-    print(rpad(s,20),": ")
+ for (i,(s,t)) in enumerate(sort(collect(test),by=first))
+    print(rpad("$i",3),rpad(s,17),": ")
     printstyled(t.comment,"\n";color=:green)
   end
 end
   
-"RG(s) regression test for test s (keys(test) shows available tests)"
+"`RG(s::Symbol)` test `s` (function `Ts`) on `Tests.all_ex`"
 function RG(s::Symbol;log=false)
   if log 
     global curio=open("log",create=true,write=true,append=true)
@@ -67,7 +68,7 @@ function RG(s::Symbol;log=false)
   if log close(curio) end
 end
 
-"RG(W) regression test groupspets W"
+"`RG(W)` test group or spets `W`; `Tests.tests()` shows available tests"
 function RG(W;log=false)
   if log 
     global curio=open("log",create=true,write=true,append=true)
@@ -89,6 +90,7 @@ end
 RG(v::Vector;log=false)=for W in v RG(W;log=log) end
 RG(;log=false)=RG(all_ex;log=log)
 
+"`RG(Symbol::s,W)` apply test `s` to `W`"
 function RG(s::Symbol,W)
   t=test[s]
   printstyled(s,": ",t.comment,"\n";color=:green)
@@ -1914,7 +1916,7 @@ end
 
 test[:parameterexponents]=(
   applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
-  comment="of rel. Hecke algebras agree with cyclic formula for Schur")
+  comment="of rel. Hecke algebras agree with cyclic group Schur")
 
 #------------------------- discriminant -----------------------------
 

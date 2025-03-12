@@ -1014,7 +1014,7 @@ julia> W=coxgroup(:D,3) # a D₃ is an A₃ in disorder
 A₃₍₁₃₂₎
 
 julia> t=refltype(W)
-A₃
+A₃₍₁₃₂₎
 
 julia> indices(t)
 3-element Vector{Int64}:

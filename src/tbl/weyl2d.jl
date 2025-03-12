@@ -137,7 +137,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
      TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>1,# see Geck-malle
       :parameterExponents=>vcat(d,fill(1,max(0,rank-1-r))))
-    s[:cuspidalName]=string("{}^2D",TeXIndex(r))
+    s[:cuspidalName]="{}^2D"*stringind(rio(TeX=true),r)
     push!(uc[:harishChandra],s)
     if d==2
       s[:levi]=Int[]
@@ -157,7 +157,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
     s=Dict{Symbol, Any}(:relativeType=>
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>(-1)^div(d+1,4))
-    s[:cuspidalName]=string("D",TeXIndex(r))
+    s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
     r=s[:relativeType][:rank]
     symbols=BDSymbols(rank,d)
     if isodd(div(d+1,4)) symbols=reverse.(symbols) end

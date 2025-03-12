@@ -623,7 +623,7 @@ end
 @test mytest("PermRoot.jl","cartan(W)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
 @test mytest("PermRoot.jl","rank(complex_reflection_group(31))","4")
 @test mytest("PermRoot.jl","W=coxgroup(:D,3)","A₃₍₁₃₂₎")
-@test mytest("PermRoot.jl","t=refltype(W)","A₃")
+@test mytest("PermRoot.jl","t=refltype(W)","A₃₍₁₃₂₎")
 @test mytest("PermRoot.jl","indices(t)","3-element Vector{Int64}:\n 1\n 3\n 2")
 @test mytest("PermRoot.jl","bipartite_decomposition(coxgroup(:E,8))","([1, 4, 6, 8], [3, 2, 5, 7])")
 @test mytest("PermRoot.jl","W=coxgroup(:B,3)","B₃")

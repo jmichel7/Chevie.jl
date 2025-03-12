@@ -132,7 +132,7 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
       if r!=0 s[:parameterExponents]=vcat(2d+1,fill(2,r-1))
       else s[:parameterExponents]=[]
       end
-      if k<l s[:cuspidalName]=string("{}^2A",TeXIndex(l-k))
+      if k<l s[:cuspidalName]="{}^2A"*stringind(rio(TeX=true),l-k)
       else s[:cuspidalName]=""
       end
       # see Fong/Srinivasan for this map

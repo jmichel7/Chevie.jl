@@ -128,20 +128,15 @@ end)
 
 chevieset(:G2, :UnipotentCharacters, function ()
   Dict{Symbol, Any}(:harishChandra => 
-  [Dict{Symbol, Any}(:relativeType => TypeIrred(;series=:G,indices=1:2, :rank => 2), :levi => [], :parameterExponents => [1, 1], :charNumbers => 1:6, :eigenvalue => 1, :cuspidalName => ""), 
-   Dict{Symbol, Any}(:relativeType => TypeIrred(;series=:A,indices=[],rank=0),
-     :levi => 1:2, :parameterExponents => [], :charNumbers => [10],
-     :eigenvalue => E(3, 2), :cuspidalName => "G_2[\\zeta_3^2]"), 
-   Dict{Symbol, Any}(:relativeType => TypeIrred(;series=:A,indices=[],rank=0),
-     :levi => 1:2, :parameterExponents => [], :charNumbers => [7],
-     :eigenvalue => -1, :cuspidalName => "G_2[-1]"), 
-   Dict{Symbol, Any}(:relativeType => TypeIrred(;series=:A,indices=[],rank=0),
-     :levi => 1:2, :parameterExponents => [], :charNumbers => [9],
-     :eigenvalue => E(3), :cuspidalName => "G_2[\\zeta_3]"), 
-   Dict{Symbol, Any}(:relativeType => TypeIrred(;series=:A,indices=[],rank=0),
-     :levi => 1:2, :parameterExponents => [], :charNumbers => [8],
-     :eigenvalue => 1, :cuspidalName => "G_2[1]")], 
-  :families=>[Family("S3",[5,6,4,3,8,7,9,10], Dict{Symbol, Any}(:ennola => -5)), Family("C1", [1]), Family("C1", [2])], 
+  [Dict{Symbol,Any}(:relativeType=>TypeIrred(;series=:G,indices=1:2,rank=2),
+     :levi => [], :parameterExponents => [1, 1], :charNumbers => 1:6,
+     :eigenvalue => 1, :cuspidalName => ""), 
+   mkcuspidal("G_2",10,E(3,2)),
+   mkcuspidal("G_2",7,-1),
+   mkcuspidal("G_2",9,E(3)),
+   mkcuspidal("G_2",8,1)], 
+  :families=>[Family(:S3,[5,6,4,3,8,7,9,10],ennola=-5),
+              Family("C1", [1]), Family("C1", [2])], 
   :a => [0, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
   :A => [0, 6, 5, 5, 5, 5, 5, 5, 5, 5], 
   :charSymbols=> [[[0],[0],[0],[0],[0],[2]],
@@ -152,8 +147,8 @@ chevieset(:G2, :UnipotentCharacters, function ()
 end)
 
 chevieset(:G2, :Invariants, [
-  function(x,y) return -3*x*y+3*x^2+y^2 end, 
-  function(x,y) return x^2*y^4-6*x^3*y^3+13*x^4*y^2-12*x^5*y+4*x^6 end])
+  (x,y)->-3x*y+3x^2+y^2, 
+  (x,y)->x^2*y^4-6x^3*y^3+13x^4*y^2-12x^5*y+4x^6])
 
 chevieset(:G2, :Discriminant,()->function(x,y) return 4*x^3*y-27*y^2 end)
 

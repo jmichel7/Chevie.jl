@@ -84,7 +84,7 @@ end)
 
 chevieset(:imp,:AuName,function(p,q,r)
   if q!=1 || r!=1 error("pas prevu") end
-  "Z"*TeXIndex(p)
+  "Z"*stringind(rio(TeX=true),p)
 end)
 
 chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
@@ -1395,9 +1395,9 @@ q^2-3*q+4-2*q^-1 -q^2+2*q-1 0 -q+2-q^-1 0 0 0 (j-j2)*q^2+(-2j+3j2)*q+j-3j2+j2*q^
 j*q^3+(-3j+j2)*q^2+(3j-2j2)*q-j+2j2-j2*q^-1 -j*q^3+(2j-j2)*q^2+(-j+2j2)*q-j2 0 -j2*q^2+2j2*q-j2 (j+2j2)*q^2+(-3j-5j2)*q+3j+4j2+q^-1 0 (j-j2)*q^2+(-j+2j2)*q-j2 0 -j2*q^2+2j2*q-j2 0 j2*q-j2 0 0 0 0 0 0 0 0 j2*q-j2 0 0 0 0 j*q-j j2*q 0 0 0 q-1]]
 end
 
-chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
+chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
   if !(para isa Vector) para=[para] end
-  if (q,r)==(1,2)
+  if (q,r)==(1,2) && gen==false
     Y,X=para;x1,x2=X
     t=partition_tuples(2,p)[i]
     if count(!isempty,t)==1
@@ -2010,10 +2010,10 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     end
     p1=length(para[1])
     v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],
-      findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]))
+      findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]);gen=true)
     v*=1//1
-    v[1]=inv(v[1])*v[2]*v[1]
-    if p!=q && q>1 v=vcat([v[1]^q],v) end
+    if p==q v[1]=inv(v[1])*v[2]*v[1]
+    elseif q>1 v=vcat([v[1]^q,inv(v[1])*v[2]*v[1]],v[2:end]) end
     if extra==false return improve_type(v) end
     T=tableaux(S)
     m=orbits(Perm(T,map(S->S[vcat(d+1:p,1:d)],T)),1:length(T))
@@ -2023,10 +2023,10 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
   end
 end)
 
-chevieset(:imp, :Representation, function (p, q, r, i)
+chevieset(:imp, :Representation, function (p, q, r, i;gen=false)
   o=chevieget(:imp,:ordergens)(p,q,r)
   chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->
-                x==2 ? [1,-1] : E.(x,0:x-1),o),[],i)
+                x==2 ? [1,-1] : E.(x,0:x-1),o),[],i;gen)
 end)
 
 function MakeFamilyImprimitive(S, uc)

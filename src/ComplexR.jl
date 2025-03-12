@@ -95,7 +95,7 @@ function complex_reflection_group(p,q,r,cartanType=1)
     rr=simpleroots(t)
     c=cartan(t)
     t.cartanType=cartanType
-    D=Diagonal(vcat([1],fill(cartanType,r-1)))
+    D=Diagonal(vcat([1],fill(cartanType,size(c,1)-1)))
     cr=solutionmat(transpose(rr),inv(D//1)*c*D)
     if nothing in cr error("unexpected") end
     PRG(rr,cr)
