@@ -350,13 +350,12 @@ function harish_chandra_induction_table(HF, WF)
                       inclusion(H,W,indices(h[:relativeType])))))
       end
     else
-      Jb=indices(ser[:relativeType])
 #   @show Jb
       L = reflection_subgroup(W, ser[:levi])
       Wi = relative_group(W, ser[:levi], Jb)
       if false
-        if h[:levi]==[] rh=inclusiongens(H)
-        else rh = filter(i->refls(parent(W),i) in H,Jb)
+        if isempty(h[:levi]) rh=inclusiongens(H)
+        else rh=filter(i->refls(parent(W),i) in H,Jb)
         end
       else
         rh=reflection_subgroup(W,restriction(W,inclusiongens(H).^op))
@@ -377,7 +376,9 @@ function harish_chandra_induction_table(HF, WF)
         end
         reflection_subgroup(Wi, Int[])
       end
-      Hi = getHi()
+      if length(H)==length(W) Hi=Wi
+      else Hi=getHi()
+      end
     end
     lu=xrepr(Hi;TeX=true)
     lg=xrepr(Wi;TeX=true)

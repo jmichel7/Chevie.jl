@@ -771,7 +771,7 @@ chevieset(:G29, :UnipotentCharacters,
   mkcuspidal("G_{29}",64,E(8,3);qeig=1//2),
   mkcuspidal("G_{29}",42,E(8,5);qeig=1//2),
   mkcuspidal("G_{29}",65,E(8,7);qeig=1//2)], 
-  :families => [Family("C1", [1]), 
+  :families => [Family(:C1, [1]), 
   Family(conj(Family(:X)(4)),[5,3,7,39,40,38],signs=[1,1,1,1,-1,-1],ennola=3),
   #JM 24/2/2003 changed signs of 40 to fit with G443
   Family(:C1,[17],ennola=-1),

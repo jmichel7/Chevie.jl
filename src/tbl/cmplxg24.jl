@@ -178,7 +178,7 @@ Dict{Symbol, Any}(
  mkcuspidal("G_{24}",14,E(7,4)),
  mkcuspidal("G_{24}",15,E(7,2)),
  mkcuspidal("G_{24}",16,E(7))],
- :families => Family[Family("C1",[1]),
+ :families => Family[Family(:C1,[1]),
    Family(:X7,[4, 6, 7, 13, 14, 15, 16],ennola=2,cospecial=2),
    Family(:C1,[10],ennola=-1),
    Family(Family(:TQZ)(2,-1,(1, -1)),[11, 12, 18, 17],ennola=-4,cospecial=2),

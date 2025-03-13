@@ -53,12 +53,8 @@ chevieset(:G2, :ClassParameter, w->chevieget(:G2,:ClassNames)[
 chevieset(:G2, :squv, function (para, sqrtpara)
   u=prod(para[1])
   v=prod(para[2])
-  if u==v u
-  elseif u==v^3 -v^2
-  elseif v==u^3 -u^2
-  elseif sqrtpara[1]!==nothing && sqrtpara[2]!==nothing sqrtpara[1]*sqrtpara[2]
-  else root(u*v)
-  end
+  u==v ? u : u==v^3 ? -v^2 : v==u^3 ? -u^2 : all(!isnothing,sqrtpara) ?
+    prod(sqrtpara) : root(u*v)
 end)
 
 chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
@@ -136,7 +132,7 @@ chevieset(:G2, :UnipotentCharacters, function ()
    mkcuspidal("G_2",9,E(3)),
    mkcuspidal("G_2",8,1)], 
   :families=>[Family(:S3,[5,6,4,3,8,7,9,10],ennola=-5),
-              Family("C1", [1]), Family("C1", [2])], 
+              Family(:C1, [1]), Family(:C1, [2])], 
   :a => [0, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
   :A => [0, 6, 5, 5, 5, 5, 5, 5, 5, 5], 
   :charSymbols=> [[[0],[0],[0],[0],[0],[2]],

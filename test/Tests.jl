@@ -346,7 +346,7 @@ function Tchartable(W)
 end
 
 test[:chartable]=(applicable=W->!(W isa Spets),
-   comment="check it agrees with GAP chartable-for-PermGroup")
+   comment="check it agrees with GAP4 chartable-of-PermGroup")
 
 #----------------test: powermaps ------------------------
 
@@ -372,7 +372,7 @@ function Tpositionclasses(W)
   if cl!=1:length(cl) error("classes") end
 end
 
-test[:positionclasses]=(applicable=W->true, comment="check classreps give all positions")
+test[:positionclasses]=(applicable=W->true, comment="check classreps contains all positions")
 
 #---------------- test: unipotentclasses ------------------------
 function Tunipotentclasses(W,p=nothing)
@@ -881,7 +881,7 @@ function Tcharparams(W)
 end
 
 test[:charparams]=(applicable=W->W isa Group,
-   comment="check them for consistency with Michel/Thiel rules")
+   comment="check they are consistent with Michel/Thiel rules")
 
 #---------------- test: HCdegrees ------------------------
 function THCdegrees(W)
@@ -934,6 +934,7 @@ function THCdegrees(W,i,rel=false)
     return false
   end
   sch=CycPol.(sch)
+  xprintln(sch[end-1:end])
   cmpvec(sch,reldeg;na=string("Schur(",repr(H;context=rio()),")"),nb="ud")
   if rel reldeg
   else  Ref(subs(cusp*index,Pol()^den)).//(sch*1//1)
@@ -941,7 +942,7 @@ function THCdegrees(W,i,rel=false)
 end
 
 test[:HCdegrees]=(applicable=isspetsial,
-  comment="gendegs from relative Hecke algebras of 1-HC cuspidals")
+  comment="unidegs using relative Hecke algebras of 1-HC cuspidals")
 
 # EigenAndDegHecke(s) 
 # s is a series. Uses only s.Hecke, s.d, 
@@ -980,7 +981,9 @@ function EigenAndDegHecke(s)
   frac=degree.(central_monomials(H)).*d1
   om2=ct1[:,i].//ct1[:,1].*d.^-frac
   if omegachi!=om2 
-    ChevieErr(word(conjugacy_classes(W)[i]),"^",1//d1," not equal to π(",W,")\n")
+    if !isone(d1)
+   ChevieErr(word(conjugacy_classes(W)[i]),"^",1//d1," not equal to π(",W,")\n")
+    end
     omegachi=om2
   end
   ss=CycPol.(invpermute(schur_elements(H),p))
@@ -1035,7 +1038,7 @@ function Tseries(W,arg...)
 end
 
 test[:series]=(applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
-               comment="check d-HC series")
+               comment="compute d-HC series")
 
 #---------------- test: extrefl ------------------------
 using LinearAlgebra: tr
@@ -1142,7 +1145,7 @@ function Tdegrees(W)
   end
 end
 
-test[:degrees]=(applicable=x->true, comment="recompute them")
+test[:degrees]=(applicable=x->true, comment="recompute reflection degrees")
 
 #---------------- test: fakedegrees ------------------------
 
@@ -1385,7 +1388,7 @@ function Tfamilies(W,i;hard=false)
   InfoChevie("\n")
 end
 
-test[:families]=(applicable=isspetsial,comment="testing")
+test[:families]=(applicable=isspetsial,comment="test properties")
 #------------------------- HCinduce gendegs -----------------------------
 
 function TdegsHCinduce(W)
@@ -1407,8 +1410,10 @@ function TdegsHCinduce(W,J)
   inddeg=improve_type(degree.(ind))
   if pred!=inddeg
     nh=charnames(uL)
-    ChevieErr("Relgroups:\n")
-    for p in tbl.pieces
+    ChevieErr("Relgroups Levi=$J:\n")
+    sp=filter(i->pred[i]!=inddeg[i],eachindex(pred))
+    for p in filter(p->any(i->i in indexin(p.ucharnames,tbl.ucharnames),sp),
+                    tbl.pieces)
       ChevieErr(p,"=>",join(indexin(p.ucharnames,tbl.ucharnames)," "),"\n")
     end
     cmpvec(pred,inddeg;na="udLevi*index",nb="via hc_induction_table")
@@ -1492,7 +1497,7 @@ function TalmostHC(W)
 end
 
 test[:almostHC]=(applicable=W->isspetsial(W) && W!=crg(34),
-                 comment="almostHC series")
+                 comment="recompute almostHC series from relative cosets")
 
 #------------------------- sum squares -----------------------------
 # The sum of squares of fakedegrees should equal the sum of
@@ -1521,7 +1526,7 @@ function TaA(W)
   end
 end
 
-test[:aA]=(applicable=isspetsial,comment="recompute them from unipotent degrees")
+test[:aA]=(applicable=isspetsial,comment="check with unipotent degrees")
 
 #------------------------- eigen -----------------------------
 # check eigenvalues/qEigen in families agree with those in HC series
@@ -1792,7 +1797,7 @@ end
 
 test[:G4_22index]=(applicable=function(W)t=refltype(W)
   length(t)==1 && haskey(t[1],:ST) && t[1].ST in 4:22
- end, comment="Check classinfo(W).indexclasses for W in G₄-G₂₂")
+ end, comment="Check classinfo(W).indexclasses for G₄-G₂₂")
 
 #------------------------- Opdam -----------------------------
 
@@ -1834,7 +1839,7 @@ function Thgal(W)
 end
 
 test[:hgal]=(applicable=W->!(W isa Spets) && length(refltype(W))==1,
-             comment="recompute Opdam involution")
+             comment="recompute Opdam involution using hecke(W,Pol()^|ZW|)")
 
 #------------------------- ParameterExponents -----------------------------
 # check that the parameter exponents of the relative hecke algebras

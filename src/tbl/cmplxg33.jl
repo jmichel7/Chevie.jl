@@ -2514,7 +2514,7 @@ chevieset(:G33, :UnipotentCharacters, function ()
  :families => [Family(:C1, [1]), 
    Family(conj(Family(:X)(3)),[4, 6, 41],signs=[1, 1, -1],ennola=-1), 
    Family(:C1, [15]), 
-   Family(:C2, [22, 8, 19, 42], Dict{Symbol, Any}(:ennola => -2)), 
+   Family(:C2, [22, 8, 19, 42], ennola= -2), 
    Family(conj(Family(:X)(6)),[25,30,17,28,23,45,48,43,50,9,47,44,11,49,46],
          signs=[1, 1, 1, 1, 1, -1, -1, -1,-1,-1, 1, -1, 1, 1, -1],ennola=-13),
    Family(:C1, [39]), 

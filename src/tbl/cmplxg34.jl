@@ -10704,7 +10704,7 @@ chevieset(:G34, :UnipotentCharacters, function ()
   mkcuspidal("G_{34}",320,E(12,11);qeig=1//2), 
   mkcuspidal("G_{34}",204,E(12);qeig=1//2), 
   mkcuspidal("G_{34}",321,E(12,5);qeig=1//2)], 
-  :families => [Family("C1", [1]), 
+  :families => [Family(:C1, [1]), 
   Family(conj(Family(:X)(3)), [5, 3, 170], signs=[1, 1, -1], ennola= 2), 
   Family(conj(Family(:X)(3)), [17, 15, 171], signs=[1, 1, -1],ennola= -3), 
   Family(:C2, [24, 14, 20, 172], ennola=-4), 

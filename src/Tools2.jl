@@ -181,7 +181,7 @@ function Chevie.gap(p::Pol)
   end)
 end
 
-Chevie.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")
+Chevie.gap(m::Monomial)=join([string(v)*(p==1 ? "" : p isa Integer ? string("^",p) : string("^(",gap(p),")")) for (v,p) in m.d],"*")
 
 function Chevie.gap(p::Mvp)
   res=join(map(collect(p.d))do (k,c)
