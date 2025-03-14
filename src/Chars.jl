@@ -1227,22 +1227,18 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
     FF=map(x->x[:F],mm)
-    if !(FF[1] isa AbstractMatrix) FF=map(toM,FF) end
     F=length(FF)==1 ? FF[1] : kron(FF...)
     mm=map(x->x[:gens],mm)
   end
-  if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
-# if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm*1) end
   n=length(tt)
   if n==1 reps=mm[1]
   else reps=vcat(map(1:n) do i
-           map(mm[i]) do m
-             kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
-           end
-         end...)
+      map(mm[i]) do m
+        kron(map(j->j==i ? m : one(mm[j][1]),1:n)...)
+      end
+    end...)
   end
-  if !(W isa Spets) return reps end
-  (gens=reps,F=F)
+  (W isa Spets) ? (gens=reps,F=F) : reps
 end
 
 """

@@ -571,8 +571,7 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
   mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],rp,j),tt,
                                                     lin2cart(dims,i))
   if any(==(false),mm) return nothing end
-  if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
-  if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm) end
+# if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm) end
   n=length(tt)
   if n==1 return mm[1] end
   vcat(map(1:n) do i
@@ -604,7 +603,7 @@ function isrepresentation(H::HeckeAlgebra,t;verbose=false)
   W=H.W
   res=true
 #   bug in sparsearrays: q*one(m) is of type Any for SparseMatrix m
-  myone(m,q)=m isa AbstractMatrix ? Diagonal(fill(q,size(m,1))) : q*one(m)
+  myone(m,q)=m isa AbstractMatrix ? Diagonal(fill(q,size(m,1))) : q*one(m) 
   for i in eachindex(gens(W))
     if !iszero(prod(q->t[i]-myone(t[i],q+0),H.para[i]))
       if !verbose return false end
@@ -657,8 +656,8 @@ function PermRoot.reflection_representation(H::HeckeAlgebra)
   r=ngens(W)
   C=fill(q*E(1),r,r)
   CM=coxmat(W)
-  for i  in eachindex(gens(W))
-    for j  in 1:i-1
+  for i in eachindex(gens(W))
+    for j in 1:i-1
       m=CM[i,j]
       if m!=0 m=E(m)+E(m,-1) else m=2 end
       C[i,j]=2+m
@@ -668,7 +667,7 @@ function PermRoot.reflection_representation(H::HeckeAlgebra)
   end
   improve_type(map(eachindex(gens(W)))do i
     a=fill(0*q*E(1),r,r)
-    for j  in eachindex(gens(W))
+    for j in eachindex(gens(W))
       a[j,j]=q
       a[j,i]-=C[i,j]
     end
@@ -1536,10 +1535,10 @@ function Chars.representation(H::HeckeCoset,i::Int)
     r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rp,j)
     if r==false return nothing
     elseif r isa Vector
-      if !(r[1] isa Matrix) r=toM.(r) end
       r=improve_type(r)
       (gens=r,F=one(r[1]))
     elseif r isa Dict
+      println("!!!!!!!!!!!!!!! Dict for ",H)
       if !(r[:gens][1] isa Matrix) r1=toM.(r[:gens]) else r1=r[:gens] end
       if !(r[:F] isa Matrix) F=toM(r[:F]) else F=r[:F] end
       (gens=improve_type(r1),F=improve_type(F))

@@ -90,9 +90,9 @@ chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)
   W=coxgroup(:A,n)
   H=hecke(W,-param[1][1]//param[1][2])
   p=partitions(n+1)[i]
-  res=Dict{Symbol, Any}(:gens=>toM.(Spechtmodel(H,p)))
-  res[:F]=prod(res[:gens][word(W,longest(W))])//root(central_monomials(H)[i])*(-1)^chevieget(:A, :LowestPowerFakeDegree)(p)
-  res
+  gens=Spechtmodel(H,p)
+  (gens=gens,F=prod(gens[word(W,longest(W))]).//
+    root(central_monomials(H)[i])*(-1)^chevieget(:A,:LowestPowerFakeDegree)(p))
 end)
 
 chevieset(Symbol("2A"), :Representation, function(n,i)

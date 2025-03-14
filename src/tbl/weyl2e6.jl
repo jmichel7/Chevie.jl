@@ -276,9 +276,11 @@ chevieset(Symbol("2E6"),:HeckeRepresentation,function(param,sqrtparam,i)
   W=coxgroup(:E,6)
   H=hecke(W,-param[1][1]//param[1][2])
   gens=chevieget(:E6, :HeckeRepresentation)(param, sqrtparam, i)
-  (gens=gens,F=Matrix(prod(gens[[1,4,6,3,2,5]])^6)//
-    root(central_monomials(H)[i])*
-    (-1)^chevieget(Symbol("2E6"),:CharInfo)()[:a][i])
+  F=prod(gens[[1,4,6,3,2,5]])^6
+  F*=(-1)^chevieget(Symbol("2E6"),:CharInfo)()[:a][i]
+  F=Matrix(F)
+  F*=1//root(central_monomials(H)[i])
+  (gens=gens,F=F)
 end)
 
 chevieset(Symbol("2E6"),:PhiFactors, [1, -1, 1, 1, -1, 1])

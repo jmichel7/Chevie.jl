@@ -100,11 +100,11 @@ chevieset(Symbol("2I"), :HeckeRepresentation, function (m, param, sqrtparam, i)
   else v = sqrtparam[1]
   end
   e=E(2m)
-  if i==1 Dict{Symbol, Any}(:gens=>[[v^2;;],[v^2;;]],:F=>[1;;])
-  elseif i==2 Dict{Symbol, Any}(:gens => [[-1;;],[-1;;]]*v^0,:F=>[1;;])
-  else i-=2
-    Dict{Symbol,Any}(:gens=>[[-1 0;v*(e^i+e^-i) v^2],
-        [v^2 v*(e^i+e^-i);0 -1]]*v^0,:F=>-[0 1;1 0])
+  if i==1 (gens=[[v^2;;],[v^2;;]],F=[1;;])
+  elseif i==2 (gens=[[-1;;],[-1;;]]*v^0,F=[1;;])
+  else i-=2 
+    (gens=[[-1 0;v*(e^i+e^-i) v^2],
+           [v^2 v*(e^i+e^-i);0 -1]]*v^0,F=-[0 1;1 0])
   end
 end)
 

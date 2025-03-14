@@ -406,10 +406,8 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
     println("\n# no subspets for ",J)
     return eltype(W)[]
   end
-  W_L=stabilizer(W,sort(iJ),onsets)
-  e=classreps(Group(vcat(gens(W_L),[WF.phi*h])))
-  res=filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
-  res
+  W_L=graph_automorphisms(W,iJ)
+  classreps(NormalCoset(W_L,WF.phi*h))./WF.phi
 end
 
 Groups.Group(WF::Spets)=WF.W
@@ -428,12 +426,13 @@ CoxGroups.word(WF::CoxeterCoset,w)=word(WF.W,w/WF.phi)
 The  function returns  the list,  up to  `W`-conjugacy, of  subspets of `W`
 whose  group is `reflection_subgroup(W,I)` --- In  the case of Weyl groups,
 it  corresponds to  representatives of  the possible  twisted forms  of the
-reductive subgroup of maximal rank `L` defined by
-`reflection_subgroup(W,I)`.
+reductive subgroup of maximal rank `L` corresponding to
+`reflection_subgroup(W,I)`.   These  are  classified   by  the  classes  of
+`N_W(L)/L`.
 
 `W`  could also be a coset `Wϕ`; then the subgroup `L` must be conjugate to
-`ϕ(L)`  for  a  rational  form  to  exist.  If `ϕ` normalizes `L`, then the
-rational forms are classified by the the `ϕ`-classes of `N_W(L)/L`.
+`ϕ(L)`  for a  rational form  to exist.  If `wϕ`  normalizes `L`,  then the
+rational forms are classified by the the `wϕ`-classes of `N_W(L)/L`.
 
 ```julia-repl
 julia> W=coxgroup(:E,6)
@@ -798,12 +797,6 @@ function Base.show(io::IO, WF::Spets)
 end
 
 PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),WF.phi\w)
-
-function PermGroups.classreps(W::Spets)
-  get!(W,:classreps)do
-    map(x->x.representative,conjugacy_classes(W))
-  end
-end
 
 """
     Frobenius(WF)(x,i=1)

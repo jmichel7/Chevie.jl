@@ -85,7 +85,7 @@ chevieset(Symbol("2F4"), :HeckeRepresentation, function (para, rootpara, i)
   if rootpara[1]!==nothing v=rootpara[1]*para[1][2]
   else v=root(-para[1][1]//para[1][2])
   end
-  F(i)=-para[1][2]*WGraphToRepresentation(4,chevieget(:F4,:WGraph)(i),v)*v^0
+  F(i)=WGraphToRepresentation(4,chevieget(:F4,:WGraph)(i),v)*v^0*-para[1][2]
   if i==1     (gens=F(1),F=[1;;]) 
   elseif i==2 (gens=F(4),F=[1;;]) 
   elseif i==3 (gens=F(9),F=Matrix(perm"(1,4)"))

@@ -492,7 +492,7 @@ function Spechtmodel(H, mu)
       mats[i][St.d.d[1][1][3]][map(x->x[3],keys(ti.d))]=collect(values(ti.d))
     end
   end
-  mats
+  toM.(mats)
 end
 
 # Test that T(M(T(w)))=T(w) for all w in Sₙ
