@@ -24,6 +24,15 @@ function etime()
   global ltime=newt
 end
 
+function iroot(n,k=2)
+  if k==2 return isqrt(n) end
+  res=floor(Int,n^(1/k))
+  if res^k>n res-1 
+  elseif (res+1)^k<=n res+1 
+  else res 
+  end
+end
+
 #  f must be squarefree and f[0]!=0.  We test 3 "small" and 2 "big" primes.
 function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
   min=degree(f)+1 # set minimal number of factors to the degree of <f>
@@ -130,8 +139,7 @@ end
 
 # approximate e-th root of r with a denominator of 'f' digits.
 function ApproximateRoot(r,e=2,f=10)
-  RootInt(x,e)=e==2 ? isqrt(x) : floor(typeof(x),x^(1/e))
-  x=RootInt(numerator(r),e)//RootInt(denominator(r),e)
+  x=iroot(numerator(r),e)//iroot(denominator(r),e)
   if iszero(x) return x end
   nf=r
   c=0
@@ -724,7 +732,7 @@ function RootBound(f)
       a=max(1,sum(c[1:d-1]))
       b=1+maximum(c)
       if b<a a=b end
-      b=maximum(map(i->RootInt(d*Int(abs(c[d-i])+1//2),i)+1,1:d-1)) 
+      b=maximum(map(i->iroot(d*Int(abs(c[d-i])+1//2),i)+1,1:d-1)) 
       if b<a a=b end
       if all(!iszero,c)
         b=map(i->2*ans(c[i-1]/c[i]),3:d)
@@ -734,7 +742,7 @@ function RootBound(f)
       end
       b=sum(i->abs(c[i]-c[i+1]),1:d-1)+abs(c[1])
       if b<a a=b end
-      b=maximum(map(i->RootInt(Int(abs(c[d-i]/binomial(d-1,i))+1/2),i)+1,
+      b=maximum(map(i->iroot(Int(abs(c[d-i]/binomial(d-1,i))+1/2),i)+1,
                      1:d-1))/(ApproximateRoot(2,d-1)-1)+10^-10
       if b<a a=b end
     end

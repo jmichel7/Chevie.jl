@@ -226,15 +226,7 @@ end
 
 ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractMatrix{<:Integer}})=ExtendedCox(W,mats)
 ExtendedReflectionGroup(W,mats::AbstractMatrix{<:Integer})=ExtendedCox(W,[mats])
-ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractVector{<:Integer}})=ExtendedCox(W,[toM(mats)])
 ExtendedReflectionGroup(W)=ExtendedReflectionGroup(W,AbstractMatrix{<:Integer}[])
-
-function ExtendedReflectionGroup(W,mats::Vector{<:Vector{<:Vector{<:Integer}}})
-  if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
-  elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
-  else ExtendedCox(W,toM.(mats))
-  end
-end
 
 ExtendedReflectionGroup(W,p::Vector{<:Perm})=ExtendedCox(W,
        isempty(p) ? Matrix{Int}[] : reflrep.(Ref(W),p))
@@ -576,9 +568,7 @@ function weightinfo(t::TypeIrred)
     r[:minusculeCoweights]=r[:minusculeWeights]
   end
   if !haskey(r,:chosenAdaptedBasis)
-   r[:chosenAdaptedBasis]=Matrix{Int}(I,rank(t),rank(t))
-  else
-   r[:chosenAdaptedBasis]=toM(r[:chosenAdaptedBasis])
+    r[:chosenAdaptedBasis]=Matrix{Int}(I,rank(t),rank(t))
   end
   r
 end

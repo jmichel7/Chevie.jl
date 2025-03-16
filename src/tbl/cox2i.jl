@@ -214,7 +214,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters,function(e)
   uc[:charSymbols][2][[1,2]]=[[0,1,2],[1]]
   c(a)=E(2*e,a)+E(2*e,-a)
   f=Family(Dict{Symbol,Any}(:eigenvalues=>map(s->E(2*e,s[1]*s[2]),symUnp),
-     :fourierMat=>map(j->map(i->(c(i'*reverse(j))-c(i'*j))//e,symUnp),ac),
+     :fourierMat=>toM(map(j->map(i->(c(i'*reverse(j))-c(i'*j))//e,symUnp),ac)),
      :sh=>map(s->E(e,-s[1]*s[2]),ac),
      :charNumbers=>collect(1:length(ac)).+2,
      :name=>string("?",2+length(ac)),:special=>1))
