@@ -105,7 +105,7 @@ function chard(n,q)
     Airr(x,y)=AHk[findfirst(==(x),pA),findfirst(==(y),pA)]
   end
   BHk=isone(q) ? chevieget(:B,:CharTable)(n) :
-      chevieget(:imp,:HeckeCharTable)(2,1,n,vcat([[1,-1]],fill([q,-1],n)),[])
+      chevieget(:B,:HeckeCharTable)(n,vcat([[1,-1]],fill([q,-1],n)),[])
   pB=chevieget(:B,:CharInfo)(n)[:charparams]
   Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB),findfirst(==(y),pB)]
   function value(lambda,mu)
