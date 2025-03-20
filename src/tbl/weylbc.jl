@@ -109,12 +109,12 @@ end)
 function DifferencePartitions(γ, α)
   cc=ll=d=0
   if length(α)>length(γ) return end
-  old=Int[]
+  old=1:0
   inhook=false
-  α=vcat(α,fill(0,length(γ)-length(α)))
   for i in eachindex(γ)
-    if α[i]>γ[i] return end
-    new=α[i]+1:γ[i]
+    αi=i>length(α) ? 0 : α[i]
+    if αi>γ[i] return end
+    new=αi+1:γ[i]
     int=intersect(old,new)
     if length(int)>1 return end
     if length(int)==1 ll+=1
@@ -173,8 +173,8 @@ function BHk(n,Q,q,γ,π)
 end
 
 chevieset(:B,:HeckeCharTable,function(n,para,rt)
-  Q=-para[1][1]//para[1][2]
-  q=-para[2][1]//para[2][2]
+  Q=improve_type(-para[1][1]//para[1][2])
+  q=improve_type(-para[2][1]//para[2][2])
   ci=chevieget(:B,:CharInfo)(n)
   cl=chevieget(:B,:ClassInfo)(n)
   tbl=Dict{Symbol, Any}(:identifier=>"H(B_{$n})", 
@@ -188,10 +188,14 @@ chevieset(:B,:HeckeCharTable,function(n,para,rt)
   AdjustHeckeCharTable(tbl, para)
 end)
 
+const BCTDict=Dict{Int,Any}()
+
 chevieset(:B,:CharTable,function(n)
+  get!(BCTDict,n)do
   res=chevieget(:B,:HeckeCharTable)(n,fill([1,-1],n),fill(1,n))
   res[:identifier]=string("B_{",n,"}")
   res
+  end
 end)
 
 chevieset(:B,:SchurElement,(arg...)->
