@@ -6,7 +6,7 @@ using LaurentPolynomials
 using CyclotomicNumbers
 using CyclotomicNumbers: bracket_if_needed, format_coefficient
 using FiniteFields: FFE
-using CycPols: CycPol
+using CycPols: CycPols, CycPol
 using Primes: Primes
 using PermGroups: Group
 using Combinat: Combinat, collectby
@@ -129,7 +129,7 @@ function eigmat(M::Matrix)
 end
 
 "`CycPol(x::Mvp)` converts univariate `Mvp` `x` to a `CycPol`"
-function CycPol(x::Mvp)
+function CycPols.CycPol(x::Mvp)
   if !isinteger(degree(x)) x
   else CycPol(Pol(x))
   end

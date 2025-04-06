@@ -1187,8 +1187,8 @@ const refleigen=reflection_eigenvalues
 function refleigen(t::TypeIrred)
   if haskey(t,:orbit) t=t.orbit[1] end #orbits are trivial after above function
   ct=CharTable(t).irr[charinfo(t).extRefl,:]
-  v=map(i->Pol([(-1)^i],i),size(ct,1)-1:-1:0)
-  l=CycPol.(vec(transpose(v)*ct))
+  l=map(v->Pol(reverse(v).*((-1).^axes(ct,1))),eachcol(ct))
+  l=CycPol.(l)
   ll=map(p->[Root1(;r=e) for (e,m) in p.v for i in 1:m],l)
   if haskey(t,:scalar) ll.*=Root1(prod(t.scalar)) end
   ll

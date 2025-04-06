@@ -49,7 +49,8 @@ chevieset(:G24, :ClassInfo, Dict{Symbol, Any}(
   :classnames => chevieget(:G24, :ClassNames),
   :classparams => chevieget(:G24, :ClassNames),
   :orders => [1, 2, 4, 3, 14, 14, 2, 6, 7, 7, 4, 2],
-  :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1]))
+  :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1],
+  :powermaps=>chevieget(:G24,:PowerMaps)))
 
 chevieset(:G24, :CharInfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,21],[3,8],[3,1],[3,10],[3,3],

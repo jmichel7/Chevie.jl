@@ -547,7 +547,7 @@ end
 
 Weyl.dim(A::GrothendieckRing)=size(A.ct.irr,1)
 
-function CharTable(A::GrothendieckRing{T})where T
+function Chars.CharTable(A::GrothendieckRing{T})where T
   if char(T)==0 rows=1:dim(A)
     irr=permutedims(A.ct.irr)
   else cl=classreps(A.G)

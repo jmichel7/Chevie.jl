@@ -1090,9 +1090,14 @@ function CharTable(t::TypeIrred;opt...)
   irr=collect(ct[:irreducibles]) # to make sure it is a abstractmatrix
   if !(irr isa Matrix) error("should not happen for $t") end
 # irr=improve_type(irr)
+  dict=Dict{Symbol,Any}(:name=>xrepr(t;TeX=true))
+  for k in keys(ct)
+    if !(k in (:irreducibles,:size,:name,:order,:identifier))
+      dict[k]=ct[k]
+    end
+  end
   CharTable(irr,charnames(t;opt...,TeX=true),classnames(t;opt...,TeX=true),
-            improve_type(ct[:centralizers]),ct[:size],
-            Dict{Symbol,Any}(:name=>xrepr(t;TeX=true)))
+            improve_type(ct[:centralizers]),ct[:size],dict)
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
