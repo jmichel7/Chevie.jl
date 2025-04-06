@@ -64,8 +64,9 @@ chevieset(:B,:WordClass, function(pi)
     i+=l
   end
   for l in pi[1]
-    r=mod(l, 2)
-    append!(w,i.+vcat(1:2:l-1-r,2:2:l+r-2))
+    r=mod(l,2)
+    append!(w,i+1:2:i+l-1-r)
+    append!(w,i+2:2:i+l+r-2)
     i+=l
   end
   w
@@ -94,9 +95,108 @@ chevieset(:B,:PoincarePolynomial,function(n,para)
   prod(i->(q2^i*q1+1)*sum(k->q2^k,0:i),0:n-1)
 end)
 
-chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
+# we cannot do as below because the .classtext is not the same
+#chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
+#chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
 
-chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
+#  DifferencePartitions(γ,α) . . .  difference of partitions.
+#
+#  If <γ>-<α> doesn't exist or  contains a 2x2 box then nothing
+#  is returned.  Otherwise this  difference is a  union of  skew hooks.
+#  The  function returns  a  namedtuple with  fields  cc=number of  hooks,
+#  ll=combined leg length and d=the  contents of a box underneath the
+#  last hook.
+function DifferencePartitions(γ, α)
+  cc=ll=d=0
+  if length(α)>length(γ) return end
+  old=1:0
+  inhook=false
+  for i in eachindex(γ)
+    αi=i>length(α) ? 0 : α[i]
+    if αi>γ[i] return end
+    new=αi+1:γ[i]
+    int=intersect(old,new)
+    if length(int)>1 return end
+    if length(int)==1 ll+=1
+    elseif inhook 
+      cc+=1
+      d=old[1]-i
+      inhook=false
+    end
+    if !isempty(new) inhook=true end
+    old=new
+  end
+  if inhook cc+=1; d=old[1]-length(γ)-1 end
+  (cc=cc,ll=ll,d=d)
+end
+
+function BHk(n,Q,q,γ,π)
+  if n==0 return q^0 end #  termination condition.
+  val=0*q #  initialize character value.
+  #  positive cycles first.
+  if !isempty(π[1])
+    k=π[1][1]; #  get length of the longest cycle.
+    #  loop over double paritions of n-k.
+    for α in partition_tuples(n-k,2)
+      dif=[DifferencePartitions(γ[1],α[1]),DifferencePartitions(γ[2],α[2])]
+      if !isnothing(dif[1]) && !isnothing(dif[2])
+        cc=dif[1].cc+dif[2].cc
+        ll=dif[1].ll+dif[2].ll
+        π1=[π[1][2:end],π[2]]
+        val+=(q-1)^(cc-1)*(-1)^ll*q^(k-ll-cc)*BHk(n-k,Q,q,α,π1)
+      end
+    end
+    return val
+  end
+   k=π[2][1] # length of the longest cycle.
+   nn=sum(γ[1])
+   if nn>=k
+     for α in partitions(nn-k) #  loop over k-hooks in γ[1].
+       dif=DifferencePartitions(γ[1], α);
+       if !isnothing(dif) && dif.cc==1
+         π1=[π[1],π[2][2:end]]
+         val+=Q*(-1)^dif.ll*q^(n+dif.d)*BHk(n-k,Q,q,[α,γ[2]],π1)
+       end
+     end
+   end
+   nn=sum(γ[2])
+   if nn>=k
+     for α in partitions(nn-k) # loop over hooks in γ[2].
+       dif=DifferencePartitions(γ[2], α)
+       if !isnothing(dif) && dif.cc==1
+         val+=(-1)^(dif.ll+1)*q^(n+dif.d)*
+           BHk(n-k,Q,q,[γ[1],α],[π[1],π[2][2:end]]);
+       end
+     end
+   end
+  val
+end
+
+chevieset(:B,:HeckeCharTable,function(n,para,rt)
+  Q=improve_type(-para[1][1]//para[1][2])
+  q=improve_type(-para[2][1]//para[2][2])
+  ci=chevieget(:B,:CharInfo)(n)
+  cl=chevieget(:B,:ClassInfo)(n)
+  tbl=Dict{Symbol, Any}(:identifier=>"H(B_{$n})", 
+    :irredinfo=>map((x,y)->
+   Dict{Symbol,Any}(:charparam=>x,:charname=>y),ci[:charparams],ci[:charnames]),
+    :powermap=>[],:size=>2^n*factorial(n))
+  merge!(tbl, cl)
+  tbl[:centralizers]= div.(tbl[:size],tbl[:classes])
+  l=partition_tuples(n,2)
+  tbl[:irreducibles]=[BHk(n,Q,q,γ,π) for γ in l,π in l]
+  AdjustHeckeCharTable(tbl, para)
+end)
+
+const BCTDict=Dict{Int,Any}()
+
+chevieset(:B,:CharTable,function(n)
+  get!(BCTDict,n)do
+  res=chevieget(:B,:HeckeCharTable)(n,fill([1,-1],n),fill(1,n))
+  res[:identifier]=string("B_{",n,"}")
+  res
+  end
+end)
 
 chevieset(:B,:SchurElement,(arg...)->
   chevieget(:imp, :SchurElement)(2,1,arg[1],arg[2],arg[3],[]))

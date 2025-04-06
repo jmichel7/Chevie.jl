@@ -131,8 +131,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   # EnnolaBete[i]: possible action of ξ-Ennola on i-th family
   # list of possible destinations for each char, taking just degree in account
   EnnolaBete=map(ff)do f
-    m=f.fourierMat;if !(m isa Matrix) m=toM(m) end
-    ud=CycPol.(m'*fd[f.charNumbers])
+    ud=CycPol.(fourier(f)'*fd[f.charNumbers])
     map(p->findallsgn(ud,subs(p,Pol([ξ],1))),ud)
   end
 
@@ -634,8 +633,8 @@ function format(io::IO,s::Series)
     push!(col_labels,texn)
     push!(m,val)
   end
-  m = []
-  col_labels = String[]
+  m=[]
+  col_labels=String[]
   f("\\gamma_\\phi", charnames(io,uw)[charnumbers(s)])
   n="\\varphi"
   if haskey(s,:translation) n*="(mod $(s.translation))" end

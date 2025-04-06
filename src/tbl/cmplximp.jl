@@ -327,7 +327,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
         if iszero(n) return 1 end
         bp=maximum(x for S in lambda for x in S)
         i=findfirst(x->bp in x,lambda)
-        # choice of bp and i corresponds to choice (Sort) in classtext
+        # choice of bp and i corresponds to choice (sort) in classtext
         strips=Strips(mu, bp)
         if isempty(strips) return 0 end
         rest=copy(lambda)
@@ -376,9 +376,6 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     res[:classes] = map(x->div(res[:size],x),res[:centralizers])
     reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i),
              1:length(res[:classes]))
-    if !(reps[1][1] isa AbstractMatrix) 
-      error("baaaaa")
-    end
     res[:irreducibles]=toM(improve_type(map(reps)do r
       traces_words_mats(r,cl[:classtext])
     end))
@@ -2040,6 +2037,8 @@ function MakeFamilyImprimitive(ct::Vector{<:Integer},charsymbols)
   r
 end
 
+simpexponent(l)=all(iszero,l[2:end]) ? l[1] : l
+
 chevieset(:imp, :UnipotentCharacters, function (p, q, r)
   if !(q in [1,p]) return nothing end
   uc=Dict{Symbol, Any}(:charSymbols=>chevieget(:imp, :CharSymbols)(p, q, r))
@@ -2054,7 +2053,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     uc[:harishChandra]=map(cusp)do c
       cr=ranksymbol(c)
       res=Dict{Symbol, Any}(:levi=>1:cr)
-      res[:parameterExponents]=cr<r ? Any[length.(c)] : []
+      res[:parameterExponents]=cr<r ? [simpexponent(length.(c))] : []
       append!(res[:parameterExponents],fill(1,max(0,r-cr-1)))
       if r==cr
         res[:relativeType]=TypeIrred(;series=:A,indices=Int[],rank=0)
@@ -2135,7 +2134,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
         f[:parameterExponents]=fill(1,r)
       else
         f[:relativeType]=TypeIrred(;series=:ST,indices=l+1:r,rank=r-l,p,q=1)
-        f[:parameterExponents]=vcat([s],fill(1,max(0,r-l-1)))
+        f[:parameterExponents]=vcat([simpexponent(s)],fill(1,max(0,r-l-1)))
       end
       s=map(x->0:x-1,s)
       f[:cuspidalName]=ImprimitiveCuspidalName(s)

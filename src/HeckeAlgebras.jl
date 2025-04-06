@@ -570,7 +570,7 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
   rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
   mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],rp,j),tt,
                                                     lin2cart(dims,i))
-  if any(==(false),mm) return nothing end
+  if any(isnothing,mm) return nothing end
 # if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm) end
   n=length(tt)
   if n==1 return mm[1] end
@@ -1533,15 +1533,9 @@ function Chars.representation(H::HeckeCoset,i::Int)
   rp=haskey(H.H,:rootpara) ? rootpara(H.H) : fill(nothing,length(H.H.para))
   mm=map(tt,lin2cart(dims,i)) do t,j
     r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rp,j)
-    if r==false return nothing
-    elseif r isa Vector
-      r=improve_type(r)
+    if r==nothing return nothing
+    elseif r isa Vector # untwisted component
       (gens=r,F=one(r[1]))
-    elseif r isa Dict
-      println("!!!!!!!!!!!!!!! Dict for ",H)
-      if !(r[:gens][1] isa Matrix) r1=toM.(r[:gens]) else r1=r[:gens] end
-      if !(r[:F] isa Matrix) F=toM(r[:F]) else F=r[:F] end
-      (gens=improve_type(r1),F=improve_type(F))
     else r
     end
   end

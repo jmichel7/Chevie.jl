@@ -1336,11 +1336,11 @@ function baseX(W::PermRootGroup{T})where T
   get!(W,:baseX) do
     if istorus(W) return one(zeros(T,rank(W),rank(W))) end
     ir=independent_roots(W)
-    u=lnullspace(transpose(toM(coroots(W,ir))))
+    u=lnullspace(transpose(simplecoroots(W)[ir,:]))
     if eltype(u)<:Rational || eltype(u)<:Cyc{<:Rational}
       for v in eachrow(u) v.*=lcm(denominator.(v)...) end
     end
-    vcat(toM(roots(W,ir)),improve_type(u))
+    vcat(simpleroots(W)[ir,:],improve_type(u))
   end::Matrix{T}
 end
 

@@ -188,6 +188,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
       res[:fourierMat][16]=-res[:fourierMat][16]
       res[:fourierMat][1:16][16]=-res[:fourierMat][1:16][16]
     end
+    res[:fourierMat]=toM(res[:fourierMat])
     res[:eigenvalues]=fill(1,length(res[:charNumbers]))
     res[:sh]=fill(1,length(res[:charNumbers]))# is that correct for Geck-Malle?
     if length(res[:eigenvalues])==1

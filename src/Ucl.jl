@@ -1658,7 +1658,7 @@ function TwoVarGreen(W,L)
   end
   oL=generic_order(L,q)
   mm=improve_type(mm)
-  mm=toM(map((x,y)->exactdiv(x*y,oL),eachrow(sum(mm)),tL.cardClass))
+  mm=toM(map((x,y)->exactdiv.(x*y,oL),eachrow(sum(mm)),tL.cardClass))
   res=TwoVarGreenTable(Dict(:W=>W,:L=>L,:scalar=>mm,:uL=>uL,:uG=>uG))
   res.classL=tL.classes
   res.classG=tG.classes

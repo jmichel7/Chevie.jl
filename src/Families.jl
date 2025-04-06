@@ -188,7 +188,6 @@ qeigen(f::Family)=haskey(f,:qEigen) ? f.qEigen : zeros(Rational{Int},length(f))
 "`fourier(f::Family)`: the Fourier matrix of the family."
 function fourier(f::Family;lusztig=true)
   m=f.fourierMat
-  if m isa Vector m=improve_type(toM(m)) end
   if lusztig==false && haskey(f,:lusztig)
     m=invpermute(m,f.perm;dims=2)
   end
@@ -202,7 +201,6 @@ Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 
 function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
-  if f.fourierMat isa Vector f.fourierMat=improve_type(toM(f.fourierMat)) end
   if !haskey(f,:charLabels) f.charLabels=map(string,1:length(f)) end
   if haskey(d,:signs)
     signs=d[:signs]
@@ -356,7 +354,6 @@ function Perms.invpermute(f::Family,p::Union{Perm,SPerm})
   for n in [:fourierMat,:mellin]
     if haskey(f,n) 
       m=getproperty(f,n)
-      if !(m isa AbstractMatrix) m=toM(m) end
       setproperty!(f,n,onmats(m,p))
     end
   end
@@ -372,14 +369,14 @@ end
 #----------------------- now definitions of particular families -------------
 chevieset(:families,:C1,
   Family(Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
-         :charLabels=>[""], :fourierMat=>hcat([1]), :eigenvalues=>[1],
+         :charLabels=>[""], :fourierMat=>[1;;], :eigenvalues=>[1],
          :mellin=>[[1]],:mellinLabels=>[""])))
 
 chevieset(:families,Symbol("C'1"),
   Family(Dict(:group=>"C1", :name=>"C'_1",
   :explanation=>"-trivial",
   :charLabels=>[""],
-  :fourierMat=>[[-1]],
+  :fourierMat=>[-1;;],
   :eigenvalues=>[-1],
   :sh=>[1])))
 
@@ -398,7 +395,7 @@ chevieset(:families,:LTQZ2,
   :charparams=>[[1,1],[1,-1],[-1,E(4)],[-1,-E(4)]],
   :charLabels=>[ "(1,1)","(1,-1)","(-1,\\zeta_4)","(-1,-\\zeta_4)"],
   :bar=>[1,1],:defect=>1,
-  :fourierMat=>[[1,1,-1,-1],[1,1,1,1],[-1,1,1,-1],[-1,1,-1,1]]//2,
+  :fourierMat=>[1 1 -1 -1;1 1 1 1;-1 1 1 -1;-1 1 -1 1]//2,
   :eigenvalues=>[1,1,E(4),-E(4)],
   :name=>"LTQZ2",
   :explanation=>"Lusztig's twisted_drinfeld_double_cyclic(2,-1,[1,-1])",
@@ -1014,7 +1011,7 @@ function family_imprimitive(ct,e)
    :cospecial=>findmax(x->(sum(sum.(partβ.(x))),degree_fegsymbol(x)),symbs)[2],
    :fcdict=>fcdict,
    :ff=>ff,
-   :fourierMat=>mat,
+   :fourierMat=>toM(mat),
    :eigenvalues=>frobs,
    :name=>joindigits(ct),
    :printname=>"family_imprimitive($ct,$e)",

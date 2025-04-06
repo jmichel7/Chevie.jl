@@ -3106,7 +3106,7 @@ chevieset(:E7, :UnipotentClasses, function (p,)
   Dict{Symbol, Any}(:name=>"E_7(a_3)", :mizuno=>"D_6{+}A_1",:succ=>["E7(a2)"],
         :dynkin=>[2, 0, 0, 2, 0, 2, 2], :Au=>Z(2) * Z(gcd(2, p - 1)),
         :balacarter=>[1,-2,-3, 4, -5, 6, 7], :rep=>[1, 4, 7, 11, 12, 15, 17]), 
-  Dict{Symbol, Any}(:name=>"E_6(a_1)", :succ=>["E6", "E7(a3)"], :dynkin=>[2, 0, 0, 2, 0, 2, 0], :Au=>Z(2), :balacarter=>[1, 2, 3, -4, 5, 6], :red=>torus(1), :AuAction=>ExtendedReflectionGroup(torus(1), [[-1]]), :rep=>[1, 2, 10, 11, 5, 6]), 
+  Dict{Symbol, Any}(:name=>"E_6(a_1)", :succ=>["E6", "E7(a3)"], :dynkin=>[2, 0, 0, 2, 0, 2, 0], :Au=>Z(2), :balacarter=>[1, 2, 3, -4, 5, 6], :red=>torus(1), :AuAction=>ExtendedReflectionGroup(torus(1), [-1;;]), :rep=>[1, 2, 10, 11, 5, 6]), 
   Dict{Symbol, Any}(:name=>"D_6", :succ=>["E7(a3)"], :dynkin=>[2, 1, 1, 0, 1, 2, 2], :Au=>Z(2), :balacarter=>2:7, :red=>Z(2), :rep=>[2, 3, 4, 5, 6, 7]), 
   Dict{Symbol, Any}(:name=>"E_7(a_4)", :mizuno=>"D_6(a_1){+}A_1", :succ=>["E6(a1)", "D6"], :dynkin=>[2, 0, 0, 2, 0, 0, 2], :Au=>Z(gcd(2, p - 1)) * Z(gcd(2, p - 1)), :balacarter=>[1, -2, -3, 4, -5, -6, 7], :rep=>[1, 4, 7, 10, 22, 23, 24]), 
   Dict{Symbol, Any}(:name=>"A_6", :succ=>["E7(a4)"], :dynkin=>[0, 0, 0, 2, 0, 2, 0], :Au=>Z(gcd(2, p)), :balacarter=>[1, 3, 4, 5, 6, 7], :red=>Z(2), :rep=>[1, 3, 4, 5, 6, 7]), 
@@ -3165,7 +3165,7 @@ chevieset(:E7, :UnipotentClasses, function (p,)
     c[:red]=torus(1)
     c[:dimBu]=6
     delete!(c,:dynkin)
-    c[:AuAction]=ExtendedReflectionGroup(torus(1), [[-1]])
+    c[:AuAction]=ExtendedReflectionGroup(torus(1),[-1;;])
     c = class("A_3{+}A_2")
     c[:red] = Z(2)
     c[:dimBu] = 14

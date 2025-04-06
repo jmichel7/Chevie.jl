@@ -19,6 +19,7 @@ using ..Util: toL
 using GroupPresentations: Presentation
 
 LinearAlgebra.tr(a::Mvp)=a # for tr(Diagonal(Mvp)) to work
+LinearAlgebra.tr(a::Pol)=a # for tr(Diagonal(Pol)) to work
 
 #----------------------------------------------------------------------
 """
