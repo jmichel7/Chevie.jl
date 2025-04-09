@@ -38,6 +38,7 @@ chevieset(:G26, :ClassInfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G26, :WordsClassRepresentatives),
   :classnames => chevieget(:G26, :ClassNames),
   :classparams => chevieget(:G26, :ClassNames),
+  :powermaps => chevieget(:G26, :PowerMaps),
   :orders=>[1,2,6,6,6,6,3,3,6,6,3,6,6,18,9,6,9,18,3,2,3,6,6,6,6,6,6,3,3,6,6,3,
             6,3,6,6,6,6,6,2,6,6,4,12,12,4,12,12],
   :classes=>[1,9,36,9,9,36,12,12,12,12,12,12,36,72,72,1,72,72,1,1,1,1,36,36,36,
@@ -69,9 +70,10 @@ end)
 chevieset(:G26, :HeckeCharTable, function (para, rt)
   c=prod(prod,para)^0
   res = Dict{Symbol, Any}(:size => 1296, :order => 1296, :identifier => "G26",
-   :name => "G26", :powermap => chevieget(:G26, :PowerMaps), 
-   :parameter=>para[[1,2]],:dim=>3,:irredinfo=>chevieget(:G26, :IrredInfo))
+   :name => "G26",
+   :parameter=>para[[1,2]],:dim=>3)
   merge!(res, chevieget(:G26, :ClassInfo))
+  merge!(res, chevieget(:G26, :CharInfo)())
   res[:centralizers]=div.(res[:order],res[:classes])
   f10(r,u)=[1,r,r*u^2,r^2*u^6,r^3*u^9,r*u,r^2*u^2,r^4*u^4,r*u^4,r^5*u^8,r^2*u^8,
     r^11*u^20,r^4*u^7,r*u^2,r^2*u^4,r^3*u^6,r^4*u^8,r^5*u^10,r^6*u^12,r^9*u^18,

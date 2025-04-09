@@ -46,6 +46,7 @@ chevieset(:G27, :ClassInfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G27, :WordsClassRepresentatives), 
   :classnames => chevieget(:G27, :ClassNames), 
   :classparams => chevieget(:G27, :ClassNames), 
+  :powermaps => chevieget(:G27, :PowerMaps), 
   :orders => [1, 2, 3, 5, 4, 30, 30, 5, 3, 2, 12, 10, 12, 15, 15, 6, 12, 12, 30, 30, 6, 6, 6, 6, 6, 15, 15, 10, 4, 6, 6, 3, 3, 2], 
   :classes => [1, 45, 120, 72, 90, 72, 72, 72, 120, 45, 90, 72, 90, 72, 72, 120, 90, 90, 72, 72, 120, 45, 45, 45, 45, 72, 72, 72, 90, 1, 1, 1, 1, 1]))
 
@@ -114,12 +115,10 @@ chevieset(:G27,:sparseFakeDegrees,[[1,0],[1,45],[1,7,1,13,1,25],
   [1,8,3,14,3,20,3,26,3,32,2,38]])
 
 chevieset(:G27, :HeckeCharTable, function (para, rootpara)
-  q=-para[1][1]//para[1][2]
-  r=para[1][1]
-  p=para[1][2]
-  tbl= Dict{Symbol, Any}(:identifier => "H(G27)", :size => 2160,
-         :order => 2160, :powermap => chevieget(:G27, :PowerMaps))
+  r,p=para[1]
+  tbl= Dict{Symbol, Any}(:identifier => "H(G27)", :size => 2160, :order => 2160)
   merge!(tbl, chevieget(:G27, :ClassInfo))
+  merge!(tbl, chevieget(:G27, :CharInfo)())
   f1(r)=map(x->r^length(x),tbl[:classtext])
   f3(r, p, j, d)=
 [3,p+2r,p*r+r^2,(-1+(j*(1-d))//2)*p*r^3+(-2+(1-d)*(1+j))//2*p^2*r^2,r^2,-p*r^2+(((-1+j)-d)-j*d)//2*p^2*r,((1-d)*j)//2*p*r^2,((3//2-3//2*j)+1//2*d+1//2*d*j)*p^2*r^6+((1-j)+d+j*d)*p^3*r^5+(j//2+d+(j*d)//2)*p^4*r^4,p*r+r^2,-2*p^2*r^2+r^4,-j*p^2*r^5,(1+d)//2*p^3*r^6,j^2*p^5*r^12,(j//2+d+(j*d)//2)*r^2*p^4+((1-j)+d+j*d)*p^3*r^3+3*r^4*p^2+((2+j)-j*d)*r^5*p,((1+d)*j^2)//2*p^2*r^4,j^2*p^5*r^12+j^2*p^6*r^11,(1+d)//2*p^3*r^7+(1//2+j+d//2)*p^4*r^6,j^2*p^20*r^42,((-1+d)*j^2)//2*p^3*r^8+j^2*p^5*r^6,((1+d)*j)//2*p^7*r^14,j^2*p^5*r^12+j^2*p^6*r^11,2*j^2*p^5*r^11+j^2*p^6*r^10,j*p^10*r^24-2*j*p^12*r^22,j^2*p^5*r^14-2*j^2*p^7*r^12,2*j*p^10*r^21+j*p^11*r^20,((1-d)*j^2)//2*p^14*r^28,((1-d)*j)//2*p^4*r^8,(1-d)//2*p^9*r^18,p^15*r^32,3*j^2*p^5*r^10,3*j*p^25*r^50,3*j*p^10*r^20,3*j^2*p^20*r^40,3*p^15*r^30]
@@ -157,9 +156,8 @@ chevieset(:G27, :HeckeCharTable, function (para, rootpara)
     f19(r,p,root(5), 1), f19(r, p, root(5), -1), f19(r, p, -root(5), 1), 
     f19(r,p,-root(5), -1), f23(r, p, 1), f23(p, r, 1), f23(p, r, E(3, 2)), 
     f23(r,p,E(3,2)), f23(p, r, E(3)), f23(r, p, E(3)), f29(r, p), f29(p, r), 
-    f31(p,r,E(3)),f31(r, p, E(3)), f31(p, r, E(3, 2)), f31(r, p, E(3,2))])*q^0
+    f31(p,r,E(3)),f31(r, p, E(3)), f31(p, r, E(3, 2)), f31(r, p, E(3,2))])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
-  tbl[:irredinfo] = chevieget(:G27, :IrredInfo)
   tbl
 end)
 

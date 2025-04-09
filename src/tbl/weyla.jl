@@ -59,8 +59,7 @@ chevieset(:A,:NrConjugacyClasses,n->npartitions(n+1))
 
 chevieset(:A,:CharTable,function(n)
   ct=chevieget(:imp,:CharTable)(1,1,n+1)
-  ct[:irredinfo]=map(x->Dict(:charname=>joindigits(x)),
-    chevieget(:A,:CharInfo)(n)[:charparams])
+  ct[:charnames]=chevieget(:A,:CharInfo)(n)[:charnames]
   ct
 end)
 
@@ -71,7 +70,7 @@ function(n,para,root)
                :classnames=>["11","2"],
                :centralizers=>[2,2],
                :identifier=>"H(A_1)")
-  else chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root)
+  else  chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root)
   end
 end)
 

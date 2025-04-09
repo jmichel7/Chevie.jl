@@ -38,6 +38,7 @@ chevieset(:H3, :ClassInfo, function ()
   res[:classnames]=joindigits.(res[:classtext])
   res[:classnames][1]="."
   res[:classparams]=res[:classnames]
+  res[:powermaps]=chevieget(:H3,:PowerMaps)
   res
 end)
 
@@ -101,20 +102,19 @@ chevieset(:H3, :HeckeCharTable, function (param, sqrtparam)
   if sqrtparam[1]===nothing v=root(q)
   else v=-sqrtparam[1]//param[1][2]
   end
-  ci=chevieget(:H3, :ClassInfo)()
   tbl=Dict{Symbol, Any}(:identifier => "H(H3)",
     :text=>"the representing matrices are those of Lusztig(1981)",
     :parameter => [q, q, q], :cartan => chevieget(:H3, :CartanMat),
-    :size => 120, :order => 120, :powermap => chevieget(:H3, :PowerMaps),
+    :size => 120, :order => 120, 
     :irreducibles => map(i->map(function(j)
                 res=evalpoly(q,j.c)
                 if iseven(valuation(j)) res*=q^div(valuation(j),2)
                 else res*=v^valuation(j)
                 end
                 return res
-            end,i), chevieget(:H3, :vpolheckeirreducibles)),
-    :irredinfo => chevieget(:H3, :IrredInfo))
-  merge!(tbl, ci)
+            end,i), chevieget(:H3, :vpolheckeirreducibles)))
+  merge!(tbl,chevieget(:H3, :ClassInfo)())
+  merge!(tbl,chevieget(:H3, :CharInfo)())
   tbl[:irreducibles]=improve_type(tbl[:irreducibles])
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)

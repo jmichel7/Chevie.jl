@@ -92,7 +92,8 @@ chevieset(:D, :CharInfo, n->chevieget(:imp, :CharInfo)(2, 2, n))
 #  Groups in GAP]. 
 chevieset(:D,:HeckeCharTable,function(n,para,root)
    ci=chevieget(:D,:ClassInfo)(n)
-   chp=chevieget(:D,:CharInfo)(n)[:charparams]
+   cl=chevieget(:D,:CharInfo)(n)
+   chp=cl[:charparams]
    q=-para[1][1]//para[1][2]
    tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
    tbl[:identifier]=tbl[:name]
@@ -133,6 +134,7 @@ end
 #  tbl[:irredinfo]=List(chevieget(:D,:CharInfo)(n).charparams,p->
 #     rec(charparam:=p,charname:=string_partition_tuple(p)));
   merge!(tbl,ci)
+  merge!(tbl,cl)
   AdjustHeckeCharTable(tbl,para)
 end)
 

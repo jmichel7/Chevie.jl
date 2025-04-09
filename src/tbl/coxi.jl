@@ -96,12 +96,11 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
       end
     end
   end)
-  ci=chevieget(:I, :CharInfo)(m)
   tbl=Dict{Symbol, Any}(:identifier => string("H(I2(", m, "))"), 
-    :cartan=>cartan(:I,2,m),:size=>2m,:irredinfo=>map((x,y)->
-   Dict{Symbol,Any}(:charparam=>x,:charname=>y),ci[:charparams],ci[:charnames]),
-   :parameter=>[u,v],:powermap=>[],:irreducibles=>ct*v^0)
+    :cartan=>cartan(:I,2,m),:size=>2m,
+   :parameter=>[u,v],:irreducibles=>ct*v^0)
   merge!(tbl, cl)
+  merge!(tbl, chevieget(:I, :CharInfo)(m))
   tbl[:centralizers]= div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, para)
 end)

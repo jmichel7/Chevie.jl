@@ -34,6 +34,7 @@ chevieset(:G2, :ClassInfo, Dict{Symbol, Any}(
   :classtext => [[], [2], [1], [1, 2], [1, 2, 1, 2], [1, 2, 1, 2, 1, 2]],
   :classnames => chevieget(:G2, :ClassNames),
   :classparams => chevieget(:G2, :ClassNames),
+  :powermaps => chevieget(:G2, :PowerMaps),
   :orders => [1, 2, 2, 6, 3, 2], :classes => [1, 3, 3, 2, 2, 1]))
 
 chevieset(:G2, :PowerMaps, [nothing, [1, 1, 1, 5, 5, 1], [1, 2, 3, 6, 1, 6]])
@@ -66,11 +67,11 @@ chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
     squv=eps*chevieget(:G2,:squv)(para,sqrtpara)
     [2,z+t,x+y,-squv,-x*y*z*t,2*squv^3]*one
   end
-  tbl=Dict{Symbol, Any}(:identifier => "H(G2)", :parameter=>[[x,y],[z,t]],
-    :size => 12, :powermap => chevieget(:G2, :PowerMaps),
-    :irreducibles=>toM([f1(x,z),f1(y,t),f1(y,z),f1(x,t),f2(x,y,z,t,1),f2(x,y,z,t,-1)]),
-    :irredinfo => chevieget(:G2, :IrredInfo))
+  tbl=Dict{Symbol,Any}(:identifier=>"H(G2)",:parameter=>[[x,y],[z,t]],:size=>12,
+    :irreducibles=>
+      toM([f1(x,z),f1(y,t),f1(y,z),f1(x,t),f2(x,y,z,t,1),f2(x,y,z,t,-1)]))
   merge!(tbl,chevieget(:G2,:ClassInfo))
+  merge!(tbl,chevieget(:G2,:CharInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   tbl
 end)

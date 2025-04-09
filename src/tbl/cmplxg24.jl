@@ -105,9 +105,9 @@ chevieset(:G24, :HeckeCharTable, function (param, roots)
            f3(p,r,conj(E(7,3)+E(7,5)+E(7,6))),
            f3(r,p,conj(E(7,3)+E(7,5)+E(7,6))),
   f6(r,p),f6(p,r),f7(p,r),f7(r,p),f8(p,r,u),f8(p,r,-u)]),
-  :galomorphisms=>Group(perm"(5,6)(9,10)"),
-  :irredinfo=>chevieget(:G24,:IrredInfo))
+           :galomorphisms=>Group(perm"(5,6)(9,10)"))
   merge!(tbl, chevieget(:G24, :ClassInfo))
+  merge!(tbl, chevieget(:G24, :CharInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   tbl
 end)

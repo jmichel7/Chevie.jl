@@ -43,6 +43,7 @@ chevieset(:F4,:ClassInfo, function ()
   :classes=>[1,1,18,32,32,12,32,32,16,16,96,12,12,96,96,72,12,12,96,96,72,72,36,36,144],
   :orders => [1,2,2,3,6,4,3,6,3,6,12,2,2,6,6,4,2,2,6,6,4,2,4,4,8])
   res[:classparams]=res[:classnames]
+  res[:powermaps]=chevieget(:F4,:PowerMaps)
   res
 end)
 
@@ -135,9 +136,9 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
   v=-param[3][1]//param[3][2]
   tbl=Dict{Symbol, Any}(:identifier=>"H(F4)",
     :text=>"origin: Meinolf Geck, April 1992",
-    :parameter => [u, u, v, v], :size => 1152,
-    :powermap => chevieget(:F4, :PowerMaps))
+    :parameter => [u, u, v, v], :size => 1152)
   merge!(tbl,chevieget(:F4, :ClassInfo)())
+  merge!(tbl,chevieget(:F4, :CharInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   dual(f)=map((a,w)->a*(-u)^count(j->j in [1,2],w)*(-v)^count(j->j in [3,4],w),
                                      f(u^-1,v^-1),tbl[:classtext])
@@ -204,7 +205,6 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
    u*v^2-3*u*v-v^2+3v-1+u,v-u*v,2*u*v-2*u^2*v,-8+8v,
    -u^2*(v-1)*(-2*u*v^2+3*u^2*v+3v-2*u*v-2u),(u^2-3u+1)*(v-1),
    -u*v+u,-2*u*v*(v-1),4*(v-1)*(u-1),2*(v-1)*(u-1),0,0]]*u^0*v^0
-  tbl[:irredinfo] = chevieget(:F4, :IrredInfo)
   AdjustHeckeCharTable(tbl,param)
 end)
 

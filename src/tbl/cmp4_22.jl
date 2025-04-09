@@ -810,9 +810,7 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
   res[:order] = res[:size]
   res[:identifier] = res[:name]
   res[:centralizers] = div.(res[:size],res[:classes])
-  ci=chevieget(:G4_22,:CharInfo)(ST)
-  res[:irredinfo]=map((x,y)->Dict{Symbol,Any}(:charparam=>x,:charname=>y),
-                        ci[:charparams], ci[:charnames])
+  merge!(res,chevieget(:G4_22,:CharInfo)(ST))
   classes=chevieget(:G4_22, :malleclasses)(ST)[res[:indexclasses]]
   rows=map(chevieget(:G4_22, :mallechars)(ST))do char
     if char[1]==1 l=[1,X[char[2]],Y[char[3]],Z[char[4]]]
@@ -891,11 +889,12 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
     end
     G4_22IndexChars_dict[ST][res[:parameter]]=l
   end
-  ci=test_indexchars(res,rows,ci[:indexchars])
+  ci=test_indexchars(res,rows,res[:indexchars])
   res[:irreducibles]=toM(res[:irreducibles])
   if ci!=true res[:indexchars]=ci end
   res
 end)
+
 chevieset(:G4_22,:CharTable,function(ST)
   para=map(x->E.(x,0:x-1),chevieget(:G4_22, :ordergens)(ST))
   chevieget(:G4_22,:HeckeCharTable)(ST,para,[])

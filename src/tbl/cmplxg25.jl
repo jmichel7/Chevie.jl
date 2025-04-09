@@ -29,14 +29,15 @@ chevieset(:G25, :WordsClassRepresentatives, map(x->
    collect(replace(x,"."=>"","z"=>"123"^4,"c"=>"123","d"=>"1232")).-'0',
    chevieget(:G25, :ClassNames)))
 
+chevieset(:G25, :PowerMaps, [nothing, [1, 9, 4, 3, 15, 5, 8, 7, 10, 9, 3, 15, 16, 14, 5, 13, 16, 13, 4, 1, 10, 20, 2, 21], [1, 20, 1, 1, 1, 20, 9, 10, 1, 1, 20, 20, 1, 1, 1, 1, 20, 20, 20, 20, 20, 22, 22, 22], nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], nothing, nothing, nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23]])
+
 chevieset(:G25, :ClassInfo, Dict{Symbol, Any}(
   :classtext=>chevieget(:G25,:WordsClassRepresentatives),
   :classnames=>chevieget(:G25,:ClassNames),
-  :classparams => chevieget(:G25,:ClassNames),
+  :classparams=>chevieget(:G25,:ClassNames),
+  :powermaps=>chevieget(:G25,:PowerMaps),
   :orders=>[1,6,3,3,3,6,9,9,3,3,6,6, 3, 3, 3, 3, 6, 6, 6, 2, 6, 4, 12, 12], 
  :classes=>[1,9,12,12,12,36,72,72,1,1,36,36,12,24,12,12,36,36,36,9,9,54,54,54]))
-
-chevieset(:G25, :PowerMaps, [nothing, [1, 9, 4, 3, 15, 5, 8, 7, 10, 9, 3, 15, 16, 14, 5, 13, 16, 13, 4, 1, 10, 20, 2, 21], [1, 20, 1, 1, 1, 20, 9, 10, 1, 1, 20, 20, 1, 1, 1, 1, 20, 20, 20, 20, 20, 22, 22, 22], nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], nothing, nothing, nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23]])
 
 chevieset(:G25, :CharInfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,24],[1,12],[2,15],[2,3],[2,9],
@@ -58,9 +59,7 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
   c=(u*v*w)^0
   res=Dict{Symbol, Any}(:name => "H(G25)", :identifier => "H(G25)",
     :parameter => para, :size => 648, :order => 648, :dim => 3,
-    :degrees => [6, 9, 12], :reflclasses => [13],
-    :powermap => chevieget(:G25, :PowerMaps),
-    :irredinfo => chevieget(:G25, :IrredInfo))
+    :degrees => [6, 9, 12], :reflclasses=>[13])
   f10(y)=map(w->y^length(w),res[:classtext])
   f23(u,v,w)=[2,-2*(u*v)^3,u^2+v^2,u^4+v^4,(u*v)^2*(u^4+v^4),-u*v*(u^2+v^2),
               -(u^2)*v^2,-(u^4)*v^4,2*u^6*v^6,2*u^12*v^12,-(v^3)*u^3*(u+v),
@@ -96,6 +95,7 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
     u*v+u*w+v*w,v^4*J*u^4*w^4*(u*v+u*w+v*w),(-(u^6)*v^6-u^6*w^6)-v^6*w^6,
     -J*u*v*w*(((2*w^3+2*v^3)-3*u*v*w)+2*u^3),-u*v*w,-J*u*v*w,-(J^2)*u^5*v^5*w^5]
   merge!(res, chevieget(:G25, :ClassInfo))
+  merge!(res, chevieget(:G25, :CharInfo)())
   res[:centralizers]=div.(res[:order],res[:classes])
   # position in chars of G26
 # [1,3,4,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47]

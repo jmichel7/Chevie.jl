@@ -54,6 +54,7 @@ chevieset(:E7, :ClassInfo, Dict{Symbol, Any}(
   :classtext => chevieget(:E7, :WordsClassRepresentatives),
   :classnames => chevieget(:E7, :ClassNames),
   :classparams => chevieget(:E7, :ClassNames),
+  :powermaps => chevieget(:E7, :PowerMaps),
   :orders => [1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6, 6, 6, 6, 6, 7, 8, 8, 9, 10, 12, 12, 12, 15, 2, 2, 2, 2, 2, 6, 6, 6, 4, 4, 4, 4, 4, 10, 6, 6, 6, 6, 6, 6, 6, 14, 8, 8, 18, 10, 12, 12, 12, 30],
   :classes => [1, 63, 315, 945, 3780, 672, 2240, 13440, 3780, 7560, 7560, 11340, 45360, 48384, 10080, 10080, 20160, 30240, 40320, 40320, 120960, 207360, 90720, 90720, 161280, 145152, 60480, 60480, 120960, 96768, 1, 63, 315, 945, 3780, 672, 2240, 13440, 3780, 7560, 7560, 11340, 45360, 48384, 10080, 10080, 20160, 30240, 40320, 40320, 120960, 207360, 90720, 90720, 161280, 145152, 60480, 60480, 120960, 96768]))
 
@@ -708,10 +709,9 @@ chevieset(:E7, :HeckeCharTable, function (para, sqrtpara)
   tbl=Dict{Symbol, Any}(:identifier => "H(E7)",
     :text => "origin: Meinolf Geck, July 1992",
     :cartan => chevieget(:E7, :CartanMat),
-    :parameter => para, :rootparameter => sqrtpara,
-    :size => 2903040, :powermap => chevieget(:E7, :PowerMaps),
-    :irredinfo => chevieget(:E7, :IrredInfo))
+    :parameter => para, :rootparameter => sqrtpara, :size => 2903040)
   merge!(tbl, chevieget(:E7, :ClassInfo))
+  merge!(tbl, chevieget(:E7, :CharInfo)())
   cl=tbl[:classtext]
   vpol=chevieget(:E7,:vpolheckeirreducibles)
   tbl[:irreducibles]=map(enumerate(vpol))do (i,p)

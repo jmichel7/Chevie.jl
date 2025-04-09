@@ -177,11 +177,9 @@ chevieset(:B,:HeckeCharTable,function(n,para,rt)
   q=improve_type(-para[2][1]//para[2][2])
   ci=chevieget(:B,:CharInfo)(n)
   cl=chevieget(:B,:ClassInfo)(n)
-  tbl=Dict{Symbol, Any}(:identifier=>"H(B_{$n})", 
-    :irredinfo=>map((x,y)->
-   Dict{Symbol,Any}(:charparam=>x,:charname=>y),ci[:charparams],ci[:charnames]),
-    :powermap=>[],:size=>2^n*factorial(n))
+  tbl=Dict{Symbol, Any}(:identifier=>"H(B_{$n})",:size=>2^n*factorial(n))
   merge!(tbl, cl)
+  merge!(tbl, ci)
   tbl[:centralizers]= div.(tbl[:size],tbl[:classes])
   l=partition_tuples(n,2)
   tbl[:irreducibles]=[BHk(n,Q,q,γ,π) for γ in l,π in l]

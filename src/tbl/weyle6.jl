@@ -40,6 +40,7 @@ chevieset(:E6, :ClassInfo, Dict{Symbol, Any}(:classtext => [[],
   [1, 4, 2, 5, 4, 2, 3]],
   :classnames => chevieget(:E6, :ClassNames),
   :classparams => chevieget(:E6, :ClassNames),
+  :powermaps => chevieget(:E6, :PowerMaps),
   :orders=>[1,2,2,3,3,3,4,4,5,6,6,6,6,9,12,2,2,4,4,6,6,6,8,10,12],
   :classes=>[1,45,270,80,240,480,540,3240,5184,720,1440,1440,2160,5760,4320,
              36, 540, 540, 1620, 1440, 1440, 4320, 6480, 5184, 4320]))
@@ -306,12 +307,11 @@ chevieset(:E6, :ClassParameter, w->
 chevieset(:E6, :HeckeCharTable, function (param, sqrtparam)
   q=-param[1][1]//param[1][2]
   tbl=Dict(:identifier=>"H(E6)",:text=>"origin: Meinolf Geck, April 1992",
-    :parameter=>param, :rootparameter => sqrtparam,
+    :parameter=>param,:rootparameter=>sqrtparam,
     :cartan=>chevieget(:E6, :CartanMat), :size => 51840,
-    :powermap=>chevieget(:E6, :PowerMaps),
-    :irreducibles=>map(i->map(j->j(q),i),chevieget(:E6,:vpolheckeirreducibles)),
-    :irredinfo => chevieget(:E6, :IrredInfo))
+    :irreducibles=>map(i->map(j->j(q),i),chevieget(:E6,:vpolheckeirreducibles)))
   merge!(tbl,chevieget(:E6, :ClassInfo))
+  merge!(tbl,chevieget(:E6, :CharInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)

@@ -53,6 +53,7 @@ chevieset(:G31,:ClassInfo,Dict{Symbol,Any}(
   :classtext=>chevieget(:G31,:WordsClassRepresentatives),
   :classnames=>chevieget(:G31,:ClassNames),
   :classparams=>chevieget(:G31,:ClassNames),
+  :powermaps=>chevieget(:G31,:PowerMaps),
   :orders=>[1,2,2,4,3,4,4,8,4,6,6,8,20,12,8,8,20,2,12,24,12,4,24,8,4,12,4,12,
         10,4,12,12,8,6,12,2,12,12,6,12,6,8,8,8,8,8,4,5,8,4,4,4,4,4,4,3,4,4,2],
   :classes=>[1,60,360,180,640,2880,30,720,30,1920,1920,720,2304,960,720,720,
@@ -232,9 +233,9 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   x=root(-para[1][1]//para[1][2])
   I=E(4)
   r,p=para[1]
-  tbl=Dict{Symbol, Any}(:identifier => "H(G31)", :size => 46080,:order=>46080,
-    :powermap => chevieget(:G31, :PowerMaps))
+  tbl=Dict{Symbol, Any}(:identifier => "H(G31)", :size => 46080,:order=>46080)
   merge!(tbl, chevieget(:G31, :ClassInfo))
+  merge!(tbl, chevieget(:G31, :CharInfo)())
   f1(r)=map(x->r^length(x),tbl[:classtext])
   adj(p,x)=x.*f1(-p)
   function f6(x,y,sgn)
@@ -786,7 +787,6 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
     f48(r,p,1),f50(r,p,1),f50(p,r,1),f50(r,p,-1),f50(p,r,-1),f54(r,p),f54(p,r),
     f56(r,p),f56(p,r),f58(r,p,E(4)),f58(r,p,-E(4))])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
-  tbl[:irredinfo] = chevieget(:G31, :IrredInfo)
   tbl
 end)
 

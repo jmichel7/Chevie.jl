@@ -48,6 +48,7 @@ chevieset(:G32, :ClassInfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G32, :WordsClassRepresentatives),
   :classnames => chevieget(:G32, :ClassNames),
   :classparams => chevieget(:G32, :ClassNames),
+  :powermaps => chevieget(:G32, :PowerMaps),
   :orders => [1, 3, 6, 3, 3, 4, 6, 12, 3, 9, 6, 6, 30, 3, 6, 12, 6, 15, 9, 24, 6, 12, 18, 12, 18, 6, 6, 10, 6, 12, 2, 12, 6, 24, 15, 6, 18, 12, 18, 3, 12, 30, 12, 6, 12, 18, 6, 6, 12, 9, 8, 12, 6, 6, 18, 6, 3, 12, 9, 12, 6, 12, 12, 9, 3, 6, 5, 6, 3, 6, 6, 9, 6, 12, 12, 12, 12, 12, 6, 6, 6, 6, 6, 4, 3, 6, 6, 6, 6, 4, 6, 3, 6, 6, 6, 6, 3, 6, 6, 2, 3, 3],
   :classes => [1, 40, 360, 240, 40, 540, 1440, 2160, 480, 2880, 1440, 1440, 5184, 240, 360, 2160, 1440, 5184, 2880, 6480, 1440, 2160, 2880, 2160, 2880, 360, 360, 5184, 1440, 4320, 90, 540, 1440, 6480, 5184, 360, 2880, 2160, 2880, 480, 4320, 5184, 540, 1440, 2160, 2880, 360, 40, 2160, 2880, 6480, 2160, 240, 40, 2880, 480, 480, 4320, 2880, 540, 480, 540, 2160, 2880, 40, 360, 5184, 1440, 40, 480, 1440, 2880, 360, 2160, 540, 2160, 540, 2160, 360, 360, 90, 1440, 360, 540, 40, 360, 90, 240, 1440, 540, 40, 240, 40, 1, 240, 40, 40, 40, 1, 1, 1, 1]))
 
@@ -1961,10 +1962,9 @@ u^20*v^20*w^20*(v^3-4*w*v*u+u^3+w^3),27*r*u^33*v^33*w^33*(w^2+v^2+u^2),9*r*u^13*
   res=Dict{Symbol, Any}(:name => "H(G32)", :identifier => "H(G32)",
     :parameter => para, :size => 155520, :order => 155520, :dim => 4,
     :degrees => [12, 18, 24, 30], :reflclasses => [2],
-    :powermap => chevieget(:G32, :PowerMaps),
-    :irredinfo => chevieget(:G32, :IrredInfo),
     :text => "origin: J.Michel, 2008/2012")
   merge!(res, chevieget(:G32, :ClassInfo))
+  merge!(res, chevieget(:G32, :CharInfo)())
   res[:centralizers]=div.(res[:order],res[:classes])
   res[:irreducibles]=toM([f1(u), f1(w), f1(v), f4(v, w), f4(u, v), f4(w, u),
     f4(w, v), f4(u, w), f4(v, u), f5(u, v, w), f5(w, u, v), f5(v, w, u),

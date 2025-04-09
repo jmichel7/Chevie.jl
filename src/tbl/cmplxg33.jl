@@ -60,6 +60,7 @@ chevieset(:G33, :ClassInfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G33, :WordsClassRepresentatives),
   :classnames => chevieget(:G33, :ClassNames),
   :classparams => chevieget(:G33, :ClassNames),
+  :powermaps => chevieget(:G33, :PowerMaps),
   :orders => [1, 2, 2, 3, 4, 6, 6, 6, 2, 5, 9, 9, 4, 18, 18, 6, 6, 3, 3, 10, 12, 12, 6, 6, 12, 12, 6, 6, 4, 6, 3, 6, 6, 6, 6, 4, 6, 6, 2, 2], 
   :classes => [1, 45, 270, 480, 3240, 360, 360, 1440, 270, 5184, 2880, 2880, 3240, 2880, 2880, 1440, 2160, 40, 40, 5184, 2160, 2160, 720, 720, 2160, 2160, 240, 720, 540, 720, 240, 2160, 360, 360, 40, 540, 40, 480, 45, 1]))
 
@@ -158,9 +159,9 @@ chevieset(:G33,:sparseFakeDegrees,[[1,0],[1,45],[1,28,1,34,1,36,1,40,1,42],
 # Computed JM may 2009; completed using Marin-Pfeiffer 2015
 chevieset(:G33, :HeckeCharTable, function (para, rt)
   x,y=para[1]
-  tbl=Dict{Symbol, Any}(:identifier => "H(G33)", :size => 51840,:order=>51840,
-                        :powermap => chevieget(:G33, :PowerMaps))
+  tbl=Dict{Symbol, Any}(:identifier => "H(G33)", :size => 51840,:order=>51840)
   merge!(tbl, chevieget(:G33, :ClassInfo))
+  merge!(tbl, chevieget(:G33, :CharInfo)())
   f1(x)=[1,x,x^2,x^2,x^3,x^3,x^3,x^3,x^3,x^4,x^4,x^4,x^4,x^25,x^5,x^48,x^6,
          x^6,x^6,x^9,x^7,x^7,x^7,x^7,x^8,x^8,x^9,x^10,x^10,x^10,x^12,x^13,
          x^14,x^14,x^51,x^15,x^15,x^47,x^46,x^45]
@@ -441,7 +442,6 @@ x^5*y^4, -x*y^6-x^2*y^5+2*x^4*y^3+2*x^5*y^2, 0,
     f27(x,y,E(3,2)),f27(y,x,E(3,2)),f31(x,y,E(3)),f31(y,x,E(3)),f31(x,y,E(3,2)),
     f31(y,x,E(3,2)),f35(x,y),f35(y,x),f37(x,y,-1),f37(x,y,1),f39(x,y),f39(y,x)])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
-  tbl[:irredinfo]=chevieget(:G33,:IrredInfo)
   tbl
 end)
 

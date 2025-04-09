@@ -43,6 +43,7 @@ chevieset(:G29, :ClassInfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G29, :WordsClassRepresentatives),
   :classnames => chevieget(:G29, :ClassNames),
   :classparams => chevieget(:G29, :ClassNames),
+  :powermaps => chevieget(:G29, :PowerMaps),
   :orders=>[1, 2, 3, 4, 2, 8, 6, 6, 8, 4, 2, 20, 20, 4, 4, 4, 12, 8, 10, 12,
               4, 4, 12, 12, 2, 6, 8, 8, 5, 4, 4, 4, 4, 4, 4, 4, 2],
   :classes=>[1,40,320,60,120,240,320,320,240,480,30,384,384,480,240,240,320,
@@ -129,9 +130,9 @@ LaurentPolynomials.root(f::Frac)=root(numerator(f))//root(denominator(f))
 chevieset(:G29, :HeckeCharTable, function (para, rt)
   q=-para[1][1]//para[1][2]
   r,p=para[1]
-  tbl = Dict{Symbol, Any}(:identifier=>"H(G29)", :size => 7680,:order=>7680,
-                          :powermap => chevieget(:G29, :PowerMaps))
+  tbl = Dict{Symbol, Any}(:identifier=>"H(G29)", :size => 7680,:order=>7680)
   merge!(tbl, chevieget(:G29, :ClassInfo))
+  merge!(tbl, chevieget(:G29, :CharInfo)())
   f3(x,y)=[4, 3x+y, 2x^2+x*y, 2x^2+2x*y, 2x^2+2x*y, x^3+x^2*y,
     x^3+2x^2*y, x^3+2x^2*y, x^3+x^2*y, x^3+x^2*y, 2x^4+2x^2*y^2, x^3*y, x^9*y^3,
     -x^18*y^5-x^17*y^6, x^5-x^4*y, x^5+x^3*y^2, -2x^47*y^15-x^46*y^16,
@@ -235,9 +236,8 @@ chevieset(:G29, :HeckeCharTable, function (para, rt)
     f22(p, r), f23(p, r), f24(r, p, 1), f24(p, r, 1), f24(r, p, -1),
     f24(p, r, -1), f28(r, p), f28(p, r), f30(r, p, E(4)), f30(p, r, E(4)),
     f30(r, p, -E(4)), f30(p, r, -E(4)), f34(r, p), f35(r, p, E(4)),
-    f35(r, p, -E(4)), f37(r, p)])*q^0
+    f35(r, p, -E(4)), f37(r, p)])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
-  tbl[:irredinfo] = chevieget(:G29, :IrredInfo)
   tbl
 end)
 

@@ -124,7 +124,7 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
     for k in 1:e rr[k]=sort(rr[k],rev=true) end
     return rr
   end
-  pp = chevieget(:imp, :ClassInfo)(p,q,r)[:classparams]
+  pp=chevieget(:imp, :classparams)(p,q,r)
   l=keys(factor(factorial(r)*p))
   res=fill(Int[],maximum(l))
   for pw in l res[pw]=map(x->findfirst(==(pow(x,pw)),pp),pp) end
@@ -229,12 +229,13 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
   res[:identifier] = res[:name]
   res[:size] = prod(res[:degrees])
   res[:order] = res[:size]
-  res[:powermap]=chevieget(:imp,:PowerMaps)(p,q,r)
   cl=chevieget(:imp, :ClassInfo)(p, q, r)
   if r==1
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
     res[:irreducibles]=[para[1][i]^j for i in 1:p, j in 0:p-1]
+    res[:powermaps]=cl[:powermaps]
+    merge!(res,chevieget(:imp,:CharInfo)(p,q,r))
   elseif q==1
 # character table of the Hecke algebra of G(p,1,r) parameters v and [q,-1]
 # according to [Halverson-Ram]"Characters of Iwahori-Hecke algebras of G(r,p,n)"
@@ -342,9 +343,11 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     end
     pts=partition_tuples(r,p)
     res[:irreducibles]=[entry(pt,x) for x in map(y->βset.(y),pts), pt in pts]
+    merge!(res,chevieget(:imp,:CharInfo)(p,q,r))
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
+    res[:powermaps]=cl[:powermaps]
     Z,X,Y=para
     e1=div(q,2)
     Z=root.(Z,e1)
@@ -369,10 +372,12 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     end
     res[:irreducibles]=[entry2(char,c) for char in ci[:charparams],
                         c in cl[:classparams]]
+    merge!(res,chevieget(:imp,:CharInfo)(p,q,r))
   else
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
     res[:centralizers]=cl[:centralizers]
+    res[:powermaps]=cl[:powermaps]
     res[:classes] = map(x->div(res[:size],x),res[:centralizers])
     reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i),
              1:length(res[:classes]))
@@ -513,7 +518,9 @@ chevieset(:imp, :CharInfo, function (de, e, r)
     v[2]=fill(1,r-i)
     v
   end
-  if e>1 t=map(v->minimum(map(i->circshift(v,i*d),1:e)),t) end
+  if e>1 t=map(v->minimum(map(i->circshift(v,i*d),1:e)),t)
+  elseif de==1 t=map(x->[vcat(x...)],t)
+  end
   res[:extRefl]=map(v->findfirst(==(v),res[:charparams]),t)
   if e==1 || d==1
     res[:A]=degree_gendeg_symbol.(res[:charSymbols])
@@ -543,6 +550,45 @@ chevieset(:imp, :CharInfo, function (de, e, r)
       end
     end
   res
+end)
+
+chevieset(:imp, :classparams, function (p, q, r)
+  if r==2 && p!=q && iseven(q)
+    e1=div(q,2)
+# if s,t,u generate G(p,2,2) then s':=s^e1,t,u generate G(p,q,2)
+# z:=stu generates Z(G(p,2,2)) and z':=z^e1 generates Z(G(p,q,2))
+# relations for G(p,2,2) are stu=tus=ust
+# relations for G(p,q,2) are s'tu=tus' and [z',u]=1
+    res=[]
+    for i in 0:p-1, j in 0:div(p-i-1,2)
+      if mod(j+i,e1)==0
+        push!(res,vcat(fill(1,j),fill(0,i)))
+      end
+    end
+    for j in 2:3, i in 0:e1:div(p,2)-e1
+      push!(res, pushfirst!(fill(0,i),j))
+    end
+    return res
+  elseif q==1
+    cp=partition_tuples(r,p)
+    res=cp
+  else
+    I=chevieget(:imp, :classparams)(p, 1, r)
+    res=[]
+    for i in findall(S->mod(dot(length.(S),0:p-1),q)==0,I)
+      S=I[i]
+      a=vcat(S...)
+      push!(a, q)
+      append!(a,findall(!isempty,S).-1)
+      a=gcd(a...)# number of pieces the class splits
+      for j in 0:a-1
+        if a>1 push!(res, vcat(S,[div(p*j,a)]))
+        else push!(res, S)
+        end
+      end
+    end
+    return res
+  end
 end)
 
 chevieset(:imp, :ClassInfo, function (p, q, r)
@@ -612,6 +658,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                                         tally(pp);init=1),m))
     end
     res[:classes]=map(x->div(p^r*factorial(r), x),res[:centralizers])
+    res[:powermaps]=chevieget(:imp,:PowerMaps)(p,q,r)
     return res
   else
   # According  to Hugues  ``On  decompositions  in complex  imprimitive 

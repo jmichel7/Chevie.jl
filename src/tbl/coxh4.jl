@@ -68,6 +68,7 @@ chevieset(:H4, :ClassInfo, function ()
   res[:classnames]=map(x->replace(x, "0"=>"c"),res[:classnames])
   res[:classnames][1]="."
   res[:classparams]=res[:classnames]
+  res[:powermaps]=chevieget(:H4,:PowerMaps)
   res
 end)
 
@@ -690,11 +691,9 @@ chevieset(:H4, :HeckeCharTable, function(param, sqrtparam)
   :text=>"the ordering of the characters is that of Alvis-Lusztig(1982)",
   :parameter=>[v^2,v^2,v^2,v^2],
   :cartan => chevieget(:H4, :CartanMat), :size => 14400,
-  :powermap => chevieget(:H4, :PowerMaps),
-  :irreducibles => map(i->map(j->j(v),i),
-                       chevieget(:H4, :vpolheckeirreducibles)),
-  :irredinfo => chevieget(:H4, :IrredInfo))
+  :irreducibles=>map(i->map(j->j(v),i),chevieget(:H4,:vpolheckeirreducibles)))
   merge!(tbl, chevieget(:H4, :ClassInfo)())
+  merge!(tbl, chevieget(:H4, :CharInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)
