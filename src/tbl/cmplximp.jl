@@ -110,7 +110,7 @@ end)
 chevieset(:imp,:PowerMaps,function(p,q,r)
   if q!=1
     InfoChevie("# power maps not implemented for G($p,$q,$r)\n")
-    return [[1],[1],[1]]
+    return [nothing]
   end
   function pow(p,n)
     e=length(p)
@@ -126,7 +126,7 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
   end
   pp=chevieget(:imp, :classparams)(p,q,r)
   l=keys(factor(factorial(r)*p))
-  res=fill(Int[],maximum(l))
+  res=Vector{Any}(fill(nothing,maximum(l)))
   for pw in l res[pw]=map(x->findfirst(==(pow(x,pw)),pp),pp) end
   res
 end)
@@ -2123,14 +2123,14 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       collectby(x->tally(vcat(x...)),csy))
     sort!(uc[:families],by=x->x[:charNumbers])
     for f in uc[:families] 
-      if !(f.fourierMat isa Matrix) f[:fourierMat]=toM(f[:fourierMat]) end
+      if !(f.fourierMat isa Matrix) f.fourierMat=toM(f.fourierMat) end
     end
     if r==1
       l=map(function (S)
         p=findfirst(==(Int[]),S)
         if isnothing(p) return 1 else return (-1)^p end
       end, csy[uc[:families][2][:charNumbers]])
-      uc[:families][2][:fourierMat]=Diagonal(l)*uc[:families][2][:fourierMat]*Diagonal(l)
+      uc[:families][2].fourierMat=Diagonal(l)*uc[:families][2].fourierMat*Diagonal(l)
       uc[:cyclicparam]=map(csy)do s
         if count(x->x==1,vcat(s...))==1 return [1] end
         s=map(copy,s)
@@ -2140,9 +2140,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       end
     elseif r==2 && p==3
       d=Diagonal([-1,1,1]) #Dudas' sign change
-      uc[:families][4][:fourierMat]=d*uc[:families][4][:fourierMat]*d
+      uc[:families][4].fourierMat=d*uc[:families][4].fourierMat*d
       d=Diagonal([1,-1,-1,1,1,1,1,1,1])
-      uc[:families][1][:fourierMat]=d*uc[:families][1][:fourierMat]*d
+      uc[:families][1].fourierMat=d*uc[:families][1].fourierMat*d
     end
     return uc
   elseif p==q

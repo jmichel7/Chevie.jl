@@ -834,13 +834,13 @@ function CycPoldegrees(uc::UnipotentCharacters)
   end
 end
 
-function Chars.eigen(ff::Vector{Family})
+function LinearAlgebra.eigen(ff::Vector{Family})
   eig=fill(E(1),sum(length,ff))
   for f in ff eig[f.charNumbers]=eigen(f) end
   eig
 end
 
-function Chars.eigen(uc::UnipotentCharacters)
+function LinearAlgebra.eigen(uc::UnipotentCharacters)
   get!(uc,:eigen)do
     eigen(uc.families)
   end::Vector{Root1}

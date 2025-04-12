@@ -37,7 +37,8 @@ chevieset(:G2, :ClassInfo, Dict{Symbol, Any}(
   :powermaps => chevieget(:G2, :PowerMaps),
   :orders => [1, 2, 2, 6, 3, 2], :classes => [1, 3, 3, 2, 2, 1]))
 
-chevieset(:G2, :PowerMaps, [nothing, [1, 1, 1, 5, 5, 1], [1, 2, 3, 6, 1, 6]])
+chevieset(:G2, :PowerMaps, [nothing, [1, 1, 1, 5, 5, 1], [1, 2, 3, 6, 1, 6],
+                            nothing,[1,2,3,4,5,6]])
 
 chevieset(:G2,:sparseFakeDegrees,[[1,0],[1,6],[1,3],[1,3],[1,1,1,5],[1,2,1,4]])
 

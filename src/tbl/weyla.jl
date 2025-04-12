@@ -18,7 +18,7 @@ chevieset(:A, :simpleroots, function(n)
 end)
 
 chevieset(:A, :ParabolicRepresentatives,function(n,s)
-  chevieget(:imp, :ParabolicRepresentatives)(1,1,n,s)
+  filter(x->!(n+1 in x),chevieget(:imp, :ParabolicRepresentatives)(1,1,n+1,s))
 end)
 
 # very good representative for partition pi in the sense of [Geck-Michel]
@@ -51,6 +51,7 @@ chevieset(:A,:ClassInfo,function(n)
   res[:classnames]=joindigits.(pp)
   res[:classtext]=map(chevieget(:A,:WordClass),pp)
   res[:classes]=map(pi->factorial(n+1)//chevieget(:A,:centralizer)(n,pi),pp)
+  res[:powermaps]=chevieget(:imp,:PowerMaps)(1,1,n+1)
   res[:orders]=lcm.(pp)
   res
 end)

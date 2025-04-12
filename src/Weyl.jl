@@ -514,6 +514,11 @@ end
 
 const FC=Union{FCG,FCSG}
 
+
+function PermRoot.reflchar(W::FC, w )
+  rank(W)+sum(i->W.rootdec[action(W,i,w)][i]-1,1:ngens(W))
+end
+
 """
 `inversions(W::FiniteCoxeterGroup, w::AbstractVector{<:Integer})`
 
@@ -698,12 +703,11 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.coroots, PermRoot.coxnum, PermRoot.inclusion, 
  PermRoot.inclusiongens, PermRoot.independent_roots, PermRoot.invariants, 
  PermRoot.invariant_form, PermRoot.YMatrix, PermRoot.PermX, PermRoot.PermY, 
- PermRoot.rank, PermRoot.roots, PermRoot.reflection_character,
- PermRoot.refleigen, PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction,
- PermRoot.simplecoroots,
+ PermRoot.rank, PermRoot.roots, PermRoot.refleigen, PermRoot.reflrep,
+ PermRoot.refltype, PermRoot.restriction, PermRoot.simplecoroots,
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
- PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX, PermRoot.invbaseX,
- PermRoot.central_action, 
+ PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
+ PermRoot.invbaseX, PermRoot.central_action, 
  Perms.reflection_length, Perms.last_moved
 
  PermRoot.refls(W::FC)=refls(W.G)

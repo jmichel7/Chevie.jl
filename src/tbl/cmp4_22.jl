@@ -2095,9 +2095,9 @@ chevieset(:G4_22, :Ennola, function(ST)
   res=fill(0,length(uc[:a]))
   for f in uc[:families]
     b=basis(Zbasedring(f))
-    if !haskey(f,:ennola) f[:ennola]=f[:special] end
-    if f[:ennola]>0 p=SPerm(b[f[:ennola]]*b, b)
-    else p=SPerm(-b[-f[:ennola]]*b, b)
+    if !haskey(f,:ennola) f.ennola=f.special end
+    if f.ennola>0 p=SPerm(b[f.ennola]*b, b)
+    else p=SPerm(-b[-f.ennola]*b, b)
     end
     res[f[:charNumbers]]=invpermute(f[:charNumbers], p)
   end

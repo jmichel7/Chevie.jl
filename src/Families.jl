@@ -78,7 +78,7 @@ using ..Chevie
 
 @GapObj struct Family end
 
-Base.setindex!(f::Family,x,s::Symbol)=setproperty!(f,s,x) # used in cmplximp.jl
+#Base.setindex!(f::Family,x,s::Symbol)=setproperty!(f,s,x) # used in cmplximp.jl
 
 Base.:(==)(f::Family,g::Family)=f.prop==g.prop
 
@@ -174,14 +174,14 @@ special(f::Family)=get!(()->1,f,:special)::Int
 "`cospecial(f::Family)` the index of the cospecial character in `f`"
 cospecial(f::Family)=Int(get!(()->special(f),f,:cospecial))
 
+"`eigen(f::Family)`: the Frobenius eigenvalues of the characters of the family."
+LinearAlgebra.eigen(f::Family)=f.eigenvalues
+
 "`length(f::Family)`: how many characters are in the family."
 Base.length(f::Family)=length(eigen(f))
 
 "`signs(f::Family)`: the signs of the family."
 SignedPerms.signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
-
-"`eigen(f::Family)`: the Frobenius eigenvalues of the characters of the family."
-PermRoot.eigen(f::Family)=f.eigenvalues
 
 qeigen(f::Family)=haskey(f,:qEigen) ? f.qEigen : zeros(Rational{Int},length(f))
 
