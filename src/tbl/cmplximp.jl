@@ -635,7 +635,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     res=Dict{Symbol,Any}(:classparams=>cp)
     res[:classtext]=map(cp)do S
       S=vcat(map(i->map(t->[t,i-1],S[i]),1:p)...)
-      sort!(S,by=a->[a[1],-a[2]])
+      sort!(S,by=a->(a[1],-a[2]))
       l=0
       w=Int[]
       for d in S

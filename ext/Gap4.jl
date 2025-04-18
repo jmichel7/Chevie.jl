@@ -88,7 +88,14 @@ function Chars.CharTable(ct::GapObj)
   sz=fromgap(GAP.Globals.SizesCentralisers(ct))
   s=fromgap(GAP.Globals.Size(ct))
   id=fromgap(GAP.Globals.Identifier(ct))
-  Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}(:name=>id))
+  orders=fromgap(GAP.Globals.OrdersClassRepresentatives(ct))
+  pp=keys(factor(s))
+  powermaps=Vector{Any}(fill(nothing,maximum(pp)))
+  for k in pp
+    powermaps[k]=fromgap(GAP.Globals.PowerMap(ct,k))
+  end
+  Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}(:name=>id,:orders=>orders,
+                                                :powermaps=>powermaps))
 end
 
 function Chars.CharTable(g::PermGroup)
@@ -99,6 +106,12 @@ function Chars.CharTable(g::PermGroup)
   ct=CharTable(GAP.Globals.CharacterTable(gg))
   ct.irr[:,l]=ct.irr
   ct.classnames[l]=ct.classnames
+  ct.orders[l]=ct.orders
+  for i in eachindex(ct.powermaps)
+    if ct.powermaps[i]!=nothing
+      ct.powermaps[i][l]=ct.powermaps[i]
+    end
+  end
   ct
 end
 
