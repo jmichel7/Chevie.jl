@@ -112,22 +112,23 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
     InfoChevie("# power maps not implemented for G($p,$q,$r)\n")
     return [nothing]
   end
-  function pow(p,n)
-    e=length(p)
-    rr=map(x->[],1:e)
-    for k in 1:e
-      for l in p[k]
-        g=gcd(n,l)
-        for j in 1:g push!(rr[1+mod(div(n*(k-1),g),e)], div(l,g)) end
-      end
+  function pow(S,n)
+    e=length(S)
+    S1=map(x->[],1:e)
+    for k in 1:e, l in S[k]
+      g=gcd(n,l)
+      append!(S1[1+mod(div(n,g)*(k-1),e)], fill(div(l,g),g))
     end
-    for k in 1:e rr[k]=sort(rr[k],rev=true) end
-    return rr
+    for m in S1 sort!(m,rev=true) end
+    S1
   end
   pp=chevieget(:imp, :classparams)(p,q,r)
   l=keys(factor(factorial(r)*p))
   res=Vector{Any}(fill(nothing,maximum(l)))
-  for pw in l res[pw]=map(x->findfirst(==(pow(x,pw)),pp),pp) end
+  for pw in l 
+    res[pw]=map(x->findfirst(==(pow(x,pw)),pp),pp)
+#   res[pw]=indexin(pow.(pp,pw),pp)
+  end
   res
 end)
 
@@ -569,26 +570,25 @@ chevieset(:imp, :classparams, function (p, q, r)
       push!(res, pushfirst!(fill(0,i),j))
     end
     return res
-  elseif q==1
-    cp=partition_tuples(r,p)
-    res=cp
-  else
-    I=chevieget(:imp, :classparams)(p, 1, r)
-    res=[]
-    for i in findall(S->mod(dot(length.(S),0:p-1),q)==0,I)
-      S=I[i]
-      a=vcat(S...)
-      push!(a, q)
-      append!(a,findall(!isempty,S).-1)
-      a=gcd(a...)# number of pieces the class splits
-      for j in 0:a-1
-        if a>1 push!(res, vcat(S,[div(p*j,a)]))
-        else push!(res, S)
-        end
+  end
+  I=partition_tuples(r,p)
+  if q==1 return I end
+  res=[]
+  for S in I
+    if mod(sum(i->(i-1)*length(S[i]),1:p),q)!=0 continue end
+    a=gcd(vcat(S...))
+    a=gcd(a, q)
+    for i in 1:p
+      if !isempty(S[i]) a=gcd(a,i-1) end
+    end
+    if a==1 push!(res, S)
+    else
+      for j in 0:a-1 # number of pieces the class splits
+        push!(res, vcat(S,div(p*j,a)))
       end
     end
-    return res
   end
+  return res
 end)
 
 chevieset(:imp, :ClassInfo, function (p, q, r)
@@ -648,10 +648,8 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
       w
     end
     res[:classnames]=chevieget(:imp,:ClassName).(cp)
-    res[:orders]=map(cp)do m
-      lcm(map(i->if length(m[i])==0 1
-                 else lcm(div.(m[i]*p,gcd(i-1,p)))
-                 end, eachindex(m)))
+    res[:orders]=map(cp)do S
+     lcm(map(((i,m),)->isempty(m) ? 1 : lcm(m)*div(p,gcd(i-1,p)), enumerate(S)))
     end
     res[:centralizers]=map(cp)do m
       p^sum(length,m)*prod(map(pp->prod(y->factorial(y[2])*y[1]^y[2],
@@ -710,14 +708,15 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     I=chevieget(:imp, :ClassInfo)(p, 1, r)
     res=Dict{Symbol, Any}(:classtext=>Vector{Int}[],:classparams=>[],
       :classnames=>String[],:orders=>Int[],:centralizers=>Int[])
-    for i in findall(S->mod(dot(length.(S),0:p-1),q)==0,I[:classparams])
-      S=I[:classparams][i]
-      a=vcat(S...)
-      push!(a, q)
-      append!(a,findall(!isempty,S).-1)
-      a=gcd(a...)# number of pieces the class splits
-      for j in 0:a-1
-        push!(res[:classtext], trans(vcat(fill(1,j),I[:classtext][i],fill(1,max(0,p-j)))))
+    for (i,S) in enumerate(I[:classparams])
+      if mod(sum(j->(j-1)*length(S[j]),1:p),q)!=0 continue end
+      a=gcd(vcat(S...))
+      a=gcd(a, q)
+      for j in 1:p
+        if !isempty(S[j]) a=gcd(a,j-1) end
+      end
+      for j in 0:a-1 # number of pieces the class splits
+        push!(res[:classtext], trans(vcat(fill(1,j),I[:classtext][i],fill(1,p-j))))
         if a>1 push!(res[:classparams], vcat(S,[div(p*j,a)]))
         else push!(res[:classparams], S)
         end
