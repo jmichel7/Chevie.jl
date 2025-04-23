@@ -900,7 +900,7 @@ function classinfo(W)
   get!(W,:classinfo)do
     tmp=map(classinfo,refltype(W))
     if isempty(tmp) return ClassInfo(Dict(:classtext=>[Int[]],:classnames=>[""],
-                            :classparams=>[Int[]],:orders=>[1],:classes=>[1]))
+      :classparams=>[Int[]],:orders=>[1],:classes=>[1],:powermaps=>Any[]))
     end
     if any(isnothing, tmp) return nothing end
     if length(tmp)==1 res=copy(tmp[1].prop)

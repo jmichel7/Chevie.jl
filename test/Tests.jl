@@ -352,9 +352,13 @@ test[:chartable]=(applicable=W->!(W isa Spets),
 
 function Tpowermaps(W)
   cl=classreps(W)
-  p=classinfo(W)[:powermap]
+  if !haskey(classinfo(W),:powermaps)
+    ChevieErr("no powermaps for ",W)
+    return
+  end
+  p=classinfo(W).powermaps
   for i in eachindex(p)
-    if isdefine(p,i) cmap=map(x->position_class(W,x^i),cl)
+    if !isnothing(p[i]) cmap=map(x->position_class(W,x^i),cl)
       if cmap!=p[i]
         ChevieErr(i,"-th power map is ",p[i],"\nshould be:",cmap,"\n")
       end
@@ -362,8 +366,7 @@ function Tpowermaps(W)
   end
 end
 
-test[:powermaps]=(applicable=W->false,
-#test[:powermaps]=(applicable=W->!(W isa Spets),
+test[:powermaps]=(applicable=W->!(W isa Spets),
                   comment="recompute powermaps")
 
 #---------------- test: positionclasses ------------------------

@@ -31,44 +31,36 @@ chevieset(:I,:ParabolicRepresentatives, function (m, s)
   chevieget(:imp, :ParabolicRepresentatives)(m, m, 2, s)
 end)
 
-chevieset(:I, :WordsClassRepresentatives, function(m)
-  r=iseven(m) ? [Int[], [1], [2]] : [Int[], [1]]
-  x = [1, 2]
-  for i in 1:div(m,2) 
-    push!(r,copy(x))
-    append!(x,[1,2])
-  end
-  r
-end)
-
 chevieset(:I, :ClassInfo, function (m)
-  r=chevieget(:I, :WordsClassRepresentatives)(m)
-  clnp=joindigits.(r)
-  g1=Perm()
-  i=2
-  while 2i<=m+1
-    g1*=Perm(i,m-i+2)
-    i+=1
-  end
-  g2=Perm()
-  i=1
-  while 2i<=m
-    g2*=Perm(i,m-i+1)
-    i+=1
-  end
-  gen=[g1,g2]
-  perm(l)=isempty(l) ? Perm() : prod(gen[l])
   m1=div(m,2)
   if iseven(m)
-    cl=[1,m1,m1]
-    append!(cl,fill(2,m1-1))
-    push!(cl,1)
+    words=[Int[], [1], [2]]
+    classes=[1,m1,m1]
+    orders=[1,2,2]
+    x=[1,2]
+    for i in 1:m1
+      push!(classes,i==m1 ? 1 : 2)
+      push!(orders,div(m,gcd(i,m)))
+      push!(words,copy(x))
+      append!(x,[1,2])
+    end
   else
-    cl=[1,m]
-    append!(cl,fill(2,m1))
+    words=[Int[], [1]]
+    classes=[1,m]
+    orders=[1,2]
+    x=[1,2]
+    for i in 1:m1
+      push!(classes,2)
+      push!(orders,div(m,gcd(i,m)))
+      push!(words,copy(x))
+      append!(x,[1,2])
+    end
   end
-  Dict{Symbol, Any}(:classtext=>r,:classnames=>clnp,:classparams=>clnp,
-                   :orders=>map(i->order(perm(i)),r),:classes=>cl)
+  clnp=joindigits.(words)
+# pp=keys(factor(2m))
+# pmaps=Vector{Any}(fill(nothing,maximum(pp)))
+  Dict{Symbol, Any}(:classtext=>words,:classnames=>clnp,:classparams=>clnp,
+                   :orders=>orders,:classes=>classes)
 end)
 
 chevieset(:I, :HeckeCharTable, function (m, para, rootpara)

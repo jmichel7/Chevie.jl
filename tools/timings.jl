@@ -5,6 +5,7 @@ using Chairmarks
 #1.8.5 45s (6.10M alloc: 400MB, 0.63% gc, 5.94% compilation 77% recompilation)
 #1.9.3 51s (2.26M alloc: 150MiB, 0.10% gc, 1.59% compilation 78% recompilation)
 #1.10.2 40.6s (4.00M alloc: 301 MiB, 0.19% gc, 3.12% compilation 9% recompilation)
+#1.11.5 134.18s (4.35M alloc: 262.139 MiB, 0.25% gc, 0.93% compilation 59% recompilation)
 
 #julia> @b test_w0(coxsym(7))
 #1.9.4   10.091 ms (182390 allocs: 12.981 MiB)
@@ -33,6 +34,7 @@ end;
 #julia> @b collect(symmetric_group(10)) seconds=4
 #1.10.3  240.491 ms (4043780 allocs: 336.001 MiB)
 #1.11.rc 189.171 ms (8083258 allocs: 335.999 MiB)
+#1.11.5 140.902 ms (8083222 allocs: 335.998 MiB)
 #Elements(Group(List([1..9],i->(i,i+1)),()));; GAP3 takes 0.53s
 
 #julia> @b elements(coxgroup(:E,6))
@@ -119,10 +121,11 @@ end;
 """
 
 # for r>13 needs BigInt
-#julia> @b test_hm(BigInt,35) seconds=1
+#julia> @b test_hm(BigInt,35) seconds=4
 #1.9.4  43.756 ms (1780874 allocs: 57.071 MiB)
 #1.10.3 42.886 ms (1795660 allocs: 57.618 MiB)
 #1.11.0 44.514 ms (1795664 allocs: 57.618 MiB)
+#1.11.5 49.851 ms (1795660 allocs: 60.905 MiB)
 function test_hm(rtype,rank)
   m=[rtype(1)//(n+m) for n in 1:rank, m in 1:rank]
   one(m)==m*inv(m)
