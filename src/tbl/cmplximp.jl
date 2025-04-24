@@ -122,7 +122,7 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
     for m in S1 sort!(m,rev=true) end
     S1
   end
-  pp=chevieget(:imp, :classparams)(p,q,r)
+  pp=partition_tuples(r,p)
   l=keys(factor(factorial(r)*p))
   res=Vector{Any}(fill(nothing,maximum(l)))
   for pw in l 
@@ -555,6 +555,7 @@ end)
 
 chevieset(:imp, :classparams, function (p, q, r)
   if r==2 && p!=q && iseven(q)
+    # classparams is the classtext where 0->z
     e1=div(q,2)
 # if s,t,u generate G(p,2,2) then s':=s^e1,t,u generate G(p,q,2)
 # z:=stu generates Z(G(p,2,2)) and z':=z^e1 generates Z(G(p,q,2))
@@ -592,6 +593,24 @@ chevieset(:imp, :classparams, function (p, q, r)
 end)
 
 chevieset(:imp, :ClassInfo, function (p, q, r)
+  order(S)=lcm(map(((i,m),)->isempty(m) ? 1 : lcm(m)*div(p,gcd(i-1,p)),
+                   enumerate(S)))
+  centralizer(S)=p^sum(length,S)*prod(map(pp->prod(y->factorial(y[2])*y[1]^y[2],
+                                        tally(pp);init=1),S))
+  function classtext(S)
+    s=vcat(map(i->map(t->[t,i-1],S[i]),1:p)...)
+    sort!(s,by=a->(a[1],-a[2]))
+    l=0
+    w=Int[]
+    for d in s
+      append!(w,repeat(vcat(l+1:-1:2,1:l+1),d[2]))
+      # non-reduced word because this is the one used by Halverson-Ram
+      # for characters of the Hecke algebra (see HeckeCharTable).
+      append!(w,l+2:l+d[1])
+      l+=d[1]
+    end
+    w
+  end
   if r==2 && p!=q && iseven(q)
     e1=div(q,2)
 # if s,t,u generate G(p,2,2) then s':=s^e1,t,u generate G(p,q,2)
@@ -617,45 +636,27 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
       end
     end
     res[:orders] = map(res[:classparams])do c
-      if length(c)>0 && c[1] in [2,3]
+      if length(c)>0 && c[1] in (2,3)
         lcm(2, div(p,gcd(count(iszero,c),p)))
       else
         lcm(div(p,gcd(count(iszero,c),p)),div(div(p,2),gcd(count(==(1),c), div(p, 2))))
       end
     end
     res[:classes]=map(res[:classparams])do c
-          if length(c)>0 && c[1] in [2, 3] div(p, 2)
-          elseif 1 in c 2
-          else 1
-          end
+      if length(c)>0 && c[1] in (2,3) div(p, 2)
+      elseif 1 in c 2
+      else 1
+      end
     end
     return res
   elseif q==1
     cp=partition_tuples(r,p)
     res=Dict{Symbol,Any}(:classparams=>cp)
-    res[:classtext]=map(cp)do S
-      S=vcat(map(i->map(t->[t,i-1],S[i]),1:p)...)
-      sort!(S,by=a->(a[1],-a[2]))
-      l=0
-      w=Int[]
-      for d in S
-        append!(w,repeat(vcat(l+1:-1:2,1:l+1),d[2]))
-      	# non-reduced word because this is the one used by Halverson-Ram
-	# for characters of the Hecke algebra (see HeckeCharTable).
-        append!(w,l+2:l+d[1])
-        l+=d[1]
-      end
-      w
-    end
+    res[:classtext]=classtext.(cp)
     res[:classnames]=chevieget(:imp,:ClassName).(cp)
-    res[:orders]=map(cp)do S
-     lcm(map(((i,m),)->isempty(m) ? 1 : lcm(m)*div(p,gcd(i-1,p)), enumerate(S)))
-    end
-    res[:centralizers]=map(cp)do m
-      p^sum(length,m)*prod(map(pp->prod(y->factorial(y[2])*y[1]^y[2],
-                                        tally(pp);init=1),m))
-    end
-    res[:classes]=map(x->div(p^r*factorial(r), x),res[:centralizers])
+    res[:orders]=order.(cp)
+    res[:centralizers]=centralizer.(cp)
+    res[:classes]=div.(p^r*factorial(r),res[:centralizers])
     res[:powermaps]=chevieget(:imp,:PowerMaps)(p,q,r)
     return res
   else
@@ -663,21 +664,19 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
   # reflection groups'' Indagationes 88 (1985) 207--219:                
   #
   # Let l=(S_0,..,S_{p-1}) be  a p-partition of r specifying  a class C 
-  # of G(p,1,r) as  in the above code;  C is in G(p,q,r)  iff q divides 
-  # sumᵢ i*|Sᵢ|;  C splits  in d  classes for  the largest  d|q which 
-  # divides all parts  of all Sᵢ and  such that |Sᵢ|=0 if  d does not 
-  # divide i;  if w is in  C and t  is the first generator  of G(p,1,r) 
-  # then t^i w t^-i for i in [0..d-1] are representatives of classes of 
-  # G(p,q,r) which meet C.  
-    function trans(w)
+  # of G(p,1,r);  C is in G(p,q,r)  iff q divides sumᵢ i*|Sᵢ|;  C splits in 
+  # d  classes of G(p,q,r) for  the largest  d|q which divides all parts  of 
+  # all Sᵢ and  such that |Sᵢ|=0 if  d does not divide i;  
+  # if w is in  C and t  is the first generator  of G(p,1,r) then t^i w t^-i 
+  # for i in 0:d-1 are representatives of classes of G(p,q,r) which meet C.  
+    function trans(w) local res
     # translate words  in G(p,1,r) into  words of G(p,q,r); use  that if
     # t,s2 (resp. s1,s2)  are the first 2 generators  of G(p,1,r) (resp.
     # G(p,p,r)) then  s1=s2^t thus  s2^(t^i)= (s1s2)^i  s2 [the  first 3
     # generators of G(p,q,r) are t^q,s1,s2].
-      local d, res, l, i, add, word
       d=0
       res=Int[]
-      word(l,i)=map(j->1+mod(j,2),i.+(l:-1:1))
+      word(l,i)=map(j->1+mod(j,2),i+l:-1:i+1)
       function add(a)
         l=length(res)
         if l>0 && res[end]==a pop!(res)
@@ -705,10 +704,9 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
       end
       res
     end
-    I=chevieget(:imp, :ClassInfo)(p, 1, r)
     res=Dict{Symbol, Any}(:classtext=>Vector{Int}[],:classparams=>[],
-      :classnames=>String[],:orders=>Int[],:centralizers=>Int[])
-    for (i,S) in enumerate(I[:classparams])
+      :orders=>Int[],:centralizers=>Int[])
+    for S in partition_tuples(r,p)
       if mod(sum(j->(j-1)*length(S[j]),1:p),q)!=0 continue end
       a=gcd(vcat(S...))
       a=gcd(a, q)
@@ -716,12 +714,12 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
         if !isempty(S[j]) a=gcd(a,j-1) end
       end
       for j in 0:a-1 # number of pieces the class splits
-        push!(res[:classtext], trans(vcat(fill(1,j),I[:classtext][i],fill(1,p-j))))
-        if a>1 push!(res[:classparams], vcat(S,[div(p*j,a)]))
+        push!(res[:classtext],trans(vcat(fill(1,j),classtext(S),fill(1,p-j))))
+        if a>1 push!(res[:classparams], vcat(S,[div(p,a)*j]))
         else push!(res[:classparams], S)
         end
-        push!(res[:orders], I[:orders][i])
-        push!(res[:centralizers], div(I[:centralizers][i]*a, q))
+        push!(res[:orders],order(S))
+        push!(res[:centralizers], div(centralizer(S)*a, q))
       end
     end
     res[:classes]=div.(res[:centralizers][1], res[:centralizers])

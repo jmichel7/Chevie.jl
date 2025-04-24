@@ -32,35 +32,15 @@ chevieset(:I,:ParabolicRepresentatives, function (m, s)
 end)
 
 chevieset(:I, :ClassInfo, function (m)
-  m1=div(m,2)
-  if iseven(m)
-    words=[Int[], [1], [2]]
-    classes=[1,m1,m1]
-    orders=[1,2,2]
-    x=[1,2]
-    for i in 1:m1
-      push!(classes,i==m1 ? 1 : 2)
-      push!(orders,div(m,gcd(i,m)))
-      push!(words,copy(x))
-      append!(x,[1,2])
-    end
-  else
-    words=[Int[], [1]]
-    classes=[1,m]
-    orders=[1,2]
-    x=[1,2]
-    for i in 1:m1
-      push!(classes,2)
-      push!(orders,div(m,gcd(i,m)))
-      push!(words,copy(x))
-      append!(x,[1,2])
-    end
+  res=chevieget(:imp,:ClassInfo)(m,m,2)
+  res[:classtext][end]=[1]
+  l=length(res[:orders])
+  l=iseven(m) ? vcat([1,l,l-1],2:l-2) : l=vcat([1,l],2:l-1)
+  for k in (:classes,:orders,:classtext,:centralizers,:classparams)
+    res[k]=res[k][l]
   end
-  clnp=joindigits.(words)
-# pp=keys(factor(2m))
-# pmaps=Vector{Any}(fill(nothing,maximum(pp)))
-  Dict{Symbol, Any}(:classtext=>words,:classnames=>clnp,:classparams=>clnp,
-                   :orders=>orders,:classes=>classes)
+  res[:classnames]=joindigits.(res[:classtext])
+  res
 end)
 
 chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
