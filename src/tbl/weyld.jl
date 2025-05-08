@@ -70,8 +70,21 @@ chevieset(:D, :WordsClassRepresentatives,function(n,param=partition_tuples(n,2))
   res
 end)
 
+using Primes: primes
 chevieset(:D, :ClassInfo, function (n)
   res=chevieget(:imp,:ClassInfo)(2,2,n)
+  l=maximum(res[:orders])
+  pmaps=Vector{Any}(fill(nothing,l))
+  pp=res[:classparams]
+  splits(S)=all(iseven,S[1]) && isempty(S[2])
+  for pw in primes(l)
+    pmaps[pw]=map(pp)do x
+      px=chevieget(:imp,:pow)(x[1:2],pw)
+      if splits(px) px=vcat(px,x[end]) end
+      findfirst(y->y==px,pp)
+    end
+  end
+  res[:powermaps]=pmaps
   res[:classparams]=map(x->x[end] isa Number ? [x[1],x[end]==0 ? '+' : '-'] : x,
                         res[:classparams])
   res[:classtext]=chevieget(:D,:WordsClassRepresentatives)(n,res[:classparams])

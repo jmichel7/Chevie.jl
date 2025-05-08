@@ -179,10 +179,12 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   labels=labels[good]
   cRs=map(x->x[3], Rs)
   cRs=map(x->solutionmat(WF.Ys, x), cRs)
-  cRs=filter(x->!(x in sum.(cartesian(cRs, cRs))),cRs)
+  scRs=sum.(Iterators.product(cRs, cRs))
+  cRs=filter!(x->!(x in scRs),cRs)
   Rs=map(x->x[2], Rs)
   Rs=map(x->solutionmat(WF.X_s, x), Rs)
-  good=map(x->!(x in sum.(cartesian(Rs, Rs))), Rs)
+  sRs=sum.(Iterators.product(Rs, Rs))
+  good=map(x->!(x in sRs), Rs)
   Rs=Rs[good]
   labels=labels[good]
   if length(Rs)>0 C=rootdatum(toM(Rs), toM(cRs))

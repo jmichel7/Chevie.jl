@@ -211,36 +211,35 @@ function Base.merge!(f::Family,d::Dict)
 end
 
 """
-`<f>*<g>`:  returns the  tensor product  of two  families <f> and <g>; the
-Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
-and the eigenvalues of Frobenius are the pairwise products.
+`f*g`:  returns the tensor product of two families `f` and `g`; the Fourier
+matrix  is the Kronecker product  of the matrices for  `f` and `g`, and the
+eigenvalues of Frobenius are the pairwise products.
 """
 function Base.:*(f::Family,g::Family)
-  arg=(f,g)
-  for ff in arg
-    if !haskey(ff,:charLabels) ff.charLabels=map(string,1:length(ff)) end
+  for ff in (f,g)
+    if !haskey(ff,:charLabels) ff.charLabels=string.(1:length(ff)) end
   end
   res=Family(Dict{Symbol,Any}())
-  res.charLabels=join.(cartesian(getproperty.(arg,:charLabels)...),"\\otimes")
-  res.fourierMat=kron(getproperty.(arg,:fourierMat)...)
-  res.eigenvalues=map(prod,cartesian(getproperty.(arg,:eigenvalues)...))
-  res.name=join(getproperty.(arg,:name),"\\otimes ")
+  res.charLabels=join.(tcartesian(f.charLabels,g.charLabels),"\\otimes")
+  res.fourierMat=kron(f.fourierMat,g.fourierMat)
+  res.eigenvalues=map(prod,tcartesian(f.eigenvalues,g.eigenvalues))
+  res.name=join((f.name,g.name),"\\otimes ")
   #xprint("arg=",arg,"\n")
-  res.printname=join(getproperty.(arg,:printname),"*")
+  res.printname=join((f.printname,g.printname),"*")
+  arg=(f,g)
   res.explanation="Tensor("*join(map(x->haskey(x,:explanation) ?
-                                     x.explanation : "??",arg),",")*")"
+                               x.explanation : "??",arg),",")*")"
   if all(haskey.(arg,:charNumbers))
-    res.charNumbers=map(x->collect(Iterators.flatten(x)),
-                          cartesian(getproperty.(arg,:charNumbers)...))
+    res.charNumbers=map(x->vcat(x...),tcartesian(f.charNumbers,g.charNumbers))
   end
-  if any(haskey.(arg,:special))
+  if any(haskey.((f,g),:special))
     res.special=cart2lin(length.(arg),special.(arg))
     res.cospecial=cart2lin(length.(arg),cospecial.(arg))
     if res.cospecial==res.special delete!(res.prop,:cospecial) end
   end
   if all(x->haskey(x,:perm) || length(x)==1,arg)
-    res.perm=Perm(cartesian(map(x->1:length(x),arg)...),
-      cartesian(map(x->haskey(x,:perm) ? invpermute(1:length(x),x.perm) : [1],arg)...))
+    res.perm=Perm(tcartesian(map(x->1:length(x),arg)...),
+      tcartesian(map(x->haskey(x,:perm) ? invpermute(1:length(x),x.perm) : [1],arg)...))
   end
   if all(x->haskey(x,:lusztig) || length(x)==1,arg)
     res.lusztig=true
@@ -928,20 +927,17 @@ function family_imprimitive(ct,e)
 # §4 for G(e,1,n) and §6 for G(e,e,n).
 # Initial writing  GM 26.10.2000 accelerated JM 10.08.2011
   Scoll=tally(ct)
-  d=length(ct)%e
+  m,d=divrem(length(ct),e)
   if !(d in [0,1])
     error("length(",joindigits(ct),") should be 0 or 1 mod.",e," !\n")
   end
-  m=div(length(ct),e)
-# Fourier matrix of the family of symbols with content ct:
+# Fourier matrix of the family of e-symbols with content ct:
 # Let F be the set of functions ct->0:e-1 which are injective restricted to
 # a  given  value  in  ct,  with  the  sum  of their values mod. e equal to
 # div(length(ct),e)*binomial(e,2). Then for f∈ F the list of preimages of f
 # is  a symbol S(f). Conversely  for a symbol S  there is a 'canonical' map
-# f(S) which is increasing on entries of ct of given value. Then
-#
-# Fourier(S,T)=∑_{f∈ F∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
-#
+# f(S)  which records the increasing positions  in the symbol of each value
+# in ct. Then Fourier(S,T)=∑_{f∈ F∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
 # where for f in F with image f.(ct)
 # ε(f)=(-1)^{number of non-inversions in the list f.(ct)}
 # and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct).
@@ -952,16 +948,14 @@ function family_imprimitive(ct,e)
 # 0:e-1 of length mᵢ, the multiplicity of i) then one
 # does ∏ᵢ(∑_{σ∈ 𝔖 _{mᵢ}}ε(σ)ζₑ^{-σ(fᵢ(S))*fᵢ(T)})=∏ᵢ det(ζₑ.^(-fᵢ(S)*fᵢ(T)'))
   j=(m*binomial(e,2))%e # for f∈ F we must have sum(f,ct)mod e==j
-  ff=filter(x->sum(x)%e==j,cartesian(map(i->0:e-1, Scoll)...))
+  ff=filter(x->sum(x)%e==j,tcartesian(map(i->0:e-1, Scoll)...))
   ff=map(ff)do coll
     map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,coll)
   end
-  ff=reduce(vcat,map(x->cartesian(x...), ff))
+  ff=reduce(vcat,map(x->tcartesian(x...), ff))
   ffc=map(x->vcat(x...),ff) # now  ffc are the "canonical" functions
-  symbs=map(ffc)do f
-    map(x->ct[x],map(x->findall(==(x),f),0:e-1))
-  end
-  eps=map(l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l)),ffc)
+  symbs=map(f->map(x->ct[findall(==(x),f)],0:e-1),ffc)
+  eps=map(l->(-1)^sum(i->count(j->l[i]<l[j],i+1:length(l)),eachindex(l)),ffc)
   fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
   function fc(e,f1,f2) # local Fourier coefficient
     get!(fcdict,f1<=f2 ? (f1,f2) : (f2,f1))do
@@ -976,24 +970,24 @@ function family_imprimitive(ct,e)
   mat*=improve_type(E(4,-m*(binomial(e+1,2)-1)))
   mat//=iseven(e*m) ? e^div(e*m,2) : improve_type(e^div(e*m,2)*root(e))
   frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
-  mat=toL(mat)
   if d==0 # compact entries...
-    schon=Symbols.isreducedsymb.(symbs)
+    reduced=Symbols.isreducedsymb.(symbs)
     mult=Int[]
     for (i,si) in pairs(symbs)
-      if schon[i]
+      if reduced[i]
         orb=circshift.(Ref(si),1:length(si))
         f=findfirst(==(si),orb)
         push!(mult,div(e,f)) # Symmetry group
-        schon[filter(j->symbs[j] in view(orb,1:f),i+1:length(symbs))].=false
+        reduced[filter(j->symbs[j] in view(orb,1:f),i+1:length(symbs))].=false
       end
     end
-    frobs=reduce(vcat,fill.(frobs[schon],mult))
+    frobs=reduce(vcat,fill.(frobs[reduced],mult))
     symbs=reduce(vcat,map((m,s)->m==1 ? [s] :
-         map(j->vcat(s[1:div(e,m)], [m,j]), 0:m-1), mult, symbs[schon]))
+         map(j->vcat(s[1:div(e,m)], [m,j]), 0:m-1), mult, symbs[reduced]))
+    mat=toL(mat)
     mat=reduce(vcat,map((m,l)->map(
-       i->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[schon])),1:m),
-                         mult, mat[schon]))
+       i->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[reduced])),1:m),
+                         mult, mat[reduced]))
     mult=vcat(fill.(mult,mult)...)
     for (i,si) in pairs(symbs), (j,sj) in pairs(symbs)
       if fullsymbol(si)==fullsymbol(sj)
@@ -1001,17 +995,18 @@ function family_imprimitive(ct,e)
         if si==sj mat[i][j]+=1 end
       end
     end
-    if !isone((toM(mat)*Diagonal(Cyc.(frobs)))^3)
+    mat=toM(mat)
+    if !isone((mat*Diagonal(frobs))^3)
       print("** WARNING: (S*T)^3!=1\n")
     end
   end
-
+  principal=findall(S->Symbols.relative_rank(fullsymbol(S))==ranksymbol(S),symbs)
   Family(Dict(:symbols=>symbs,
-   :special=>findmin(x->(-sum(sum.(partβ.(x))),valuation_fegsymbol(x)),symbs)[2],
-   :cospecial=>findmax(x->(sum(sum.(partβ.(x))),degree_fegsymbol(x)),symbs)[2],
+   :special=>principal[findmin(valuation_fegsymbol.(symbs[principal]))[2]],
+   :cospecial=>principal[findmax(degree_fegsymbol.(symbs[principal]))[2]],
    :fcdict=>fcdict,
    :ff=>ff,
-   :fourierMat=>toM(mat),
+   :fourierMat=>mat,
    :eigenvalues=>frobs,
    :name=>joindigits(ct),
    :printname=>"family_imprimitive($ct,$e)",

@@ -107,29 +107,15 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
   end
 end)
 
-chevieset(:imp,:PowerMaps,function(p,q,r)
-  if q!=1
-    InfoChevie("# power maps not implemented for G($p,$q,$r)\n")
-    return [nothing]
+chevieset(:imp,:pow,function(S,n)
+  e=length(S)
+  S1=map(x->[],1:e)
+  for k in 1:e, l in S[k]
+    g=gcd(n,l)
+    append!(S1[1+mod(div(n,g)*(k-1),e)], fill(div(l,g),g))
   end
-  function pow(S,n)
-    e=length(S)
-    S1=map(x->[],1:e)
-    for k in 1:e, l in S[k]
-      g=gcd(n,l)
-      append!(S1[1+mod(div(n,g)*(k-1),e)], fill(div(l,g),g))
-    end
-    for m in S1 sort!(m,rev=true) end
-    S1
-  end
-  pp=partition_tuples(r,p)
-  l=keys(factor(factorial(r)*p))
-  res=Vector{Any}(fill(nothing,maximum(l)))
-  for pw in l 
-    res[pw]=map(x->findfirst(==(pow(x,pw)),pp),pp)
-#   res[pw]=indexin(pow.(pp,pw),pp)
-  end
-  res
+  for m in S1 sort!(m,rev=true) end
+  S1
 end)
 
 chevieset(:imp, :CharParams, function (de, e, r)
@@ -348,7 +334,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
-    res[:powermaps]=cl[:powermaps]
+    if haskey(cl,:powermaps) res[:powermaps]=cl[:powermaps] end
     Z,X,Y=para
     e1=div(q,2)
     Z=root.(Z,e1)
@@ -378,7 +364,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
     res[:centralizers]=cl[:centralizers]
-    res[:powermaps]=cl[:powermaps]
+    if haskey(cl,:powermaps) res[:powermaps]=cl[:powermaps] end
     res[:classes] = map(x->div(res[:size],x),res[:centralizers])
     reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i),
              1:length(res[:classes]))
@@ -408,12 +394,6 @@ end)
 
 chevieset(:imp, :HighestPowerFakeDegrees, function (p, q, r)
   if q==1 || p==q error("should not be called") end
-end)
-
-chevieset(:imp, :CharSymbols, function (p, q, r)
-  if q==1 return symbols(p,r,1)
-  elseif q==p return symbols(p, r, 0)
-  end
 end)
 
 chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
@@ -592,6 +572,8 @@ chevieset(:imp, :classparams, function (p, q, r)
   return res
 end)
 
+using Primes: primes
+
 chevieset(:imp, :ClassInfo, function (p, q, r)
   order(S)=lcm(map(((i,m),)->isempty(m) ? 1 : lcm(m)*div(p,gcd(i-1,p)),
                    enumerate(S)))
@@ -657,7 +639,12 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     res[:orders]=order.(cp)
     res[:centralizers]=centralizer.(cp)
     res[:classes]=div.(p^r*factorial(r),res[:centralizers])
-    res[:powermaps]=chevieget(:imp,:PowerMaps)(p,q,r)
+    l=maximum(res[:orders])
+    res[:powermaps]=Vector{Any}(fill(nothing,l))
+    for pw in primes(l) 
+     res[:powermaps][pw]=map(x->findfirst(==(chevieget(:imp,:pow)(x,pw)),cp),cp)
+  #   res[pw]=indexin(pow.(cp,pw),cp)
+    end
     return res
   else
   # According  to Hugues  ``On  decompositions  in complex  imprimitive 
@@ -2070,14 +2057,11 @@ chevieset(:imp, :Representation, function (p, q, r, i;gen=false)
                 x==2 ? [1,-1] : E.(x,0:x-1),o),[],i;gen)
 end)
 
-function MakeFamilyImprimitive(S, uc)
-  if length(S)==1 return Family("C1",[findfirst(==(S[1]),uc[:charSymbols])]) end
-  MakeFamilyImprimitive(sort(vcat(fullsymbol(S[1])...)),uc[:charSymbols])
-end
-
-function MakeFamilyImprimitive(ct::Vector{<:Integer},charsymbols)
-  r=family_imprimitive(ct,length(charsymbols[1]))
-  r.charNumbers=map(x->findfirst(==(x),charsymbols),r.symbols)
+# the family of uc containing symbol S
+function MakeFamilyImprimitive(S, symbs)
+  if length(S)==1 return Family("C1",[findfirst(==(S[1]),symbs)]) end
+  r=family_imprimitive(fullsymbol(S[1]))
+  r.charNumbers=map(x->findfirst(==(x),symbs),r.symbols)
   r
 end
 
@@ -2085,8 +2069,8 @@ simpexponent(l)=all(iszero,l[2:end]) ? l[1] : l
 
 chevieset(:imp, :UnipotentCharacters, function (p, q, r)
   if !(q in [1,p]) return nothing end
-  uc=Dict{Symbol, Any}(:charSymbols=>chevieget(:imp, :CharSymbols)(p, q, r))
-  csy=uc[:charSymbols]
+  csy=q==1 ? symbols(p,r,1) : symbols(p,r,0)
+  uc=Dict{Symbol, Any}(:charSymbols=>csy)
   uc[:a]=valuation_gendeg_symbol.(csy)
   uc[:A]=degree_gendeg_symbol.(csy)
   ci=chevieget(:imp, :CharInfo)(p,q,r)
@@ -2108,7 +2092,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             E(2p,sum(i->-(i^2+p*i)*length(c[i+1]),0:p-1))
       res[:charNumbers]=map(x->
        findfirst(==(symbol_partition_tuple(x,length.(c))),csy),
-       map(x->partβ.(x),chevieget(:imp,:CharSymbols)(p,1,r-cr)[1:length(partition_tuples(r-cr,p))]))
+       map(x->partβ.(x),symbols(p,r-cr,1)[1:length(partition_tuples(r-cr,p))]))
       res[:cuspidalName]=ImprimitiveCuspidalName(c)
       return res
     end
@@ -2116,17 +2100,14 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     uc[:B]=uc[:a]*0
     uc[:b][uc[:harishChandra][1][:charNumbers]]=ci[:b]
     uc[:B][uc[:harishChandra][1][:charNumbers]]=ci[:B]
-    uc[:families]=map(y->MakeFamilyImprimitive(y,uc),
-      collectby(x->tally(vcat(x...)),csy))
-    sort!(uc[:families],by=x->x[:charNumbers])
-    for f in uc[:families] 
-      if !(f.fourierMat isa Matrix) f.fourierMat=toM(f.fourierMat) end
-    end
+    uc[:families]=map(y->MakeFamilyImprimitive(y,uc[:charSymbols]),
+      collectby(x->sort(vcat(x...)),csy))
+    sort!(uc[:families],by=charnumbers)
     if r==1
-      l=map(function (S)
+      l=map(function(S) # Dudas' sign change
         p=findfirst(==(Int[]),S)
         if isnothing(p) return 1 else return (-1)^p end
-      end, csy[uc[:families][2][:charNumbers]])
+       end, csy[charnumbers(uc[:families][2])])
       uc[:families][2].fourierMat=Diagonal(l)*uc[:families][2].fourierMat*Diagonal(l)
       uc[:cyclicparam]=map(csy)do s
         if count(x->x==1,vcat(s...))==1 return [1] end
@@ -2151,19 +2132,19 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
         append!(uc[:families],map(x->Family("C1", [x]),f))
       end
     end
-    sort!(uc[:families],by=x->x[:charNumbers])
+    sort!(uc[:families],by=charnumbers)
     uc[:harishChandra]=map(l->Dict{Symbol,Any}(:charNumbers=>l),
-      collectby(function(i)
-       s=fullsymbol((csy)[i])
-       l=length.(s)
-       return [sum(x->sum(partβ(x)),s),l.-minimum(l)]
-    end,1:length(csy)))
+      collectby(eachindex(csy))do i
+        s=fullsymbol(csy[i])
+        l=length.(s)
+        (Symbols.relative_rank(s),l.-minimum(l))
+    end)
     sort!(uc[:harishChandra],by=x->x[:charNumbers])
     extra=[]
     for f in uc[:harishChandra]
       addextra = false
       s=fullsymbol(csy[f[:charNumbers][1]])
-      l=r-sum(x->sum(partβ(x)),s)
+      l=r-Symbols.relative_rank(s)
       f[:levi]=1:l
       s=map(length,s)
       s.-=minimum(s)
@@ -2183,26 +2164,22 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       s=map(x->0:x-1,s)
       f[:cuspidalName]=ImprimitiveCuspidalName(s)
       if addextra
-        s = deepcopy(f[:charNumbers])
+        s=deepcopy(f[:charNumbers])
         f[:charNumbers]=s[[1]]
-        f = deepcopy(f)
+        f=deepcopy(f)
         f[:charNumbers]=s[[2]]
-        push!(f[:cuspidalName], '2')
+        f[:cuspidalName]*='2'
         push!(extra, f)
       end
     end
     append!(uc[:harishChandra], extra)
-    for f in uc[:families]
-     pp(i)=findfirst(s->i in s[:charNumbers],uc[:harishChandra])
-     f[:eigenvalues]=map(i->uc[:harishChandra][pp(i)][:eigenvalue],f[:charNumbers])
-    end
     uc[:b]=fill(0,length(csy))
     uc[:B]=fill(0,length(csy))
     uc[:b][uc[:harishChandra][1][:charNumbers]]=ci[:b]
     uc[:B][uc[:harishChandra][1][:charNumbers]]=ci[:B]
-    uc[:families]=map(x->MakeFamilyImprimitive(csy[x[:charNumbers]],uc),uc[:families])
-    if [p,q,r]==[3,3,3] uc[:curtis]=[1,2,3,7,8,10,4,5,9,6,-12,-11]
-    end
+    uc[:families]=map(f->MakeFamilyImprimitive(csy[f[:charNumbers]],
+                uc[:charSymbols]),uc[:families])
+    if [p,q,r]==[3,3,3] uc[:curtis]=[1,2,3,7,8,10,4,5,9,6,-12,-11] end
     return uc
   end
 end)

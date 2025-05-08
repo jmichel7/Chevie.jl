@@ -257,7 +257,7 @@ function ennola(W,xi)
 end
 
 # s is a vector of tuples. Return a vector of vectors E_1,...,E_n such that
-# s=Tuple.(cartesian(E_1,...,E_n))
+# s=tcartesian(E_1,...,E_n)
 # Assumes all E_i but possibly one are of size 2
 function factorset(s)
   if isempty(s[1]) return s[1] end

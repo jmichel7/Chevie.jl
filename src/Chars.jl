@@ -578,6 +578,7 @@ function charinfo(t::TypeIrred)
 end
 
 cartfields(p,f)=cartesian(getproperty.(p,f)...)
+tcartfields(p,f)=tcartesian(getproperty.(p,f)...)
 
 """
 `charinfo(W)`
@@ -733,7 +734,9 @@ function charinfo(W)
       end
     end
     for f in [:b, :B, :a, :A]
-      if all(d->haskey(d,f),p) res.prop[f]=improve_type(sum.(cartfields(p,f))) end
+      if all(d->haskey(d,f),p) 
+        res.prop[f]=improve_type(sum.(tcartfields(p,f)))
+      end
     end
     if !haskey(res,:b) || !haskey(res,:B)
        P=fakedegrees(W;recompute=true)
@@ -904,16 +907,19 @@ function classinfo(W)
     end
     if any(isnothing, tmp) return nothing end
     if length(tmp)==1 res=copy(tmp[1].prop)
-    else res=Dict{Symbol, Any}() end
-    res[:classtext]=map(x->reduce(vcat,x),cartfields(tmp,:classtext))
-    res[:classnames]=map(x->join(x,","),cartfields(tmp,:classnames))
+    else res=Dict{Symbol, Any}() 
+      res[:classtext]=map(x->reduce(vcat,x),tcartfields(tmp,:classtext))
+      res[:classnames]=map(x->join(x,","),tcartfields(tmp,:classnames))
+    end
     if all(haskey.(tmp,:classparams))
       res[:classparams]=cartfields(tmp,:classparams)
     end
     res=ClassInfo(res)
-    prodpowmaps(tmp,res)
-    if all(haskey.(tmp,:classes))
-      res.classes=map(prod, cartfields(tmp,:classes))
+    if length(tmp)>1
+      if all(haskey.(tmp,:orders)) prodpowmaps(tmp,res) end
+      if all(haskey.(tmp,:classes))
+        res.classes=map(prod, tcartfields(tmp,:classes))
+      end
     end
     res
   end::ClassInfo
@@ -927,7 +933,7 @@ function prodpowmaps(rec::Vector,res)
     return 
   end
   if all(haskey.(rec,:orders))
-    res.orders=map(lcm, cartfields(rec,:orders))
+    res.orders=map(x->lcm(x...),tcartfields(rec,:orders))
   end
   if all(haskey.(rec,:powermaps))
     classes=cartesian(eachindex.(getproperty.(rec,:orders))...)
@@ -1131,9 +1137,9 @@ function Base.prod(ctt::Vector{<:CharTable})
     return CharTable(hcat(1),["Id"],["."],[1],1,Dict{Symbol,Any}(:name=>"."))
   elseif length(ctt)==1 return ctt[1]
   end
-  charnames=join.(cartfields(ctt,:charnames),",")
-  classnames=join.(cartfields(ctt,:classnames),",")
-  centralizers=prod.(cartfields(ctt,:centralizers))
+  charnames=join.(tcartfields(ctt,:charnames),",")
+  classnames=join.(tcartfields(ctt,:classnames),",")
+  centralizers=prod.(tcartfields(ctt,:centralizers))
   order=prod(getfield.(ctt,:order))
   irr=kron(getfield.(ctt,:irr)...)
   res=CharTable(irr,charnames,classnames,centralizers,order,Dict{Symbol,Any}(:name=>"x"))
@@ -1214,7 +1220,9 @@ end
 function  power(powermap,class,order)
   for (p,i) in factor(order)
     if p>length(powermap) error("missing $p-powermap")
-    else for j in 1:i class=powermap[p][class] end
+    else pm=powermap[p]
+      if isnothing(pm) error("missing $p-powermap") end
+      for j in 1:i class=pm[class] end
     end
   end
   class
@@ -1571,7 +1579,7 @@ function charnames(io::IO,tt::Vector{TypeIrred})
   if isempty(tt) return ["Id"] end
   cn=map(t->charnames(io,t),tt)
   if length(cn)==1 cn[1]
-  else map(x->join(x,fromTeX(io,"\\otimes ")),cartesian(cn...))
+  else map(x->join(x,fromTeX(io,"\\otimes ")),tcartesian(cn...))
   end
 end
 

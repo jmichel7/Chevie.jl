@@ -718,11 +718,11 @@ function LeftCellRepresentatives(W)
   if isempty(res) return res end
   if nothing in res return nothing end
   n=chevieget.(refltype(W),:NrConjugacyClasses)
-  return map(cartesian(res...)) do l
+  return map(tcartesian(res...)) do l
     duflo=W(vcat(map(x->x[:duflo],l)...)...)
-    reps=map(v->W(vcat(v...)...),cartesian(map(x->x[:reps],l)...))
+    reps=map(v->W(vcat(v...)...),tcartesian(map(x->x[:reps],l)...))
     reps=setdiff(reps,[duflo])
-    character=map(p->cart2lin(n,p),cartesian(map(x->x[:character],l)...))
+    character=map(p->cart2lin(n,p),tcartesian(map(x->x[:character],l)...))
     a=charinfo(W).a[character]
     if !allequal(a) error() else a=a[1] end
     LeftCell(W,Dict{Symbol,Any}(:duflo=>duflo,:reps=>reps,

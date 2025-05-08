@@ -574,6 +574,7 @@ function weightinfo(t::TypeIrred)
 end
 
 function weightinfo(W)
+  get!(W,:weightinfo)do
   M=Matrix{Int}(I,semisimplerank(W),semisimplerank(W))
   if isempty(refltype(W)) return Dict(:minusculeWeights=>Vector{Int}[],
          :minusculeCoweights=>Vector{Int}[],
@@ -609,7 +610,7 @@ function weightinfo(W)
                                    x->vcat(x[:minusculeWeights],[0]),l)...),
     :minusculeCoweights=>cartesian(map(
                                    x->vcat(x[:minusculeCoweights],[0]),l)...),
-    :decompositions=>map(x->vcat(x...),cartesian(map(x->vcat(x[:decompositions],
+    :decompositions=>map(x->vcat(x...),tcartesian(map(x->vcat(x[:decompositions],
                                  [0 .*x[:moduli]]),l)...)),
     :moduli=>reduce(vcat,map(x->x[:moduli],l)),
 # center of simply connected group: the generating minuscule coweights
@@ -623,6 +624,7 @@ function weightinfo(W)
   res[:minusculeCoweights]=map(x->filter(!iszero,x),res[:minusculeCoweights][n])
   res[:decompositions]=res[:decompositions][n]
   res
+  end
 end
 
 " `weights(W)` simple weights in the basis of X(T)"
@@ -922,7 +924,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
     pp=vcat(map(i->combinations(d,i),1:length(H))...)
     filter(P->length(orbits(stabilizer(H,P,onsets),P))==1,pp) #possible sets Ωₜ
   end
-  res=map(x->vcat(x...),cartesian(l...))
+  res=map(x->vcat(x...),tcartesian(l...))
   res=filter(res)do P
     S=stabilizer(H,P,onsets)
     all(I->length(orbits(S,intersect(P,I)))==1,ind)
@@ -1110,7 +1112,7 @@ function semisimple_centralizer_representatives(W,p=0)
     filter(I->all(x->x==0 || x%p!=0, smith(toM(W.rootdec[I]))),cent)
   end
   if isempty(l) return [Int[]] end
-  map(x->vcat(x...),cartesian(l...))
+  map(x->vcat(x...),tcartesian(l...))
 end
 
 const sscentralizer_reps=semisimple_centralizer_representatives

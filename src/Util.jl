@@ -49,15 +49,22 @@ toM(l)=isempty(l) ? Array{eltype(eltype(l))}(undef,0,1) : stack(l;dims=1)
 # The following functions should be eventually obsoleted by adopting Julia
 # order for products.
 
-export cartesian, cart2lin, lin2cart
+export cartesian, tcartesian, cart2lin, lin2cart
 """
 `cartesian(a::AbstractVector...)`
 
 A variation on `Iterators.product` which gives the same result as GAP's
-`Cartesian`. `reverse` is done twice to get the same order as GAP.
+`Cartesian` (thanks to `permutedims`)
 """
 function cartesian(a::AbstractVector...)
-  reverse.(vec(collect.(Iterators.product(reverse(a)...))))
+  if isempty(a) return [] end
+  vec(permutedims(collect.(Iterators.product(a...)),reverse(eachindex(a))))
+end
+
+# faster version returning tuples
+function tcartesian(a::AbstractVector...)
+  if isempty(a) return Tuple{Any}[] end
+  vec(permutedims(collect(Iterators.product(a...)),reverse(eachindex(a))))
 end
 
 """

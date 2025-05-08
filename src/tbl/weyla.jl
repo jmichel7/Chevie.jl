@@ -46,13 +46,10 @@ chevieset(:A,:centralizer,function(n,partition)
 end)
 
 chevieset(:A,:ClassInfo,function(n)
+  res=chevieget(:imp,:ClassInfo)(1,1,n+1)
   pp=partitions(n+1)
-  res=Dict{Symbol, Any}(:classparams=>pp)
-  res[:classnames]=joindigits.(pp)
+  res[:classparams]=pp
   res[:classtext]=map(chevieget(:A,:WordClass),pp)
-  res[:classes]=map(pi->factorial(n+1)//chevieget(:A,:centralizer)(n,pi),pp)
-  res[:powermaps]=chevieget(:imp,:PowerMaps)(1,1,n+1)
-  res[:orders]=lcm.(pp)
   res
 end)
 

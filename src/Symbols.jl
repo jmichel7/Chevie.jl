@@ -69,11 +69,12 @@ groups.
 """
 module Symbols
 using ..Format: joindigits, rio, xrepr
-using ..Combinat: arrangements, partition_tuples, collectby
-using ..CyclotomicNumbers: E
-using ..CycPols: CycPol, subs
+using Combinat: arrangements, partition_tuples, collectby
+using CyclotomicNumbers: E
+using CycPols: CycPol, subs
 using LaurentPolynomials
-using ModuleElts:ModuleElt
+using LinearAlgebra: dot
+using ModuleElts: ModuleElt
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
 valuation_fegsymbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
@@ -178,6 +179,9 @@ julia> partβ([0,4,5])
 ```
 """
 partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
+
+#relative_rank(S)=sum(x->sum(partβ(x)),S)
+relative_rank(S)=sum(x->sum(x)-div(length(x)*(length(x)-1),2),S)
 
 """
 `symbol_partition_tuple(p, s)` symbol of shape `s` for partition tuple `p`.
@@ -407,7 +411,7 @@ under cyclic permutations.
 """
 function defshape(s)
   e=length(s)
-  mod(binomial(e,2)*div(sum(s),e)-sum((0:e-1).*s),e)
+  mod(binomial(e,2)*div(sum(s),e)-dot(0:e-1,s),e)
 end
 
 """
@@ -561,10 +565,10 @@ function fegsymbol(s,p=0) # See Mal95, 2.11 and 5.7
   end
   res*=prod(S->Δ(S,e)//Θ(S,e),s)
   res//=CycPol(1,sum([div(x*(x-1),2) for x in e.*(1:div(sum(length,s),e)-1).+d%2]))
-  if d==1 res*=CycPol(1,sum((0:e-1).*map(sum,s)))
+  if d==1 res*=CycPol(1,sum(((x,y),)->x*sum(y),zip(0:e-1,s)))
   else
     rot=circshift.(Ref(s),e:-1:1)
-    u=map(j->ep^j,0:e-1).*map(s->Pol([1],sum((0:e-1).*map(sum,s))),rot)
+    u=map(j->ep^j,0:e-1).*map(s->Pol([1],sum(((x,y),)->x*sum(y),zip(0:e-1,s))),rot)
     res*=CycPol(sum(u))
     res=div(res,count(==(s), rot))
     if e==2 && ep==-1 res=-res end
@@ -608,7 +612,7 @@ function gendeg_symbol(S)
   elseif d==0 res=Θ([r-1],e)*CycPol(Pol([1],r)-E(e,defect))
   end
 
-  res*=(-1)^(sum((0:e-1).*binomial.(sh,2)))*
+  res*=(-1)^(sum(((x,y),)->x*binomial(y,2),zip(0:e-1,sh)))*
     prod(i->prod(j->reduce(*,map(l->reduce(*,map(m->CycPol(l-m),
     filter(m->i<j || degree(m)<degree(l),
            map(l->Pol([E(e,j)],l),S[j+1])));init=one(CycPol)),

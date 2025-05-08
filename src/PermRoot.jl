@@ -1171,7 +1171,7 @@ function reflection_eigenvalues(W)
     if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
        (haskey(x,:scalar) && !all(isone,x.scalar))),t)
       if isempty(t) ll=[Root1[]]
-      else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
+      else ll=map(x->vcat(x...),tcartesian(map(refleigen,t)...))
       end
       central=(W isa Spets ? torusfactors(W) :
                             fill(E(1),rank(W)-semisimplerank(W)))
@@ -1551,9 +1551,9 @@ end
 
 function parabolic_reps(W::PermRootGroup,s)
   t=refltype(W)
-  sols=filter(l->sum(l)==s,cartesian(map(x->0:rank(x),t)...))
+  sols=filter(l->sum(l)==s,tcartesian(map(x->0:rank(x),t)...))
   vcat(map(sols)do c
-        map(x->vcat(x...),cartesian(map(eachindex(c))do i
+        map(x->vcat(x...),tcartesian(map(eachindex(c))do i
     r=parabolic_reps(t[i],c[i])
     if r===nothing
       R=reflection_subgroup(W,t[i].indices)

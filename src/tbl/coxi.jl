@@ -31,6 +31,7 @@ chevieset(:I,:ParabolicRepresentatives, function (m, s)
   chevieget(:imp, :ParabolicRepresentatives)(m, m, 2, s)
 end)
 
+using Primes: primes
 chevieset(:I, :ClassInfo, function (m)
   res=chevieget(:imp,:ClassInfo)(m,m,2)
   res[:classtext][end]=[1]
@@ -40,6 +41,14 @@ chevieset(:I, :ClassInfo, function (m)
     res[k]=res[k][l]
   end
   res[:classnames]=joindigits.(res[:classtext])
+  l=primes(m)
+  pmaps=Vector{Any}(fill(nothing,maximum(l)))
+  pp=res[:classparams]
+  for pw in l 
+    pmaps[pw]=map(x->findfirst(==(chevieget(:imp,:pow)(x[1:m],pw)),pp),pp)
+    if pw!=2 && iseven(m) pmaps[pw][2:3]=2:3 end
+  end
+  res[:powermaps]=pmaps
   res
 end)
 
@@ -113,7 +122,7 @@ chevieset(:I, :CharInfo, function(m)
   res[:A]=degree_gendeg_symbol.(charSymbols)
   res[:a]=valuation_gendeg_symbol.(charSymbols)
   # malleParams are the partitiontuples for the symbols
-  res[:malleParams]=map(x->map(partβ,fullsymbol(x)),charSymbols)
+  res[:malleParams]=map(x->partβ.(fullsymbol(x)),charSymbols)
   if iseven(m)
     res[:malleParams]=convert.(Vector{Any},res[:malleParams])
     res[:malleParams][2]=append!(res[:malleParams][2][1:m1],[2,0])

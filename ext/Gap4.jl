@@ -90,7 +90,7 @@ function Chars.CharTable(ct::GapObj)
   id=fromgap(GAP.Globals.Identifier(ct))
   orders=fromgap(GAP.Globals.OrdersClassRepresentatives(ct))
   pp=keys(factor(s))
-  powermaps=Vector{Any}(fill(nothing,maximum(pp)))
+  powermaps=Vector{Any}(fill(nothing,maximum(pp;init=0)))
   for k in pp
     powermaps[k]=fromgap(GAP.Globals.PowerMap(ct,k))
   end

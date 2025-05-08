@@ -642,17 +642,18 @@ function Tcharparams(W)
   ct=CharTable(W).irr
   fd=fakedegrees(W,Pol())
   db=map(x->[x(1),valuation(x)],fd)
-  n=repr(W;context=rio())
+  if isempty(refltype(W)) return end
+  n=refltype(W)[1]
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
     if length(l[1])>=4 return end
     nm=map(Format.TeXstrip∘Chevie.exceptioCharName,l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
-  elseif n[1] in "EFGH" && length(n)<4
+  elseif n.series in (:E,:F,:G,:H)
     l=filter(x->x[2]>1,tally(charinfo(W)[:charparams]))
     if !isempty(l)>0 ChevieErr("Duplicated:",l) end
     l=first.(charinfo(W)[:charparams])
     nm=charnames(W)
-  elseif n[1] in ".ABCD" || length(n)>=4 return
+  elseif n.series in (:A,:B,:D) || !haskey(n,:ST) return
   else
     l=first.(charinfo(W)[:charparams])
     nm=charnames(W)
