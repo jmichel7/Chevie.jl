@@ -82,8 +82,6 @@ using ..Chevie
 
 Base.:(==)(f::Family,g::Family)=f.prop==g.prop
 
-Family(f::Family)=f
-
 getf(s::String)=getf(Symbol(s))
 
 function getf(s::Symbol)
@@ -158,6 +156,12 @@ end
 function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
   f=Family(copy(f.prop))
   f.charNumbers=v
+  merge!(f,d)
+  merge!(f,Dict(opt))
+end
+
+function Family(f::Family,d::Dict=Dict{Symbol,Any}();opt...)
+  f=Family(copy(f.prop))
   merge!(f,d)
   merge!(f,Dict(opt))
 end
@@ -256,26 +260,26 @@ Frobenius of the family.
 
 ```julia-repl
 julia> f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
-Family(0011,[4, 3, 2],cospecial=2)
+Family(0011,[4, 3, 2],signs=[-1, 1, 1],cospecial=2)
 imprimitive family
-┌─────┬──────────────────────────────┐
-│label│eigen      1        2        3│
-├─────┼──────────────────────────────┤
-│1    │  ζ₃²  √-3/3    √-3/3   -√-3/3│
-│2    │    1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
-│3    │    1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
-└─────┴──────────────────────────────┘
+┌─────┬────────────────────────────────────┐
+│label│eigen signs      1        2        3│
+├─────┼────────────────────────────────────┤
+│1    │  ζ₃²    -1  √-3/3    √-3/3   -√-3/3│
+│2    │    1     1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+│3    │    1     1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+└─────┴────────────────────────────────────┘
 
 julia> galois(f,-1)
-Family(conj(0011),[4, 3, 2],cospecial=2)
+Family(conj(0011),[4, 3, 2],signs=[-1, 1, 1],cospecial=2)
 conj(imprimitive family)
-┌─────┬──────────────────────────────┐
-│label│eigen      1        2        3│
-├─────┼──────────────────────────────┤
-│1    │   ζ₃ -√-3/3   -√-3/3    √-3/3│
-│2    │    1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
-│3    │    1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
-└─────┴──────────────────────────────┘
+┌─────┬────────────────────────────────────┐
+│label│eigen signs      1        2        3│
+├─────┼────────────────────────────────────┤
+│1    │   ζ₃    -1 -√-3/3   -√-3/3    √-3/3│
+│2    │    1     1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+│3    │    1     1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+└─────┴────────────────────────────────────┘
 ```
 """
 function CyclotomicNumbers.galois(f::Family,p::Int)
@@ -312,26 +316,26 @@ returns  a copy of  `f` with the  Fourier matrix, eigenvalues of Frobenius,
 
 ```julia-repl
 julia> f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
-Family(0011,[4, 3, 2],cospecial=2)
+Family(0011,[4, 3, 2],signs=[-1, 1, 1],cospecial=2)
 imprimitive family
-┌─────┬──────────────────────────────┐
-│label│eigen      1        2        3│
-├─────┼──────────────────────────────┤
-│1    │  ζ₃²  √-3/3    √-3/3   -√-3/3│
-│2    │    1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
-│3    │    1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
-└─────┴──────────────────────────────┘
+┌─────┬────────────────────────────────────┐
+│label│eigen signs      1        2        3│
+├─────┼────────────────────────────────────┤
+│1    │  ζ₃²    -1  √-3/3    √-3/3   -√-3/3│
+│2    │    1     1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+│3    │    1     1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+└─────┴────────────────────────────────────┘
 
 julia> invpermute(f,Perm(1,2,3))
-Family(0011,[2, 4, 3],cospecial=3)
+Family(0011,[2, 4, 3],signs=[1, -1, 1],cospecial=3)
 permuted((1,2,3),imprimitive family)
-┌─────┬──────────────────────────────┐
-│label│eigen        3      1        2│
-├─────┼──────────────────────────────┤
-│3    │    1 ζ₃²√-3/3 -√-3/3 -ζ₃√-3/3│
-│1    │  ζ₃²   -√-3/3  √-3/3    √-3/3│
-│2    │    1 -ζ₃√-3/3  √-3/3 ζ₃²√-3/3│
-└─────┴──────────────────────────────┘
+┌─────┬────────────────────────────────────┐
+│label│eigen signs        3      1        2│
+├─────┼────────────────────────────────────┤
+│3    │    1     1 ζ₃²√-3/3 -√-3/3 -ζ₃√-3/3│
+│1    │  ζ₃²    -1   -√-3/3  √-3/3    √-3/3│
+│2    │    1     1 -ζ₃√-3/3  √-3/3 ζ₃²√-3/3│
+└─────┴────────────────────────────────────┘
 ```
 """
 function Perms.invpermute(f::Family,p::Union{Perm,SPerm})
@@ -420,19 +424,20 @@ chevieset(:families,:S3,
   :mellinLabels=>["(1,1)","(g2,1)","(g3,1)","(1,g3)","(1,g2)","(g2,g2)",
                   "(g3,g3)","(g3,g3^2)"])))
 
+# The big family in Z/pZ. Same as family_imprimitive(0^{p-1}1^2,p)
 chevieset(:families,:X,function(p)
-    ss=combinations(0:p-1,2)
-    Family(Dict(
-         :explanation=>"DoubleTaft($p): R_{\\mathbb Z/$p}^{\\wedge 2}",
-         :charSymbols=>ss,
-         :charLabels=>map(s->xrepr(E(p,s[1]),TeX=true)*
-             "\\!\\wedge\\!"*xrepr(E(p,s[2]),TeX=true),ss),
-    :eigenvalues=>map(s->E(p,prod(s)),ss),
-    :fourierMat=>[(E(p,transpose(i)*reverse(j))-E(p,transpose(i)*j))//p for i in ss,j in ss],
-    :cospecial=>p-1,
-    :printname=>"Family(:X)($p)",
-    :name=>"Family(:X)($p)"))
-   end)
+  ss=combinations(0:p-1,2)
+  Family(Dict(
+    :explanation=>"DoubleTaft($p): \$R_{\\mathbb Z/$p}^{\\wedge 2}\$",
+    :charSymbols=>ss,
+    :charLabels=>map(((s1,s2),)->
+       xrepr(E(p,s1),TeX=true)*"\\!\\wedge\\!"*xrepr(E(p,s2),TeX=true),ss),
+   :eigenvalues=>map(s->E(p,prod(s)),ss),
+   :fourierMat=>[(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss],
+   :cospecial=>p-1,
+   :printname=>"Family(:X)($p)",
+   :name=>"Family(:X)($p)"))
+end)
 
 function SubFamily(f::Family,ind,scal,label)
   ind=filter(i->ind(f,i),1:length(f.eigenvalues))
@@ -920,41 +925,46 @@ imprimitive family
 └─────┴──────────────────────────────┘
 ```
 """
-family_imprimitive(S)=family_imprimitive(sort(vcat(S...)),length(S))
+family_imprimitive(S)=family_imprimitive(Symbols.entries(S),length(S))
 
+"""
+`family_imprimitive(ct,e)`
+
+returns  the family attached to `e`-symbols  with entries `ct`, following
+G. Malle, "Unipotente Grade...", J. Algebra 177 (1995), §4 for G(e,1,n) and 
+§6 for G(e,e,n).
+
+The  Fourier  matrix  is  as  follows:  Let  `F`  be  the  set of functions
+`ct→0:e-1`  which are  injective restricted  to a  given value in `ct`, and
+with  the sum  of their  values mod.  `e` equal  to `m*binomial(e,2)` where
+`m=div(length(ct),e)`.  Then for `f∈F`  the list of  preimages of `f` is an
+`e`-symbol  `S(f)`. Conversely for a symbol  `S` there is a 'canonical' map
+`f(S)`  which records the increasing positions  in the symbol of each value
+in  `ct`.  Then  `Fourier(S,T)=C∑_{f∈F∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}` where
+for  `f∈F` with image `f.(ct)`  `ε(f)=(-1)^{number of non-inversions in the
+list  f.(ct)}` and `f*f(T)`  is the scalar  product of vectors `f.(ct)` and
+`f(T).(ct)`. Finally `C=ζ₄^(-m*(binomial(e+1,2)-1))//√e^(e*m)`.
+"""
 function family_imprimitive(ct,e)
-# we follow G. Malle, "Unipotente Grade...", J. Algebra 177 (1995)
-# §4 for G(e,1,n) and §6 for G(e,e,n).
 # Initial writing  GM 26.10.2000 accelerated JM 10.08.2011
-  Scoll=tally(ct)
+  tct=tally(ct)
   m,d=divrem(length(ct),e)
   if !(d in [0,1])
     error("length(",joindigits(ct),") should be 0 or 1 mod.",e," !\n")
   end
-# Fourier matrix of the family of e-symbols with content ct:
-# Let F be the set of functions ct->0:e-1 which are injective restricted to
-# a  given  value  in  ct,  with  the  sum  of their values mod. e equal to
-# div(length(ct),e)*binomial(e,2). Then for f∈ F the list of preimages of f
-# is  a symbol S(f). Conversely  for a symbol S  there is a 'canonical' map
-# f(S)  which records the increasing positions  in the symbol of each value
-# in ct. Then Fourier(S,T)=∑_{f∈ F∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
-# where for f in F with image f.(ct)
-# ε(f)=(-1)^{number of non-inversions in the list f.(ct)}
-# and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct).
-#
-# To  compute this reasonably fast, it is  decomposed as a product of sums,
-# each relative to a set of consecutive equal entries in ct. If fᵢ(S) and
-# fᵢ(T) are the restrictions to elements of ct of value i (two subsets of
-# 0:e-1 of length mᵢ, the multiplicity of i) then one
-# does ∏ᵢ(∑_{σ∈ 𝔖 _{mᵢ}}ε(σ)ζₑ^{-σ(fᵢ(S))*fᵢ(T)})=∏ᵢ det(ζₑ.^(-fᵢ(S)*fᵢ(T)'))
+# To compute Fourier(S,T) reasonably fast, it is decomposed as a product of
+# sums, each relative to a set of consecutive equal entries in ct. If fᵢ(S)
+# and  fᵢ(T) are the restrictions to elements of ct of value i (two subsets
+# of 0:e-1 of length mᵢ, the multiplicity of i) then one does
+# ∏ᵢ(∑_{σ∈ 𝔖 _{mᵢ}}ε(σ)ζₑ^{-σ(fᵢ(S))*fᵢ(T)})=∏ᵢ det(ζₑ.^(-fᵢ(S)*fᵢ(T)'))
   j=(m*binomial(e,2))%e # for f∈ F we must have sum(f,ct)mod e==j
-  ff=filter(x->sum(x)%e==j,tcartesian(map(i->0:e-1, Scoll)...))
+  ff=filter(x->sum(x)%e==j,tcartesian(fill(0:e-1,length(tct))...))
   ff=map(ff)do coll
-    map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,coll)
+    map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),tct,coll)
   end
   ff=reduce(vcat,map(x->tcartesian(x...), ff))
   ffc=map(x->vcat(x...),ff) # now  ffc are the "canonical" functions
-  symbs=map(f->map(x->ct[findall(==(x),f)],0:e-1),ffc)
+  symbs=map(f->CharSymbol(map(x->ct[findall(==(x),f)],0:e-1)),ffc)
   eps=map(l->(-1)^sum(i->count(j->l[i]<l[j],i+1:length(l)),eachindex(l)),ffc)
   fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
   function fc(e,f1,f2) # local Fourier coefficient
@@ -965,32 +975,31 @@ function family_imprimitive(ct,e)
   mat=[prod(fc.(e,fS,fT)) for fS in ff, fT in ff]
   # next signs are 1 on the principal series
   eps.*=(-1)^(binomial(e,2)*binomial(m,2))*
-     [(-1)^((0:e-1)'*binomial.(length.(S),2)) for S in symbs]
+     [(-1)^((0:e-1)'*binomial.(length.(S.S),2)) for S in symbs]
   mat=Diagonal(eps)*mat*Diagonal(eps)
-  mat*=improve_type(E(4,-m*(binomial(e+1,2)-1)))
-  mat//=iseven(e*m) ? e^div(e*m,2) : improve_type(e^div(e*m,2)*root(e))
+  mat*=E(4,-m*(binomial(e+1,2)-1))//root(e^(e*m))
   frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
   if d==0 # compact entries...
-    reduced=Symbols.isreducedsymb.(symbs)
+    reduced=Symbols.isreduced.(symbs)
     mult=Int[]
     for (i,si) in pairs(symbs)
       if reduced[i]
-        orb=circshift.(Ref(si),1:length(si))
-        f=findfirst(==(si),orb)
+        orb=circshift.(Ref(si.S),1:length(si))
+        f=findfirst(==(si.S),orb)
         push!(mult,div(e,f)) # Symmetry group
-        reduced[filter(j->symbs[j] in view(orb,1:f),i+1:length(symbs))].=false
+        reduced[filter(j->symbs[j].S in view(orb,1:f),i+1:length(symbs))].=false
       end
     end
     frobs=reduce(vcat,fill.(frobs[reduced],mult))
     symbs=reduce(vcat,map((m,s)->m==1 ? [s] :
-         map(j->vcat(s[1:div(e,m)], [m,j]), 0:m-1), mult, symbs[reduced]))
+         map(j->CharSymbol(s.S,m,j),0:m-1), mult, symbs[reduced]))
     mat=toL(mat)
     mat=reduce(vcat,map((m,l)->map(
        i->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[reduced])),1:m),
                          mult, mat[reduced]))
     mult=vcat(fill.(mult,mult)...)
     for (i,si) in pairs(symbs), (j,sj) in pairs(symbs)
-      if fullsymbol(si)==fullsymbol(sj)
+      if si.S==sj.S
         mat[i][j]-=1//mult[i]
         if si==sj mat[i][j]+=1 end
       end
@@ -1000,10 +1009,10 @@ function family_imprimitive(ct,e)
       print("** WARNING: (S*T)^3!=1\n")
     end
   end
-  principal=findall(S->Symbols.relative_rank(fullsymbol(S))==ranksymbol(S),symbs)
+  principal=findall(S->Symbols.relative_rank(S)==rank(S),symbs)
   Family(Dict(:symbols=>symbs,
-   :special=>principal[findmin(valuation_fegsymbol.(symbs[principal]))[2]],
-   :cospecial=>principal[findmax(degree_fegsymbol.(symbs[principal]))[2]],
+   :special=>principal[findmin(valuation_feg.(symbs[principal]))[2]],
+   :cospecial=>principal[findmax(degree_feg.(symbs[principal]))[2]],
    :fcdict=>fcdict,
    :ff=>ff,
    :fourierMat=>mat,
@@ -1037,26 +1046,25 @@ function FamiliesClassical(sym)
   # for the notations see Lusztig "Characters of reductive groups over a
   # finite field" Ann. Math. studies 107, sections 4.5 and 4.6
   t=map(sym) do ST
-    ST=fullsymbol(ST)
-    Z1=sort(symdiff(ST...))
+    Z1=sort(symdiff(ST.S...))
     D=length(Z1)%2
-    M♯=sort(symdiff(setdiff(Z1, ST[2]),Z1[1+D:2:length(Z1)-1]))
+    M♯=sort(symdiff(setdiff(Z1, ST.S[2]),Z1[1+D:2:length(Z1)-1]))
     if D==1 && length(M♯)%2!=0 M♯=setdiff(Z1,M♯) end
-    (Z1,M♯,content=sort(reduce(vcat,ST)))
+    (Z1,M♯,entries=Symbols.entries(ST))
   end
   res=reduce(vcat,
-    map(collect(groupby(getproperty.(t,:content),eachindex(t))))do (k,v)
+    map(collect(groupby(getproperty.(t,:entries),eachindex(t))))do (k,v)
       if length(v)==2 # periodic symbols in type D
-        [(content=k,charNumbers=[i],M♯=[t[i].M♯]) for i in v]
-      else [(content=k,charNumbers=v,M♯=[t[i].M♯ for i in v])]
+        [(entries=k,charNumbers=[i],M♯=[t[i].M♯]) for i in v]
+      else [(entries=k,charNumbers=v,M♯=[t[i].M♯ for i in v])]
       end
     end)
   map(res)do f
     f=Family(Dict(pairs(f)))
-    Z1=filter(x->count(==(x),f.content)==1,f.content)
+    Z1=filter(x->count(==(x),f.entries)==1,f.entries)
     f.fourierMat=(1//2^(div(length(Z1)-1,2))).*
       [(-1)^length(intersect(x, y)) for x in f.M♯, y in f.M♯]
-    f.eigenvalues=map(x->(-1)^div(defectsymbol(sym[x])+1,4),f.charNumbers)
+    f.eigenvalues=map(x->(-1)^div(defect(sym[x])+1,4),f.charNumbers)
     if length(f.eigenvalues)==1
       f.charLabels=[""]
     else
@@ -1072,7 +1080,7 @@ function FamiliesClassical(sym)
       end
       f.special=findfirst(x->all(y->y in "+,",x),f.charLabels)
     end
-    f.name=joindigits(f.content)
+    f.name=joindigits(f.entries)
     f.printname=f.name
     f.explanation="classical family"
     f.perm=Perm()

@@ -187,18 +187,20 @@ chevieset(Symbol("2I"), :UnipotentCharacters,function(e)
     end
   end
   uc[:charParams]=vcat(chevieget(:I, :CharInfo)(e)[:charparams][1:2],ac)
-  uc[:almostCharSymbols]=vcat([map(x->[0],1:e),map(x->[0,1],1:e)],map(ac)do s
+  uc[:almostCharSymbols]=vcat(CharSymbol.([map(x->[0],1:e),
+                                           map(x->[0,1],1:e)]),map(ac)do s
     S=map(i->[0],1:e)
     k,l=s
     S[k+1]=Int[]
     S[l+1]=Int[]
     push!(S[1],1)
     push!(S[k+l+1],1)
-    S
+    CharSymbol(S)
   end)
-  uc[:almostCharSymbols][1][e]=[2]
-  uc[:almostCharSymbols][2][e]=[1, 2]
-  uc[:charSymbols]=vcat([map(x->[0],1:e),map(x->[0,1],1:e)],map(symUnp)do s
+  uc[:almostCharSymbols][1].S[e]=[2]
+  uc[:almostCharSymbols][2].S[e]=[1, 2]
+  uc[:charSymbols]=vcat(CharSymbol.([map(x->[0],1:e),map(x->[0,1],1:e)]),
+                        map(symUnp)do s
     k=div(s[1]+1,2)
     l=div(s[2]+1,2)
     S=map(function(i)
@@ -208,10 +210,10 @@ chevieset(Symbol("2I"), :UnipotentCharacters,function(e)
     end, 1:e)
     push!(S[1],1)
     push!(S[k+l],1)
-    S
+    CharSymbol(S)
   end)
-  uc[:charSymbols][1][[1,2]]=[[0,2],Int[]]
-  uc[:charSymbols][2][[1,2]]=[[0,1,2],[1]]
+  uc[:charSymbols][1].S[[1,2]]=[[0,2],Int[]]
+  uc[:charSymbols][2].S[[1,2]]=[[0,1,2],[1]]
   c(a)=E(2*e,a)+E(2*e,-a)
   f=Family(Dict{Symbol,Any}(:eigenvalues=>map(s->E(2*e,s[1]*s[2]),symUnp),
      :fourierMat=>toM(map(j->map(i->(c(i'*reverse(j))-c(i'*j))//e,symUnp),ac)),
@@ -239,10 +241,8 @@ chevieset(Symbol("2I"), :Ennola, function(e)
   uc=chevieget(Symbol("2I"),:UnipotentCharacters)(e)
   l=uc[:charSymbols]
   SPerm(map(1:length(l))do i
-    s=EnnolaSymbol(l[i])
-    if s[end] isa AbstractVector u=circshift.(Ref(s),length(s):-1:1)
-    else u=map(x->vcat(x,s[end-1:end]),circshift.(Ref(s[1:end-2]),length(s)-2:-1:1))
-    end
+    s=ennola(l[i])
+    u=map(x->CharSymbol(x,s.repeats,s.no),circshift.(Ref(s.S),length(s):-1:1))
     for a in u
       p=findfirst(==(a),l)
       if !isnothing(p) return p*(-1)^uc[:A][i] end

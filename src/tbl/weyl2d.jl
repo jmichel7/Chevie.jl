@@ -51,7 +51,7 @@ end)
 # test if a character of W(B) corresponds to the preferred extension
 # for ^2D, see [CS,17.2] and [Lusztig-book,4.4,4.18]:
 chevieset(Symbol("2D"), :IsPreferred, function(pp)
-  pp=symbol_partition_tuple(pp,0)
+  pp=Symbol_partition_tuple(pp,0).S
   pp[1]>pp[2]
 end)
 
@@ -59,11 +59,12 @@ chevieset(Symbol("2D"), :CharParams, n->
   filter(chevieget(Symbol("2D"),:IsPreferred),partition_tuples(n,2)))
 
 #the map which goes from almost characters to unipotent characters for 2Dn
-function Defect0to2(ST)
+function Defect0to2(S::CharSymbol)
+  ST=S.S
   a=minimum(symdiff(ST[1], ST[2]))
   ST=sort.([symdiff(ST[1], [a]), symdiff(ST[2], [a])])
-  if length(ST[1])>length(ST[2]) ST
-  else reverse(ST)
+  if length(ST[1])>length(ST[2]) CharSymbol(ST)
+  else CharSymbol(reverse(ST))
   end
 end
 
@@ -78,18 +79,18 @@ chevieset(Symbol("2D"), :CharInfo, function (n)
                              res[:charparams])
   res[:nrGroupClasses]=length(resparams)
   res[:charnames]=string_partition_tuple.(res[:charparams])
-  f=map(c->fegsymbol(symbol_partition_tuple(c,0),1),res[:charparams])
+  f=map(c->fakedegree(Symbol_partition_tuple(c,0),1),res[:charparams])
   res[:b]=valuation.(f)
   res[:B]=degree.(f)
-  res[:charSymbols]=map(c->Defect0to2(symbol_partition_tuple(c,0)),
+  res[:charSymbols]=map(c->Defect0to2(Symbol_partition_tuple(c,0)),
                         res[:charparams])
-  res[:a]=valuation_gendeg_symbol.(res[:charSymbols])
-  res[:A]=degree_gendeg_symbol.(res[:charSymbols])
+  res[:a]=valuation_gendeg.(res[:charSymbols])
+  res[:A]=degree_gendeg.(res[:charSymbols])
   res
 end)
 
 chevieset(Symbol("2D"),:FakeDegree,(n,c,q)->
-  fegsymbol(symbol_partition_tuple(c,0),1)(q))
+  fakedegree(Symbol_partition_tuple(c,0),1)(q))
 
 chevieset(Symbol("2D"),:PhiFactors,n->vcat(fill(1,n-1),-1))
 
@@ -129,9 +130,10 @@ end)
 
 chevieset(Symbol("2D"),:CharTable,l->chevieget(Symbol("2D"),:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))
 
-chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
-  uc=Dict{Symbol,Any}(:harishChandra=>[],:charSymbols=>[],:almostHarishChandra=>[])
-  for d in (2:4div(isqrt(rank)-1,2)+2)
+chevieset(Symbol("2D"), :UnipotentCharacters, function(rank)
+  uc=Dict{Symbol,Any}(:harishChandra=>[],:charSymbols=>[],
+                      :almostHarishChandra=>[])
+  for d in (2:4:4div(isqrt(rank)-1,2)+2)
     r=div(d^2,4)
     s=Dict{Symbol, Any}(:relativeType=>
      TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
@@ -143,15 +145,15 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
       s[:levi]=Int[]
       s[:cuspidalName]=""
     end
-    symbols=BDSymbols(rank,d)
+    symbols=Symbols.Symbolsshape(rank,[d,0])
     s[:charNumbers] = (1:length(symbols)).+length(uc[:charSymbols])
     FixRelativeType(s)
     append!(uc[:charSymbols], symbols)
   end
-  uc[:a]=valuation_gendeg_symbol.(uc[:charSymbols])
-  uc[:A]=degree_gendeg_symbol.(uc[:charSymbols])
-  uc[:almostCharSymbols]=map(i->[[0],[0]],1:sum(x->length(x[:charNumbers]),
-                                                uc[:harishChandra]))
+  uc[:a]=valuation_gendeg.(uc[:charSymbols])
+  uc[:A]=degree_gendeg.(uc[:charSymbols])
+  uc[:almostCharSymbols]=map(i->CharSymbol([[0],[0]]),
+                    1:sum(x->length(x[:charNumbers]),uc[:harishChandra]))
   for d in  4*(0:isqrt(div(rank,4)))
     r=div(d^2,4)
     s=Dict{Symbol, Any}(:relativeType=>
@@ -159,13 +161,20 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
       :eigenvalue=>(-1)^div(d+1,4))
     s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
     r=s[:relativeType][:rank]
-    symbols=BDSymbols(rank,d)
-    if isodd(div(d+1,4)) symbols=reverse.(symbols) end
+    if d==0
+      # order differs from Symbols.Symbolsshape(n,[d,0]) for d=0
+      symbols=map(x->Symbol_partition_tuple(x,d),
+         chevieget(:imp,:CharInfo)(2,2,rank)[:charparams])
+    else symbols=Symbols.Symbolsshape(rank,[d,0])
+    end
+    if isodd(div(d+1,4)) 
+     for S in symbols S.S.=reverse(S.S) end
+    end
     if d==0
       s[:relativeType].series=:D
       s[:relativeType]=TypeIrred(;orbit=[s[:relativeType]],twist=perm"(1,2)")
       s[:cuspidalName]= ""
-      symbols=map(x->symbol_partition_tuple(x, 0),
+      symbols=map(x->Symbol_partition_tuple(x, 0),
                   chevieget(Symbol("2D"),:CharParams)(rank))
     end
     s[:charNumbers]=map(s->findfirst(==(Defect0to2(s)),uc[:charSymbols]),symbols)
@@ -174,21 +183,20 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
     push!(uc[:almostHarishChandra],s)
   end
   # note: delta is always 1 since a+A is always even
-  z(x)=(Z1=sort(symdiff(x[1],x[2])),Z2=intersect(x...))
+  z(x)=(Z1=sort(symdiff(x.S[1],x.S[2])),Z2=intersect(x.S...))
   uc[:families]=map(sort(unique(z.(uc[:charSymbols]))))do f
-    sharp(s)=symdiff(setdiff(s[2],f.Z2),f.Z1[1:2:length(f.Z1)-1])
+    sharp(s)=symdiff(setdiff(s.S[2],f.Z2),f.Z1[1:2:length(f.Z1)-1])
     res=Dict{Symbol,Any}(:charNumbers=>filter(i->z(uc[:charSymbols][i])==f,
                                                  1:length(uc[:charSymbols])))
     res[:almostCharNumbers]=res[:charNumbers]
-    res[:fourierMat]=map(u->map(a->(1//2)^div(length(f.Z1)-1,2)*
-     (-1)^length(intersect(sharp(u),sharp(a))),
-     uc[:almostCharSymbols][res[:almostCharNumbers]]),
-                           uc[:charSymbols][res[:charNumbers]])
-    if length(res[:fourierMat])==16 #JM jan 2015: fix this horrible kludge
-      res[:fourierMat][16]=-res[:fourierMat][16]
-      res[:fourierMat][1:16][16]=-res[:fourierMat][1:16][16]
+    res[:fourierMat]=[(1//2)^div(length(f.Z1)-1,2)*
+     (-1)^length(intersect(sharp(u),sharp(a))) for
+        u in uc[:charSymbols][res[:charNumbers]],
+        a in uc[:almostCharSymbols][res[:almostCharNumbers]]]
+    if size(res[:fourierMat],1)==16 #JM jan 2015: fix this horrible kludge
+      res[:fourierMat][16,:]=-res[:fourierMat][16,:]
+      res[:fourierMat][:,16]=-res[:fourierMat][:,16]
     end
-    res[:fourierMat]=toM(res[:fourierMat])
     res[:eigenvalues]=fill(1,length(res[:charNumbers]))
     res[:sh]=fill(1,length(res[:charNumbers]))# is that correct for Geck-Malle?
     if length(res[:eigenvalues])==1
@@ -196,17 +204,15 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
       res[:special]=1
     else
       res[:charLabels]=map(uc[:charSymbols][res[:charNumbers]])do M
-        M=symdiff(setdiff(M[2],f.Z2),f.Z1[3:2:length(f.Z1)-1])
+        M=symdiff(setdiff(M.S[2],f.Z2),f.Z1[3:2:length(f.Z1)-1])
         v=map(z->mod(count(>=(z),M),2),f.Z1)
-        D=length(v)
-        v1=v[2:2:D-mod(D,2)]
-        v2=v[3:2:D-1+mod(D,2)]
-        if isodd(D) push!(v1, 0) end
+        v1=v[2:2:end]
+        v2=v[3:2:end]
+        if isodd(length(v)) push!(v1, 0) end
         # v1, v2 is coordinates in (e1,e3,e5,..) and in (e2,e4,..) basis
         v1=map(i->mod(sum(v1[i:i+1]),2),1:length(v2))
         # coordinates in e1, e1+e3, e1+e3+e5, ...
-        s="+-"
-        s[v2.+1]*","*s[v1.+1]
+        "+-"[v2.+1]*","*"+-"[v1.+1]
       end
     end
     res[:special]=findfirst(x->all(y->y in "+,",x),res[:charLabels])
@@ -227,8 +233,8 @@ chevieset(Symbol("2D"),:Ennola,function(n)
   uc=chevieget(Symbol("2D"),:UnipotentCharacters)(n)
   l=uc[:charSymbols]
   SPerm(map(1:length(l))do i
-    if !(l[i][2] isa AbstractVector) return i*(-1)^uc[:A][i] end
-    s=EnnolaSymbol(l[i])
+    if !(l[i].repeats>1) return i*(-1)^uc[:A][i] end
+    s=ennola(l[i])
     p=findfirst(==(s),l)
     if isnothing(p) p=findfirst(==(reverse(s)),l) end
     p*(-1)^uc[:A][i]

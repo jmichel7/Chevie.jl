@@ -19,26 +19,33 @@ chevieset(:G2, :CharInfo, function ()
   res[:b]=map(x->x[2],res[:charparams])
   res[:B]=[0,6,3,3,5,4]
   # charnames in Spaltenstein's "Sous-groupes de Borel et classes unipotentes"
-  res[:spaltenstein]=["1","\\varepsilon","\\varepsilon_l","\\varepsilon_c","\\theta'","\\theta''"]
-  res[:lusztig]=["1","\\varepsilon","\\varepsilon'","\\varepsilon''","\\theta'","\\theta''"]
+  res[:spaltenstein]=["1","\\varepsilon","\\varepsilon_l","\\varepsilon_c",
+                      "\\theta'","\\theta''"]
+  # charnames in Lusztig's orange book
+  res[:lusztig]=["1","\\varepsilon","\\varepsilon'","\\varepsilon''",
+                 "\\theta'","\\theta''"]
   res[:charnames]=exceptioCharName.(res[:charparams])
-  res[:charSymbols]=[[[0],[0],[0],[0],[0],[2]],
-   [[0,1],[0,1],[0,1],[0,1],[0,1],[1,2]],[[0],[0],[1],2,0],[[0],[0],[1],2,1],
-   [[0],[0],[0],[0],[1],[1]],[[0],[0],[0],[1],[0],[1]]]
+  res[:charSymbols]= # for imprimitive group G(6,6,2)
+    [CharSymbol([[0],[0],[0],[0],[0],[2]]),
+     CharSymbol([[0,1],[0,1],[0,1],[0,1],[0,1],[1,2]]),
+     CharSymbol([[0],[0],[1],[0],[0],[1]],2,0),
+     CharSymbol([[0],[0],[1],[0],[0],[1]],2,1),
+     CharSymbol([[0],[0],[0],[0],[1],[1]]),
+     CharSymbol([[0],[0],[0],[1],[0],[1]])]
   res
 end)
 
 chevieset(:G2,:ClassNames,["A_0","\\tilde A_1","A_1","G_2","A_2","A_1+\\tilde A_1"])
 
-chevieset(:G2, :PowerMaps, [nothing, [1, 1, 1, 5, 5, 1], [1, 2, 3, 6, 1, 6],
-                            nothing,[1,2,3,4,5,6]])
+chevieset(:G2, :PowerMaps,
+          [nothing,[1,1,1,5,5,1],[1,2,3,6,1,6],nothing,[1,2,3,4,5,6]])
 
 chevieset(:G2, :ClassInfo, Dict{Symbol, Any}(
-  :classtext => [[], [2], [1], [1, 2], [1, 2, 1, 2], [1, 2, 1, 2, 1, 2]],
+  :classtext =>[[],[2],[1],[1,2],[1,2,1,2],[1,2,1,2,1,2]],
   :classnames => chevieget(:G2, :ClassNames),
   :classparams => chevieget(:G2, :ClassNames),
   :powermaps => chevieget(:G2, :PowerMaps),
-  :orders => [1, 2, 2, 6, 3, 2], :classes => [1, 3, 3, 2, 2, 1]))
+  :orders =>[1,2,2,6,3,2],:classes=>[1,3,3,2,2,1]))
 
 chevieset(:G2,:sparseFakeDegrees,[[1,0],[1,6],[1,3],[1,3],[1,1,1,5],[1,2,1,4]])
 
@@ -137,11 +144,17 @@ chevieset(:G2, :UnipotentCharacters, function ()
               Family(:C1, [1]), Family(:C1, [2])], 
   :a => [0, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
   :A => [0, 6, 5, 5, 5, 5, 5, 5, 5, 5], 
-  :charSymbols=> [[[0],[0],[0],[0],[0],[2]],
-     [[0,1],[0,1],[0,1],[0,1],[0,1],[1,2]],[[0],[0],[1],2,0],[[0],[0],[1],2,1],
-     [[0],[0],[0],[0],[1],[1]],[[0],[0],[0],[1],[0],[1]],
-     [[0,1],[0],[0,1],Int[],[0],Int[]],[[0,1],[0,1],[0],Int[],Int[],[0]],
-     [[0,1],[0],[0],[0,1],Int[],Int[]],[[0,1],[0,1],Int[],[0],[0],Int[]]])
+  :charSymbols=>[
+     CharSymbol([[0],[0],[0],[0],[0],[2]]),
+     CharSymbol([[0,1],[0,1],[0,1],[0,1],[0,1],[1,2]]),
+     CharSymbol([[0],[0],[1],[0],[0],[1]],2,0),
+     CharSymbol([[0],[0],[1],[0],[0],[1]],2,1),
+     CharSymbol([[0],[0],[0],[0],[1],[1]]),
+     CharSymbol([[0],[0],[0],[1],[0],[1]]),
+     CharSymbol([[0,1],[0],[0,1],Int[],[0],Int[]]),
+     CharSymbol([[0,1],[0,1],[0],Int[],Int[],[0]]),
+     CharSymbol([[0,1],[0],[0],[0,1],Int[],Int[]]),
+     CharSymbol([[0,1],[0,1],Int[],[0],[0],Int[]])])
 end)
 
 chevieset(:G2, :Invariants, [

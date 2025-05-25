@@ -1,4 +1,4 @@
-JULIA=1.11.4
+JULIA=1.11.5
 doc:
 	~/julia-$(JULIA)/bin/julia make.jl local
 	cp build/*.html .

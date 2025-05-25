@@ -72,7 +72,7 @@ function(n,para,root)
   end
 end)
 
-chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
+chevieset(:A,:FakeDegree,(n,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
 
 # partition for a coxeterword w
 chevieset(:A, :ClassParameter, function(n,w)
@@ -86,18 +86,17 @@ chevieset(:A, :WeightInfo, function(n)
     :decompositions=>map(i->[n+1-i],1:n),:moduli=>[n+1],:chosenAdaptedBasis=>M)
 end)
 
-chevieset(:A,:LowestPowerFakeDegree,p->dot(p,0:length(p)-1))
+chevieset(:A,:b,p->dot(p,0:length(p)-1))
 
-chevieset(:A, :HighestPowerFakeDegree,p->binomial(sum(p),2)-
-          sum(i->binomial(i,2),p))
+chevieset(:A,:B,p->binomial(sum(p),2)-sum(i->binomial(i,2),p))
 
 chevieset(:A, :CharInfo, function(n)
   pp=partitions(n+1)
-  res=Dict{Symbol, Any}(:charparams=>pp)
-  res[:charnames]=joindigits.(pp)
-  res[:extRefl]=map(i->findfirst(==(pushfirst!(fill(1,i),n+1-i)),pp),0:n)
-  res[:b]=map(chevieget(:A, :LowestPowerFakeDegree), pp)
-  res[:B]=map(chevieget(:A, :HighestPowerFakeDegree), pp)
+  res=Dict{Symbol, Any}(:charparams=>pp,
+    :charnames=>joindigits.(pp),
+    :extRefl=>map(i->findfirst(==(pushfirst!(fill(1,i),n+1-i)),pp),0:n),
+    :b=>chevieget(:A,:b).(pp),
+    :B=>chevieget(:A,:B).(pp))
   res[:a]=res[:b]
   res[:A]=res[:B]
   res
@@ -165,7 +164,8 @@ chevieset(:A, :UnipotentCharacters,function(n)
     :parameterExponents=>fill(1,n),:cuspidalName=>"",:eigenvalue=>1,
     :charNumbers=>1:length(pp))],
   :families=>map(i->Family("C1",[i]), 1:length(pp)), 
-  :charParams=>pp,:charSymbols=>map(x->[βset(x)],pp),:a=>ci[:a],:A=>ci[:A])
+  :charParams=>pp,:charSymbols=>map(x->CharSymbol([βset(x)]),pp),
+  :a=>ci[:a],:A=>ci[:A])
 end)
 
 chevieset(:A, :Ennola, n->n==1 ? SPerm([-1, 2]) : SPerm())

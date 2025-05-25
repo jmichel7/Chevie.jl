@@ -107,22 +107,22 @@ chevieset(:I, :CharInfo, function(m)
   res[:charparams]=charparams
   res[:b]=map(x->x[2], charparams)
   res[:B]=map(phi->phi[1]==1 ? phi[2] : m-phi[2], charparams)
-  charSymbols=[] # need type Any for m even
-  push!(charSymbols,map(i->i==m ? [2] : [0],1:m))
+  charSymbols=CharSymbol[]
+  push!(charSymbols,CharSymbol(map(i->i==m ? [2] : [0],1:m)))
   if iseven(m)
-    v=vcat(map(i->i==m1 ? [1] : [0],1:m1),[2,0])
-    push!(charSymbols,v)
-    v=copy(v);v[m1+2]=1;push!(charSymbols,v)
+    v=map(i->i%m1==0 ? [1] : [0],1:m)
+    push!(charSymbols,CharSymbol(v,2,0))
+    push!(charSymbols,CharSymbol(v,2,1))
   end
-  push!(charSymbols,map(i->i==m ? [1,2] : [0,1],1:m))
+  push!(charSymbols,CharSymbol(map(i->i==m ? [1,2] : [0,1],1:m)))
   append!(charSymbols,map(1:div(m-1,2))do l
-    map(i->i==1 ? [1] : i==l+1 ? [1] : [0],1:m)
+    CharSymbol(map(i->i==1 ? [1] : i==l+1 ? [1] : [0],1:m))
   end)
   res[:charSymbols]=charSymbols
-  res[:A]=degree_gendeg_symbol.(charSymbols)
-  res[:a]=valuation_gendeg_symbol.(charSymbols)
+  res[:A]=degree_gendeg.(charSymbols)
+  res[:a]=valuation_gendeg.(charSymbols)
   # malleParams are the partitiontuples for the symbols
-  res[:malleParams]=map(x->partβ.(fullsymbol(x)),charSymbols)
+  res[:malleParams]=map(x->partβ.(x.S),charSymbols)
   if iseven(m)
     res[:malleParams]=convert.(Vector{Any},res[:malleParams])
     res[:malleParams][2]=append!(res[:malleParams][2][1:m1],[2,0])
@@ -235,7 +235,7 @@ chevieset(:I, :SymbolToParameter, function (S)
 end)
 
 # The symbols returned are rotations of those given by Gunter.
-# They are reduced in the sense of SymbolsDefect(e,2,0,0)
+# They are reduced in the sense of symbols(e,2,0)
 chevieset(:I,:ParameterToSymbol,function(e,p)
   if p==[0]
     S=map(x->[0],1:e)
@@ -262,7 +262,7 @@ chevieset(:I,:ParameterToSymbol,function(e,p)
       S[[e-mod(p[2]-p[1],e),e]]=[[1],[1]]
     end
   end
-  S
+  CharSymbol(S)
 end)
 
 chevieset(:I, :UnipotentCharacters, function(e)
@@ -298,11 +298,8 @@ chevieset(:I,:Ennola,function(e)
   uc=chevieget(:I,:UnipotentCharacters)(e)
   l=uc[:charSymbols]
   SPerm(map(1:length(l))do i
-    s=EnnolaSymbol(l[i])
-    if s[end] isa AbstractVector u=circshift.(Ref(s),length(s):-1:1)
-    else u=map(x->vcat(x,s[[end-1,end]]), 
-               circshift.(Ref(s[1:end-2]),length(s)-2:-1:1))
-    end
+    s=ennola(l[i])
+    u=map(x->CharSymbol(x,s.repeats,s.no),circshift.(Ref(s.S),length(s):-1:1))
     for a in u
       p=findfirst(==(a),l)
       if !isnothing(p) return p*(-1)^uc[:A][i] end

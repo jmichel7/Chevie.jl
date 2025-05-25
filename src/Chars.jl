@@ -399,7 +399,7 @@ module Chars
 
 using ..Chevie
 
-export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
+export charinfo, classinfo, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, induction_table, classes, j_induction_table,
   J_induction_table, decompose, on_chars, detPerm, conjPerm,
@@ -463,14 +463,14 @@ julia> fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
 Pol{Int64}: q²+q
 ```
 """
-function fakedegree(W,p,q=Pol())
+function Symbols.fakedegree(W,p,q=Pol())
   typ=refltype(W)
   if isempty(typ) return one(q) end
 # prod(map((t,p)->fakedegree(t,p,q),typ,p))
   prod(fakedegree.(typ,p,q))
 end
 
-function fakedegree(t::TypeIrred,p,q=Pol())
+function Symbols.fakedegree(t::TypeIrred,p,q=Pol())
   if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
   elseif haskey(t,:orbit) q=q^length(t.orbit)
   end
@@ -532,10 +532,10 @@ function charinfo(t::TypeIrred)
   c.positionId=c.extRefl[1]
   c.positionDet=c.extRefl[end]
   if !haskey(c,:charnames) error("charnames(",t,") missing") end
-  if !haskey(c,:b) c.b=chevieget(t,:LowestPowerFakeDegrees) end
-  if !haskey(c,:B) c.B=chevieget(t,:HighestPowerFakeDegrees) end
-  if !haskey(c,:a) c.a=chevieget(t,:LowestPowerGenericDegrees) end
-  if !haskey(c,:A) c.A=chevieget(t,:HighestPowerGenericDegrees) end
+  if !haskey(c,:b) c.b=chevieget(t,:b) end
+  if !haskey(c,:B) c.B=chevieget(t,:B) end
+  if !haskey(c,:a) c.a=chevieget(t,:a) end
+  if !haskey(c,:A) c.A=chevieget(t,:A) end
   if isnothing(c.a)
     uc=chevieget(t,:UnipotentCharacters)
     if !isnothing(uc) && uc!=false
@@ -789,7 +789,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
     push!(cl,"restr.")
   end
   if haskey(ci,:charSymbols)
-    t=hcat(t,stringsymbol.(Ref(io),ci.charSymbols));push!(cl,"symbol")
+    t=hcat(t,repr.(ci.charSymbols,context=io));push!(cl,"symbol")
   end
   showtable(io,string.(t);row_labels=string.(1:n),col_labels=cl,rows_label="n0")
   if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
@@ -1069,6 +1069,10 @@ Base.length(C::ConjugacyClass{T,TW}) where{T,TW<:Hastype}=C.length
 
 Groups.word(C::ConjugacyClass{T,TW}) where{T,TW<:Hastype}=C.word
 
+"""
+`eigen(C::ConjugacyClass)` the eigenvalues on the reflection representation
+of the class `C` of a reflection group or spets.
+"""
 function LinearAlgebra.eigen(C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   get!(C,:eigen)do
     t=refltype(C.G)
@@ -1233,7 +1237,7 @@ end
 
 Let  `ρ`  be  a  representation  with  character  `char`, and let `w` be an
 element  in  the  conjugacy  class  `class`  of order `order`. The function
-returns the list of eigen of `ρ(w)`. The additional ingredient needed
+returns the list of eigenvalues of `ρ(w)`. The additional ingredient needed
 is  `powermap` such that for each prime  divisor `p` of `order` the element
 `powermap[p]` should be the corresponding power map.
 """
@@ -1265,7 +1269,7 @@ end
 """
 `eigen(ct::CharTable,char,class)``
 
-The  eigen  of  `class`-th  class  on  representation  affording  the
+The  eigenvalues of  `class`-th class  on the  representation affording the
 `char`-th character in `ct`.
 
 `ct`  must  have  fields  `.order`  containing  the orders of elements in a

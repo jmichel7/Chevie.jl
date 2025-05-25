@@ -187,17 +187,15 @@ chevieset(:D,:PoincarePolynomial, function (n, para)
   sum(k->q^k,0:n-1)*prod(i->(q^i+1)*sum(k->q^k,0:i-1),1:n-1)
 end)
 
-chevieset(:D,:symbolcharparam,c->symbol_partition_tuple(c,0))
-
 chevieset(:D,:Invariants, function(n)
   m=chevieget(:imp,:simpleroots)(2,2,n)
   map(f->function(arg...) return f((transpose(collect(arg))*m)...)
     end,chevieget(:imp,:Invariants)(2,2,n))
 end)
 
-chevieset(:D,:CycPolGenericDegree,c->gendeg_symbol(symbol_partition_tuple(c,0)))
+chevieset(:D,:CycPolGenericDegree,c->gendeg(Symbol_partition_tuple(c,0)))
 
-chevieset(:D,:FakeDegree,(n,c,q)->fegsymbol(symbol_partition_tuple(c, 0))(q))
+chevieset(:D,:FakeDegree,(n,c,q)->fakedegree(Symbol_partition_tuple(c, 0))(q))
 
 chevieset(:D,:UnipotentCharacters,function(rank)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
@@ -214,13 +212,18 @@ chevieset(:D,:UnipotentCharacters,function(rank)
       s[:parameterExponents][1]=1
     end
     push!(uc[:harishChandra], s)
-    symbols=BDSymbols(rank,d)
+    if d==0
+      # order differs from Symbols.Symbolsshape(n,[d,0]) for d=0
+      symbols=map(x->Symbol_partition_tuple(x,d),
+        chevieget(:imp,:CharInfo)(2,2,rank)[:charparams])
+    else symbols=Symbols.Symbolsshape(rank,[d,0])
+    end
     s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])
     FixRelativeType(s)
     append!(uc[:charSymbols],symbols)
   end
-  uc[:a]=valuation_gendeg_symbol.(uc[:charSymbols])
-  uc[:A]=degree_gendeg_symbol.(uc[:charSymbols])
+  uc[:a]=valuation_gendeg.(uc[:charSymbols])
+  uc[:A]=degree_gendeg.(uc[:charSymbols])
   uc[:families]=FamiliesClassical(uc[:charSymbols])
   uc
 end)
@@ -231,7 +234,7 @@ chevieset(:D,:Ennola,function(n)
   l=uc[:charSymbols]
   SPerm(map(function(i)
     if !(l[i][2] isa AbstractVector) return i*(-1)^uc[:A][i] end
-    s=EnnolaSymbol(l[i])
+    s=ennola(l[i])
     p=findfirst(==(s),l)
     if isnothing(p) p=findfirst(==(reverse(s)),l) end
     p*(-1)^uc[:A][i]

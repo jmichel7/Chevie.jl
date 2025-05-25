@@ -79,8 +79,8 @@ chevieset(:B,:ClassInfo, function(n)
   res
 end)
 
-chevieset(:B,:LowestPowerFakeDegree,function(p)
-  pp=symbol_partition_tuple(p,1)
+chevieset(:B,:b,function(p)
+  pp=Symbol_partition_tuple(p,1).S
   m=length(pp[2])
   res=dot(pp[1],m:-1:0)
   if !isempty(pp[2]) res+=dot(pp[2],m-1:-1:0) end
@@ -208,7 +208,7 @@ chevieset(:B,:HeckeRepresentation,(arg...)->
 chevieset(:B,:Representation,(n,i)->
   chevieget(:imp, :Representation)(2, 1, n, i))
 
-chevieset(:B,:FakeDegree,(n,c,q)->fegsymbol(symbol_partition_tuple(c,1))(q))
+chevieset(:B,:FakeDegree,(n,c,q)->fakedegree(Symbol_partition_tuple(c,1))(q))
 
 chevieset(:B, :DecompositionMatrix, function (l, p)
   decS(i)= MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))
@@ -228,7 +228,7 @@ chevieset(:B, :DecompositionMatrix, function (l, p)
 end)
 
 chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
-  uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
+  uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>CharSymbol[])
   for d in (0:div(-1+isqrt(1+4rank),2)).*2 .+1
     r=div(d^2-1,4)
     s=Dict{Symbol, Any}()
@@ -238,14 +238,14 @@ chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
     s[:parameterExponents]=vcat([d],fill(1,max(0,rank-1-r)))
     s[:cuspidalName]="B"*stringind(rio(TeX=true),r)
     push!(uc[:harishChandra], s)
-    symbols = BDSymbols(rank, d)
+    symbols=Symbols.Symbolsshape(rank,[d,0])
     s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])
     FixRelativeType(s)
     append!(uc[:charSymbols],symbols)
   end
   uc[:harishChandra][1][:cuspidalName] = ""
-  uc[:a]=valuation_gendeg_symbol.(uc[:charSymbols])
-  uc[:A]=degree_gendeg_symbol.(uc[:charSymbols])
+  uc[:a]=valuation_gendeg.(uc[:charSymbols])
+  uc[:A]=degree_gendeg.(uc[:charSymbols])
   uc[:families]=FamiliesClassical(uc[:charSymbols])
   if typ==1 uc[:harishChandra][1][:relativeType][:cartanType]=1 end
   uc
@@ -255,8 +255,8 @@ chevieset(:B, :Ennola, function(n)
   uc=chevieget(:B,:UnipotentCharacters)(n)
   l=uc[:charSymbols]
   SPerm(map(1:length(l))do i
-    s=EnnolaSymbol(l[i])
-    if length(s[1])<length(s[2]) s=s[[2,1]] end
+    s=ennola(l[i])
+    if length(s.S[1])<length(s.S[2]) s=CharSymbol(s.S[[2,1]]) end
     findfirst(==(s),l)*(-1)^uc[:A][i]
   end)
 end)

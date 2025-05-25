@@ -241,7 +241,7 @@ module Uch
 
 using ..Chevie
 
-export UnipotentCharacters, FixRelativeType, UniChar, unichar, 
+export UnipotentCharacters, UniChar, unichar, 
        unipotent_character, almostchar, almost_character, dlchar, dlCharTable,
        deligne_lusztigCharTable,
        deligne_lusztig_character, dllefschetz, deligne_lusztig_lefschetz,
@@ -595,7 +595,7 @@ function UnipotentCharacters(WF::Spets)
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"Id", :eigenvalue=>1, :charNumbers =>[ 1 ])],
      [Family("C1",[1])],
-     Dict(:charParams=>[["",[1]]], :charSymbols=>[[Int[],[1]]],
+     Dict(:charParams=>[["",[1]]], :charSymbols=>[[CharSymbol([[1]])]],
       :size=>1, :a =>[0], :A =>[0], :spets=>WF))
   end
 
@@ -715,13 +715,17 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   m=hcat(m,xrepr.(io,cycpol ? CycPol.(feg) : feg))
   push!(col_labels,"\\mbox{Feg}")
   if haskey(uc,:charSymbols) && (uc.charSymbols!=uc.charParams)
-    m=hcat(m,map(x->stringsymbol(io,x[1]),uc.charSymbols))
+    m=hcat(m,xrepr.(io,first.(uc.charSymbols)))
     push!(col_labels,"\\mbox{Symbol}")
   end
   m=hcat(m,xrepr.(io,eigen(uc)))
   push!(col_labels,"\\mbox{Fr}(\\gamma)")
-  m=hcat(m,fromTeX.(Ref(io),labels(uc)))
+  m=hcat(m,fromTeX.(io,labels(uc)))
   push!(col_labels,"\\mbox{label}")
+  if get(io,:signs,false)
+    m=hcat(m,xrepr.(io,signs(uc)))
+    push!(col_labels,"\\mbox{signs}")
+  end
   if get(io,:byfamily,false)
     rows=vcat(map(x->x[:charNumbers],uc.families)...)
     row_seps=vcat([-1,0],rows[cumsum(length.(uc.families))])
@@ -834,16 +838,24 @@ function CycPoldegrees(uc::UnipotentCharacters)
   end
 end
 
-function LinearAlgebra.eigen(ff::Vector{Family})
-  eig=fill(E(1),sum(length,ff))
-  for f in ff eig[f.charNumbers]=eigen(f) end
-  eig
-end
-
+"`eigen(uc::UnipotentCharacters)` the eigenvalues of Frobenius for `uc`"
 function LinearAlgebra.eigen(uc::UnipotentCharacters)
   get!(uc,:eigen)do
-    eigen(uc.families)
+    eig=fill(E(1),sum(length,uc.families))
+    for f in uc.families eig[f.charNumbers]=eigen(f) end
+    eig
   end::Vector{Root1}
+end
+
+"`signs(uc::UnipotentCharacters)` the signs in families of  `uc`"
+function SignedPerms.signs(uc::UnipotentCharacters)
+  get!(uc,:signs)do
+    sgn=fill(1,sum(length,uc.families))
+    for f in uc.families 
+      if haskey(f,:signs) sgn[f.charNumbers]=signs(f) end
+    end
+    sgn
+  end::Vector{Int}
 end
 
 function labels(uc::UnipotentCharacters)::Vector{String}
@@ -852,29 +864,6 @@ function labels(uc::UnipotentCharacters)::Vector{String}
     for f in uc.families lab[f.charNumbers]=f.charLabels
     end
     lab
-  end
-end
-
-"""
-fix illegal relativeTypes B1 and C2 which appear in HC or almost HC
-series of classical groups
-"""
-function FixRelativeType(t)
-  d=t[:relativeType]
-  if d[:series] in ("B",:B)
-    if d[:rank]==1
-      if d isa TypeIrred d.series=:A
-      else d[:series]=:A
-      end
-      t[:charNumbers]=collect(t[:charNumbers])
-      reverse!(view(t[:charNumbers],1:2)) # map B1->A1
-    elseif d[:rank]==2 && haskey(d,:cartanType) && d[:cartanType]==1
-      if d isa TypeIrred d.cartanType=2;d.indices=reverse(collect(d.indices))
-      else d[:cartanType]=2;d[:indices]=reverse(collect(d[:indices]))
-      end
-      reverse!(view(t[:charNumbers],[1,5])) # map C2->B2
-      if haskey(t,:parameterExponents) reverse!(t[:parameterExponents]) end
-    end
   end
 end
 

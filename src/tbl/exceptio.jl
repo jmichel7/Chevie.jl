@@ -23,7 +23,7 @@ end)
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
   :FactorizedSchurElement, t->function(phi,para,arg...)
-#arg= [phi,q] for G24--G34, [phi,q,rootparam] for E6--H4
+               #arg=[] for G24--G34, [rootparam] for E6--H4
    i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
    c=chevieget(t,:CycPolSchurElements)[i]
    q=-para[1][1]//para[1][2]
@@ -83,13 +83,7 @@ chevieset([:G2,:F4,:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34],
 
 chevieset([:A,:B,:D],:SemisimpleRank,t->(r->r))
 
-chevieset([Symbol("3D4"),:G2,:F4,Symbol("2F4"),:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:FakeDegree,t->
-function(phi, q)
-  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
-  f=chevieget(t,:sparseFakeDegrees)[i]
-  sum(i->f[i]*q^f[i+1],1:2:length(f)-1)
-end)
-
+# cycpolfakedegrees is a compact representation of fake degrees
 chevieset([:H4, :E7, :E8, :G31], :FakeDegree,t->
 function(phi, q)
   i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
@@ -101,29 +95,37 @@ function(phi, q)
 end)
 
 using Primes: totient
-chevieset([:H4, :E7, :E8, :G31], :HighestPowerFakeDegrees,function(t)
+chevieset([:H4, :E7, :E8, :G31], :B,function(t)
   map(chevieget(t, :cycpolfakedegrees))do f
     res=f[1] isa AbstractVector ? 2*length(f[1])+f[2]-2 : f[2]
     res+sum(totient,f[3:length(f)];init=0)
   end
 end)
 
-chevieset([:E6,:G32,:G33,:G34,:G2,:F4,:H3,:G24,:G25,:G26,:G27,:G29],:HighestPowerFakeDegrees, t->map(x->x[end],chevieget(t,:sparseFakeDegrees)))
+chevieset([:H4, :E7, :E8, :G31], :b,
+  t->map(f->f[2],chevieget(t,:cycpolfakedegrees)))
 
-chevieset([:G2,:F4,:H3,:G24,:G25,:G26,:G27,:G29,:E6,:G32,:G33,:G34],:LowestPowerFakeDegrees,t->map(x->x[2],chevieget(t,:sparseFakeDegrees)))
-
-chevieset([:H4, :E7, :E8, :G31], :LowestPowerFakeDegrees,t->function()
-  map(chevieget(t, :cycpolfakedegrees))do f
-    error("not implemented")
-  end
+# sparseFakeDegrees is another compact representation of fake degrees
+chevieset([Symbol("3D4"),:G2,:F4,Symbol("2F4"),:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:FakeDegree,t->
+function(phi, q)
+  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
+  f=chevieget(t,:sparseFakeDegrees)[i]
+  sum(i->f[i]*q^f[i+1],1:2:length(f)-1)
 end)
 
-chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:HighestPowerGenericDegrees,function(t)
+chevieset([:E6,:G32,:G33,:G34,:G2,:F4,:H3,:G24,:G25,:G26,:G27,:G29],:B,
+  t->map(x->x[end],chevieget(t,:sparseFakeDegrees)))
+
+chevieset([:G2,:F4,:H3,:G24,:G25,:G26,:G27,:G29,:E6,:G32,:G33,:G34],:b,
+  t->map(x->x[2],chevieget(t,:sparseFakeDegrees)))
+
+chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:A,function(t)
   N=sum(x->x-1,chevieget(t,:ReflectionDegrees))
-  map(x->N-degree(CycPol(x)),chevieget(t, :CycPolSchurElements))
+  map(x->N-degree(CycPol(x)),chevieget(t,:CycPolSchurElements))
 end)
 
-chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:LowestPowerGenericDegrees,t->map(x->-x[2],chevieget(t,:CycPolSchurElements)))
+chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:a,
+          t->map(x->-x[2],chevieget(t,:CycPolSchurElements)))
 
 chevieset([:F4, :G2, :G25, :G26], :DecompositionMatrix,t->
 function(p)

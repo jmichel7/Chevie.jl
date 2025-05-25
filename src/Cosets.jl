@@ -412,7 +412,7 @@ end
 
 Groups.Group(WF::Spets)=WF.W
 @forward Spets.W PermRoot.inclusion, PermRoot.restriction, 
-  PermRoot.inclusiongens, PermRoot.semisimplerank, PermRoot.rank
+  PermRoot.inclusiongens, PermRoot.semisimplerank, Symbols.rank
 
 Weyl.dimension(WF::CoxeterCoset)=dimension(WF.W)
 

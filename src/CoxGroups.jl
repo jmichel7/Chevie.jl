@@ -949,7 +949,7 @@ function PermRoot.simple_reps(W::CoxSym)
   end::Vector{Int}
 end
 PermRoot.refls(W::CoxSym)=W.refls
-PermRoot.rank(W::CoxSym)=ngens(W)+1
+Symbols.rank(W::CoxSym)=ngens(W)+1
 PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.d.stop)
 PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),W.d.stop)
 PermRoot.reflrep(W::CoxSym)=reflrep.(Ref(W),1:ngens(W))
@@ -1067,7 +1067,7 @@ function CoxGroups.isleftdescent(W::CoxHyp,w,i)
   max(aw,bw)<-min(aw,bw)
 end
 
-PermRoot.rank(W::CoxHyp)=W.n
+Symbols.rank(W::CoxHyp)=W.n
 CoxGroups.maxpara(W::CoxHyp)=1:W.n-1
 PermRoot.inclusiongens(W::CoxHyp)=1:W.n
 
@@ -1123,12 +1123,12 @@ isleftdescent(W::MatCox,w,i::Int)=real(sum(w[i,:]))<0
 
 `C`  should be  a square  matrix of  integers, rationals or real cyclotomic
 numbers.  The function returns the Coxeter group whose Cartan matrix is `C`
-as  a matrix group with the following  generators. Let `V` be a real vector
-space  of dimension `size(C,1)` and let `eᵢ` be the canonical basis of `V`.
-Then the generators are the reflections `sᵢ(eⱼ)=eⱼ-Cᵢⱼ eᵢ`.
+as  a matrix group with generators the  following reflections: let `V` be a
+real  vector space of  dimension `size(C,1)` and  let `eᵢ` be the canonical
+basis of `V`. Then the generators are the reflections `sᵢ(eⱼ)=eⱼ-Cᵢⱼ eᵢ`.
 
 ```julia-repl
-julia> W=coxgroup([2 -2;-2 2])
+julia> W=coxgroup([2 -2;-2 2]) # the affine Weyl group  `Ã₁`.
 coxeter_group([2 -2; -2 2])
 
 julia> gens(W) # the matrix generators
@@ -1136,7 +1136,6 @@ julia> gens(W) # the matrix generators
  [-1 0; 2 1]
  [1 2; 0 -1]
 ```
-Above is a way to construct the affine Weyl group  `Ã₁`.
 """
 function coxeter_group(C::Matrix{T})where T
   I=one(C)

@@ -703,7 +703,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.coroots, PermRoot.coxnum, PermRoot.inclusion, 
  PermRoot.inclusiongens, PermRoot.independent_roots, PermRoot.invariants, 
  PermRoot.invariant_form, PermRoot.YMatrix, PermRoot.PermX, PermRoot.PermY, 
- PermRoot.rank, PermRoot.roots, PermRoot.refleigen, PermRoot.reflrep,
+ Symbols.rank, PermRoot.roots, PermRoot.refleigen, PermRoot.reflrep,
  PermRoot.refltype, PermRoot.restriction, PermRoot.simplecoroots,
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
  PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
@@ -764,27 +764,27 @@ CoxGroups.isrightdescent(W::FCG,w,i::Integer)=preimage(i,w)>W.N
 """
 `coxeter_group(type,rank[,bond];sc=false)` (or `coxgroup`)
 
-If `C=cartan(type,rank[,bond])`, this is equivalent to `rootdatum(C)`.
-If `sc=true` this is equivalent to `rootdatum(permutedims(C),one(C))`.
+Constructs  the finite Coxeter group of given `type` and `rank` (and `bond`
+for  dihedral  groups).  If  `C=cartan(type,rank[,bond])`,  the function is
+equivalent  to `rootdatum(C)`  (the adjoint  root datum).  If `sc=true` the
+function  is equivalent  to `rootdatum(permutedims(C),one(C))`  (the simply
+connected root datum).
 
 The  resulting object `W`, a  `FiniteCoxeterGroup`, has an additional entry
 compared to a `PermRootGroup`.
 
-  - `W.rootdec`:  the root vectors, given  as linear combinations of simple
-    roots.  The first `nref(W)` roots are  positive, the next `nref(W)` are
-    the corresponding negative roots. Moreover, the first
-    `semisimplerank(W)`  roots are the simple roots. The positive roots are
-    ordered by increasing height.
+  - `W.rootdec`:  the roots, given  as linear combinations of simple roots.
+    The  first `nref(W)` roots  are the positive  roots, the last `nref(W)`
+    are  the negative of  the first ones.  Moreover, the first `rank` roots
+    are  the  simple  roots,  so  these  rows form the identity matrix. The
+    positive roots are ordered by increasing height.
 
 and `roots(W)` is ordered is the same way as `W.rootdec`.
 
 For  how to  get various  information on  the root  system and  the Coxeter
 group,   see  the  functions   `nref,  coroots,  rootlengths,  simple_reps,
 simple_conjugating,  reflrep,  simpleroots,  simplecoroots,  PermX, cartan,
-inclusion, restriction, action, rank, semisimplerank`
-
-In terms of root data, this function returns the adjoint root datum of Weyl
-group  `W`.  If  `sc=true`  it  returns  the  simply  connected root datum.
+inclusion, restriction, action, rank, semisimplerank`.
 ```julia_repl
 julia> W=coxgroup(:G,2)
 G₂
@@ -1120,7 +1120,7 @@ function PermRoot.reflection_subgroup(W::FCG,I::AbstractVector{<:Integer})
     t
   end
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>refltypes)
-  if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
+  if isempty(inclusion) prop[:rank]=rank(W) end
   gens=isempty(I) ? eltype(W)[] : refls(W,I)
   G=PRSG(gens,one(W.G),inclusion,restriction,W.G,prop)
   FCSG(G,rootdec,div(length(inclusion),2),W,Dict{Symbol,Any}())

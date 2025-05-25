@@ -186,7 +186,7 @@ chevieset(:G4_22, :ParabolicRepresentatives, function (ST, s)
   end
 end)
 
-const sparseFakeDegrees4_22=
+const sparse_fakedegrees4_22=
 [[[0],[4],[8],[5,7],[3,5],[1,3],[2,4,6]], # 4
  [[0],[4],[8],[4],[8],[12],[8],[12],[16],[9,15],[7,13],[5,11],[7,13],[5,11], # 5
   [3,9],[5,11],[3,9],[1,7],[4,10,10],[2,8,14],[6,6,12]],
@@ -351,19 +351,13 @@ const sparseFakeDegrees4_22=
  [[0],[30],[11,19],[13,17],[1,29],[7,23],[2,10,18],[6,10,14],[12,20,28],
   [16,20,24],[3,11,19,27],[6,14,18,22],[9,13,17,21],[8,12,16,24],[4,8,12,16,20],
   [10,14,18,22,26],[7,11,15,15,19,23],[5,9,13,17,21,25]]]
-chevieset(:G4_22, :sparseFakeDegrees,ST->sparseFakeDegrees4_22[ST-3])
 
 chevieset(:G4_22, :FakeDegree,(ST,phi,q)->
-  sum(q.^sparseFakeDegrees4_22[ST-3][findfirst(==(phi),
+  sum(q.^sparse_fakedegrees4_22[ST-3][findfirst(==(phi),
      chevieget(:G4_22,:CharInfo)(ST)[:charparams])]))
 
-chevieset(:G4_22, :LowestPowerFakeDegrees,ST->
-          first.(sparseFakeDegrees4_22[ST-3]))
-chevieset(:G4_22, :HighestPowerFakeDegrees,ST->
-          last.(sparseFakeDegrees4_22[ST-3]))
-
-drop(l,i)=deleteat!(collect(l),i)
-makefirst(l,i)=pushfirst!(drop(l,i),l[i])
+chevieset(:G4_22,:b,ST->first.(sparse_fakedegrees4_22[ST-3]))
+chevieset(:G4_22,:B,ST->last.(sparse_fakedegrees4_22[ST-3]))
 
 G4_22type(ST)=ST in 4:7 ? 1 : ST in 8:15 ? 2 : 3
 
@@ -787,6 +781,8 @@ chevieset(:G4_22, :PowerMaps, function (ST)
   res[1:findlast(!isnothing,res)]
 end)
 
+deleteat(l,i)=deleteat!(collect(l),i)
+
 chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
   X,Y,Z=chevieget(:G4_22, :ParamSpecialization)(ST, para)
   c24=combinations(1:4, 2)
@@ -819,19 +815,19 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       return map(class->l[class[1]]*pl^class[2],classes)
     end
     if ST in 4:7
-      if     char[1]==2 l=[2,X,drop(Y,char[3]), drop(Z,char[4])]
+      if     char[1]==2 l=[2,X,deleteat(Y,char[3]), deleteat(Z,char[4])]
       elseif char[1]==3 l=[3,X[[1,2,char[3]]],Y,Z]
       end
     elseif ST in 8:15
       if     char[1]==2 l=[2,X,Y[c23[char[3]]],Z[c24[char[4]]]]
-      elseif char[1]==3 l=[3,X[[1,2,char[3]]],Y,drop(Z,char[4])]
+      elseif char[1]==3 l=[3,X[[1,2,char[3]]],Y,deleteat(Z,char[4])]
       elseif char[1]==4 l=[4,X[[1,2,1,2]],Y[[1,2,3,char[3]]],Z]
       end
       push!(l,l[4].^2)
     elseif ST in 16:22
       if     char[1]==2 l=[2,X,Y[c23[char[3]]],Z[c25[char[4]]]]
       elseif char[1]==3 l=[3,X[[1,2,char[3]]],Y,Z[c35[char[4]]]]
-      elseif char[1]==4 l=[4,X[[1,2,1,2]],Y[[1,2,3,char[3]]],drop(Z,char[4])]
+      elseif char[1]==4 l=[4,X[[1,2,1,2]],Y[[1,2,3,char[3]]],deleteat(Z,char[4])]
       elseif char[1]==5 l=[5,X[[1,2,1,2,char[3]]],vcat(Y,Y[c23[char[4]]]),Z]
       elseif char[1]==6 l=[6,X[[1,2,1,2,1,2]],Y[[1,2,3,1,2,3]],
                              Z[[1,2,3,4,5,char[3]]]]
@@ -1712,11 +1708,11 @@ chevieset(:G4_22, :HeckeRepresentation, function(ST,para,roots,i)
     if dim==1 return r(X[char[2]], Y[char[3]], Z[char[4]])
     elseif dim==2
       if ST in 4:7
-        Z = drop(Z, char[4]);z1,z2=Z
+        Z = deleteat(Z, char[4]);z1,z2=Z
         if ST==4 return [[0 -z2;z1 0],[0 0;0 0],[z2 z2;0 z1]]
-        else r(X,drop(Y,char[3]),Z,char[2])
+        else r(X,deleteat(Y,char[3]),Z,char[2])
         end
-      else r(X,drop(Y,char[3]),Z[combinations(1:length(Z),2)[char[4]]],char[2])
+      else r(X,deleteat(Y,char[3]),Z[combinations(1:length(Z),2)[char[4]]],char[2])
       end
     elseif dim==3
       X=X[[char[3],3-char[3]]]
@@ -1729,18 +1725,18 @@ chevieset(:G4_22, :HeckeRepresentation, function(ST,para,roots,i)
         [[x2 0 0;-x2*z3-x1*z1-x1*z2 x1 0;x2*z3*z1-x1*z2^2 0 x1],
          [0 0 0;0 0 0;0 0 0],[z3 1 0;0 z1 1;0 0 z2]]
       elseif ST in [5,7] r(X, Y, Z, char[2])
-      elseif ST in 8:15 return r(X,Y,drop(Z,char[4]),char[2])
+      elseif ST in 8:15 return r(X,Y,deleteat(Z,char[4]),char[2])
       else return r(X,Y,Z[combinations(1:5,3)[char[4]]],char[2])
       end
     elseif dim==4
-      Y=vcat(drop(Y,char[3]),[Y[char[3]]])
+      Y=vcat(deleteat(Y,char[3]),[Y[char[3]]])
       if ST in 8:15 return r(X,Y,Z,char[2])
-      else return r(X,Y,drop(Z,char[4]),char[2])
+      else return r(X,Y,deleteat(Z,char[4]),char[2])
       end
     elseif dim==5
-      r(X[[char[3],3-char[3]]],vcat([Y[char[4]]],drop(Y,char[4])),Z,char[2])
+      r(X[[char[3],3-char[3]]],vcat([Y[char[4]]],deleteat(Y,char[4])),Z,char[2])
     elseif dim==6
-      r(X,Y,vcat(drop(Z,char[3]),[Z[char[3]]]),char[2])
+      r(X,Y,vcat(deleteat(Z,char[3]),[Z[char[3]]]),char[2])
     end
   end
   ci=G4_22FetchIndexChars(ST, para)[i]
@@ -1754,41 +1750,43 @@ chevieset(:G4_22,:Representation,function(ST,i)
   chevieget(:G4_22,:HeckeRepresentation)(ST,para,[],i)
 end)
 
+putfirst(l,i)=pushfirst!(deleteat(l,i),l[i])
+
 chevieset(:G4_22, :SchurData, function (ST)
   map(chevieget(:G4_22, :mallechars)(ST))do char
     if ST in 4:7
-      if char[1]==1 Dict(:order=>vcat(makefirst([1,2],char[2]),
-        makefirst(3:5,char[3]),makefirst(6:8,char[4])))
-      elseif char[1]==2 Dict(:order=>vcat([1,2],makefirst(3:5,char[3]),
-        makefirst(6:8,char[4])),:rootPower=>(-1)^char[2])
-      elseif char[1]==3 Dict(:order=>vcat(makefirst(1:2,char[3]),3:5,6:8),
+      if char[1]==1 Dict(:order=>vcat(putfirst([1,2],char[2]),
+        putfirst(3:5,char[3]),putfirst(6:8,char[4])))
+      elseif char[1]==2 Dict(:order=>vcat([1,2],putfirst(3:5,char[3]),
+        putfirst(6:8,char[4])),:rootPower=>(-1)^char[2])
+      elseif char[1]==3 Dict(:order=>vcat(putfirst(1:2,char[3]),3:5,6:8),
         :rootPower=>E(3,char[2]))
       end
     elseif ST in 8:15
-      if char[1]==1 Dict(:order=>vcat(makefirst([1,2],char[2]),
-        makefirst(3:5,char[3]),makefirst(6:9,char[4])))
-      elseif char[1]==2 Dict(:order=>vcat([1,2],makefirst(3:5,char[3]),
+      if char[1]==1 Dict(:order=>vcat(putfirst([1,2],char[2]),
+        putfirst(3:5,char[3]),putfirst(6:9,char[4])))
+      elseif char[1]==2 Dict(:order=>vcat([1,2],putfirst(3:5,char[3]),
         5 .+combinations(1:4,2)[char[4]],
         5 .+setdiff(1:4,combinations(1:4,2)[char[4]])),:rootPower=>(-1)^char[2])
-      elseif char[1]==3 Dict(:order=>vcat(makefirst([1,2],char[3]),
-        3:5, makefirst(6:9,char[4])),:rootPower=>E(3,char[2]))
-      elseif char[1]==4 Dict(:order=>vcat([1, 2],makefirst(3:5,char[3]),6:9),
+      elseif char[1]==3 Dict(:order=>vcat(putfirst([1,2],char[3]),
+        3:5, putfirst(6:9,char[4])),:rootPower=>E(3,char[2]))
+      elseif char[1]==4 Dict(:order=>vcat([1, 2],putfirst(3:5,char[3]),6:9),
         :rootPower=>E(4,char[2]))
       end
     elseif ST in 8:22
-      if char[1]==1 Dict(:order=>vcat(makefirst([1,2],char[2]),
-        makefirst(3:5, char[3]), makefirst(6:10, char[4])))
-      elseif char[1]==2 Dict(:order=>vcat([1,2],2 .+drop(1:3,char[3]),
+      if char[1]==1 Dict(:order=>vcat(putfirst([1,2],char[2]),
+        putfirst(3:5, char[3]), putfirst(6:10, char[4])))
+      elseif char[1]==2 Dict(:order=>vcat([1,2],2 .+deleteat(1:3,char[3]),
         [2+char[3]], 5 .+ combinations(1:5,2)[char[4]],
         5 .+setdiff(1:5,combinations(1:5,2)[char[4]])),:rootPower=>(-1)^char[2])
-      elseif char[1]==3 Dict(:order=>vcat(makefirst([1, 2],char[3]),
+      elseif char[1]==3 Dict(:order=>vcat(putfirst([1, 2],char[3]),
         3:5,5 .+combinations(1:5,3)[char[4]],
         5 .+setdiff(1:5,combinations(1:5,3)[char[4]])),:rootPower=>E(3,char[2]))
-      elseif char[1]==4 Dict(:order=>vcat([1,2],makefirst(3:5,char[3]),
-        drop(6:10,char[4]),[5+char[4]]),:rootPower=>E(4,char[2]))
-      elseif char[1]==5 Dict(:order=>vcat(makefirst([1,2],char[3]),
-        drop(3:5, char[4]),[2+char[4]], 6:10), :rootPower => E(5, char[2]))
-      elseif char[1]==6 Dict(:order=>vcat([1,2],3:5,makefirst(6:10, char[3])),
+      elseif char[1]==4 Dict(:order=>vcat([1,2],putfirst(3:5,char[3]),
+        deleteat(6:10,char[4]),[5+char[4]]),:rootPower=>E(4,char[2]))
+      elseif char[1]==5 Dict(:order=>vcat(putfirst([1,2],char[3]),
+        deleteat(3:5, char[4]),[2+char[4]], 6:10), :rootPower => E(5, char[2]))
+      elseif char[1]==6 Dict(:order=>vcat([1,2],3:5,putfirst(6:10, char[3])),
         :rootPower=>E(6,char[2]))
       end
     end

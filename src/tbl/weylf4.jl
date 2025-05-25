@@ -133,8 +133,10 @@ chevieset(:F4, :ClassParameter, function (w,)
 end)
 
 chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
-  u=-param[1][1]//param[1][2]
-  v=-param[3][1]//param[3][2]
+  u=improve_type(-param[1][1]//param[1][2])
+  uinv=improve_type(-param[1][2]//param[1][1])
+  v=improve_type(-param[3][1]//param[3][2])
+  vinv=improve_type(-param[3][2]//param[3][1])
   tbl=Dict{Symbol, Any}(:identifier=>"H(F4)",
     :text=>"origin: Meinolf Geck, April 1992",
     :parameter => [u, u, v, v], :size => 1152)
@@ -142,7 +144,7 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
   merge!(tbl,chevieget(:F4, :CharInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   dual(f)=map((a,w)->a*(-u)^count(j->j in [1,2],w)*(-v)^count(j->j in [3,4],w),
-                                     f(u^-1,v^-1),tbl[:classtext])
+                                  f(uinv,vinv),tbl[:classtext])
   f4(u,v)=[1,1,1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1]
   f2(u,v)=[1,u^12,u^2,u^2,u^4,u^6,1,u^6,u^8,u^4,u^2,u,u^3,
    u,u,u^3,-1,-u^6,-u^2,-u^2,-u^2,-u,-u,-u^7,-u^3]

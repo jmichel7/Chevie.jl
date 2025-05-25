@@ -3240,7 +3240,7 @@ chevieset(:G32, :UnipotentCharacters,Dict{Symbol, Any}(
        235, 173, 200, 127, 163, 110, 236, 172, 130, 203, 161, 226, 119, 175,
        131, 204, 160, 225, 118, 174, 152, 153, 177, 179, 178, 176, 201, 128,
        202, 129], :eigenvalue => E(3,2),
-     :cuspidalName => ImprimitiveCuspidalName([[], [0, 1], [0, 1]])),
+     :cuspidalName => ImprimitiveCuspidalName([Int[], [0, 1], [0, 1]])),
   Dict(:relativeType=>TypeIrred(;series=:ST,indices=[4,3],rank=2,ST=5),
     :levi=>1:2,:parameterExponents=>[1,[0,4,4]],:charNumbers=>[239,113,114,246,
     135,132,245,133,134,136,230,229,124,208,206,123,205,207,182,181,180],
@@ -3249,8 +3249,8 @@ chevieset(:G32, :UnipotentCharacters,Dict{Symbol, Any}(
     :levi=>[1,3],:parameterExponents=>[[3,3,2,0,0,2],3],:charNumbers=>[188,122,
     137, 184, 190, 140, 187, 139, 189, 183, 138, 227, 212, 209, 164, 244, 237,
     210, 243, 211, 228, 107, 106, 111, 185, 186, 112], :eigenvalue => E(3),
-    :cuspidalName=>ImprimitiveCuspidalName([[],[0,1],[0,1]])*"\\otimes "*
-    ImprimitiveCuspidalName([[],[0,1],[0,1]])),
+    :cuspidalName=>ImprimitiveCuspidalName([Int[],[0,1],[0,1]])*"\\otimes "*
+    ImprimitiveCuspidalName([Int[],[0,1],[0,1]])),
   Dict(:relativeType=>TypeIrred(;series=:ST,indices=[4],rank=1,p=6,q=1),
     :levi => 1:3, :parameterExponents => [[6, 4, 1, 0, 1, 4]],
     :charNumbers => [116, 143, 217, 232, 218, 144], :eigenvalue => E(3),
@@ -3262,7 +3262,7 @@ chevieset(:G32, :UnipotentCharacters,Dict{Symbol, Any}(
   Dict(:relativeType=>TypeIrred(;series=:ST,indices=[3],rank=1,p=6,q=1),
     :levi => [1, 2, 4], :parameterExponents => [[9, 8, 5, 0, 5, 8]],
     :charNumbers => [125, 142, 213, 247, 214, 141], :eigenvalue =>-E(3,2),
-    :cuspidalName=>"G_4\\otimes "*ImprimitiveCuspidalName([[],[0,1],[0,1]])),
+    :cuspidalName=>"G_4\\otimes "*ImprimitiveCuspidalName([Int[],[0,1],[0,1]])),
   mkcuspidal("G_{32}",147,1),
   mkcuspidal("G_{32}",148,1;no=2),
   mkcuspidal("G_{32}",219,1;no=3),

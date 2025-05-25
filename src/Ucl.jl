@@ -647,7 +647,7 @@ function UnipotentClasses(t::TypeIrred,p=0)
     if v isa String && isempty(v) return Int[] end
     Vector{Int}(v)
   end
-  rank=PermRoot.rank(t)
+  rankt=rank(t)
   c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
   rr=toM(roots(c))
   classes=map(uc[:classes])do u # fill omitted fields
@@ -664,12 +664,12 @@ function UnipotentClasses(t::TypeIrred,p=0)
       end
       n0=2*n0-count(==(2),weights)
       cl.dimunip=2*cl.dimBu-n0
-      cl.dimred=n0+rank
+      cl.dimred=n0+rankt
     elseif haskey(cl,:red)
       cl.dimred=dimension(cl.red)
-      cl.dimunip=2*cl.dimBu+rank-cl.dimred
+      cl.dimunip=2*cl.dimBu+rankt-cl.dimred
     elseif haskey(cl,:dimred)
-      cl.dimunip=2*cl.dimBu+rank-cl.dimred
+      cl.dimunip=2*cl.dimBu+rankt-cl.dimred
     end
     cl
   end

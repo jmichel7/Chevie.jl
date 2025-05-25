@@ -54,21 +54,21 @@ function field(t::TypeIrred)
   elseif s==:I 
     (orderphi==1 ? s : Symbol(2,s),t.bond)
   elseif s in [:A,:B,:D] 
-     if orderphi==1 (s,PermRoot.rank(t))
+     if orderphi==1 (s,rank(t))
      elseif orderphi==2 
        if s==:B 
             (Symbol(2,:I),4)
-       else (Symbol(2,s),PermRoot.rank(t))
+       else (Symbol(2,s),rank(t))
        end
      elseif orderphi==3 (Symbol("3D4"),)
      end
   elseif s in [:E,:F,:G]
-    if orderphi==1 (Symbol(s,PermRoot.rank(t)),)
+    if orderphi==1 (Symbol(s,rank(t)),)
     elseif s==:G 
          (Symbol(2,:I),6)
-    else (Symbol(orderphi,s,PermRoot.rank(t)),) 
+    else (Symbol(orderphi,s,rank(t)),) 
     end
-  else (Symbol(s,PermRoot.rank(t)),) 
+  else (Symbol(s,rank(t)),) 
   end
   end
 end

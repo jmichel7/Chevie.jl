@@ -212,7 +212,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   inclusiongens, restriction, coroot, TypeIrred, 
   refleigen, reflection_eigenvalues,
   reflchar, reflection_character,
-  bipartite_decomposition, torus_order, rank, PermX, coroots, baseX,
+  bipartite_decomposition, torus_order, PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
   invariants, YMatrix, PermY, simpleroots, simplecoroots, action, radical,
   parabolic_closure, isparabolic, central_action, 
@@ -400,7 +400,7 @@ end
 
 indices(t::Vector{TypeIrred})=isempty(t) ? Int[] : length(t)==1 ? indices(t[1]) : vcat(indices.(t)...)
 
-function rank(t::TypeIrred)::Int
+function Symbols.rank(t::TypeIrred)::Int
   if haskey(t,:rank) return t.rank end
   i=indices(t)
   if i!==nothing return length(i) end
@@ -725,7 +725,7 @@ julia> rank(complex_reflection_group(31))
 4
 ```
 """
-rank(W::PermRootGroup)=istorus(W) ? W.rank : length(roots(W,1))
+Symbols.rank(W::PermRootGroup)=istorus(W) ? W.rank : length(roots(W,1))
 
 """
 `TypeIrred(W::PermRootGroup)`

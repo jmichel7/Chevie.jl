@@ -91,7 +91,7 @@ xprintln(x...;p...)=println(rio(;p...),x...)
 xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
 "`xrepr(x;p...)` is `repr` using as context `stdout` enriched by `p...`"
 xrepr(x;p...)=repr(x;context=IOContext(stdout,p...))
-"`xrepr(io,x;p...)` is `repr` using as context `io` enriched by `p...`"
+"`xrepr(io::IO,x;p...)` is `repr` using as context `io` enriched by `p...`"
 xrepr(io::IO,x;p...)=repr(x;context=IOContext(io,p...))
 function hdisplay(x;p...) # for use in IJulia, Pluto
   Docs.HTML()do io

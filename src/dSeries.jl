@@ -114,13 +114,13 @@ julia> cuspidal_data(W,E(3,2))
 """
 module dSeries
 using ..Chevie
-export Series, ennola
+export Series
 
 function SpetsEnnola(t::TypeIrred;sperm=true)
   if haskey(t,:orbit) z=gcd(first.(degrees(t))) else z=gcd(degrees(t)) end
   ξ=E(z,-1)
   uc=chevieget(t,:UnipotentCharacters)
-  ff=improve_type(uc[:families])
+  ff=uc[:families]
   fd=fill(Pol(0),length(uc[:a]))
   l=haskey(uc,:almostHarishChandra) ? uc[:almostHarishChandra] : uc[:harishChandra]
   fd[charnumbers(l[1])]=fakedegrees(reflection_group(t),Pol())
@@ -140,7 +140,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
     fakedegrees(reflection_group(Uch.maketype(h[:relativeType])), Pol())
   end
   ΩΧ=map(f->f(ξ)//f(1),fd)# List of ω_χ(ξ) for character sheaves (ρ,χ)
-  eig=eigen(ff)
+  eig=eigen(uc)
 
   function predeigen(i) # if Ennola_ξ(U_χ=ρ_i)=ρ returns deduced Frob(ρ)
     if i>nconjugacy_classes(t) error("only for principal series") end
@@ -225,14 +225,14 @@ Hecke algebra of `W`.
 For a non-irreducible group, `z`-ennola is defined if `z` can be considered
 an element of the the centre of each irreducible component.
 """
-function ennola(t::TypeIrred)
+function Symbols.ennola(t::TypeIrred)
   res=chevieget(t,:Ennola)
   if res!==nothing return res end
   InfoChevie("#using SpetsEnnola\n")
   SpetsEnnola(t)
 end
 
-function ennola(W)
+function Symbols.ennola(W)
   get!(W,:ennola)do
     tt=refltype(W)
     if isempty(tt) return SPerm() end
@@ -249,7 +249,7 @@ function ennola(W)
   end
 end
 
-function ennola(W,xi)
+function Symbols.ennola(W,xi)
   z=gcd(degrees(W))
   if !isone(xi^z) error(xi,"^$z!=1") end
   o=Int(Root1(xi).r*z)

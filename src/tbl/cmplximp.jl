@@ -31,11 +31,7 @@ chevieset(:imp, :BraidRelations, function (p, q, r)
   end
   res=Vector{Vector{Int}}[]
   if q==1
-    if r>=2
-      if p==1 push!(res, b(1, 2, 3))
-      else push!(res, b(1, 2, 4))
-      end
-    end
+    if r>=2 push!(res, b(1, 2, p==1 ? 3 : 4)) end
     append!(res,map(i->b(i,i-1,3),3:r))
     for i in 3:r append!(res,map(j->b(i,j,2),1:i-2)) end
   elseif p==q
@@ -105,17 +101,6 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
       [[Int[]],iseven(p) ?  [[1], [2]] : [[1]], [1:2]][s+1]
     end
   end
-end)
-
-chevieset(:imp,:pow,function(S,n)
-  e=length(S)
-  S1=map(x->[],1:e)
-  for k in 1:e, l in S[k]
-    g=gcd(n,l)
-    append!(S1[1+mod(div(n,g)*(k-1),e)], fill(div(l,g),g))
-  end
-  for m in S1 sort!(m,rev=true) end
-  S1
 end)
 
 chevieset(:imp, :CharParams, function (de, e, r)
@@ -200,15 +185,11 @@ end
 
 "the elementary symmetric function of degree t in the variables v"
 function elementary_symmetric_function(t,v)
-  if t==0 return 1 end
-  sum(x->isempty(x) ? 1 : prod(v[x]),combinations(1:length(v),t);init=0)
+  sum(prod,combinations(v,t);init=zero(eltype(v)))
 end
 
 "the homogeneous symmetric function of degree t in the variables v"
-function homogeneous_symmetric_function(t,v)
-  if t==0 return 1 end
-  sum(x->prod(v[x]),combinations(repeat(1:length(v),t), t);init=0)
-end
+homogeneous_symmetric_function(t,v)=sum(prod,multisets(v,t))
 
 chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
   res=Dict{Symbol, Any}(:name=>string("H(G(", p, ",", q, ",", r, "))"),
@@ -388,17 +369,17 @@ chevieset(:imp, :CharTable, function (p, q, r)
   end
 end)
 
-chevieset(:imp, :LowestPowerFakeDegrees, function (p, q, r)
+chevieset(:imp,:b,function (p, q, r)
   if q==1 || p==q error("should not be called") end
 end)
 
-chevieset(:imp, :HighestPowerFakeDegrees, function (p, q, r)
+chevieset(:imp, :B, function (p, q, r)
   if q==1 || p==q error("should not be called") end
 end)
 
 chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
-  if q==1 c=fegsymbol(symbol_partition_tuple(c,1))
-  elseif q==p c=fegsymbol(symbol_partition_tuple(c,fill(0,p)))
+  if q==1 c=fakedegree(Symbol_partition_tuple(c,1))
+  elseif q==p c=fakedegree(Symbol_partition_tuple(c,fill(0,p)))
   end
   c(v)
 end)
@@ -407,8 +388,7 @@ end)
 # groups -- the function below is an ad-hoc solution for now
 # ImprimitiveCuspidalName(symbol) returns the TeX name
 function ImprimitiveCuspidalName(S)
-  S=convert(Vector{Vector{Int}},S)
-  r=ranksymbol(S)
+  r=rank(CharSymbol(S))
   d=length(S)
   s=joindigits(length.(S))
   if r==0 return "" end
@@ -431,7 +411,6 @@ function ImprimitiveCuspidalName(S)
     end
   end
 end
-export ImprimitiveCuspidalName
 
 chevieset(:imp, :Invariants, function(p,q,r)
   map(1:r)do i
@@ -448,71 +427,70 @@ chevieset(:imp, :CharInfo, function (de, e, r)
   if e==1
     s=fill(0,d)
     s[1]=1
-    res[:charSymbols]=symbol_partition_tuple.(res[:charparams],Ref(s))
+    res[:charSymbols]=Symbol_partition_tuple.(res[:charparams],Ref(s))
   else
     if d==1
-      res[:charSymbols]=symbol_partition_tuple.(res[:charparams],0)
-      if [e,r]==[3, 3] res[:malle]=[[2,3,2],[2,3,3],[2,3,1],[3,4],[3,5],[1,9],
+      res[:charSymbols]=Symbol_partition_tuple.(res[:charparams],0)
+      if [e,r]==[3, 3] res[:malleparam]=[[2,3,2],[2,3,3],[2,3,1],[3,4],[3,5],[1,9],
                                     [3,2],[3,1],[2,3,4],[1,0]]
-      elseif [e,r]==[3,4] res[:malle]=[[12,6],[4,10],[6,8],[4,11],[1,18],[12,3],
+      elseif [e,r]==[3,4] res[:malleparam]=[[12,6],[4,10],[6,8],[4,11],[1,18],[12,3],
          [6,5,2],[8,4],[8,5],[6,5,1],[3,9],[6,2],[2,6],[4,2],[4,1],[3,3],[1,0]]
 # here the labeling is defined by phi_{6,5}' being the one which appears
 # in the tensor square of the reflection representation phi_{4,1}
       elseif [e,r]==[3,5]
-        res[:malle]=[[30,10],[20,12],[5,19],[10,14],[10,15],[5,20],[1,30],
+        res[:malleparam]=[[30,10],[20,12],[5,19],[10,14],[10,15],[5,20],[1,30],
           [30,7,1],[40,6],[30,7,2],[10,11],[15,10],[20,9],[20,8],[15,11],
           [10,12],[4,18],[30,4],[20,5],[10,8],[10,7],[20,6],[5,12],[20,3],
           [10,6],[15,4],[15,5],[10,5],[6,9],[10,3],[10,2],[5,6],[5,2],[5,1],
           [4,3],[1,0]]
 # here the labeling is defined by phi_{30,7}'' being the one which appears
 # in the tensor 4th power of the reflection representation phi_{5,1}
-      elseif [e,r]==[4, 3] res[:malle]=[[6,3],[3,6,1],[3,5],[3,6,2],[1,12],
+      elseif [e,r]==[4, 3] res[:malleparam]=[[6,3],[3,6,1],[3,5],[3,6,2],[1,12],
                                         [3,2,1],[3,2,2],[3,1],[2,4],[1,0]]
 # here the labeling is defined by phi_{3,2}'' being the complex
 # conjugate of phi_{3,1} and phi_{3,6}'' the complex conjugate of phi_{3,5}
+      end
+      if haskey(res,:malleparam) 
+        res[:malle]=exceptioCharName.(res[:malleparam])
       end
     elseif iseven(e) && r==2
 # .malle: indexing of chars as in Malle's paper on rank 2 cyclotomic algebras.
       res[:malle]=map(res[:charparams])do t
         local pos, de
-        if t[length(t)] isa Number
-          if t[length(t)]==0 return [1, 2, 1, findfirst(==([1]),t)]
-          else return [1, 1, 2, findfirst(==([1]),t)]
-          end
+        if t[end] isa Number
+         t[end]==0 ? [1,2,1,findfirst(==([1]),t)] : [1,1,2,findfirst(==([1]),t)]
         else
           de=div(length(t),2)
           pos=filter(i->length(t[i])>0,1:length(t))
-          if length(pos) == 1
-            if t[pos[1]] == [2] return [1, 1, 1, pos[1]-de]
-            else return [1, 2, 2, pos[1]-de]
-            end
-          elseif pos[1] <= de return [2, -1, pos[1], pos[2]-de]
-          else return [2, 1, pos[2]-de, pos[1]-de]
+          if length(pos)==1
+            t[pos[1]]==[2] ? [1,1,1,pos[1]-de] : [1,2,2,pos[1]-de]
+          else pos[1]<=de ? [2,-1,pos[1],pos[2]-de] : [2,1,pos[2]-de,pos[1]-de]
           end
         end
       end
     end
   end
-  t=map(r:-1:0)do i
-    v=map(x->Int[],1:max(de,2))
-    if i>0 v[1]=[i] end
-    v[2]=fill(1,r-i)
-    v
+  if de==1 t=map(i->[vcat(i,fill(1,r-i))],r:-1:1) 
+  else
+    t=map(r:-1:0)do i
+      v=map(x->Int[],1:de)
+      if i>0 v[1]=[i] end
+      v[2]=fill(1,r-i)
+      if e>1 v=minimum(map(i->circshift(v,i*d),1:e)) end
+      v
+    end
   end
-  if e>1 t=map(v->minimum(map(i->circshift(v,i*d),1:e)),t)
-  elseif de==1 t=map(x->[vcat(x...)],t)
-  end
-  res[:extRefl]=map(v->findfirst(==(v),res[:charparams]),t)
+  res[:extRefl]=Int.(indexin(t,res[:charparams]))
   if e==1 || d==1
-    res[:A]=degree_gendeg_symbol.(res[:charSymbols])
-    res[:a]=valuation_gendeg_symbol.(res[:charSymbols])
-    res[:B]=degree_fegsymbol.(res[:charSymbols])
-    res[:b]=valuation_fegsymbol.(res[:charSymbols])
+    res[:A]=degree_gendeg.(res[:charSymbols])
+    res[:a]=valuation_gendeg.(res[:charSymbols])
+    res[:B]=degree_feg.(res[:charSymbols])
+    res[:b]=valuation_feg.(res[:charSymbols])
   end
   if e>1 && d>1
     galp=map(res[:charparams])do s
       s=copy(s)
-      if !(s[end] isa Vector)
+      if s[end] isa Number
         t=div(length(s)-2,d)
         s[1:d:d*t-d+1]=circshift(s[1:d:d*t-d+1],1)
         s[1:end-2]=minimum(map(i->circshift(s[1:end-2],i*d),1:t))
@@ -573,6 +551,17 @@ chevieset(:imp, :classparams, function (p, q, r)
 end)
 
 using Primes: primes
+
+chevieset(:imp,:pow,function(S,n)
+  e=length(S)
+  S1=map(x->[],1:e)
+  for k in 1:e, l in S[k]
+    g=gcd(n,l)
+    append!(S1[1+mod(div(n,g)*(k-1),e)], fill(div(l,g),g))
+  end
+  for m in S1 sort!(m,rev=true) end
+  S1
+end)
 
 chevieset(:imp, :ClassInfo, function (p, q, r)
   order(S)=lcm(map(((i,m),)->isempty(m) ? 1 : lcm(m)*div(p,gcd(i-1,p)),
@@ -643,7 +632,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     res[:powermaps]=Vector{Any}(fill(nothing,l))
     for pw in primes(l) 
      res[:powermaps][pw]=map(x->findfirst(==(chevieget(:imp,:pow)(x,pw)),cp),cp)
-  #   res[pw]=indexin(pow.(cp,pw),cp)
+  #   res[:powermaps][pw]=indexin(chevieget(:imp,:pow).(cp,pw),cp)
     end
     return res
   else
@@ -914,6 +903,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
   end
 end)
 
+# for g333 g334 g335 g443 D4=g224 we have integral models of representations
 const rep335_1=let x=Pol()
   [[-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
    E(3,2)-E(3,2)*x E(3,2)-E(3,2)*x 0 0 0 E(3,2) 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
@@ -2057,10 +2047,10 @@ chevieset(:imp, :Representation, function (p, q, r, i;gen=false)
                 x==2 ? [1,-1] : E.(x,0:x-1),o),[],i;gen)
 end)
 
-# the family of uc containing symbol S
+# the family of uc containing symbols
 function MakeFamilyImprimitive(S, symbs)
   if length(S)==1 return Family("C1",[findfirst(==(S[1]),symbs)]) end
-  r=family_imprimitive(fullsymbol(S[1]))
+  r=family_imprimitive(Symbols.entries(S[1]),length(S[1]))
   r.charNumbers=map(x->findfirst(==(x),symbs),r.symbols)
   r
 end
@@ -2071,15 +2061,15 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
   if !(q in [1,p]) return nothing end
   csy=q==1 ? symbols(p,r,1) : symbols(p,r,0)
   uc=Dict{Symbol, Any}(:charSymbols=>csy)
-  uc[:a]=valuation_gendeg_symbol.(csy)
-  uc[:A]=degree_gendeg_symbol.(csy)
+  uc[:a]=valuation_gendeg.(csy)
+  uc[:A]=degree_gendeg.(csy)
   ci=chevieget(:imp, :CharInfo)(p,q,r)
   if q==1
-    cusp=unique(sort(map(S->length.(S).-minimum(length.(S)),csy)))
-    cusp=map(x->map(y->0:y-1,x),cusp)
-    sort!(cusp,by=ranksymbol)
+    cusp=unique(sort(map(S->length.(S.S).-minimum(length.(S.S)),csy)))
+    cusp=map(x->map(y->collect(0:y-1),x),cusp)
+    sort!(cusp,by=x->rank(CharSymbol(x)))
     uc[:harishChandra]=map(cusp)do c
-      cr=ranksymbol(c)
+      cr=rank(CharSymbol(c))
       res=Dict{Symbol, Any}(:levi=>1:cr)
       res[:parameterExponents]=cr<r ? [simpexponent(length.(c))] : []
       append!(res[:parameterExponents],fill(1,max(0,r-cr-1)))
@@ -2091,42 +2081,38 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       res[:eigenvalue]=E(24,-2*(p^2-1)*div(sum(length,c),p))*
             E(2p,sum(i->-(i^2+p*i)*length(c[i+1]),0:p-1))
       res[:charNumbers]=map(x->
-       findfirst(==(symbol_partition_tuple(x,length.(c))),csy),
-       map(x->partβ.(x),symbols(p,r-cr,1)[1:length(partition_tuples(r-cr,p))]))
+       findfirst(==(Symbol_partition_tuple(x,length.(c))),csy),
+       map(x->partβ.(x.S),symbols(p,r-cr,1)[1:length(partition_tuples(r-cr,p))]))
       res[:cuspidalName]=ImprimitiveCuspidalName(c)
-      return res
+      res
     end
     uc[:b]=uc[:a]*0
     uc[:B]=uc[:a]*0
     uc[:b][uc[:harishChandra][1][:charNumbers]]=ci[:b]
     uc[:B][uc[:harishChandra][1][:charNumbers]]=ci[:B]
     uc[:families]=map(y->MakeFamilyImprimitive(y,uc[:charSymbols]),
-      collectby(x->sort(vcat(x...)),csy))
+      collectby(Symbols.entries,csy))
     sort!(uc[:families],by=charnumbers)
     if r==1
       l=map(function(S) # Dudas' sign change
-        p=findfirst(==(Int[]),S)
+        p=findfirst(==(Int[]),S.S)
         if isnothing(p) return 1 else return (-1)^p end
        end, csy[charnumbers(uc[:families][2])])
+      uc[:families][2].signs=l
       uc[:families][2].fourierMat=Diagonal(l)*uc[:families][2].fourierMat*Diagonal(l)
       uc[:cyclicparam]=map(csy)do s
-        if count(x->x==1,vcat(s...))==1 return [1] end
-        s=map(copy,s)
-        l=findfirst(p->1 in p,s)
-        s[l]=Int[]
-        return [findfirst(p->1 in p,s)-1,l-1]
+        l=findall(p->1 in p,s.S)
+        length(l)==1 ? [1] : [l[2]-1,l[1]-1]
       end
-    elseif r==2 && p==3
-      d=Diagonal([-1,1,1]) #Dudas' sign change
-      uc[:families][4].fourierMat=d*uc[:families][4].fourierMat*d
-      d=Diagonal([1,-1,-1,1,1,1,1,1,1])
-      uc[:families][1].fourierMat=d*uc[:families][1].fourierMat*d
+    elseif (p,q,r)==(3,1,2) #Dudas' sign change
+      uc[:families][4]=Family(uc[:families][4];signs=[-1,1,1])
+      uc[:families][1]=Family(uc[:families][1];signs=[1,-1,-1,1,1,1,1,1,1])
     end
     return uc
   elseif p==q
     uc[:families]=[]
-    for f in collectby(i->tally(vcat(fullsymbol(csy[i])...)),1:length(csy))
-      if length(unique(fullsymbol.(csy[f])))>1
+    for f in collectby(i->tally(vcat(csy[i].S...)),1:length(csy))
+      if length(unique(map(x->x.S,csy[f])))>1
         push!(uc[:families],Dict{Symbol,Any}(:charNumbers=>f))
       else
         append!(uc[:families],map(x->Family("C1", [x]),f))
@@ -2135,18 +2121,18 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     sort!(uc[:families],by=charnumbers)
     uc[:harishChandra]=map(l->Dict{Symbol,Any}(:charNumbers=>l),
       collectby(eachindex(csy))do i
-        s=fullsymbol(csy[i])
+        s=csy[i].S
         l=length.(s)
-        (Symbols.relative_rank(s),l.-minimum(l))
+        (Symbols.relative_rank(csy[i]),l.-minimum(l))
     end)
     sort!(uc[:harishChandra],by=x->x[:charNumbers])
     extra=[]
     for f in uc[:harishChandra]
       addextra = false
-      s=fullsymbol(csy[f[:charNumbers][1]])
-      l=r-Symbols.relative_rank(s)
+      S=csy[f[:charNumbers][1]]
+      l=r-Symbols.relative_rank(S)
       f[:levi]=1:l
-      s=map(length,s)
+      s=map(length,S.S)
       s.-=minimum(s)
       f[:eigenvalue]=E(24,-2*(p^2-1)*div(sum(s),p))*
            E(2p,sum(i->-(i^2+p*i)*s[i+1],0:p-1))
@@ -2174,12 +2160,30 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     end
     append!(uc[:harishChandra], extra)
     uc[:b]=fill(0,length(csy))
-    uc[:B]=fill(0,length(csy))
     uc[:b][uc[:harishChandra][1][:charNumbers]]=ci[:b]
+    uc[:B]=fill(0,length(csy))
     uc[:B][uc[:harishChandra][1][:charNumbers]]=ci[:B]
     uc[:families]=map(f->MakeFamilyImprimitive(csy[f[:charNumbers]],
                 uc[:charSymbols]),uc[:families])
-    if [p,q,r]==[3,3,3] uc[:curtis]=[1,2,3,7,8,10,4,5,9,6,-12,-11] end
+
+    if (p,q,r)==(3,3,3) uc[:curtis]=[1,2,3,7,8,10,4,5,9,6,-12,-11] 
+      uc[:families][4]=Family(uc[:families][4];signs=[-1,1,1])
+      uc[:families][6]=Family(uc[:families][6];signs=[-1,1,1])
+    elseif (p,q,r)==(3,3,4)
+      uc[:families][2]=Family(uc[:families][2];signs=[-1,1,1])
+      uc[:families][6]=Family(uc[:families][6];signs=[-1,-1,1,-1,1,1,-1,1,1])
+      uc[:families][9]=Family(uc[:families][9];signs=[-1,1,1])
+    elseif (p,q,r)==(3,3,5)
+      uc[:families][3]=Family(uc[:families][3];signs=[-1,1,1])
+      uc[:families][4]=Family(uc[:families][4];signs=[-1,1,1])
+      uc[:families][6]=Family(uc[:families][6];signs=[1,-1,-1,-1,1,1,1,-1,1])
+      uc[:families][7]=Family(uc[:families][7];signs=[-1,-1,1,-1,1,1,-1,1,1])
+      uc[:families][8]=Family(uc[:families][8];signs=[-1,1,1])
+      uc[:families][11]=Family(uc[:families][11];signs=[-1,1,1])
+      uc[:families][13]=Family(uc[:families][13];signs=[-1,-1,1,-1,1,1,-1,1,1])
+      uc[:families][15]=Family(uc[:families][15];signs=[-1,1,1])
+      uc[:families][16]=Family(uc[:families][16];signs=[-1,1,1])
+    end
     return uc
   end
 end)

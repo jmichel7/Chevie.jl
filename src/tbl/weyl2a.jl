@@ -49,7 +49,7 @@ chevieset(Symbol("2A"),:PhiFactors,n->map(x->(-1)^x,2:n+1))
 chevieset(Symbol("2A"),:CharTable,function(r)
   tbl=copy(chevieget(:A,:CharTable)(r))
   tbl[:identifier]="W(^2A_$r)"
-  A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
+  A=chevieget(:A,:b).(chevieget(:A,:CharInfo)(r)[:charparams])
   tbl[:irreducibles]=Diagonal((-1).^A)*tbl[:irreducibles]
   merge!(tbl,chevieget(Symbol("2A"),:ClassInfo)(r))
 end)
@@ -80,7 +80,7 @@ chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   cl=map(x->T(W(x...)*longest(W)), tbl[:classtext])
   tbl[:irreducibles]=transpose(toM(char_values.(cl)))
   charparams=chevieget(:A,:CharInfo)(r)[:charparams]
-  a=chevieget(:A,:LowestPowerFakeDegree).(charparams)
+  a=chevieget(:A,:b).(charparams)
   qE=central_monomials(hecke(W,v))
   tbl[:irreducibles]=Diagonal((-1).^a .* qE)*tbl[:irreducibles]
   AdjustHeckeCharTable(tbl, param)
@@ -92,7 +92,7 @@ chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)
   p=partitions(n+1)[i]
   gens=Spechtmodel(H,p)
   (gens=gens,F=prod(gens[word(W,longest(W))]).//
-    root(central_monomials(H)[i])*(-1)^chevieget(:A,:LowestPowerFakeDegree)(p))
+    root(central_monomials(H)[i])*(-1)^chevieget(:A,:b)(p))
 end)
 
 chevieset(Symbol("2A"), :Representation, function(n,i)
@@ -101,7 +101,7 @@ end)
 
 # partition associated to 2-core d and partitions-pair p
 function PartitionTwoCoreQuotient(d,p)
-  x=symbol_partition_tuple(reverse(p),-d)
+  x=Symbol_partition_tuple(reverse(p),-d).S
   partβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))
 end
 

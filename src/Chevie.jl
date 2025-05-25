@@ -126,6 +126,7 @@ include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
+include("Symbols.jl");@reexport using .Symbols
 include("PermRoot.jl");@reexport using .PermRoot
 include("Diagrams.jl");@reexport using .Diagrams
 include("CoxGroups.jl");@reexport using .CoxGroups
@@ -136,7 +137,6 @@ include("Chars.jl");@reexport using .Chars
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
 include("InitChevie.jl");@reexport using .InitChevie
-include("Symbols.jl");@reexport using .Symbols
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Garside.jl");@reexport using .Garside
@@ -174,6 +174,7 @@ end
 function contr(s) 
   include(replace(@__DIR__,"/src"=>"/contr/"*s*".jl"))
 end
+Testspath=replace(@__DIR__,"/src"=>"/test/Tests.jl")
 export contr
 roundtrip(x)=x==eval(Meta.parse(repr(x))) # for debugging purposes
 end

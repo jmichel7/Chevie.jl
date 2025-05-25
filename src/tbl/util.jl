@@ -1,3 +1,22 @@
+# util.jl  utility functions used in several data files
+"""
+fix illegal relativeTypes B1 and C2 which appear in HC or almost HC
+series of classical groups
+"""
+function FixRelativeType(t)
+  d=t[:relativeType]
+  if d.series==:B
+    if d.rank==1
+      d.series=:A
+      t[:charNumbers]=reverse(t[:charNumbers]) # map B1->A1
+    elseif d.rank==2 && haskey(d,:cartanType) && d.cartanType==1
+      d.cartanType=2;d.indices=reverse(d.indices)
+      reverse!(view(t[:charNumbers],[1,5])) # map C2->B2
+      if haskey(t,:parameterExponents) reverse!(t[:parameterExponents]) end
+    end
+  end
+end
+
 function expandrep(r,d,l)
   T=reduce(promote_type,typeof.(first.(l)))
   m=fill(zero(T),d*d*r)
@@ -77,7 +96,7 @@ end
 """
 `CycPol(v::AbstractVector)`
 
-This  form is an  compact way unsed  in the Chevie  library of specifying a
+This  form is  a compact  representation used  in the  Chevie library  of a
 `CycPol`  with only  positive multiplicities:  `v` should  be a vector. The
 first  element is taken as the `.coeff`  of the `CycPol`, the second as the
 `.valuation`.   Subsequent  elements  are   rationals  `i//d`  representing

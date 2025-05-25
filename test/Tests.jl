@@ -1,4 +1,17 @@
-# defines RG()
+"""
+This module defines tests to thoroughly test the Chevie data.
+
+The tests available are printed by Tests.tests()
+
+The spets to which they are applied are Tests.all_ex
+
+See the helpstring for RG  to see how to apply them.
+
+There  are  also  some  useful  functions:  `cmpvec,  cmptables,  cmpcycpol,
+check_relation`
+
+There is also help for `Tchaparams, Tfamilies, reflectiondegrees`
+"""
 module Tests
 using Chevie
 export RG
@@ -43,13 +56,17 @@ all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
 
 function tests()
- for (i,(s,t)) in enumerate(sort(collect(test),by=first))
-    print(rpad("$i",3),rpad(s,17),": ")
+  for (i,(s,t)) in enumerate(sort(collect(test),by=first))
+    print(rpad("$i",3),rpad(repr(s),18)," ")
     printstyled(t.comment,"\n";color=:green)
   end
 end
   
-"`RG(s::Symbol)` test `s` (function `Ts`) on `Tests.all_ex`"
+"""
+`RG(s::Symbol;log=false)` apply test `s` (function `Ts`) to `Tests.all_ex`
+
+write result on `stdout` or file `log`
+"""
 function RG(s::Symbol;log=false)
   if log 
     global curio=open("log",create=true,write=true,append=true)
@@ -68,7 +85,7 @@ function RG(s::Symbol;log=false)
   if log close(curio) end
 end
 
-"`RG(W)` test group or spets `W`; `Tests.tests()` shows available tests"
+"`RG(W;log=false)` apply all tests to group or spets `W`"
 function RG(W;log=false)
   if log 
     global curio=open("log",create=true,write=true,append=true)
@@ -87,8 +104,8 @@ function RG(W;log=false)
   if log close(curio) end
 end
 
+"`RG(v::Vector;log=false)` apply all tests to spets in `v`"
 RG(v::Vector;log=false)=for W in v RG(W;log=log) end
-RG(;log=false)=RG(all_ex;log=log)
 
 "`RG(Symbol::s,W)` apply test `s` to `W`"
 function RG(s::Symbol,W)
@@ -97,7 +114,14 @@ function RG(s::Symbol,W)
   @time getfield(Tests,Symbol(:T,s))(W) 
 end
 
-# compares lists a and b (whose descriptions are strings na and nb)
+"`RG(;log=false)` apply all tests to `all_ex`"
+RG(;log=false)=RG(all_ex;log=log)
+
+"""
+`cmpvec(a,b;na="a",nb="b",pr=ChevieErr)`
+
+compares lists `a` and `b` (whose descriptions are strings `na` and `nb`)
+"""
 function cmpvec(a,b;na="a",nb="b",pr=ChevieErr)
   if a==b return end
   if length(a)!=length(b)
@@ -119,8 +143,11 @@ function cmpvec(a,b;na="a",nb="b",pr=ChevieErr)
   end
 end
 
-# cmptable(t1,t2[,nz]) nz: show all non-zero columns anyway
-# compare two chevie tables or inductiontables
+"""
+`cmptables(t1,t2;nzi=false)` nz: show all non-zero columns anyway
+
+compare two chevie tables or inductiontables
+"""
 function cmptables(t1,t2;nz=false,both=false,opt...)
   t=[copy(t1),copy(t2)]
   opt=Dict{Symbol,Any}(opt)
@@ -175,6 +202,7 @@ function cmptables(t1,t2;nz=false,both=false,opt...)
   end
 end
 
+"`cmpcycpol(a,b;na=\"a\",nb=\"b\")` compare two cycpols"
 function cmpcycpol(a,b;na="a",nb="b")
   if a==b return end
   if b.coeff==0
@@ -1079,7 +1107,7 @@ test[:extrefl]=(applicable=x->x isa Group,comment="check")
 
 #---------------- test: degrees ------------------------
 """
-The function below uses the formula
+`reflectiondegrees(W)` uses the formula
 ``∏_{g∈ W}det(g-t)=∏_i(t^{d_i}-1)^{|W|/d_i}``
 Superseded by degrees using refltype but can recompute data
 """
@@ -1102,7 +1130,7 @@ function reflectiondegrees(W)
 end
 
 """
-the function below uses the formula cite[page 164]{BLM06}
+`reflectiondegrees(W::Spets)` uses the formula cite[page 164]{BLM06}
 ``∏_{g∈ W}det(t-gϕ)=∏_i(t^{d_i}-εᵢ)^{|W|/d_i}``
 Superseded by degrees using refltype but can recompute data
 """
@@ -1218,9 +1246,9 @@ function Tudfdimprimitive(W)
   uc=UnipotentCharacters(W)
   ud=CycPoldegrees(uc)
   cs=first.(uc.charSymbols)
-  vud=gendeg_symbol.(cs)
+  vud=gendeg.(cs).*signs(uc)
   for i in eachindex(cs)
-    cmpcycpol(vud[i],ud[i];na=string("Deg",stringsymbol(cs[i])),nb="ud");
+   cmpcycpol(vud[i],ud[i];na=string("Deg",xrepr(rio(),cs[i])),nb="ud");
   end
   n=refltype(W)
   if isempty(n) return end # a corriger
@@ -1228,11 +1256,11 @@ function Tudfdimprimitive(W)
   cs=first.(uc.almostCharSymbols[uc.almostHarishChandra[1][:charNumbers]])
   fd=CycPol.(fakedegrees(W,Pol()))
   if haskey(n,:orbit)&& n.orbit[1].series in [:D,:I,:B,:G] && order(n.twist)==2
-       vfd=map(x->fegsymbol(x,1),cs)
-  else vfd=fegsymbol.(cs)
+       vfd=map(x->fakedegree(x,1),cs)
+  else vfd=fakedegree.(cs)
   end
   for i in eachindex(cs) 
-    cmpcycpol(vfd[i],fd[i];na=string("Deg",stringsymbol(cs[i])),nb="fd")
+   cmpcycpol(vfd[i],fd[i];na=string("Deg",xrepr(rio(),cs[i])),nb="fd")
   end
 end
 
@@ -1249,13 +1277,12 @@ test[:udfdimprimitive]=(applicable=function(W)
   end,
 comment="unideg and feg of imprimitive Spets agree with formulae")
 
-#---------------- Tfamilies ------------------------
-# test that a family satisfies Lusztig's "exotic fourier transform" properties.
-# Tfamilies(W;opt) or 
-# Tfamilies(W,famno;opt)
-# [disappeared] or Families(family record;opt)
-# option: hard:=show details
+"""
+`Tfamilies(W[,famno];hard=false)`
+test that families of W  satisfy Lusztig's "exotic fourier transform" properties
 
+option: hard:=show details
+"""
 function Tfamilies(W;hard=false)
   uc=UnipotentCharacters(W)
   for i in eachindex(uc.families) Tfamilies(W,i;hard) end
@@ -1590,18 +1617,21 @@ test[:qeigen]=(applicable=isspetsial,comment="recompute qeigen")
 
 #------------------------- braidrel -----------------------------
 
-# CheckRelation(gens,rel[,f])
-# Check  that  the  homogeneous  relation  rel[1]=rel[2] holds for gens (in
-# particular  that no  left factor  homogeneous relation  holds). If given,
-# call f in case of failure.
-function check_relation(gens,rel;f=x->x)
+"""
+`check_relation(gens,rel;verbose=true)`
+Check  that  the  homogeneous  relation  rel[1]=rel[2] holds for gens (in
+particular  that no  left factor  homogeneous relation  holds).
+If `verbose=true` give details on failure.
+"""
+function check_relation(gens,rel;verbose=true)
   p=r->string(joindigits(r[1]),"=",joindigits(r[2]))
   l=gens[rel[1][1]]
   r=gens[rel[2][1]]
   i=1
   while i<length(rel[1])
     if l==r
-      f(" relation ",p(rel)," already holds as ",p(map(x->x[1:i],rel)))
+      if verbose ChevieErr(" relation ",p(rel)," already holds as ",
+                       p(map(x->x[1:i],rel)),"\n") end
       return false
     end
     i+=1
@@ -1609,12 +1639,12 @@ function check_relation(gens,rel;f=x->x)
     r*=gens[rel[2][i]]
   end
   if l==r return true end
-  f(" relation ",p(rel),"failed")
+  if verbose ChevieErr(" relation ",p(rel),"failed\n") end
   false
 end
 
 function Tbraidrel(W,r=braid_relations(W))
-  for rel in r check_relation(gens(W),rel;f=ChevieErr) end
+  for rel in r check_relation(gens(W),rel;verbose=true) end
 end
 
 test[:braidrel]=(applicable=W->!(W isa Spets),comment=

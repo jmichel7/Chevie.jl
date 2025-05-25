@@ -233,7 +233,7 @@ function getHeckeCharTable2E6(v)
 # Some characters of W(E_6)*w_0 will be changed by sign according to
 # the preferred extension, see [Lusztig-book, 4.1 and 4.11] and
 # [CS, 17.2(b)]
-  aE=map(x->(-1)^x,chevieget(:E6,:LowestPowerGenericDegrees)())
+  aE=map(x->(-1)^x,chevieget(:E6,:a)())
   qE=central_monomials(hecke(W,v))
 # q_E is the square root which deforms to 1 of the eigenvalue of T_{w_0}
 # on E which deforms to 1; we have:
