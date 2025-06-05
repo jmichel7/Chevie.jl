@@ -60,12 +60,11 @@ chevieset(Symbol("2D"), :CharParams, n->
 
 #the map which goes from almost characters to unipotent characters for 2Dn
 function Defect0to2(S::CharSymbol)
-  ST=S.S
-  a=minimum(symdiff(ST[1], ST[2]))
-  ST=sort.([symdiff(ST[1], [a]), symdiff(ST[2], [a])])
-  if length(ST[1])>length(ST[2]) CharSymbol(ST)
-  else CharSymbol(reverse(ST))
-  end
+  S1,S2=S.S
+  a=minimum(symdiff_sorted(S1,S2))
+  S1=symdiff_sorted(S1,[a])
+  S2=symdiff_sorted(S2,[a])
+  CharSymbol(length(S1)>length(S2) ? [S1,S2] : [S2,S1])
 end
 
 chevieset(Symbol("2D"), :CharInfo, function (n)
@@ -79,11 +78,11 @@ chevieset(Symbol("2D"), :CharInfo, function (n)
                              res[:charparams])
   res[:nrGroupClasses]=length(resparams)
   res[:charnames]=string_partition_tuple.(res[:charparams])
-  f=map(c->fakedegree(Symbol_partition_tuple(c,0),1),res[:charparams])
+  ressymbols=map(c->Symbol_partition_tuple(c,0),res[:charparams])
+  f=map(c->fakedegree(c,1),ressymbols)
   res[:b]=valuation.(f)
   res[:B]=degree.(f)
-  res[:charSymbols]=map(c->Defect0to2(Symbol_partition_tuple(c,0)),
-                        res[:charparams])
+  res[:charSymbols]=Defect0to2.(ressymbols)
   res[:a]=valuation_gendeg.(res[:charSymbols])
   res[:A]=degree_gendeg.(res[:charSymbols])
   res
@@ -160,7 +159,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function(rank)
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>(-1)^div(d+1,4))
     s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
-    r=s[:relativeType][:rank]
+    r=s[:relativeType].rank
     if d==0
       # order differs from Symbols.Symbolsshape(n,[d,0]) for d=0
       symbols=map(x->Symbol_partition_tuple(x,d),

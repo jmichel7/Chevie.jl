@@ -160,7 +160,7 @@ chevieset(:A, :UnipotentCharacters,function(n)
   ci=chevieget(:A,:CharInfo)(n)
   pp=ci[:charparams]
   Dict{Symbol,Any}(:harishChandra =>[Dict{Symbol, Any}(:levi=>Int[],
-    :relativeType=>Dict(:series=>:A,:indices=>1:n,:rank=>n), 
+    :relativeType=>TypeIrred(series=:A,indices=1:n,rank=n), 
     :parameterExponents=>fill(1,n),:cuspidalName=>"",:eigenvalue=>1,
     :charNumbers=>1:length(pp))],
   :families=>map(i->Family("C1",[i]), 1:length(pp)), 

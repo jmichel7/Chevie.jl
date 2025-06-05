@@ -254,27 +254,13 @@ export UnipotentCharacters, UniChar, unichar,
   families::Vector{Family}
 end
 
-function maketype(s) # convert a Dict read from Chevie data to a TypeIrred
-  if s isa TypeIrred return s end
-  if haskey(s,:orbit)
-    s[:orbit]=maketype.(s[:orbit])
-  else s[:series]=Symbol(s[:series])
-#     if s[:rank]==0 return Dict(:charnames=>[""],:charparams=>[[]]) end
-  end
-  TypeIrred(convert(Dict{Symbol,Any},s))
-end
-
 function params(sers)
-  for ser in sers ser[:relativeType]=maketype(ser[:relativeType]) end
   chh=map(ser->charinfo(ser[:relativeType]),sers)
-  l=sum(x->length(x.charnames),chh)
-  res=fill([],l)
-  for (i,ser) in pairs(sers)
-    t=ser[:relativeType]
+  res=fill(Pair("foo",[]),sum(x->length(x.charnames),chh))
+  for (ch,ser) in zip(chh,sers)
+#   t=ser[:relativeType]
 #   t.rank=haskey(t,:orbit) ? t.orbit[1].rank : t.rank
-    n=ser[:cuspidalName]
-    ch=chh[i]
-    res[charnumbers(ser)]=map(x->[n,x],ch[:charparams])
+    res[charnumbers(ser)]=Pair.(ser[:cuspidalName],ch.charparams)
   end
   res
 end
@@ -321,7 +307,11 @@ function UnipotentCharacters(t::TypeIrred)
     InfoChevie("# $t is not spetsial!!")
     return
   end
-  uc=deepcopy(uc)
+  uc=copy(uc)
+  uc[:harishChandra]=copy.(uc[:harishChandra])
+  if haskey(uc,:almostHarishChandra)
+    uc[:almostHarishChandra]=copy.(uc[:almostHarishChandra])
+  end
   uc[:charParams]=params(uc[:harishChandra])
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
   # adjust things for descent of scalars
@@ -329,13 +319,13 @@ function UnipotentCharacters(t::TypeIrred)
   # but we cannot when indices mention non-generating reflections!
   a=length(t.orbit)
   if a>1
-    if haskey(uc,:a) uc[:a].*=a end
-    if haskey(uc,:A) uc[:A].*=a end
+    if haskey(uc,:a) uc[:a]*=a end
+    if haskey(uc,:A) uc[:A]*=a end
     for s in uc[:harishChandra]
-      s[:parameterExponents].*=a
+      s[:parameterExponents]*=a
       s[:eigenvalue]^=a
       if s[:cuspidalName]=="" s[:cuspidalName]="Id" end
-      s[:cuspidalName]=join(map(i->s[:cuspidalName],1:a),"\\otimes ")
+      s[:cuspidalName]=join(fill(s[:cuspidalName],a),"\\otimes ")
     end
   end
 
@@ -364,7 +354,7 @@ function UnipotentCharacters(t::TypeIrred)
   else
     for s in uc[:almostHarishChandra]
       if !haskey(s[:relativeType],:orbit)
-        s[:relativeType]=Dict(:orbit=>[s[:relativeType]],:twist=>Perm())
+        s[:relativeType]=TypeIrred(orbit=[s[:relativeType]],twist=Perm())
       end
     end
   end
@@ -383,6 +373,29 @@ function UnipotentCharacters(W::Group)
   get!(W,:UnipotentCharacters) do
     UnipotentCharacters(spets(W))
   end
+end
+
+function CartesianSeries(sers)
+  ser=Dict{Symbol,Any}()
+  ser[:levi]=reduce(vcat,getindex.(sers,:levi))
+  ser[:relativeType]=filter(x->rank(x)!=0,getindex.(sers,:relativeType))
+  if haskey(sers[1],:eigenvalue)
+    ser[:eigenvalue]=prod(getindex.(sers,:eigenvalue))
+  end
+  if any(x->haskey(x,:qEigen),sers)
+    ser[:qEigen]=sum(sers)do x
+      haskey(x,:qEigen) ? x[:qEigen] : 0
+    end
+  else
+    ser[:qEigen]=0
+  end
+  if all(haskey.(sers,:parameterExponents))
+    ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents)...)
+  end
+  ser[:charNumbers]=tcartesian(charnumbers.(sers)...)
+  ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" :
+                                 x[:cuspidalName], sers),"\\otimes ")
+  ser
 end
 
 """
@@ -562,29 +575,6 @@ UnipotentCharacters(B₂)
 """
 function UnipotentCharacters(WF::Spets)
   get!(WF,:UnipotentCharacters) do
-  function CartesianSeries(sers)
-    ser=Dict{Symbol,Any}()
-    ser[:levi]=reduce(vcat,getindex.(sers,:levi))
-    ser[:relativeType]=filter(x->rank(x)!=0,getindex.(sers,:relativeType))
-    if haskey(sers[1],:eigenvalue)
-      ser[:eigenvalue]=prod(getindex.(sers,:eigenvalue))
-    end
-    if any(x->haskey(x,:qEigen),sers)
-      ser[:qEigen]=sum(sers)do x
-        haskey(x,:qEigen) ? x[:qEigen] : 0
-      end
-    else
-      ser[:qEigen]=0
-    end
-    if all(haskey.(sers,:parameterExponents))
-      ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents)...)
-    end
-    ser[:charNumbers]=cartesian(charnumbers.(sers)...)
-    ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" :
-                                   x[:cuspidalName], sers),"\\otimes ")
-    ser
-  end
-
   tt=refltype(WF)
   if isempty(tt) # UnipotentCharacters(coxgroup())
     return UnipotentCharacters(
@@ -612,17 +602,19 @@ function UnipotentCharacters(WF::Spets)
 #   @show t,i,H,p
     for s in uc.harishChandra
       s[:levi]=inclusion(H,W,s[:levi].^p)
+      s[:relativeType]=copy(s[:relativeType])
       s[:relativeType].indices=inclusion(H,W,s[:relativeType].indices.^p)
     end
     for s in uc.almostHarishChandra
       s[:levi]=inclusion(H,W,s[:levi].^p)
+      s[:relativeType]=copy(s[:relativeType])
       s[:relativeType].orbit=vcat(
         map(s[:relativeType].orbit)do r
 	  r=copy(r)
           r.indices=inclusion(H,W,r.indices.^p)
 	  r
         end...)
-      s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H)),inclusion(H)))
+      s[:relativeType].twist^=mappingPerm(1:length(inclusion(H)),inclusion(H))
     end
 
     for f in uc.families
@@ -636,45 +628,38 @@ function UnipotentCharacters(WF::Spets)
   r=simp[1]
   if isnothing(r) return end
   f=keys(r.prop)
-  res=Dict{Symbol,Any}()
+  extra=Dict{Symbol,Any}()
   for a in f
     if a==:type continue end
     if length(simp)==1
-      res[a]=map(x->[x],getproperty(r,a))
+      extra[a]=map(x->[x],getproperty(r,a))
     elseif all(x->haskey(x,a),simp)
-      res[a]=cartesian(map(x->getproperty(x,a),simp)...)
+      extra[a]=cartesian(map(x->getproperty(x,a),simp)...)
     end
   end
 
-  res[:size]=length(res[:charParams])
-
-  # finally the new 'charNumbers' lists
-  tmp=cartesian(map(a->1:length(a.charParams),simp)...)
+  extra[:size]=length(extra[:charParams])
 
   hh=CartesianSeries.(cartesian(map(x->x.harishChandra,simp)...))
   ah=CartesianSeries.(cartesian(map(x->x.almostHarishChandra,simp)...))
-  for s in hh
-    s[:charNumbers]=map(y->findfirst(==(y),tmp),s[:charNumbers])
-  end
-  for s in ah
-    s[:charNumbers]=map(y->findfirst(==(y),tmp),s[:charNumbers])
-  end
+  # finally the new 'charNumbers' lists
+  ll=length.(simp)
+  for s in hh s[:charNumbers]=cart2lin.(Ref(ll),s[:charNumbers]) end
+  for s in ah s[:charNumbers]=cart2lin.(Ref(ll),s[:charNumbers]) end
 
   if length(tt)==1
     ff=r.families
   else
     ff=Family.(prod.(cartesian(map(x->x.families,simp)...)))
-    for f in ff
-      f.charNumbers=map(y->findfirst(==(y),tmp),f.charNumbers)
-    end
+    for f in ff f.charNumbers=cart2lin.(Ref(ll),f.charNumbers) end
   end
 
   for a in [:a, :A]
-    if haskey(res,a) res[a]=sum.(res[a]) end
+    if haskey(extra,a) extra[a]=sum.(extra[a]) end
   end
 
-  res[:spets]=WF
-  UnipotentCharacters(hh,ah,ff,res)
+  extra[:spets]=WF
+  UnipotentCharacters(hh,ah,ff,extra)
   end
 end
 

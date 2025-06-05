@@ -76,8 +76,7 @@ end
 function OmegaChi(uc)
   fd=fill(Pol(0),length(uc))
   for h in uc.harishChandra
-   fd[charnumbers(h)]=
-    fakedegrees(reflection_group(Uch.maketype.(h[:relativeType])), Pol())
+    fd[charnumbers(h)]=fakedegrees(reflection_group(h[:relativeType]), Pol())
   end
   ξ=E(gcd(degrees(Group(uc.spets))),-1)
   map(f->f(ξ)//f(1),fd)

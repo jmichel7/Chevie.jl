@@ -12,10 +12,11 @@ A  *β-set* is a strictly increasing `Vector` of nonnegative integers, up to
 which does not contain `0`: it is called a normalized β-set.
 
 To  a  normalized  partition  `p₁≥p₂≥…pₙ>0`  is  associated  a β-set, whose
-normalized  representative  is  `pₙ,pₙ₋₁+1,…,p₁+n-1`.  Conversely,  to each
-β-set  `b₁<b₂<…<bₙ` is  associated the  partition `bₙ-n+1≥…≥b₂-1≥b₁`, which
-may   have  some   trailing  zeros   if  starting   from  a  non-normalized
-representative.
+normalized  representative is `pₙ,pₙ₋₁+1,…,p₁+n-1`. A mnemonic is that this
+is  the areas of  the hooks in  the Young diagram  going up along the first
+column.  Conversely, to each β-set `b₁<b₂<…<bₙ` is associated the partition
+`bₙ-n+1≥…≥b₂-1≥b₁`,  which may have some trailing  zeros if starting from a
+non-normalized representative.
 
 The functions for βsets in this module are
   - `βset` which constructs a normalized βset from a partition.   
@@ -46,7 +47,7 @@ Partitions  and  pairs  of  partitions  parametrize  characters of the Weyl
 groups  of classical types, and tuples of partitions parametrize characters
 of  imprimitive complex reflection  groups. 2-Symbols parametrize unipotent
 characters  of  classical  Chevalley  groups,  and more general `e`-symbols
-parametrize   unipotent  characters  of   Spetses  associated  to  spetsial
+parametrize   unipotent  characters  of   spetses  associated  to  spetsial
 imprimitive complex reflection groups. The rank of a symbol is equal to the
 semi-simple rank of the corresponding Chevalley group or Spets.
 
@@ -58,11 +59,24 @@ defect `1` parametrize characters of the Weyl group `W(Bₙ)`, and symbols of
 rank  `n`  and  odd  defect  parametrize  unipotent characters of `Sp₂ₙ` or
 `SO₂ₙ₊₁`.
 
+To parametrize unipotent characters of spetses we need another statistic on
+symbols, the *Malle-defect* defined by Malle as
+`mod(binomial(e,2)*div(sum(length.(S)),e)-dot(O:e-1,length.(S)),e)`.  It is
+invariant  under  shift;  it  is  invariant  under circular permutation for
+symbols  of content `O` but not for  symbols of content `1`; for these only
+one circular permutation has Malle-defect `0`.
+
 `e`-symbols  of rank `n` and  content `1` parameterize unipotent characters
-of  `G(e,1,n)`. Those of  content `0` parameterize  unipotent characters of
-`G(e,e,n)`.  The  principal  series  (in  bijection  with characters of the
-reflection  group)  is  parametrized  by  symbols  of shape `[1,0,…,0]` for
-`G(e,1,n)` and `[0,…,0]` for `G(e,e,n)`.
+of the spets `G(e,1,n)`. The principal series (in bijection with characters
+of  the reflection group) is parametrized  by symbols such that tje reduced
+ones have shape `[1,0,…,0]`.
+
+Unipotent   characters  of   the  spets   `G(e,e,n)`  are  parametrized  by
+`e`-symbols  of  content  `0`  and  Malle-defect  `0`.  The symbols for the
+principal series characters have shape `[0,…,0]`.
+
+Unipotent  characters of the twisted  spets `ᵗG(e,e,n)` are parametrized by
+`e`-symbols of rank `n`, content `0` and Malle-defect `t`.
 
 In  the above parametrizations, periodic symbols,  that is symbols `S` such
 that  the  sequence  `S₁,…,Sₙ`  is  a  repetition  `k`  times  of a shorter
@@ -93,7 +107,8 @@ The functions for symbols in this module are
   - `CharSymbol`, which constructs a symbol
   - `Symbol_partition_tuple` which constructs a symbol of a given shape from a partition tuple
   - `rank` which computes the rank of a symbol
-  - `defect` which returns the defect  of a symbol
+  - `defect` which returns the defect  of a 2-symbol
+  - `Malledefect` which returns the Malle-defect of a symbol
   - `fakedegree, degree_feg, valuation_feg` return the fake degree (resp. its degree and valuation) of the unipotent character parametrized by a symbol
   - `gendeg, degree_gendeg, valuation_gendeg` return the generic degree (resp. its degree and valuation) of the unipotent character parametrized by a symbol
   - `symbols` returns the list of symbols of a given length, rank and content.
@@ -115,7 +130,7 @@ using ModuleElts: ModuleElt
 export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
 gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg, fakedegree,
 defectsymbol,   fullsymbol,
-defect, rank,  symbols, XSP, string_partition_tuple, 
+Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, 
 ennola
 
 struct CharSymbol
@@ -440,20 +455,22 @@ end
 """
 `show(io=stdout,S)` string for symbol `S` [taking `io` in account].
 ```julia-repl
-julia> symbols(3,3,0)
-12-element Vector{CharSymbol}:
- (1+)
- (1ζ₃)
- (1ζ₃²)
- (01,12,02)
- (01,02,12)
- (012,012,123)
- (0,1,2)
- (0,2,1)
- (01,01,13)
- (0,0,3)
- (012,,)
- (012,012,)
+julia> symbols(2,4,0) # symbols for D₄
+14-element Vector{CharSymbol}:
+ (12+)
+ (12-)
+ (013,123)
+ (0123,1234)
+ (02,13)
+ (03,12)
+ (012,124)
+ (2+)
+ (2-)
+ (01,23)
+ (1,3)
+ (01,14)
+ (0,4)
+ (0123,)
 ```
 """
 function Base.show(io::IO,S::CharSymbol)
@@ -476,16 +493,19 @@ function Base.show(io::IO,S::CharSymbol)
   end
 end
 
-"""
-`defshape(s::Vector{Int})`  
-
-Malle-defect of symbols of shape s. This is an invariant by shift but not 
-under cyclic permutations.
-"""
-function defshape(s)
+# Malledefect of a symbol of shape s
+function Malledefect(s::Vector{Int})
   e=length(s)
   mod(binomial(e,2)*div(sum(s),e)-dot(0:e-1,s),e)
 end
+
+"""
+`Malledefect(S::CharSymbol)`  
+
+Malle-defect of `S`. This is an invariant by shift but not in general under
+cyclic permutations.
+"""
+Malledefect(S::CharSymbol)=Malledefect(length.(S.S))
 
 """
 `shapesSymbols(e,r,c=1,def=0)`
@@ -494,6 +514,8 @@ possible shapes for `e`-symbols of rank `r`, content `c`, Malle-defect `def`"
 """
 function shapesSymbols(e,r,c=1,def=0)
   if e==1 return [[0]] end
+  if !(c in 0:e-1) error("the content should be in ",0:e-1) end
+  if !(def in 0:e-1) error("the Malle-defect should be in ",0:e-1) end
   function f(lim2,len,nb,max) local res,a # possible decreasing shapes
     if nb==1
       if len==0   return [[len]]
@@ -517,9 +539,9 @@ function shapesSymbols(e,r,c=1,def=0)
     m+=1
   end
   res=reduce(vcat,map(x->arrangements(x,e),res))
-  # for symbols of content 1 only one circshift of the shape has defshape=0
-  filter(s->defshape(s)==def  &&
-    all(x->defshape(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
+  # for symbols of content 1 only one circshift of the shape has Malledefect=0
+  filter(s->Malledefect(s)==def  &&
+    all(x->Malledefect(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
 end
 
 function isreduced(s::CharSymbol)
@@ -550,7 +572,7 @@ function Symbolsshape(r,s)
      partition_tuples(r-rank(CharSymbol(map(x->0:x-1,s))),length(s)))
   if !iszero(sum(s)%length(s)) return S end
   S=filter(isreduced,S)
-  if !iszero(defshape(s)) return S end
+  if !iszero(Malledefect(s)) return S end
   res=CharSymbol[]
   for s in S
     p=findfirst(i->s.S==circshift(s.S,1-i),2:length(s))
@@ -563,36 +585,24 @@ function Symbolsshape(r,s)
 end
 
 """
-`symbols(e,r,c=1,def=0)` 
+`symbols(e,r,content=1,Malledefect=0)` 
 
-The list of `e`-symbols of rank `r`, content `c` and Malle-defect `def`
+The list of `e`-symbols of rank `r` and given content and Malle-defect.
 
-An `e`-symbol is a symbol of length `e`.
-The content of an `e`-symbol `S` is `sum(length,S.S)%e`.
-The symbols for unipotent  characters of:
-  - `G(d,1,r)` are `symbols(d,r)`
-  - `G(e,e,r)` are `symbols(e,r,0)`.
-  - `G(e,e,r).s₁ᵗ` where `s₁` is the first generator of `G(e,1,r)` and `t|e`
-    are `symbols(e,r,0,t)`
+The symbols parametrize unipotent characters of:
+  - `G(d,1,r)` : `symbols(d,r)`
+  - `G(e,e,r)` : `symbols(e,r,0)`.
+  - `G(e,e,r).s₁ᵗ` where `s₁` is the first generator of `G(e,1,r)` and `t|e`:
+    `symbols(e,r,0,t)`
 
+In particular we have
+  - `Aₙ` : `symbols(1,n)`
+  - `Bₙ` : `symbols(2,n)`
+  - `Dₙ` : `symbols(2,n,0)`
+  - `²Dₙ` : `symbols(2,n,0,1)`
+  - `²B₂` : `symbols(4,2,0,1)`
+  - `²G₂` : `symbols(6,2,0,1)`
 ```julia-repl
-julia> symbols(3,2) # unipotent characters of G(3,1,2)
-14-element Vector{CharSymbol}:
- (12,0,0)
- (02,1,0)
- (02,0,1)
- (012,12,01)
- (01,1,1)
- (012,01,12)
- (2,,)
- (01,2,0)
- (01,0,2)
- (1,012,012)
- (,02,01)
- (,01,02)
- (0,,012)
- (0,012,)
-
 julia> symbols(2,4,0,1) # unipotent characters of ²D₄
 10-element Vector{CharSymbol}:
  (123,0)
@@ -674,11 +684,7 @@ parameterized by `S`.
 julia> gendeg(CharSymbol([[1,2],[1,5,6]]))
 q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2
 ```
-for an `e`-symbol of rank `r`, content `c` and Malle-defect `d` the Spets is
-
-  -  G(e,1,r) (c==1, d==0)
-  -  G(e,e,r) (c==0, d==0)
-  - ²G(e,e,r) (c==0, d==1) (e,r even. This includes ²Dₙ, ²B₂, ²G₂)
+works for spetses G(e,1,r),  G(e,e,r), ᵗG(e,e,r)
 
 see [3.9 and 6.4 Malle1995](biblio.htm#Mal95).
 """

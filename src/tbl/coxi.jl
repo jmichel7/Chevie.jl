@@ -244,8 +244,8 @@ chevieset(:I,:ParameterToSymbol,function(e,p)
     S=map(x->[0,1],1:e)
     S[e]=[1,2]
   elseif length(p)==3
-    S=Vector{Any}(map(x->[0],1:e//2-1))
-    append!(S,[[1],2,(p[3]+1)//2])
+    S=push!(map(x->[0],1:e//2-1),[1])
+    return CharSymbol(S,2,(p[3]+1)//2)
   elseif iseven(e)
     S=map(x->[0],1:e)
     if p[1]==0 S[[e,e-p[2]]]=[[1],[1]]

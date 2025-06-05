@@ -280,8 +280,8 @@ information   about  it  necessary   to  compute  the   function  Delta  in
       q=-Q1//Q2//1
       delta*=Q1^(hs.area-hs.cc)*(-q)^-hs.hooklength
       if k==0 return delta end
-      ctSC=[v[x]*q^y for (x,y) in hs.SC]
-      ctDC=[v[x]*q^y for (x,y) in hs.DC]
+      ctSC=eltype(v)[v[x]*q^y for (x,y) in hs.SC].+0
+      ctDC=eltype(v)[v[x]*q^y for (x,y) in hs.DC].+0
       delta*=reduce(*,ctSC;init=1)//reduce(*,ctDC;init=1)
       if k==1 return delta end
       delta*(-1)^(hs.cc-1)*sum(map(

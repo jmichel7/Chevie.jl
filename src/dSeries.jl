@@ -136,11 +136,11 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   end
 
   for h in uc[:harishChandra] 
-   fd[charnumbers(h)]=
-    fakedegrees(reflection_group(Uch.maketype(h[:relativeType])), Pol())
+   fd[charnumbers(h)]=fakedegrees(reflection_group(h[:relativeType]), Pol())
   end
   ΩΧ=map(f->f(ξ)//f(1),fd)# List of ω_χ(ξ) for character sheaves (ρ,χ)
-  eig=eigen(uc)
+  eig=fill(E(1),sum(length,uc[:families]))
+  for f in uc[:families] eig[f.charNumbers]=eigen(f) end
 
   function predeigen(i) # if Ennola_ξ(U_χ=ρ_i)=ρ returns deduced Frob(ρ)
     if i>nconjugacy_classes(t) error("only for principal series") end
