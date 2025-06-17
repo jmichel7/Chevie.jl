@@ -282,12 +282,29 @@ function factorset(s)
   end
 end
 
+"""
+`Subsets_sum(S::Pol,l::Vector{<:Pol},v::Vector,lv::Vector;lim=10)`
+
+Find subsets P of eachindex(l) such that sum(l[P])=S.
+In  addition, lv is a vector of  same length as l, v is a sub-multiset of
+lv and P should satisfy tally(lv[P])=tally(v) (thus length(P)==length(v))
+"""
+function Subsets_sum(S::Pol,l::Vector{<:Pol},v::Vector, lv::Vector;lim=10)
+ # filter(P->sum(l[P])==S && tally(lv[P])==tally(v),
+ #       combinations(eachindex(l),length(v)))
+  t=maximum(degree.(l))
+  function c(p,t) # makes Pol p into vector of coeffs of length t
+    vcat(fill(0,p.v),p.c,fill(0,max(0,t-degree(p))))
+  end
+  Subsets_sum(improve_type(c(S,t)), improve_type(toM(c.(l,t))),v,lv;lim)
+end
+
 # l is a matrix and S a list length size(l,1).
 # Find subsets P of axes(l,1) such that sum(l[P,:];dims=1)=S.
 # In  addition, lv is a vector of  length size(l,1), v is a sub-multiset of
 # lv and P should satisfy tally(lv[P])=tally(v).
 function Subsets_sum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
-# println("S=$S;l=$l;v=$v;lv=$lv")
+# @show S,l,v,lv
   function sievev(good::Vector{Int}, v)
     v=copy(v)
     for i in good
@@ -307,8 +324,9 @@ function Subsets_sum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
   function inner(S, s::AbstractVector{Int}, t::AbstractVector{Int}, 
     nonsolved::AbstractVector{Int}, v::Vector, factor)
     local bad, good, p, sols, res, i, sol, f, ll, solved
-#   println("#solved=",size(l,1)-length(nonsolved)," ",join(s),"=>",join(t),
-#         " v=",join(map(x->join(x,":"),tally(v))," "))
+ #  @show S,s,t,nonsolved,v,factor
+ #  println("#solved=",size(l,2)-length(nonsolved)," ",join(s),"=>",join(t),
+ #        " v=",join(map(x->join(x,":"),tally(v))," "))
     c+=1
     if c%1000==0
       InfoChevie("# ",factor,": xcols:",length(nonsolved)-1," xrows:",length(t),
@@ -336,7 +354,7 @@ function Subsets_sum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
       end
       if sum(length,p.sols)>0
        good=union_sorted(good,intersect(p.sols...)) #lines part of any solution
-        bad=union_sorted(bad,setdiff(p.cand, union(p.sols)))#part of no solution
+        bad=union_sorted(bad,setdiff(p.cand, union(p.sols...)))#part of no solution
       else
         bad=union_sorted(bad,p.cand) #part of no solution
       end
@@ -438,8 +456,8 @@ function FitParameter(sch, m::AbstractVector{<:Rational{<:Integer}})
 end
 
 #---------------------- Series -----------------------------------------
-# A d-Harish-Chandra series \CE(𝐆,(𝐋,λ) is a record with fields:
-#  .d           AsRootOfUnity(ζ) such that L=C_G(V_ζ)
+# A d-Harish-Chandra series \CE(𝐆,(𝐋,λ)) is a record with fields:
+#  .d           a Root1 such that L=C_G(V_ζ)
 #  .spets       𝐆
 #  .levi        𝐋
 #  .cuspidal    λ (index in UnipotentCharacters(.levi))
@@ -447,8 +465,8 @@ end
 # optional fields (in s.prop)
 #  .charNumbers \CE(𝐆,(𝐋,λ) (indices in UnipotentCharacters(.spets))
 #  .degree      The degree of R_𝐋^𝐆(λ)=|𝐆/L|_{q'} degλ
-#  .eps         For each χ in .charNumbers sign of <χ,R_𝐋^𝐆(λ)>
-#  .dims        χ(1) for γ_χ
+#  .eps         For each χ in .charNumbers sign(<χ,R_𝐋^𝐆(λ)>)
+#  .dims        χ(1) for γ_χ; for each χ in .charNumbers abs(<χ,R_𝐋^𝐆(λ)>)
 #  .WGL         W_𝐆(L,λ)
 #  .Hecke       H_𝐆(L,λ)
 #  .e           |W_𝐆(L,λ)|
@@ -465,7 +483,7 @@ end
 
 If the reflection coset or group `W` corresponds to the algebraic group `𝐆`
 and  `cuspidal`  to  the  `d`-cuspidal  unipotent  character  `λ`  of  `𝐋`,
-constructs  the `d`-series corresponding to ``R_𝐋^𝐆(λ)``. The result `s` it
+constructs  the `d`-series corresponding to ``R_𝐋^𝐆(λ)``. The result `s`
 is a record with the following fields and functions:
 
 `s.spets`: the reflection group or coset `W`.
@@ -493,7 +511,7 @@ constituents of `RLG(s)`.
 
 The function `Series` has another form:
 
-`Series(<W> [,<d> [,<ad>]];k...)`
+`Series(W [,d [,ad]];k...)`
 
 where  it returns a  vector of `Series`  corresponding to the cuspidal data
 described   by  the   arguments  and   the  keywords   (see  the  help  for
@@ -658,10 +676,16 @@ end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)
 
-#  .WGL         W_𝔾 (𝕃,λ) as a relgroup, contains toparent
-#  (lifting reflections to elts of W) and reflists (lifting a generator s to
-#   reflections of the parabolic 𝕄  of W such that W_𝕄 (𝕃,λ)=<s>)
-#  .WGLdims     irr dims of WGL
+"""
+`relative_group(s::Series)`
+
+computes  `s.WGL`  (denoted  `W_𝔾(𝕃,λ)`  in  spetses  2014)  as a relgroup,
+containing  function field `.toparent`  (lifting reflections to  elts of W)
+and  field  `.reflists`  (lifting  a  generator  s  to  reflections  of the
+parabolic 𝕄 of `W` such that `W_𝕄 (𝕃,λ)=<s>`)
+
+fills also `.WGLdims`:  dimensions of `Irr(s.WGL)`
+"""
 function Weyl.relative_group(s::Series)
   get!(s,:WGL) do
   WF=s.spets
@@ -814,7 +838,7 @@ function Weyl.relative_group(s::Series)
       WGL.reflists=getreflection.(reflist)
       WGL.toparent=map(x->x[:hom], WGL.reflists)
       WGL.reflists=map(x->x[:refs], WGL.reflists)
-      s.WGLdims=CharTable(WGL).irr[:,1]
+      s.WGLdims=Int.(CharTable(WGL).irr[:,1])
       s.e=length(WGL)
       return WGL
     end
@@ -826,22 +850,22 @@ end
 # Degree in q of the parameters (normalized so the smallest is 0)
 function mC(s::Series)
   get!(s,:mC) do
-  e = hyperplane_orbits(relative_group(s))
+  e=hyperplane_orbits(relative_group(s))
   if length(e)!=1 return else e = e[1].order end
-  uc = UnipotentCharacters(s.spets)
-  cn = charnumbers(s)[filter(i->s.dims[i]==1,1:length(s.dims))]
-  aA = uc.:a[cn] + uc.A[cn]
+  uc=UnipotentCharacters(s.spets)
+  cn=charnumbers(s)[s.dims.==1]
+  aA=uc.a[cn]+uc.A[cn]
   lpi(W)=nref(W)+nhyp(W)
   if s.principal
     if minimum(aA)!=0 error("id not in RLG(1)") end
     pG=lpi(Group(s.spets))
     pL=lpi(Group(s.levi))
     D0=pG-pL
-    xiL = Root1(PhiOnDiscriminant(s.levi))^order(s.d)
-    xiG = Root1(PhiOnDiscriminant(s.spets))^order(s.d)
-    if xiL != xiG
-      ChevieErr("fixing dimension of variety by xiL-xiG==", xiL - xiG, "\n")
-      D0 = (D0 + xiL) - xiG
+    xiL=Root1(PhiOnDiscriminant(s.levi))^order(s.d)
+    xiG=Root1(PhiOnDiscriminant(s.spets))^order(s.d)
+    if xiL!=xiG
+      ChevieErr("fixing dimension of variety by xiL-xiG==",xiL.r-xiG.r,"\n")
+      D0+=xiL.r-xiG.r
     end
     # Id in chars
     if !isinteger(D0*s.d.r)
@@ -886,49 +910,31 @@ e(s::Series)=getp(relative_group,s,:e)
 
 function RLG(s::Series)
   get!(s,:RLG) do
-  RLG=lusztig_induce(s.spets, unichar(s.levi, s.cuspidal))
-  if isnothing(RLG) && isone(s.levi.phi)
-    RLG=Uch.hc_induce(s.spets, unichar(s.levi,s.cuspidal))
-  end
-  if isnothing(RLG) ChevieErr(s, ":RLG failed\n")
-  elseif degree(s)!=CycPol(degree(RLG))
-    ChevieErr(s,":Deg RLG!=sum(eps[i]*ud[i])\n")
-  end
-  RLG
-  end
-end
-
-function canfromdeg(s::Series)
-  ad=count(!isone,relative_degrees(s.levi, s.d))
-  ud=CycPoldegrees(UnipotentCharacters(s.spets))
-  cand=filter(i->ad==valuation(ud[i],s.d),1:length(ud))
-# now use that S_φ(q)=ε_φ Deg(RLG(λ))/Deg(γ_φ)
-  cand=map(c->Dict(:charNumbers=>c,:sch=>degree(s)//ud[c]),cand)
-  cand=filter(c->positive(c[:sch]),cand)
-  q=Mvp(:q)
-  ad=CycPol(Pol()-Cyc(s.d))^ad
-  f=degree(s)//ad
-  if !positive(f)
-    ChevieErr(s, " cuspidal is not\n")
-    return nothing
-  end
-  v=f(Cyc(s.d))
-  filter(cand)do c
-    c[:span]=degree(c[:sch])-valuation(c[:sch])
-    f=sum(x->x^2,WGLdims(s))*(ud[c[:charNumbers]]//ad)(Cyc(s.d))//v
-    if !isinteger(f) return false end
-    f=Int(f)
-    if !(abs(f) in WGLdims(s)) return false end
-    c[:dims]=abs(f)
-    c[:eps] =sign(f)
-    true
+    RLG=lusztig_induce(s.spets, unichar(s.levi, s.cuspidal))
+    if isnothing(RLG) && isone(s.levi.phi)
+      RLG=Uch.hc_induce(s.spets, unichar(s.levi,s.cuspidal))
+    end
+    if isnothing(RLG) ChevieErr(s, ":RLG failed\n")
+    elseif degree(s)!=CycPol(degree(RLG))
+      ChevieErr(s,":Deg RLG!=sum(eps[i]*ud[i])\n")
+    end
+    RLG
   end
 end
 
-# takes a d-series s with s.spets split; fills in s.charNumbers, s.eps, s.dims
+"""
+`charnumbers(s::Series)`
+
+We  assume `s.spets` is  split. We first  compute `relative_group(s)` if it
+has  not yet been done, as well as `RLG(s)`, and we compute `s.charNumbers,
+s.eps,  s.dims` such that  the `R_L^G` attached  to `s`is equal to `sum_{i∈
+charnumbers(s)}φᵢ  s.eps[i] s.dims[i]`  where `φᵢ`  is the `i`-th unipotent
+character (`s.dims` is thus the list of dimensions of irreducibles of the
+relative Weyl group).
+"""
 function Chars.charnumbers(s::Series)
   get!(s,:charNumbers) do
-  if s.levi==s.spets
+  if s.levi==s.spets # cuspidal series
     s.eps=[1]
     s.dims=[1]
     return [s.cuspidal]
@@ -936,15 +942,38 @@ function Chars.charnumbers(s::Series)
   if !haskey(s,:WGL) && isnothing(relative_group(s)) return nothing end
   rlg=RLG(s)
   uc=UnipotentCharacters(s.spets)
-  if rlg!==nothing
+  if rlg!==nothing # easy case
     charNumbers=findall(!iszero,rlg.v)
-    s.eps=map(sign,rlg.v[charNumbers])
-    s.dims=map(abs,rlg.v[charNumbers])
+    s.eps=sign.(rlg.v[charNumbers])
+    s.dims=abs.(rlg.v[charNumbers])
     s.span=degree(degree(s))-valuation(degree(s)).+uc.a.-uc.A
     return charNumbers
   end
-  cand=canfromdeg(s)
+  # more difficult case: RLG failed
+  ad=count(!isone,relative_degrees(s.levi, s.d))
   ud=CycPoldegrees(uc)
+  cand=filter(i->ad==valuation(ud[i],s.d),eachindex(ud))
+  # now use that S_φ(q)=ε_φ Deg(RLG(λ))/Deg(γ_φ) to make a list of
+  # candidates (charnumber,schur element::CycPol)
+  cand=map(c->Dict(:charNumbers=>c,:sch=>degree(s)//ud[c]),cand)
+  cand=filter(c->positive(c[:sch]),cand) # schur element has Φᵢ
+  ad=CycPol(Pol()-s.d)^ad
+  f=degree(s)//ad
+  if !positive(f)
+    ChevieErr(s, " cuspidal is not ",s.d,"-cuspidal\n")
+    return nothing
+  end
+  v=f(s.d)
+  cand=filter(cand)do c
+    c[:span]=degree(c[:sch])-valuation(c[:sch])
+    f=length(relative_group(s))*(ud[c[:charNumbers]]//ad)(Cyc(s.d))//v
+    if !isinteger(f) return false end
+    f=Int(f)
+    if !(abs(f) in WGLdims(s)) return false end
+    c[:dims]=abs(f)
+    c[:eps] =sign(f)
+    true
+  end
   eig=eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   eig*=map(i->E(order(s.d)^2,i),1:order(s.d)^2)
   cand=filter(c->eigen(UnipotentCharacters(s.spets))[c[:charNumbers]] in eig,cand)
@@ -954,29 +983,21 @@ function Chars.charnumbers(s::Series)
   end
   sort!(cand,by=x->x[:dims])
   sort!(WGLdims(s))
-  foo(n)=getindex.(cand,n)
-  function foo(n,l)
-    if l isa Vector return map(x->x[n], cand[l])
-    else return cand[l][n]
+  function enrich(s,cand)
+    for n in [:charNumbers, :eps, :dims, :span] 
+      setproperty!(s,n,getindex.(cand,n))
     end
-  end
-  check=function ()
-    for n in [:charNumbers, :eps, :dims, :span] setproperty!(s,n,foo(n)) end
-    if !isnothing(RLG(s)) && (filter(i->RLG(s).v[i]!=0,eachindex(RLG(s).v))!=
-              sort(s.charNumbers) || RLG(s).v[s.charNumbers]!=s.dims.*s.eps)
-      ChevieErr(s, ":RLG does not match")
-    end
+    v=fill(0,length(uc))
+    for i in eachindex(s.charNumbers) v[s.charNumbers[i]]=s.dims[i]*s.eps[i] end
+    s.RLG=UniChar(s.spets,v)
     s.charNumbers
   end
-  if length(cand)==length(WGLdims(s)) return check() end
-  ud=foo(:dims).*CycPoldegrees(uc)[foo(:charNumbers)].*foo(:eps)
-  t=maximum(degree.(ud))
-  function c(p)
-    pp=p(Pol())
-    vcat(fill(0,pp.v),pp.c,fill(0,max(0,t-degree(p))))
-  end
-  v = Subsets_sum(improve_type(c(degree(s))), improve_type(toM(map(c, ud))),
-                 improve_type(WGLdims(s)), improve_type(foo(:dims)))
+  cands(n)=getindex.(cand,n)
+  cands(n,l)=l isa Vector ? getindex.(cand[l],n) : cand[l][n]
+  if length(cand)==length(WGLdims(s)) return enrich(s,cand) end
+  ud=cands(:dims).*ud[cands(:charNumbers)].*cands(:eps)
+  v=Subsets_sum(degree(s)(Pol()),map(x->x(Pol()),ud),
+                WGLdims(s),improve_type(cands(:dims)))
   InfoChevie("# ", length(v), " found\n")
   if length(v)>10000
     InfoChevie("# ", length(v), " combinations sum to dimRLG\n")
@@ -985,11 +1006,11 @@ function Chars.charnumbers(s::Series)
     return nothing
   end
   if iscyclic(s)
-    s.charNumbers=foo(:charNumbers)
-    s.dims=foo(:dims)
+    s.charNumbers=cands(:charNumbers)
+    s.dims=cands(:dims)
     mC(s)
     if length(v)>1
-      v=filter(a->foo(:span,a)==map(i->
+      v=filter(a->cands(:span,a)==map(i->
            sum(j->abs(mC(s)[i]-mC(s)[j]),setdiff(a,[i])),a),v)
       if length(v)>10000
           InfoChevie("# ", length(v), " combinations have right span\n")
@@ -1009,20 +1030,20 @@ function Chars.charnumbers(s::Series)
     t=map(k->sum(t[filter(j->i[j]==k,eachindex(i))]),
                        1:nconjugacy_classes(s.spets))
     c=dlCharTable(s.spets)
-    v=filter(a->c[:,foo(:charNumbers,a)]*(foo(:dims,a).*foo(:eps,a))==t,v)
+    v=filter(a->c[:,cands(:charNumbers,a)]*(cands(:dims,a).*cands(:eps,a))==t,v)
   end
   if length(v)>1
-    ChevieErr(s," ",join(factorset(map(x->foo(:charNumbers,x),v)),"x"),
+    ChevieErr(s," ",join(factorset(map(x->cands(:charNumbers,x),v)),"x"),
               " chars candidates: using RLG\n")
     if isnothing(RLG(s)) return nothing end
-    v=filter(l->all(i->RLG(s).v[foo(:charNumbers,i)]!=0,l),v)
+    v=filter(l->all(i->RLG(s).v[cands(:charNumbers,i)]!=0,l),v)
     if length(v)!=1 error() end
   elseif length(v)==0
     ChevieErr(s," no candidates left\n")
     return nothing
   end
   cand=cand[v[1]]
-  check()
+  enrich(s,cand)
   end
 end
 
@@ -1228,7 +1249,7 @@ function RelativeSeries(s)
          end]
     end
     p.WGL=reflection_subgroup(WGL, map(x->x.rootno,r))
-    p.WGLdims=CharTable(relative_group(p)).irr[:,1]
+    p.WGLdims=Int.(CharTable(relative_group(p)).irr[:,1])
     p.e=length(p.WGL)
     return p
   end

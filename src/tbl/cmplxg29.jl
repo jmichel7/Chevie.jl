@@ -779,23 +779,17 @@ chevieset(:G29, :UnipotentCharacters,
   Family(Family(:C2),[21, 9, 19, 43],ennola=2),
   Family(:C1, [20]), 
   Family(Family(:X)(4),[31,28,33,45,46,44],signs=[1,1,1,1,-1,-1],ennola=-3), 
-  #JM 24/2/2003 changed signs of 40 to fit with G443
-  Family(:C1,[17],ennola=-1),
   Family(Family(:F20)(),[34,55,15,14,13,35,52,48,51,36,53,47,54,37,49,11,50,12,
  56,57,58,59],signs=[1,1,-1,-1,1,1,-1,1,-1,1,1,1,1,1,1,1,1,1,1,1,1,1],ennola=4),
   #JM 24/2/2003 changed signs of 51..54 to fit with G443 and exchanged 14
   # and 15 to make generic degrees fit with Malle's "On degrees..."
   Family(conj(Family(:X)(4)),[30,29,32,61,62,60],signs=[1,1,1,1,-1,-1],
          ennola=4),
-  #JM 24/2/2003 changed signs of 40 to fit with G443
-  Family(:C1,[17],ennola=-1),
   Family(:C1, [22]), 
   Family(:C2, [23, 10, 18, 63], ennola=2), 
   Family(Family(:Z4),[64, 26, 65, 24],signs=[-1, 1, 1, -1],ennola=-3),
   Family(:C1, [16], ennola=-1), 
   Family(Family(:X)(4),[6,4,8,67,68,66],signs=[1,1,1,1,-1,-1],ennola=-4), 
-  #JM 24/2/2003 changed signs of 40 to fit with G443
-  Family(:C1,[17],ennola=-1),
   Family(:C1, [2])], 
   :a => [0, 40, 1, 21, 1, 21, 1, 21, 4, 12, 6, 6, 6, 6, 6, 18, 2, 12, 4, 4, 4, 12, 12, 13, 3, 13, 3, 5, 9, 9, 5, 9, 5, 6, 6, 6, 6, 1, 1, 1, 3, 3, 4, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 9, 9, 12, 13, 13, 21, 21, 21], :A => [0, 40, 19, 39, 19, 39, 19, 39, 28, 36, 34, 34, 34, 34, 34, 38, 22, 36, 28, 28, 28, 36, 36, 37, 27, 37, 27, 31, 35, 35, 31, 35, 31, 34, 34, 34, 34, 19, 19, 19, 27, 27, 28, 31, 31, 31, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 36, 37, 37, 39, 39, 39]))
 

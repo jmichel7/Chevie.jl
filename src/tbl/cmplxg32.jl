@@ -83,9 +83,9 @@ end)
 # Irrationality of chars:
 # f36,f45 use E(3); f64 uses root(v*w); f81 uses root(u*v*w,3)
 chevieset(:G32, :HeckeCharTable, function (para, rt)
-  # @Mvp a,b,c,d,e,f possibilities are
-  # a=+-1 c=+-1 b in 1, -1, 3, -3 d=+-E(3) e in +-1,+-3,+-5
+  # possibilities are a=+-1 c=+-1 b in 1, -1, 3, -3 d=+-E(3) e in +-1,+-3,+-5
   a=b=c=e=f=1
+# a=Mvp(:a); b=Mvp(:b); c=Mvp(:c); d=Mvp(:d); e=Mvp(:e); f=Mvp(:f)
   d=E(3)
   u,v,w=para[1]
   f1(u)=map(i->u^length(i),chevieget(:G32, :WordsClassRepresentatives))
@@ -1966,30 +1966,30 @@ u^20*v^20*w^20*(v^3-4*w*v*u+u^3+w^3),27*r*u^33*v^33*w^33*(w^2+v^2+u^2),9*r*u^13*
   merge!(res, chevieget(:G32, :ClassInfo))
   merge!(res, chevieget(:G32, :CharInfo)())
   res[:centralizers]=div.(res[:order],res[:classes])
-  res[:irreducibles]=toM([f1(u), f1(w), f1(v), f4(v, w), f4(u, v), f4(w, u),
-    f4(w, v), f4(u, w), f4(v, u), f5(u, v, w), f5(w, u, v), f5(v, w, u),
-    f5(u, w, v), f5(v, u, w), f5(w, v, u), f6(v, w), f6(u, v), f6(w, u),
-    f10(u, v, w), f10(w, u, v), f10(v, w, u), f10(u, w, v), f10(v, u, w),
-    f10(w, v, u), f15(u, v, w), f15b(u, v, w), f15(w, u, v), f15(v, u, w),
-    f15b(w, u, v), f15b(v, u, w), f20a(u, v, w), f20b(u, v, w), f20c(u, v, w),
-    f20c(w, u, v), f20c(v, w, u), f20c(u, w, v), f20c(v, u, w), f20c(w, v, u),
-    f20d(u, v, w), f20d(w, u, v), f20d(v, w, u), f20d(u, w, v), f20d(v, u, w),
-    f20d(w, v, u), f20a(v, u, w), f20a(w, u, v), f20b(w, u, v), f20b(v, u, w),
-    f24(u, v, w), f24(w, u, v), f24(v, u, w), f30a(u, v, w), f30b(u, v, w),
-    f30b(w, u, v), f30b(v, w, u), f30b(u, w, v), f30b(v, u, w), f30b(w, v, u),
-    f30a(w, u, v), f30a(v, u, w), f36(u, v, w, E(3)), f36(w, u, v, E(3)),
-    f36(v, u, w, E(3)), f36(u, v, w, E(3, 2)), f36(v, u, w, E(3, 2)),
-    f36(w, u, v, E(3, 2)), f40(u, v, w), f40(w, u, v), f40(v, w, u),
-    f40(u, w, v), f40(v, u, w), f40(w, v, u), f45(u, v, w, E(3)),
-    f45(u, w, v, E(3)), f45(v, w, u, E(3)), f45(u, w, v, E(3, 2)),
-    f45(u, v, w, E(3, 2)), f45(v, w, u, E(3, 2)), f60a(u, v, w), f60b(u, v, w),
-    f60c(u, v, w), f60c(w, u, v), f60c(v, w, u), f60c(u, w, v), f60c(v, u, w),
-    f60c(w, v, u), f60a(v, u, w), f60a(w, u, v), f60b(w, u, v), f60b(v, u, w),
-    f64(u, v, w, root(v * w)), f64(u, v, w, -root(v * w)),
-    f64(w, u, v, root(u * v)), f64(v, u, w, root(u * w)),
-    f64(v, u, w, -root(u * w)), f64(w, u, v, -root(u * v)),
-    f80(u, v, w), f80(v, u, w), f80(w, u, v), f81(u, v, w, root(u * v * w, 3)),
-    f81(u, v, w, E(3,2)*root(u*v*w,3)),f81(u, v, w, E(3) * root(u * v * w, 3))])
+  res[:irreducibles]=toM([f1(u),f1(w),f1(v),f4(v,w),f4(u,v),f4(w,u),
+    f4(w,v),f4(u,w),f4(v,u),f5(u,v,w),f5(w,u,v),f5(v,w,u), #12
+    f5(u,w,v),f5(v,u,w),f5(w,v,u),f6(v,w),f6(u,v),f6(w,u),
+    f10(u,v,w),f10(w,u,v),f10(v,w,u),f10(u,w,v),f10(v,u,w), #23
+    f10(w,v,u),f15(u,v,w),f15b(u,v,w),f15(w,u,v),f15(v,u,w),
+    f15b(w,u,v),f15b(v,u,w),f20a(u,v,w),f20b(u,v,w),f20c(u,v,w), #33
+    f20c(w,u,v),f20c(v,w,u),f20c(u,w,v),f20c(v,u,w),f20c(w,v,u),
+    f20d(u,v,w),f20d(w,u,v),f20d(v,w,u),f20d(u,w,v),f20d(v,u,w), #43
+    f20d(w,v,u),f20a(v,u,w),f20a(w,u,v),f20b(w,u,v),f20b(v,u,w),
+    f24(u,v,w),f24(w,u,v),f24(v,u,w),f30a(u,v,w),f30b(u,v,w),    #53
+    f30b(w,u,v),f30b(v,w,u),f30b(u,w,v),f30b(v,u,w),f30b(w,v,u),
+    f30a(w,u,v),f30a(v,u,w),f36(u,v,w,E(3)),f36(w,u,v,E(3)),     #62
+    f36(v,u,w,E(3)),f36(u,v,w,E(3,2)),f36(v,u,w,E(3,2)),
+    f36(w,u,v,E(3,2)),f40(u,v,w),f40(w,u,v),f40(v,w,u),
+    f40(u,w,v),f40(v,u,w),f40(w,v,u),f45(u,v,w,E(3)),            #73
+    f45(u,w,v,E(3)),f45(v,w,u,E(3)),f45(u,w,v,E(3,2)),
+    f45(u,v,w,E(3,2)),f45(v,w,u,E(3,2)),f60a(u,v,w),f60b(u,v,w),
+    f60c(u,v,w),f60c(w,u,v),f60c(v,w,u),f60c(u,w,v),f60c(v,u,w), #85
+    f60c(w,v,u),f60a(v,u,w),f60a(w,u,v),f60b(w,u,v),f60b(v,u,w),
+    f64(u,v,w,root(v*w)),f64(u,v,w,-root(v*w)),                  #92
+    f64(w,u,v,root(u*v)),f64(v,u,w,root(u*w)),
+    f64(v,u,w,-root(u*w)),f64(w,u,v,-root(u*v)),
+    f80(u,v,w),f80(v,u,w),f80(w,u,v),f81(u,v,w,root(u*v*w,3)),  #100
+    f81(u,v,w,E(3,2)*root(u*v*w,3)),f81(u,v,w,E(3)*root(u*v*w,3))])
   res
 end)
 
