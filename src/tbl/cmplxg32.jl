@@ -20,8 +20,8 @@ chevieset(:G32, :NrConjugacyClasses, 102)
 chevieset(:G32, :ParabolicRepresentatives, s->
   [[Int[]], [[1]], [[1, 2], [1, 3]], [1:3, [1, 3, 4]], [1:4]][s+1])
 
-# in BW, classes 34,62,84 are (z^5)^(1/4), (z^5)^(1/2), (z^3)^(1/2)
-# classes 30,41,58 are (z1414)^(1/2), (z14)^(1/2), z(z14)^(1/2)
+# in B(W), classes 34,62,84 are z^(5/4), z^(5/2), z^(3/2)
+# classes 30,41,58 are z^(1/2)14, (z14)^(1/2), z(z14)^(1/2)
 # this gives the monomial part of the eigenvalues. Vanishing due to
 # rationality of characters and Schur relations of Spetsial algebra conclude.
 chevieset(:G32, :ClassNames, [".", "1", "12", "31", "11", "121", "421", "123",

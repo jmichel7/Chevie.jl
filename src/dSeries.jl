@@ -482,9 +482,9 @@ end
 `Series(W, L, cuspidal, d)`
 
 If the reflection coset or group `W` corresponds to the algebraic group `𝐆`
-and  `cuspidal`  to  the  `d`-cuspidal  unipotent  character  `λ`  of  `𝐋`,
-constructs  the `d`-series corresponding to ``R_𝐋^𝐆(λ)``. The result `s`
-is a record with the following fields and functions:
+and  `cuspidal` is the  index of a  `d`-cuspidal unipotent character `λ` of
+the  `d`-split Levi `𝐋`, constructs the `d`-series ``R_𝐋^𝐆(λ)``. The result
+`s` has the following fields and functions:
 
 `s.spets`: the reflection group or coset `W`.
 
@@ -496,11 +496,12 @@ is a record with the following fields and functions:
 
 `relative_group(s)`: the group ``W_𝐆(𝐋,λ)``.
 
+`s.e`: the order of ``W_𝐆(𝐋,λ)``.
+
 `dSeries.RLG(s)`: the `UnipotentCharacter` given by ``R_𝐋^𝐆(λ)``.
 
 `dSeries.eps(s)`:  for each  character `φ`  of `relative_group(s)` the sign
-``(-1)^{n_φ}``  in the cohomology  of the variety  defining `RLG(s)` of the
-corresponding constituent `γᵩ` of `RLG(s)`.
+``(-1)^{n_φ}``  in `RLG(s)` of the corresponding constituent `γᵩ` of `RLG(s)`.
 
 `degree(s)`: the generic degree of `RLG(s)`, as a `CycPol`.
 
@@ -691,7 +692,7 @@ function Weyl.relative_group(s::Series)
   WF=s.spets
   W=Group(WF)
   L=Group(s.levi)
-  if W==L
+  if W==L # cuspidal case
     WGL=coxgroup()
     WGL.reflists=Vector{Int}[]
     s.WGLdims=[1]
@@ -709,10 +710,10 @@ function Weyl.relative_group(s::Series)
   if W isa FiniteCoxeterGroup 
     N1=graph_automorphisms(W,inclusiongens(L))
     N=Group(vcat(gens(N1),gens(L)))
-  else N=normalizer(W, L)
+  else N=normalizer(W,L)
   end
   if !isone(s.levi.phi)
-    if length(L) == 1
+    if length(L)==1
       sz=length(conjugacy_classes(WF)[position_class(WF,s.levi.phi)])
       if sz>100000 
         m=Base.get_extension(Chevie,:Gap4)
