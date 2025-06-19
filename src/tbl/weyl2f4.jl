@@ -126,9 +126,9 @@ chevieset(Symbol("2F4"), :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE[:families][:X2]=Dict{Symbol, Any}(:name=>"X_2",
+CHEVIE[:families][:X2]=Family(Dict{Symbol, Any}(:name=>"X_2",
   :fourierMat=>root(2)//2*[-1 -1;-1 1],:eigenvalues=>[E(8,3),-E(8)],
-  :charLabels=>["1", "2"], :special=>1, :sh=>[1,-1])
+  :charLabels=>["1", "2"], :special=>1, :sh=>[1,-1]))
 
 chevieset(Symbol("2F4"), :sparseFakeDegrees, 
   [[1,0],[1,24],[1,8,1,16],[1,2,-1,4,1,8,-1,12,1,14],

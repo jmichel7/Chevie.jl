@@ -151,6 +151,7 @@ end
 
 function LusztigInductionPieces(LF,WF)
   L=Group(LF)
+  if !isparabolic(L) ChevieErr(L," is not parabolic!!") end
   W=Group(WF)
   if L isa CoxeterGroup && !issubset(inclusiongens(L),inclusiongens(W))
     w=standard_parabolic(W,L)
@@ -322,6 +323,7 @@ function harish_chandra_induction_table(HF, WF)
   if !(HF isa Spets) HF=spets(HF) end
   uh=UnipotentCharacters(HF)
   H=Group(HF)
+  if !isparabolic(H) ChevieErr(H," is not parabolic!!") end
   lu=xrepr(HF;TeX=true)
   lg=xrepr(WF;TeX=true)
   res = InductionTable(fill(0, length(uw),length(uh)),

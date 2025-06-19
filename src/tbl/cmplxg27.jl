@@ -265,7 +265,7 @@ chevieset(:G27, :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE[:families][:Y6] = Dict{Symbol, Any}(:name => "Y_6",
+CHEVIE[:families][:Y6]=Family(Dict{Symbol, Any}(:name => "Y_6",
   :explanation => "subcategory of DQ(B2).20",
   :fourierMat => [-root(5) -root(5) -2*root(5)  -2*root(5)  -5  -5;
      -root(5)  -root(5)  -2*root(5)  -2*root(5)  5  5;
@@ -273,7 +273,7 @@ CHEVIE[:families][:Y6] = Dict{Symbol, Any}(:name => "Y_6",
      -2*root(5)  -2*root(5)  5+root(5)  -5+root(5)  0  0;
      -5  5  0  0  5  -5; 
      -5  5  0  0  -5  5]//10,
-  :eigenvalues=>[1,1,E(5,3),E(5,2),-1,1], :special=>1, :cospecial=>1)
+  :eigenvalues=>[1,1,E(5,3),E(5,2),-1,1], :special=>1, :cospecial=>1))
 
 chevieset(:G27, :UnipotentCharacters,
 Dict{Symbol, Any}(:a => [0, 45, 1, 16, 1, 16, 1, 16, 1, 16, 3, 3, 12, 12, 16,

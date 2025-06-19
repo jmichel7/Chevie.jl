@@ -87,7 +87,7 @@ getf(s::String)=getf(Symbol(s))
 function getf(s::Symbol)
   f=chevieget(:families,s)
   if f isa Function return f end
-  f=(f isa Dict) ? Family(deepcopy(f)) : Family(deepcopy(f.prop))
+  f=copyGapObj(f)
   f.printname="Family("*repr(s)*")"
   f
 end
@@ -154,14 +154,14 @@ function Family(s::Union{String,Symbol},d::Dict=Dict{Symbol,Any}())
 end
 
 function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
-  f=Family(copy(f.prop))
+  f=copyGapObj(f)
   f.charNumbers=v
   merge!(f,d)
   merge!(f,Dict(opt))
 end
 
 function Family(f::Family,d::Dict=Dict{Symbol,Any}();opt...)
-  f=Family(copy(f.prop))
+  f=copyGapObj(f)
   merge!(f,d)
   merge!(f,Dict(opt))
 end

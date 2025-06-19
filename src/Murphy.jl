@@ -130,9 +130,9 @@ end
 # index of <mu> in the list H.partitions, or add <mu> to this list if it is not
 # already there AND initialize the list H.tableaux[mu] and H.Tableaux[...].
 function code_partition(H::HeckeAlgebra, mu)
- t=findfirst(==(mu),H.Murphy.partitions)
+  t=findfirst(==(mu),H.Murphy.partitions)
   if t!==nothing return t end
-  push!(H.Murphy.partitions,deepcopy(mu))
+  push!(H.Murphy.partitions,copy.(mu))
   t=length(H.Murphy.partitions)
   push!(H.Murphy.tableaux,[(ind=1,mu=t,wd=one(H.W),
                     Garnir=Dict{Int,Any}(),toT=Dict{Int,Any}())])
@@ -150,7 +150,7 @@ function code_tableau(H::HeckeAlgebra, mu::Integer, tab)
     ind=length(tabs)+1
     push!(H.Murphy.tableaux[mu],(ind=ind,mu=mu,wd=H.W(Permtableaux(tabs[1],tab)...),
                                  Garnir=Dict{Int,Any}(),toT=Dict{Int,Any}()))
-    push!(tabs,deepcopy(tab))
+    push!(tabs,copy.(tab))
   end
   H.Murphy.tableaux[mu][ind]
 end
@@ -285,7 +285,7 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
         if nodeR.row == nodeS.row
           push!(mr,(mu,is,it)=>q*coeff)
         elseif nodeR.col!=nodeS.col# then t*r is still standard
-         tabr=deepcopy(H.Murphy.Tableaux[mu][it])
+          tabr=copy.(H.Murphy.Tableaux[mu][it])
           tabr[nodeR.row][nodeR.col]=r+1
           tabr[nodeS.row][nodeS.col]=r
           tr=code_tableau(H, mu, tabr)
@@ -338,7 +338,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
     # [node.row,node.col]  and then enter them  in order starting from the
     # next  row  down,  filling  up  the  nodes  around  <node>  and  then
     # continuing on. ie. what almost Murphy called a Garnir tableau).
-    gtab=deepcopy(firstTableau(H,t))
+    gtab=copy.(firstTableau(H,t))
     a=gtab[node.row][node.col] # first number being moved; above a=5 and b=8
     b=gtab[node.row+1][node.col] # last number being moved
     gtab[node.row][node.col+1:end]=a+node.col+1:b
@@ -446,7 +446,7 @@ function GramMatrix(H, mu)
   for s in 1:length(tab), t in s:length(tab)
     h=M(tab[1],tab[s])*M(tab[t],tab[1])
     g[s,t]=iszero(h) ? 0 : h.d.d[1][2]
-    if s!=t g[t,s]=deepcopy(g[s,t]) end
+    if s!=t g[t,s]=copy.(g[s,t]) end
   end
   return g
 end

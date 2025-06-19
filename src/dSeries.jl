@@ -700,7 +700,7 @@ function Weyl.relative_group(s::Series)
     return WGL
   end
   if isone(projector(s)) #central series
-    WGL=deepcopy(W)
+    WGL=copyGapObj(W)
     WGL.toparent=gens(WGL)
     WGL.reflists=map(x->[x],inclusiongens(W))
     s.WGLdims=CharTable(WGL).irr[:,1]

@@ -1258,7 +1258,7 @@ chevieset(:G4_22, :CharInfo, function(ST)
 end)
 
 let r3=root(-3), r6=root(6), r2=root(-2)
-CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24*
+CHEVIE[:families][:G14]=Family(Dict(:fourierMat=>root(-3)//24*
 [4 -4 4 -4 -4 -4 -4 -4 0 0 -4 -4 4 4 0 0 0 0;
 -4 4 4 -4 4 4 4 4 0 0 -4 -4 4 4 0 0 0 0;
 4 4 4 4 -4 -4 4 4 0 0 -4 -4 -4 -4 0 0 0 0;
@@ -1280,10 +1280,10 @@ CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24*
 :eigenvalues=>[E(3,2),E(3,2),E(3,2),-E(3,2),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
                E(4),-E(4),-E(4),E(4)],
 :charLabels=>string.(1:18),:special=>12,:cospecial=>12,:name=>"X_{18}",
-:explanation =>"mysteryG14")
+:explanation =>"mysteryG14"))
 end
 
-CHEVIE[:families][:X18]=Dict(:name=>"X18",:fourierMat=>[
+CHEVIE[:families][:X18]=Family(Dict(:name=>"X18",:fourierMat=>[
 -1 -1 3 -3E(4) 3E(4) 1 3 -3E(4) -3E(4) -3 3 3E(4) 3E(4) 1 -3E(4) -3E(4) 4 4;
 -1 -1 3 3E(4) -3E(4) 1 3 3E(4) 3E(4) -3 3 -3E(4) -3E(4) 1 3E(4) 3E(4) 4 4;
 3 3 3 -3 -3 3 3 3 -3 3 -3 -3 3 3 -3 3 0 0;
@@ -1303,9 +1303,9 @@ CHEVIE[:families][:X18]=Dict(:name=>"X18",:fourierMat=>[
 4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 -4 8;
 4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 8 -4]//12,
 :eigenvalues=>[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
-:explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6)
+:explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6))
 
-CHEVIE[:families][:X8]=Dict(:name=>"X8",:fourierMat=>onmats(
+CHEVIE[:families][:X8]=Family(Dict(:name=>"X8",:fourierMat=>onmats(
 [1 1 2 1 1 -root(-2) -root(-2) -root(-2) -root(-2);
 1 1 2 1 1 root(-2) root(-2) root(-2) root(-2);
 2 2 0 -2 -2 0 0 0 0;
@@ -1318,7 +1318,7 @@ CHEVIE[:families][:X8]=Dict(:name=>"X8",:fourierMat=>onmats(
   perm"(4,5)"),:explanation=>"another mysteryG14",
 :eigenvalues=>[1,1,1,-1,-1,E(16,5),E(16,7),-E(16,5),-E(16,7)],
 :qEigen=>[0,0,0,0,0,1//2,1//2,1//2,1//2],:special=>2,
-:ennola=>-4) # ennola could be -5
+:ennola=>-4)) # ennola could be -5
 
 UnipotentCharacters4_22=[
 Dict{Symbol,Any}(:harishChandra=>[

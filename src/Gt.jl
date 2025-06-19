@@ -113,7 +113,7 @@ end
   unip
 end
 
-@GapObj struct ClassTypes
+@GapObj mutable struct ClassTypes
   p::Int
   WF
   ss::Vector{ClassType}
@@ -305,10 +305,10 @@ function Base.show(io::IO,r::ClassTypes)
 end
 
 function (C::ClassTypes)(;arg...)
-  C=deepcopy(C)
+  C=copyGapObj(C)
   C.specialized=arg
-  C.ss.=map(function (x)
-           res=deepcopy(x)
+  C.ss=map(function (x)
+           res=copyGapObj(x)
            res.nClasses=nconjugacy_classes(x,C.WF,C.p)(;arg...)
            res
           end, C.ss)
@@ -332,8 +332,8 @@ function nconjugacy_classes(r::ClassType,WF,p)
     HF=r.CGs
     H=Group(HF)
     W=Group(WF)
-    P=deepcopy(closed_subsystems(W))
-    elts=P.elements
+    P=closed_subsystems(W)
+    elts=copy(P.elements)
     elts=filter(x->onsets(x,HF.phi)==x && issubset(inclusiongens(H),x),elts)
     P=induced(P,elts)
 # here P poset of HF.phi-stable closed subsets containing roots(H)

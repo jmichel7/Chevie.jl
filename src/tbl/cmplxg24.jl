@@ -150,7 +150,7 @@ chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
   end
 end)
 
-CHEVIE[:families][:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat =>
+CHEVIE[:families][:X7]=Family(Dict{Symbol, Any}(:name => "X7", :fourierMat =>
    [-1//2 1//2 root(-7)//2 root(-7)//2 -1 -1 -1;
     1//2 -1//2 root(-7)//2 root(-7)//2 1 1 1;
     root(-7)//2 root(-7)//2 root(-7)//2 -root(-7)//2 0 0 0;
@@ -159,7 +159,7 @@ CHEVIE[:families][:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat =>
     -1 1 0 0 -E(7,5)-E(7,2) -E(7,4)-E(7,3) -E(7,6)-E(7);
     -1 1 0 0 -E(7,4)-E(7,3) -E(7,6)-E(7) -E(7,5)-E(7,2)]//root(-7),
    :eigenvalues => [1, 1, 1, -1, E(7,4), E(7,2), E(7)],
-   :explanation => "mystery G24", :special => 1, :cospecial => 2)
+   :explanation => "mystery G24", :special => 1, :cospecial => 2))
 
 chevieset(:G24, :UnipotentCharacters,
 Dict{Symbol, Any}(

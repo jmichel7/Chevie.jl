@@ -1,7 +1,7 @@
 name = "Chevie"
 uuid = "367f69f0-ca63-11e8-2372-438b29340c1b"
 authors = ["Jean Michel <jean.michel@imj-prg.fr>"]
-version = "0.1.9"
+version = "0.1.10"
 
 [deps]
 #AllocCheck = "9b6a8646-10ed-4001-bbdc-1d2f46dfbb1a"

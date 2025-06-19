@@ -821,7 +821,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
   else
     classes=map(cartesian(map(x->x.classes,uc)...)) do v
       l=indices.(t)
-      if length(v)==1 && issorted(l[1]) u=deepcopy(v[1])
+      if length(v)==1 && issorted(l[1]) u=copyGapObj(v[1])
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
@@ -879,7 +879,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
 #   if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
     if length(v)==1
       if !isempty(l)
-        v[1]=deepcopy(v[1]); v[1][:levi]=l[1][v[1][:levi]];
+        v[1]=copy(v[1]); v[1][:levi]=l[1][v[1][:levi]];
       end
       return v[1]
     end

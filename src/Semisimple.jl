@@ -735,9 +735,9 @@ function affine(W)
   if length(t)!=1 || !(t[1].series in Symbol.('A':'G'))
     error("affine needs an irreducible Weyl group")
   else
-   t=deepcopy(t)
-   t[1].series=Symbol(string(t[1].series),Char(0x00303))
-   t[1].indices=vcat(t[1].indices,[length(t[1].indices)+1])
+    t=copy.(t)
+    t[1].series=Symbol(string(t[1].series),Char(0x00303))
+    t[1].indices=vcat(t[1].indices,[length(t[1].indices)+1])
   end
   ex=vcat(1:semisimplerank(W),2*nref(W))
   C=improve_type([cartan(W.G,i,j) for i in ex, j in ex])

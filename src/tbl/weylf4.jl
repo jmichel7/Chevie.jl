@@ -618,7 +618,7 @@ chevieset(:F4, :HeckeRepresentation, function (param, sqrtparam, i)
   end
 end)
 
-CHEVIE[:families][:S4]=Dict{Symbol, Any}(
+CHEVIE[:families][:S4]=Family(Dict{Symbol, Any}(
   :group=>Group(perm"(1,4)", perm"(2,4)", perm"(3,4)"),
   :lusztig=>true,
   :charLabels => ["(1,1)", "(1,\\lambda^{\\wedge3})", "(1,\\sigma)",
@@ -670,7 +670,7 @@ CHEVIE[:families][:S4]=Dict{Symbol, Any}(
          Perm(), perm"(3,4)", perm"(1,2)(3,4)", perm"(1,3)(2,4)",
          perm"(1,3,2,4)", Perm(), perm"(1,2,3)", perm"(1,3,2)", Perm(),
          perm"(1,2,3,4)", perm"(1,3)(2,4)", perm"(1,4,3,2)"],
-  :special => 1)
+  :special=>1))
 
 chevieset(:F4, :UnipotentCharacters,Dict{Symbol,Any}(
   :harishChandra=>[

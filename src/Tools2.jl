@@ -1,5 +1,5 @@
 module Tools2
-export eigmat
+export eigmat, copyGapObj
 
 using PuiseuxPolynomials
 using LaurentPolynomials
@@ -135,6 +135,10 @@ function CycPols.CycPol(x::Mvp)
   else CycPol(Pol(x))
   end
 end
+
+# default implementation of copy for a GapObj
+copyGapObj(W)=typeof(W)([k==:prop ? copy(getfield(W,k)) : getfield(W,k) 
+                    for k in fieldnames(typeof(W))]...)
 
 #-------------------- define function to backport to gap3 some values
 Chevie.gap(p::Rational)=string(numerator(p),"/",denominator(p))

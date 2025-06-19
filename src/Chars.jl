@@ -842,12 +842,12 @@ end
 end
 
 function classinfo(t::TypeIrred)
-  cl=deepcopy(convert(Dict{Symbol,Any},chevieget(t,:ClassInfo)))
+  cl=copy(convert(Dict{Symbol,Any},chevieget(t,:ClassInfo)))
   if haskey(t,:orbit)
      l=length(t.orbit)
      t=t.orbit[1]
      if l>1 && haskey(cl,:classes)
-       cl[:classes].*=prod(degrees(t))^(l-1)
+       cl[:classes]=cl[:classes].*prod(degrees(t))^(l-1)
      end
   end
   inds=t.indices

@@ -2973,7 +2973,7 @@ chevieset(:E8, :HeckeRepresentation, function (para, sqrtpara, i)
   -y*WGraphToRepresentation(8,chevieget(:E8,:WGraph)(i),v)
 end)
 
-CHEVIE[:families][:S5] = Dict{Symbol, Any}(
+CHEVIE[:families][:S5]=Family(Dict{Symbol, Any}(
   :group => Group(perm"(1,5)", perm"(2,5)", perm"(3,5)", perm"(4,5)"),
   :lusztig => true,
   :charLabels => ["(1,1)", "(1,\\lambda^4)", "(1,\\lambda^3)",
@@ -3084,7 +3084,7 @@ CHEVIE[:families][:S5] = Dict{Symbol, Any}(
 4)", Perm(), perm"(4,5)", perm"(1,2,3)", perm"(1,2,3)(4,5)", perm"(1,3,2)", perm"(1,3,2)(4,5)", Perm(), perm"(4,5)", perm"(1,2,3)", perm"(1,2,
 3)(4,5)", perm"(1,3,2)", perm"(1,3,2)(4,5)", Perm(), perm"(1,2,3,4)", perm"(1,3)(2,4)", perm"(1,4,3,2)", Perm(), perm"(1,2,3,4,
 5)", perm"(1,3,5,2,4)", perm"(1,4,2,5,3)", perm"(1,5,4,3,2)"], 
-  :special => 1)
+  :special=>1))
 
 chevieset(:E8, :DecompositionMatrix, function (p,)
         if p == 2
