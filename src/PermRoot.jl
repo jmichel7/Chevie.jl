@@ -1711,6 +1711,10 @@ function parabolic_closure(W,I::AbstractVector{<:Integer})
   inclusiongens(reflection_subgroup(W,gens),W)
 end
 
+function parabolic_closure(W,H::Group)
+  reflection_subgroup(W,parabolic_closure(W,inclusiongens(H,W)))
+end
+
 function Groups.normalizer(W::PermGroup,L::PermRootGroup)
   if length(L)==1 return W end
   s=sort(refls(L,unique_refls(L)))

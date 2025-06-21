@@ -245,7 +245,9 @@ export UnipotentCharacters, UniChar, unichar,
        unipotent_character, almostchar, almost_character, dlchar, dlCharTable,
        deligne_lusztigCharTable,
        deligne_lusztig_character, dllefschetz, deligne_lusztig_lefschetz,
-       lusztig_induce, lusztig_restrict, cuspidal, cuspidal_data,
+       lusztig_induce, lusztig_restrict, 
+       hc_induce, hc_restrict, 
+       cuspidal, cuspidal_data,
        CycPoldegrees, on_unipotents, almostcharnames
 
 @GapObj struct UnipotentCharacters
