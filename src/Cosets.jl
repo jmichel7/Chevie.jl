@@ -706,10 +706,14 @@ function Groups.elements(C::ConjugacyClass{T,TW})where {T,TW<:Spets}
   end
 end
 
-function PermRoot.generic_order(WF::Spets,q)
+function PermRoot.generic_order(WF::Spets,q;nc=false)
   if rank(Group(WF))==0 return one(q) end
-  generic_sign(WF)*q^sum(x->x[1]+1,codegrees(WF))*
+  if nc 
+    prod(x->conj(x[2]),degrees(WF))^2*q^sum(x->x[1]-1,degrees(WF))*
+    prod(((d,e),)->q^d-e,degrees(WF))
+  else generic_sign(WF)*q^sum(x->x[1]+1,codegrees(WF))*
     prod(((d,e),)->1-q^d*conj(e),degrees(WF))
+  end
 end
 
 function PhiOnDiscriminant(WF)

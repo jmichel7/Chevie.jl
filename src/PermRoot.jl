@@ -2142,7 +2142,12 @@ julia> PermRoot.generic_order(complex_reflection_group(4),Pol(:q))
 Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴
 ```
 """
-generic_order(W,q=Pol())=rank(W)==0 ? one(q) : q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
+function generic_order(W,q=Pol();nc=false)
+  if rank(W)==0 return one(q) end
+  if nc q^sum(degrees(W).-1)*prod(d->q^d-1,degrees(W))
+  else q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
+  end
+end
 
 """
 `invariants(W::ComplexReflectionGroup)`

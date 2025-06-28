@@ -378,10 +378,10 @@ chevieset(:imp, :B, function (p, q, r)
 end)
 
 chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
-  if q==1 c=fakedegree(Symbol_partition_tuple(c,1))
-  elseif q==p c=fakedegree(Symbol_partition_tuple(c,fill(0,p)))
+  if q==1 fakedegree(Symbol_partition_tuple(c,1))(v)
+  elseif q==p fakedegree(Symbol_partition_tuple(c,fill(0,p)))(v)
+  else nothing
   end
-  c(v)
 end)
 
 # JM 30/11/2000 we have to decide how to represent cuspidals of imprimitive
