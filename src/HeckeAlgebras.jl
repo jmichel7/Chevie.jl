@@ -372,7 +372,7 @@ julia> hecke(complex_reflection_group(3,1,2),q).para # spetsial parameters
 ```
 """
 function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
-  if applicable(simple_reps,W)
+ if applicable(simple_reps,W) && ngens(W)>0
   para=map(eachindex(gens(W)))do i
     j=simple_reps(W)[i]
     if i<=length(para)
@@ -751,12 +751,11 @@ function central_monomials(H::HeckeAlgebra,i)
   irr=CharTable(W).irr[i,:]
   dim=Int(irr[1])
   prod(v)do C
-    q=H.para[restriction(W)[C.s]]
     m=Int.(map(0:C.order-1)do j
      (dim+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
     end)
     E.(dim,-C.N_s*sum(m.*(0:C.order-1)))*
-        prod(j->q[j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
+        prod(j->H.para[C.s][j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
   end
 end
 

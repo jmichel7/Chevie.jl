@@ -20,10 +20,11 @@ chevieset(:G32, :NrConjugacyClasses, 102)
 chevieset(:G32, :ParabolicRepresentatives, s->
   [[Int[]], [[1]], [[1, 2], [1, 3]], [1:3, [1, 3, 4]], [1:4]][s+1])
 
-# in B(W), classes 34,62,84 are z^(5/4), z^(5/2), z^(3/2)
-# classes 30,41,58 are z^(1/2)14, (z14)^(1/2), z(z14)^(1/2)
-# this gives the monomial part of the eigenvalues. Vanishing due to
+# in B(W), classes 34,62,84 are π^(5/24), π^(5/12), π^(3/12)
+# classes 30,41,58 are z^(1/2)z₁₄, z^(1/2)z₁, z^(3/2)z₁, 
+# this gives the eigenvalues up to sign. Vanishing due to
 # rationality of characters and Schur relations of Spetsial algebra conclude.
+# c is 30-regular, d is 24-regular
 chevieset(:G32, :ClassNames, [".", "1", "12", "31", "11", "121", "421", "123",
   "131", "1232", "aa1211211", "4311", "c", "3131", "1211211", "4211", "42211",
   "cc", "a32", "d", "aaaa12", "44211", "1232z", "aa123", "a32zzzzz", "aa121121",
@@ -2239,7 +2240,7 @@ chevieset(:G32, :HeckeRepresentation, function (para, rt, i)
                                                     [3,4,w,-v]]],[w,v])
   f5(u,w,v)=u^0*v^0*w^0*WGraph2Representation([[[1,3],[1,4],[2],[2,4],[3]],
     [[1,2,u,-w],[1,3,u,-w],[1,5,u,0],[2,4,u,-w],[3,4,0,-w],[4,5,-w,u]]],[u,w])
-  f6(v,w)=map(x->exterior_power(x,2)//w,f4(v,w))
+  f6(v,w)=map(x->exterior_power(x,2).//w,f4(v,w))
   f10(u,w,v)=WGraph2Representation([[[[2],[]],[[],[1,2]],[[1],[]],[[],[2,3]],
     [[3],[]],[[],[1,3]],[[],[2,4]],[[],[1,4]],[[],[3,4]],[[4],[]]],
     [[1,2,-1,u*v+w^2],[1,3,w,w],[1,4,1,-u*v-w^2],[1,5,w,w],[1,6,v,0],

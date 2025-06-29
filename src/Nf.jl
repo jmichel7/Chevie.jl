@@ -271,6 +271,8 @@ NF(gens::Union{Cyc,Root1,Integer,Rational{<:Integer}}...)=NF(collect(Cyc.(gens))
 Base.:(==)(a::NumberField,b::NumberField)=conductor(a)==conductor(b) && 
   gens(a.stabilizer)==gens(b.stabilizer)
 
+Base.:hash(a::NumberField,h::UInt)=hash(conductor(a),hash(gens(a.stabilizer),h))
+
 CyclotomicNumbers.conductor(F::NumberField)=F.conductor
 
 function Base.in(c::Union{Cyc,Root1,Integer,Rational{<:Integer}},F::NumberField)
