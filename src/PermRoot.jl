@@ -1706,6 +1706,7 @@ julia> parabolic_closure(W,[1,2])
 """
 function parabolic_closure(W,I::AbstractVector{<:Integer})
   if isempty(I) return I end
+  if isparabolic(reflection_subgroup(W,I)) return I end
   v=rowspace(toM(roots(W,I)))
   gens=filter(i->in_rowspace(roots(W,i),v),eachindex(roots(W)))
   inclusiongens(reflection_subgroup(W,gens),W)

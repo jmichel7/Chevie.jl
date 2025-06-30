@@ -1249,7 +1249,8 @@ function Base.show(io::IO,x::FactSchur)
   print(io,c,v)
 end
 
-expand(x::FactSchur)=x.factor*prod(v->v.pol(v.monomial),x.vcyc;init=1)
+# c is here to be able to multiply by big(1)
+expand(x::FactSchur;c=1)=x.factor*prod(v->v.pol(v.monomial)*c,x.vcyc;init=1)
 
 Base.:*(a::FactSchur, b::Number)=FactSchur(a.factor*b,copy(a.vcyc))
 Base.:*(b::Number,a::FactSchur)=FactSchur(a.factor*b,copy(a.vcyc))

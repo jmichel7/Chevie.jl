@@ -1,6 +1,6 @@
 #  tbl/cmplxg31.jl       CHEVIE library                 Jean Michel
 #  Copyright (C) 1998-  The CHEVIE Team
-#
+
 chevieset(:G31,:BraidRelations,[[[1,4,1],[4,1,4]],[[2,4,2],[4,2,4]],
   [[5,3,5],[3,5,3]],[[2,5,2],[5,2,5]],[[2,3,1],[1,2,3]],[[2,3,1],[3,1,2]],
   [[1,5],[5,1]],[[3,4],[4,3]],[[5,4],[4,5]]])
@@ -8,12 +8,13 @@ chevieset(:G31,:BraidRelations,[[[1,4,1],[4,1,4]],[[2,4,2],[4,2,4]],
 # For the data relative to this group see
 # H.Maschke ``Ueber die quaternäre, endliche, lineare Substitutionsgruppe der
 # Borchardt'schen Moduln'', Math. Ann. 30 (1887) 496--515
-#
+
 # The group <T,U> described by Maschke where
-# T=[-1 1  E(4) -E(4);   U=[E(4)    0  0  0;
-#     1 1  E(4)  E(4);         0 E(4)  0  0;
-#    -1 1 -E(4)  E(4);         0    0  1  0;
-#     1 1 -E(4) -E(4)]//2      0    0  0  1]//E(8)
+# U=Diagonal([E(4),E(4),1,1])//E(8)
+# T=[-1 1  E(4) -E(4);
+#     1 1  E(4)  E(4);
+#    -1 1 -E(4)  E(4);
+#     1 1 -E(4) -E(4)]//2
 # is *not* G31 which is in fact the group <T,U*E(8)>.
 
 chevieset(:G31,:simpleroots,[2E(4) 0 0 0;
@@ -33,16 +34,17 @@ chevieset(:G31,:ParabolicRepresentatives, s->
 
 chevieset(:G31, :NrConjugacyClasses, 59)
 
+# c=12345 is a 24-th root of π; c1 is a 20-th root of π
 # class 33=ccc4 has square z45 in BW, which gives up to sign its eigenvalues.
 # Adding the Schur relations this enables to determine H(W) character values.
 # similarly class 24=ccc123 has square z123123 in BW.
-# [14]-z->[41] [19]-z->[35]-z->[37]-z->[21]  [21]^2=[41]
-chevieset(:G31,:ClassNames,[".","1","34","12","25","254","321","214","231",
-  "125","354","124","c1c1c1","5314","1243","3241","c1","2121","53142","zc",
-  "41352","31314","c","ccc123","523523","24z","142142","24zzz","c1c1",
-  "4124131","354z","354zzz","ccc4","cccc","523524124","313141314","253254214",
-  "cc","24zz","zzcc","4135241352","124zz","ccc","zccc","1212124zz","1243z",
-  "43z","c1c1c1c1","1243zz","1212z","1z","1zzz","12zz","123z","123zz","zcc",
+# [14]⋅z->[41] [19]⋅z->[35]⋅z->[37]⋅z->[21]  [21]^2=[41]
+chevieset(:G31,:ClassNames,[".","1","34","12","25","254","321","325","231",
+  "125","354","235","c1c1c1","5314","2351","1352","c1","2121","53142","zc",
+  "41352","12125","c","ccc123","523523","24z","253253","24zzz","c1c1",
+  "5235212","354z","354zzz","ccc4","cccc","523524124","121252125","253254214",
+  "cc","24zz","zzcc","4135241352","235zz","ccc","zccc","2323235zz","2351z",
+  "43z","c1c1c1c1","2351zz","1212z","1z","1zzz","12zz","123z","123zz","zcc",
   "z","zzz","zz"])
 
 chevieset(:G31, :WordsClassRepresentatives, map(x->
@@ -215,7 +217,7 @@ chevieset(:G31, :SchurElement, function (p, para, rootpara)
   r[:coeff]*q^r[:factor]*prod(x->cyclotomic_polynomial(x)(q),r[:vcyc])
 end)
 
-chevieset(:G31, :FactorizedSchurElement, function (p, para, root)
+chevieset(:G31, :FactorizedSchurElement, function (p, para, rt)
   ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
   data=chevieget(:G31, :SchurData)[ci]
   r=chevieget(:G31, :SchurModels)[Symbol(data[:name])]
@@ -789,7 +791,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
     f16(p,r),f16(r,p),f17(r,p,-1),f17(p,r,-1),f17(r,p,1),f17(p,r,1),f21(r,p),
     f21(p,r),f23(r,p),f23(p,r),f25(r,p),f26(r,p),f27(r,p,-1),f27(p,r,1),
     f27(r,p,1),f27(p,r,-1),f31(r,p,1),f31(p,r,1),f31(r,p,-1),f31(p,r,-1),
-    f35(r,p,1),f35(r,p,-1),f37(r,p),f37(p,r),f39(r,p,1),f39(r,p,-1),f41(r,p),
+    f35(r,p,-1),f35(r,p,1),f37(r,p),f37(p,r),f39(r,p,1),f39(r,p,-1),f41(r,p),
     f42(r,p,1),f42(p,r,1),f42(r,p,-1),f42(p,r,-1),f46(r,p),f46(p,r),f48(r,p,-1),
     f48(r,p,1),f50(r,p,1),f50(p,r,1),f50(r,p,-1),f50(p,r,-1),f54(r,p),f54(p,r),
     f56(r,p),f56(p,r),f58(r,p,E(4)),f58(r,p,-E(4))])
@@ -2290,8 +2292,8 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
   elseif i==32 f31(y,x,1)
   elseif i==33 f31(x,y,-1)
   elseif i==34 f31(y,x,-1)
-  elseif i==35 f35(x,y,1)
-  elseif i==36 f35(x,y,-1)
+  elseif i==35 f35(x,y,-1)
+  elseif i==36 f35(x,y,1)
   elseif i==37 f37(x,y)
   elseif i==38 f37(y,x)
   elseif i==39 nothing

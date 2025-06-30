@@ -23,7 +23,7 @@ position_cox(W)=position_regular_class(W,maximum(degrees(W)))
 # charvalues of H on word w living in some parabolic 
 function charvalues_parabolic(H,w)
   W=H.W
-  pw=parabolic_closure(W,w)
+  pw=parabolic_closure(W,sort(unique(w)))
   WI=reflection_subgroup(W,pw)
   if WI==W return end
   println("w=",joindigits(w))
@@ -37,7 +37,7 @@ end
 
 # find the specialization of Mvp parameters leading to group algebra
 function group_specialization(H)
-  vcat(unique(vcat(map(H.para)do p
+  res=vcat(unique(vcat(map(H.para)do p
      e=length(p)
      map(1:e)do i
       v=scalar(p[i])
@@ -52,6 +52,7 @@ function group_specialization(H)
       first(variables(m))=>root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m)))
     end
   end))...)
+  filter(!isnothing,res)
 end
 
 # get central characters without having to know Chartable
@@ -97,8 +98,8 @@ function checkparabolic(W)
   l=combinations(1:ngens(W))
   if semisimplerank(W)<ngens(W)
     ls=map(x->length(parabolic_closure(W,x)),l)
-    lI=l[filter(i->ls[i]==length(l[i]),1:Length(l))]
-    ps=w->ls[Position(l,Set(w))]
+    lI=l[filter(i->ls[i]==length(l[i]),1:length(l))]
+    ps=w->ls[findfirst(==(sort(unique(w))),l)]
   else lI=l;ps=w->length(unique(w))
   end
   lI=filter(x->count(j->issubset(x,j),lI)==2,lI)
@@ -405,7 +406,7 @@ function hard32(i)
       end
     else v=0
       for (m,c) in l[j] 
-        v+=Mvp(Symbol("x",i,"_",j,"_",c))*m
+        v+=Mvp(Symbol("x_",j,"_",c))*m
       end
       if ismissing(t[j]) t[j]=v end
     end
@@ -423,6 +424,25 @@ function schurrel(H,v;p=Perm())
   sum(v.*cs)
 end
 
+# return Lcm(schur).//s
+function schur2(H;c=1)
+  un=prod(vcat(map(x->one.(x),H.para)...))
+  if un isa Mvp
+    s=factorized_schur_elements(H)
+    Lcm=lcm(s...)
+    s=Ref(Lcm).//s
+    print("expanding lcm(Sᵪ)/Sᵪ quotients..")
+    t=@elapsed s=HeckeAlgebras.expand.(s;c).*un
+    Lcm=HeckeAlgebras.expand(Lcm;c)
+    println("done in ",t)
+  else
+    s=schur_elements(H)
+    Lcm=s[charinfo(H.W).positionId]
+    s=Lcm./s
+  end
+  s
+end
+
 function ctH32()
   W=crg(32)
   vars=Mvp.([:u,:v,:w])
@@ -436,3 +456,13 @@ function ctH32()
   mergepartial(t,from_representations(H))
   t
 end
+
+function meminfo_julia()
+  pr(m)=rpad(string(round(m;digits=3)),5,'0')
+  # @printf "GC total:  %9.3f MiB\n" Base.gc_total_bytes(Base.gc_num())/2^20
+  # Total bytes (above) usually underreports, thus I suggest using live bytes (below)
+  println("GC live: ", pr(Base.gc_live_bytes()/2^20),"MB")
+  println("JIT:     ", pr(Base.jit_total_bytes()/2^20),"MB")
+  println("Max. RSS:", pr(Sys.maxrss()/2^20),"MB")
+end
+

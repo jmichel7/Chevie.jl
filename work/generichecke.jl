@@ -39,15 +39,16 @@ function generic_hecke(W,type;power=1)
 end
 
 # Check SchurElements(H) satisfy Schur relations
-function CheckSchurRelations(H)
+# c is here to be able to make it big(1)
+function CheckSchurRelations(H;c=1)
   un=prod(vcat(map(x->one.(x),H.para)...))
   if un isa Mvp
     s=factorized_schur_elements(H)
     Lcm=lcm(s...)
     s=Ref(Lcm).//s
     print("expanding lcm(Sᵪ)/Sᵪ quotients..")
-    t=@elapsed s=HeckeAlgebras.expand.(s).*un
-    Lcm=HeckeAlgebras.expand(Lcm)
+    t=@elapsed s=HeckeAlgebras.expand.(s;c).*un
+    Lcm=HeckeAlgebras.expand(Lcm;c)
     println("done in ",t)
   else
     s=schur_elements(H)
@@ -55,13 +56,18 @@ function CheckSchurRelations(H)
     s=Lcm./s
   end
   ct=CharTable(H)
+  ok=0
   t=@elapsed for i in 1:nconjugacy_classes(H.W)
+    if any(ismissing,ct.irr[:,i])
+      println("# entries missing in $i-th column")
+      continue
+    end
     p=sum(s.*ct.irr[:,i])
-    if i==1 && p!=Lcm error("Sumᵪ χ(1)/Sᵪ not 1\n")
+    if i==1 && p!=Lcm println("!!! Sumᵪ χ(1)/Sᵪ not 1")
     elseif i!=1 && !iszero(p)
-      error("Sumᵪ χ(",Ordinal(i)," class)/Sᵪ not 0\n");
-    else print(".")
+      println("!!! Sumᵪ χ(",ordinal(i)," class)/Sᵪ not 0");
+    else print(".");ok+=1
     end
   end
-  println(" done in ", t)
+  println("satisfied $ok/$(length(s)) relations; done in ", t)
 end
