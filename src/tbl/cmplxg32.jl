@@ -1062,7 +1062,8 @@ u^28*v^28*w^12,2*u^3*v^7*w^4+2*u^3*v^8*w^3+j^2*u^4*v^4*w^6+
 u^4*v^10+2*j^2*u^5*v^4*w^5+2*j^2*u^5*v^5*w^4+2*u^5*v^7*w^2+2*u^5*v^9+
 (-2*j-j^2)*u^6*v^4*w^4+2*u^6*v^6*w^2+u^6*v^8+2*u^7*v^3*w^4+4*u^7*v^4*w^3+
 2*u^7*v^5*w^2+2*u^8*v^3*w^3+u^8*v^4*w^2+u^8*v^6+2*u^9*v^5+u^10*v^4,
-u^4*v^4*w^2*d*(u+v+w),
+#u^4*v^4*w^2*d*(u+v+w),
+u^4*v^4*w^2*j*(u+v+w),
 0,3*j^2*u^8*v^11*w^4-5*j^2*u^9*v^9*w^5+3*j^2*u^11*v^8*w^4,
 u^3*v^7*w^4+u^3*v^8*w^3+j^2*u^4*v^5*w^5+u^4*v^7*w^3+u^4*v^8*w^2+u^4*v^10+
 j^2*u^5*v^4*w^5+j^2*u^5*v^5*w^4+u^5*v^7*w^2+u^5*v^9+u^7*v^3*w^4+
@@ -1092,7 +1093,8 @@ u^25*v^26*w^13-u^26*v^25*w^13-u^26*v^26*w^12,j*u^40*v^40*w^23+
 2*u^4*v^9+3*j^2*u^5*v^4*w^4+2*u^5*v^6*w^2+u^5*v^8+2*u^6*v^3*w^4+
 3*u^6*v^4*w^3+2*u^6*v^5*w^2+u^6*v^7+4*u^7*v^3*w^3+3*u^7*v^4*w^2+u^7*v^6+
 u^8*v^5+2*u^9*v^4,
-j^2*d*u^12*v^12*w^6*(u+v+w),
+#j^2*d*u^12*v^12*w^6*(u+v+w),
+j^3*u^12*v^12*w^6*(u+v+w),
 -j^2*u^34*v^36*w^18-j^2*u^36*v^34*w^18-j^2*u^36*v^36*w^16,
 -3*j*u^4*v^4*w^2,j^2*u^8*v^8*w^7+
 4*j^2*u^8*v^9*w^6+4*j^2*u^8*v^10*w^5+7*j^2*u^8*v^11*w^4+
@@ -1974,19 +1976,19 @@ u^20*v^20*w^20*(v^3-4*w*v*u+u^3+w^3),27*r*u^33*v^33*w^33*(w^2+v^2+u^2),9*r*u^13*
     f10(u,v,w),f10(w,u,v),f10(v,w,u),f10(u,w,v),f10(v,u,w), #23
     f10(w,v,u),f15(u,v,w),f15b(u,v,w),f15(w,u,v),f15(v,u,w),
     f15b(w,u,v),f15b(v,u,w),f20a(u,v,w),f20b(u,v,w),f20c(u,v,w), #33
-    f20c(w,u,v),f20c(v,w,u),f20c(u,w,v),f20c(v,u,w),f20c(w,v,u),
+    f20c(w,u,v),f20c(v,w,u),f20c(u,w,v),f20c(v,u,w),f20c(w,v,u), #38
     f20d(u,v,w),f20d(w,u,v),f20d(v,w,u),f20d(u,w,v),f20d(v,u,w), #43
-    f20d(w,v,u),f20a(v,u,w),f20a(w,u,v),f20b(w,u,v),f20b(v,u,w),
+    f20d(w,v,u),f20a(v,u,w),f20a(w,u,v),f20b(w,u,v),f20b(v,u,w), #48
     f24(u,v,w),f24(w,u,v),f24(v,u,w),f30a(u,v,w),f30b(u,v,w),    #53
-    f30b(w,u,v),f30b(v,w,u),f30b(u,w,v),f30b(v,u,w),f30b(w,v,u),
+    f30b(w,u,v),f30b(v,w,u),f30b(u,w,v),f30b(v,u,w),f30b(w,v,u), #58
     f30a(w,u,v),f30a(v,u,w),f36(u,v,w,E(3)),f36(w,u,v,E(3)),     #62
-    f36(v,u,w,E(3)),f36(u,v,w,E(3,2)),f36(v,u,w,E(3,2)),
-    f36(w,u,v,E(3,2)),f40(u,v,w),f40(w,u,v),f40(v,w,u),
+    f36(v,u,w,E(3)),f36(u,v,w,E(3,2)),f36(v,u,w,E(3,2)),         #65
+    f36(w,u,v,E(3,2)),f40(u,v,w),f40(w,u,v),f40(v,w,u),          #69
     f40(u,w,v),f40(v,u,w),f40(w,v,u),f45(u,v,w,E(3)),            #73
-    f45(u,w,v,E(3)),f45(v,w,u,E(3)),f45(u,w,v,E(3,2)),
-    f45(u,v,w,E(3,2)),f45(v,w,u,E(3,2)),f60a(u,v,w),f60b(u,v,w),
+    f45(u,w,v,E(3)),f45(v,w,u,E(3)),f45(u,w,v,E(3,2)),           #76
+    f45(u,v,w,E(3,2)),f45(v,w,u,E(3,2)),f60a(u,v,w),f60b(u,v,w), #80
     f60c(u,v,w),f60c(w,u,v),f60c(v,w,u),f60c(u,w,v),f60c(v,u,w), #85
-    f60c(w,v,u),f60a(v,u,w),f60a(w,u,v),f60b(w,u,v),f60b(v,u,w),
+    f60c(w,v,u),f60a(v,u,w),f60a(w,u,v),f60b(w,u,v),f60b(v,u,w), #90
     f64(u,v,w,rv*rw),f64(u,v,w,-rv*rw),                  #92
     f64(w,u,v,ru*rv),f64(v,u,w,ru*rw),
     f64(v,u,w,-ru*rw),f64(w,u,v,-ru*rv),

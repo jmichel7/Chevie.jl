@@ -9,7 +9,9 @@ function schurrel(H;p=Perm())
   cs=map(x->x(Pol()),s)
   ct=CharTable(H)
   good=filter(i->!any(ismissing,ct.irr[:,i]),1:nconjugacy_classes(H.W))
-  filter(i->!iszero(sum(ct.irr[:,i].*cs)),good)
+  sums=map(i->sum(ct.irr[:,i].*cs),good)
+  good[findall(i->(good[i]!=1 && !iszero(sums[i]))||
+                  (good[i]==1 && sums[i]!=ll(Pol())),eachindex(good))]
 end
  
 # classtext of "canonical" generator of the center
@@ -38,21 +40,32 @@ end
 # find the specialization of Mvp parameters leading to group algebra
 function group_specialization(H)
   res=vcat(unique(vcat(map(H.para)do p
-     e=length(p)
-     map(1:e)do i
-      v=scalar(p[i])
-      if !isnothing(v)
-        if v!=E(e)^(i-1) error(v," is not ",E(e)^(i-1)) end
-        return nothing
+    e=length(p)
+    map(1:e)do i
+      if p[i] isa Mvp
+        v=scalar(p[i])
+        if !isnothing(v)
+          if v!=E(e)^(i-1) error(v," is not ",E(e)^(i-1)) end
+          return nothing
+        end
+        if length(p[i])!=1 || length(first(term(p[i],1)))!=1
+          error(p[i]," is not a power of a variable")
+        end
+        m=first(term(p[i],1))
+        first(variables(m))=>coefftype(H)(root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m))))
+      else
+        if degree(p[i])!=valuation(p[i])
+          error(p[i]," is not a power of a variable")
+        end
+        if degree(p[i])==0 && p[i][0]!=E(e)^(i-1)
+          error(p[i]," is not ",E(e)^(i-1))
+        end
+        d=degree(p[i]);c=p[i][d]
+        root(E(e)^(i-1)//c,d)
       end
-      if length(p[i])!=1 || length(first(term(p[i],1)))!=1
-        error(p[i]," is not a power of a variable")
-      end
-      m=first(term(p[i],1))
-      first(variables(m))=>coefftype(H)(root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m))))
     end
   end))...)
-  filter(!isnothing,res)
+  unique(filter(!isnothing,res))
 end
 
 function check_specialize(H;spec=group_specialization(H))
@@ -75,8 +88,8 @@ function HeckeCentralCharacters(H,z=gcd(degrees(H.W)))
   v=map(m->root(m,z),central_monomials(H))
   v1=CharTable(W).irr[:,position_regular_class(W,z)]
   v2=CharTable(W).irr[:,position_class(W,one(W))]
-  pp=filter(!isnothing,group_specialization(H))
-  map((x,y,z)->x*y//z//value(Mvp(x),pp...),v,v1,v2)
+  pp=group_specialization(H)
+  map((x,y,z)->x*y//z//value(x,pp...),v,v1,v2)
 end
 
 # cutz(l,z) for word l returns a,l' such that l'=replace a times z->[] in l
@@ -426,6 +439,35 @@ function hard32(H,i)
   t
 end
   
+function galv(vv)
+  u,v,w=Mvp(:u,:v,:w)
+  l=[value(vv[32],:u=>w,:v=>u,:w=>v)-vv[47]]
+  push!(l,value(vv[32],:u=>v,:v=>u)-vv[48])
+  push!(l,value(vv[49],:u=>w,:v=>u,:w=>v)-vv[50])
+  push!(l,value(vv[49],:u=>v,:v=>u)-vv[51])
+  push!(l,value(vv[52],:u=>w,:v=>u,:w=>v)-vv[59])
+  push!(l,value(vv[52],:u=>v,:v=>u)-vv[60])
+  push!(l,value(vv[53],:u=>w,:v=>u,:w=>v)-vv[54])
+  push!(l,value(vv[53],:u=>v,:v=>w,:w=>u)-vv[55])
+  push!(l,value(vv[53],:v=>w,:w=>v)-vv[56])
+  push!(l,value(vv[53],:u=>v,:v=>u)-vv[57])
+  push!(l,value(vv[53],:u=>w,:w=>u)-vv[58])
+  push!(l,value(vv[67],:u=>w,:v=>u,:w=>v)-vv[68])
+  push!(l,value(vv[67],:u=>v,:v=>w,:w=>u)-vv[69])
+  push!(l,value(vv[67],:v=>w,:w=>v)-vv[70])
+  push!(l,value(vv[67],:u=>v,:v=>u)-vv[71])
+  push!(l,value(vv[67],:u=>w,:w=>u)-vv[72])
+  push!(l,value(vv[73],:u=>u,:v=>w,:w=>v)-vv[74])
+  push!(l,value(vv[73],:u=>v,:v=>w,:w=>u)-vv[75])
+  push!(l,value(vv[77],:v=>w,:w=>v)-vv[76])
+  push!(l,value(vv[77],:u=>v,:v=>w,:w=>u)-vv[78])
+  push!(l,vv[73]-conj.(vv[77]))
+  push!(l,value(vv[80],:u=>w,:v=>u,:w=>v)-vv[89])
+  push!(l,value(vv[80],:u=>v,:v=>u)-vv[90])
+  push!(l,vv[101]-conj.(vv[102]))
+  l
+end
+
 function schurrel(H,v;p=Perm())
   spec=[:u=>Mvp(:x),:v=>E(3),:w=>E(3,2)]
   v=map(x->value(x,spec...),v)
