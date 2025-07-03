@@ -40,10 +40,10 @@ end
 
 # Check SchurElements(H) satisfy Schur relations
 # c is here to be able to make it big(1)
-function CheckSchurRelations(H;c=1)
+function CheckSchurRelations(H;c=1,perm=Perm())
   un=prod(vcat(map(x->one.(x),H.para)...))
   if un isa Mvp
-    s=factorized_schur_elements(H)
+    s=invpermute(factorized_schur_elements(H),perm)
     Lcm=lcm(s...)
     s=Ref(Lcm).//s
     print("expanding lcm(Sᵪ)/Sᵪ quotients..")

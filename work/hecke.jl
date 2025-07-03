@@ -49,10 +49,23 @@ function group_specialization(H)
         error(p[i]," is not a power of a variable")
       end
       m=first(term(p[i],1))
-      first(variables(m))=>root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m)))
+      first(variables(m))=>coefftype(H)(root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m))))
     end
   end))...)
   filter(!isnothing,res)
+end
+
+function check_specialize(H;spec=group_specialization(H))
+  ctW=CharTable(H.W).irr
+  xprintln("using ",spec)
+  ctH=CharTable(H).irr
+  ctH=map(ctH)do p
+    if ismissing(p) return p
+    else return value(p,spec...)
+    end
+  end
+  bad=filter(i->!ismissing(ctH[i]) && ctH[i]!=ctW[i],CartesianIndices(ctH))
+  #length(bad)
 end
 
 # get central characters without having to know Chartable
@@ -255,6 +268,7 @@ function fromrootpi(H,w)
   n=length(ct)
   t=convert(Matrix{Union{Missing,coefftype(H)}},fill(missing,n,n))
   for x in p[setdiff(1:length(p),bad)]
+    @show x
     t[:,x[2]]=map((m,c)->m^(x[1]//o)*c[x[2]]//
                        value(m^(x[1]//o),group_specialization(H)...),
        central_monomials(H),eachrow(CharTable(W).irr))
@@ -268,7 +282,7 @@ function from_representations(H,inds=1:nconjugacy_classes(H.W))
   n=length(cl)
   t=convert(Matrix{Union{Missing,coefftype(H)}},fill(missing,n,n))
   for i in inds
-    r=representation(H,i)
+    r=improve_type(representation(H,i))
     if !isnothing(r)
       print(i," ")
       t[i,:]=traces_words_mats(r,cl)
@@ -379,8 +393,7 @@ function eigenrootspi(H,r,I,r1)
   tally.(res)
 end
 
-function hard32(i)
- H=hecke(crg(32),[Vector{Mvp{Cyc{Rational{Int}},Rational{Int}}}(Mvp.([:u,:v,:w]))])
+function hard32(H,i)
   if i==30 l=eigenrootspi(H,1//2,[1,4],1)
   elseif i==41 l=eigenrootspi(H,1//2,[1],1)
   elseif i==58 l=eigenrootspi(H,3//2,[1],1)
@@ -399,7 +412,6 @@ function hard32(i)
       ratio=ct[j]//v
       if isinteger(ratio) && abs(Int(scalar(ratio)))<=l[j][1][2]
         if ismissing(t[j]) t[j]=l[j][1][1]*ratio
-        elseif t[j]!=l[j][1][1]*ratio 
            error("l[$j]=",l[j][1][1]*ratio ," but t[$j]=",t[j])
         end
       else error("l[$j]=",l[j]," but ct[$j,$i]=",ct[j])
@@ -466,3 +478,4 @@ function meminfo_julia()
   println("Max. RSS:", pr(Sys.maxrss()/2^20),"MB")
 end
 
+malleperm=perm"(1,2)(3,6,5,4)(7,8)(9,10)(13,14)(15,16)(17,18,19,20)(21,22,24,23)(27,30,29,28)(31,32)(33,34)(37,38)(39,40)(42,43)(44,45)(46,47)(50,51,52,53)(54,55)(56,57)"

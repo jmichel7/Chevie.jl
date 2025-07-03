@@ -10,7 +10,7 @@ See the helpstring for RG  to see how to apply them.
 There  are  also  some  useful  functions:  `cmpvec,  cmptables,  cmpcycpol,
 check_relation`
 
-There is also help for `Tchaparams, Tfamilies, reflectiondegrees`
+There is also help for `Tcharparams, Tfamilies, reflectiondegrees`
 """
 module Tests
 using Chevie
@@ -217,7 +217,7 @@ function cmpcycpol(a,b;na="a",nb="b")
 end
 #---------------- test: representations ------------------------
 # find matrices gr as a representation of a group or Hecke algebra
-function findrepresentation(W,gr,check=false)
+function findrepresentation(W,gr;check=false)
   O=W
   if O isa HeckeAlgebra W=O.W end
   t=word.(conjugacy_classes(W))
@@ -228,8 +228,11 @@ function findrepresentation(W,gr,check=false)
   pos=1:length(l)
   gens=gr
   if isempty(gens) return 1 end
+  if check rr=traces_words_mats(gens,t) end
   for (i,w) in enumerate(t)
-    r=traces_words_mats(gens,[w])[1]
+    if check r=rr[i]
+    else r=traces_words_mats(gens,[w])[1]
+    end
 #   println("w=$w r=$r")
 #   if O isa HeckeAlgebra r=r*O.unit end
     pos=filter(j->iszero(ct[j,l[i]]-r),pos)
@@ -244,7 +247,7 @@ function findrepresentation(W,gr,check=false)
 end
 
 Base.numerator(p::Mvp)=p*denominator(p)
-function Trepresentations(W,l=Int[])
+function Trepresentations(W,l=Int[];check=true)
   O=W
   if (W isa HeckeAlgebra) || (W isa HeckeCoset)
     H=W
@@ -264,7 +267,7 @@ function Trepresentations(W,l=Int[])
                           size(r.gens[1],1),"...") end
       if !isrepresentation(H,r) ChevieErr(i," is not a representation") end
       if r isa NamedTuple println();continue end # for now... Should be fixed
-      pos=findrepresentation(O,gr,true)
+      pos=findrepresentation(O,gr;check)
       if pos==i println("found")
       elseif pos!=false 
          ChevieErr("repr. ",i," character found at ",pos,"\n")
@@ -824,6 +827,7 @@ function Tcharparams(W)
     end
   end
   perm=Perm()
+  n=xrepr(n;limit=true)
   if n=="G₃‚₃‚₄" rules()
     check("phi6,5",v->intensor(v[1],"phi4,1","phi4,1"))
   elseif n=="G₃‚₃‚₅" rules()
@@ -904,6 +908,7 @@ function Tcharparams(W)
   elseif n in ["G₆","G₈","G₉","G₁₀","G₁₁","G₁₃","G₁₄","G₁₅","G₁₆","G₁₇",
     "G₁₈","G₁₉","G₂₀","G₂₁","G₂₅","G₂₆","G₃₂","H₃","E₆","E₇","E₈"] 
     rules()
+  elseif n in ["G₄","G₁₂","G₂₂","G₂₄"] return # nothing to do
   else println("not applicable: ",n); return
   end
   if !isempty(ddb) println("not separated:",ddb) end

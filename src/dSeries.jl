@@ -932,6 +932,9 @@ s.eps,  s.dims` such that  the `R_L^G` attached  to `s`is equal to `sum_{i∈
 charnumbers(s)}φᵢ  s.eps[i] s.dims[i]`  where `φᵢ`  is the `i`-th unipotent
 character (`s.dims` is thus the list of dimensions of irreducibles of the
 relative Weyl group).
+
+At  this stage  the list  obtained is  not ordered  according to  the Schur
+elements of the relative algebra.
 """
 function Chars.charnumbers(s::Series)
   get!(s,:charNumbers) do

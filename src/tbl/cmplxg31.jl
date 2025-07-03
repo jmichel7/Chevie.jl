@@ -211,9 +211,9 @@ chevieset(:G31, :SchurElement, function (p, para, rootpara)
   ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
   data=chevieget(:G31,:SchurData)[ci]
   r=chevieget(:G31,:SchurModels)[Symbol(data[:name])]
-  q=para[1][data[:order]]
-  q=q[1]//q[2]
-  if haskey(r,:root) q=root(q,2)*(-1)^data[:rootPower] end
+  x,y=para[1][data[:order]]
+  q=x//y
+  if haskey(r,:root) q=root(x*y)//y*(-1)^data[:rootPower] end
   r[:coeff]*q^r[:factor]*prod(x->cyclotomic_polynomial(x)(q),r[:vcyc])
 end)
 
@@ -221,9 +221,9 @@ chevieset(:G31, :FactorizedSchurElement, function (p, para, rt)
   ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
   data=chevieget(:G31, :SchurData)[ci]
   r=chevieget(:G31, :SchurModels)[Symbol(data[:name])]
-  q=para[1][data[:order]]
-  q=q[1]//q[2]
-  if haskey(r, :root) q=root(q)*(-1)^data[:rootPower] end
+  x,y=para[1][data[:order]]
+  q=x//y
+  if haskey(r, :root) q=root(x*y)//y*(-1)^data[:rootPower] end
   res=Dict(:factor=>Mvp(r[:coeff]*q^r[:factor]),:vcyc=>
     map(v->Dict{Symbol,Any}(:monomial=>q,:pol=>CycPol([1,0,v])),r[:vcyc]))
   HeckeAlgebras.simplify(HeckeAlgebras.FactSchur(res[:factor],
@@ -232,15 +232,13 @@ end)
 
 # Computed JM  2006, 2012; some columns contain  unknown entries
 chevieset(:G31, :HeckeCharTable, function (para,rt)
-  x=root(-para[1][1]//para[1][2])
   r,p=para[1]
   tbl=Dict{Symbol, Any}(:identifier => "H(G31)", :size => 46080,:order=>46080)
   merge!(tbl, chevieget(:G31, :ClassInfo))
   merge!(tbl, chevieget(:G31, :CharInfo)())
   f1(r)=map(x->r^length(x),tbl[:classtext])
   adj(p,x)=x.*f1(-p)
-  function f6(x,y,sgn)
-    v=sgn*root(x*y)
+  function f6(x,y,v)
   [4,3*x+y,2*x*y+2*x^2,-v*x-v*y+2*x^2,x*y+2*x^2,x^2*y+x^3,-4*v*x*y-3*v*x^2-
   3*v*y^2-3*x*y^2-3*x^2*y+x^3-y^3,-2*v*x*y-v*x^2-x*y^2-x^2*y+x^3,-2*v*x*y+
   2*x^3,-v*x*y-v*x^2+x^3,2*x^2*y+x^3,-v*x^2+x^3,v*x^13*y^4,-v*x^2*y-v*x^3,-
@@ -284,8 +282,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   q^12-2*q^13,3*q^6+2*q^8,-4*q^6+q^7,-4*q^18+q^19,3*q^12-2*q^13,-2*q^6+3*q^7,-
   2*q^12+3*q^13,-q^8,5*q^6,5*q^18,5*q^12])
   end
-  function f11(x,y,sgn)
-    v=sgn*root(x*y,2)
+  function f11(x,y,v)
   [6,3*x+3*y,4*x*y+x^2+y^2,2*v*x+2*v*y+x^2+y^2,2*x*y+x^2+y^2,x*y^2+
   x^2*y,8*v*x*y+6*v*x^2+6*v*y^2-6*x*y^2-6*x^2*y-x^3-y^3,4*v*x*y+v*x^2+v*y^2-
   2*x*y^2-2*x^2*y,4*v*x*y+x^3+y^3,2*v*x*y+v*x^2+v*y^2,2*x*y^2+2*x^2*y,v*x^2+
@@ -341,8 +338,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   2*q^39,q^18+6*q^20+3*q^22,-4*q^18+6*q^19,-4*q^54+6*q^55,q^36-6*q^37+3*q^38,
   3*q^19-6*q^20+q^21,3*q^37-6*q^38+q^39,q^24,10*q^18,10*q^54,10*q^36])
   end
-  function f17(x,y,sgn)
-    v=sgn*root(x*y)
+  function f17(x,y,v)
     [10,3*x+7*y,4*x*y+x^2+5*y^2,-2*v*x-2*v*y+2*x*y+4*y^2,3*x*y+4*y^2,2*x*y^2
   +2*y^3,-8*v*x*y-6*v*x^2-6*v*y^2-3*x*y^2-6*x^2*y-2*x^3+y^3,-3*v*x*y-v*x^2
   -2*v*y^2-x*y^2-2*x^2*y+y^3,-4*v*x*y+3*x*y^2+3*y^3,-2*v*x*y-2*v*y^2+x*y^2
@@ -435,8 +431,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   2*q^30-8*q^31+2*q^32,-6*q^16+6*q^17,6*q^31-6*q^32,2*q^20,-20*q^15,-20*q^45,
   20*q^30])
   end
-  function f27(x,y,sgn)
-    v=sgn*root(x*y)
+  function f27(x,y,v)
     [20,9*x+11*y,10*x*y+4*x^2+6*y^2,3*v*x+3*v*y+4*x*y+2*x^2+4*y^2,7*x*y+2*x^2
   +4*y^2,3*x*y^2+2*x^2*y+y^3,12*v*x*y+9*v*x^2+9*v*y^2-9*x*y^2-15*x^2*y-3*x^3
   -3*y^3,5*v*x*y+2*v*x^2+2*v*y^2-3*x*y^2-4*x^2*y-x^3-y^3,6*v*x*y+6*x*y^2+2*x^3
@@ -470,8 +465,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   -2*v*x^16*y^16-6*x^15*y^18,6*v*x^28*y^34+2*x^27*y^36+6*x^28*y^35+2*x^30*y^33,
   -4*x^18*y^22,-20*v*x^13*y^16,-20*v*x^40*y^49,20*x^27*y^33] * x ^ 0 * y ^ 0
   end
-  function f31(x,y,sgn)
-    v=sgn*root(x*y)
+  function f31(x,y,v)
     [20,13*x+7*y,10*x*y+8*x^2+2*y^2,v*x+v*y+4*x*y+6*x^2,6*x*y+7*x^2+y^2,x*y^2
   +4*x^2*y+3*x^3,4*v*x*y+3*v*x^2+3*v*y^2-15*x*y^2-9*x^2*y-x^3-5*y^3,v*x*y+v*x^2
   +v*y^2-4*x*y^2-3*x^2*y+x^3-y^3,2*v*x*y+6*x^2*y+4*x^3,v*x*y+v*x^2+2*x^2*y
@@ -501,8 +495,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   +4*v*x^22*y^10+2*x^21*y^12,2*v*x^40*y^22+6*x^41*y^22+4*x^42*y^21,2*x^26*y^14,
   20*v*x^19*y^10,20*v*x^58*y^31,20*x^39*y^21] * x ^ 0 * y ^ 0
   end
-  function f35(x,y,s)
-    v=s*root(x*y)
+  function f35(x,y,v)
   [24, 12x+12y, 6x^2+12x*y+6y^2, 4v*x+4v*y+2x^2+4x*y+2y^2, 4x^2+8x*y+4y^2, 
    x^3+3x^2*y+3x*y^2+y^3, 16v^3+12v*x^2+12v*y^2-7x^3-21x^2*y-21x*y^2-7y^3, 
    6v^3+3v*x^2+3v*y^2-2x^3-6x^2*y-6x*y^2-2y^3, 8v^3+x^3+3x^2*y+3x*y^2+y^3, 
@@ -562,8 +555,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   +3*x^14*y^19,5*x^24*y^39+6*x^25*y^38+3*x^26*y^37,-3*x^16*y^24,30*x^12*y^18,
   30*x^36*y^54,30*x^24*y^36] * x ^ 0 * y ^ 0
       end
-  function f39(r,p,sgn)
-    v=sgn*root(r//p,2)
+  function f39(r,p,v)
     adj(p, 
     [30,-15-15*v^2,7+16*v^2+7*v^4,3+2*v+4*v^2+2*v^3+3*v^4,5+10*v^2+5*v^4,-1-4*v^2-
   4*v^4-v^6,8-6*v+27*v^2-8*v^3+27*v^4-6*v^5+8*v^6,2-2*v+8*v^2-2*v^3+8*v^4-2*v^5+
@@ -598,8 +590,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   12*q^16-8*q^17+12*q^18-2*q^19,18*q^15-18*q^16,18*q^45-18*q^46,2*q^30-8*q^31+
   2*q^32,-6*q^16+6*q^17,6*q^31-6*q^32,0,-36*q^15,-36*q^45,36*q^30]         )
   end
-  function f42(x,y,s)
-    v=s*root(x*y)
+  function f42(x,y,v)
     [36,21*x+15*y,18*x*y+12*x^2+6*y^2,-3*v*x-3*v*y+8*x*y+8*x^2+2*y^2,12*x*y+9*x^2
   +3*y^2,3*x*y^2+6*x^2*y+3*x^3,-12*v*x*y-9*v*x^2-9*v*y^2-21*x*y^2-21*x^2*y-3*x^3
   -9*y^3,-4*v*x*y-3*v*x^2-2*v*y^2-7*x*y^2-5*x^2*y-x^3-2*y^3,-6*v*x*y+6*x*y^2
@@ -658,8 +649,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   -24*x^19*y^12,-16*x^54*y^37-24*x^55*y^36,2*x^36*y^26+12*x^37*y^25
   +10*x^38*y^24,-6*x^19*y^14-12*x^20*y^13-6*x^21*y^12,6*x^37*y^26+12*x^38*y^25
   +6*x^39*y^24,-2*x^24*y^16,-40*x^18*y^12,-40*x^54*y^36,40*x^36*y^24]*x^0*y^0
-  function f48(x,y,s)
-    v=s*root(x*y)
+  function f48(x,y,v)
     [40,20*x+20*y,20*x*y+10*x^2+10*y^2,-4*v*x-4*v*y+12*x*y+6*x^2+6*y^2,14*x*y
   +6*x^2+6*y^2,5*x*y^2+5*x^2*y+x^3+y^3,-16*v*x*y-12*v*x^2-12*v*y^2-15*x*y^2
   -15*x^2*y-5*x^3-5*y^3,-6*v*x*y-3*v*x^2-3*v*y^2-4*x*y^2-4*x^2*y-2*x^3-2*y^3,
@@ -697,8 +687,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   -8*v*x^31*y^31+3*x^30*y^33+9*x^31*y^32+9*x^32*y^31+3*x^33*y^30,x^20*y^20,
   40*x^15*y^15,40*x^45*y^45,40*x^30*y^30] * x ^ 0 * y ^ 0
       end
-  function f50(r,p,sgn)
-    v=sgn*root(r//p)
+  function f50(r,p,v)
     adj(p, 
     [40,-18-22*v^2,8+20*v^2+12*v^4,2-2*v+12*v^2-2*v^3+6*v^4,5+13*v^2+9*v^4,-1-
   4*v^2-6*v^4-3*v^6,10+6*v+24*v^2+8*v^3+18*v^4+6*v^5+8*v^6,3+v+6*v^2+3*v^3+
@@ -786,14 +775,21 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   32*I*q^46,-8*q^30+16*q^31-8*q^32,-4*I*q^15+12*I*q^16-12*I*q^17+
   4*I*q^18,4*q^30-12*q^31+12*q^32-4*q^33,4*q^20,64*I*q^15,-64*I*q^45,-64*q^30])
   end
-  tbl[:irreducibles]=toM([f1(r),f1(p),f6(p,r,-1),f6(r,p,1),f6(p,r,1),f6(r,p,-1),
-    f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-1),f11(r,p,1),f14(p,r),f14(r,p),
-    f16(p,r),f16(r,p),f17(r,p,-1),f17(p,r,-1),f17(r,p,1),f17(p,r,1),f21(r,p),
-    f21(p,r),f23(r,p),f23(p,r),f25(r,p),f26(r,p),f27(r,p,-1),f27(p,r,1),
-    f27(r,p,1),f27(p,r,-1),f31(r,p,1),f31(p,r,1),f31(r,p,-1),f31(p,r,-1),
-    f35(r,p,-1),f35(r,p,1),f37(r,p),f37(p,r),f39(r,p,1),f39(r,p,-1),f41(r,p),
-    f42(r,p,1),f42(p,r,1),f42(r,p,-1),f42(p,r,-1),f46(r,p),f46(p,r),f48(r,p,-1),
-    f48(r,p,1),f50(r,p,1),f50(p,r,1),f50(r,p,-1),f50(p,r,-1),f54(r,p),f54(p,r),
+  roo=root(r*p)
+  tbl[:irreducibles]=toM([f1(r),f1(p),
+    f6(p,r,-roo),f6(r,p,roo),f6(p,r,roo),f6(r,p,-roo),
+    f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-roo),f11(r,p,roo),
+    f14(p,r),f14(r,p),f16(p,r),f16(r,p),
+    f17(r,p,-roo),f17(p,r,-roo),f17(r,p,roo),f17(p,r,roo),
+    f21(r,p),f21(p,r),f23(r,p),f23(p,r),f25(r,p),f26(r,p),
+    f27(r,p,-roo),f27(p,r,roo),f27(r,p,roo),f27(p,r,-roo),
+    f31(r,p,roo),f31(p,r,roo),f31(r,p,-roo),f31(p,r,-roo),
+    f35(r,p,roo),f35(r,p,-roo),f37(r,p),f37(p,r),
+    f39(r,p,roo//p),f39(r,p,-roo//p),
+    f41(r,p),f42(r,p,roo),f42(p,r,roo),f42(r,p,-roo),f42(p,r,-roo),
+    f46(r,p),f46(p,r),f48(r,p,-roo),f48(r,p,roo),
+    f50(r,p,roo//p),f50(p,r,roo//r),f50(r,p,-roo//p),f50(p,r,-roo//r),
+    f54(r,p),f54(p,r),
     f56(r,p),f56(p,r),f58(r,p,E(4)),f58(r,p,-E(4))])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
   tbl
@@ -805,24 +801,22 @@ chevieset(:G31, :CharTable, function()
   res[:galomorphisms] = Group(perm"(7,9)(8,12)(13,17)(15,16)(19,21)(20,23)(25,27)(26,28)(31,32)(35,37)(38,40)(42,45)(43,44)(46,49)(51,52)(54,55)(57,58)")
   res[:text]="origin: mostly CharTable(H(G31))"
   res[:irreducibles][vcat(39:41, 50:53, 58:59),[14, 19, 21, 35, 37, 41]]=
-   [1 E(4) -E(4) -E(4) E(4) -1;
-    1 -E(4) E(4) E(4) -E(4) -1;
+   [1 -E(4) E(4) E(4) -E(4) -1; 
+    1 E(4) -E(4) -E(4) E(4) -1; 
     0 0 0 0 0 0;
-    0 E(4)+1 -E(4)+1 E(4)-1 -E(4)-1 0;
-    0 -E(4)-1 E(4)-1 -E(4)+1 E(4)+1 0;
-    0 -E(4)+1 E(4)+1 -E(4)-1 E(4)-1 0;
-    0 E(4)-1 -E(4)-1 E(4)+1 -E(4)+1 0;
-    0 0 0 0 0 0;
+    0 1-E(4) 1+E(4) -1-E(4) -1+E(4) 0;
+    0 -1-E(4) -1+E(4) 1-E(4) 1+E(4) 0; 
+    0 1+E(4) 1-E(4) -1+E(4) -1-E(4) 0; 
+    0 -1+E(4) -1-E(4) 1+E(4) 1-E(4) 0; 
+    0 0 0 0 0 0; 
     0 0 0 0 0 0]
   res[:irreducibles]=Matrix{Cyc{Int}}(res[:irreducibles])
   res
 end)
 
 chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
-  x,y=para[1]
   f1(x)=[[x;;], [x;;], [x;;], [x;;], [x;;]]
-  function f6(x,y,s)
-    v=s*root(x*y)
+  function f6(x,y,v)
     [[x 0 0 0;
       0 -v+x+y -v+x v;
       0 v-y v -v;
@@ -853,7 +847,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     expandrep(5,5,Tuple{typeof(x*y),Vector{Int64}}[(-x,[24, 82, 97]),(x, [4, 58,
     65, 77, 87, 92, 101]), (x+y, [1, 33]), (-y, [19, 21, 38, 70]), (y, [2, 3, 5,
     31, 32, 34, 35, 60, 61, 62, 64, 91, 93, 94, 95, 122, 123, 124, 125])])
-  f11(x,y,s)=map(m->exterior_power(m,2)*1//x,f6(x,y,s))
+  f11(x,y,v)=map(m->exterior_power(m,2)*1//x,f6(x,y,v))
   f14(x,y)=
     expandrep(5,9,Tuple{typeof(x*y),Vector{Int64}}[(-x,[38,88, 133]), (x, [1, 2,
     3, 5, 9, 53, 55, 56, 62, 103, 104, 105, 117, 153, 154, 160, 161, 202, 204,
@@ -873,14 +867,13 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     281, 336, 417, 427, 432, 434, 468, 478, 483]), (y, [40, 56, 59, 102, 147,
     149, 168, 211, 224, 250, 278, 280, 286, 317, 327, 333, 334, 367, 377, 382,
     384, 388, 418, 428, 436, 440, 441, 445, 497, 500]), (1, [62, 72, 87, 92])])
-  function f19(x,y,v)
-    s=v*root(x*y)
+  function f19(x,y,s)
     expandrep(5,10,Tuple{typeof(s),Vector{Int64}}[(-s*x^2-s*x*y, [48, 243]),
  (-s*x^2-s*x*y-s*y^2+x*y^2, [143]), (-s*x^2-s*x*y+y^3, [32, 42]), (s*x*y,
  [132]), (s*x*y+s*y^2, [232]), (s*x+s*y, [98, 198, 293, 393]), (-s*y^2, [142,
  148]), (-s*y^2-x^2*y, [133]), (-s*y, [382]), (s*y, [292, 396]), (-s, [348,
- 433, 446]), (-s+y, [443]), (s, [482, 492, 498]), (s-x, [483, 493]), (-s*y^-1,
- [437]), (s*y^-1, [337]), (x^3+x^2*y, [33, 43]), (-x^2*y-x*y^2, [233]),
+ 433, 446]), (-s+y, [443]), (s, [482, 492, 498]), (s-x, [483, 493]), (-s//y,
+ [437]), (s//y, [337]), (x^3+x^2*y, [33, 43]), (-x^2*y-x*y^2, [233]),
  (-x^2-x*y, [83, 93, 96, 183, 193, 196, 237]), (-x^2-x*y-y^2, [137]), (-x*y^2,
  [50, 147]), (x*y^2, [150]), (-x*y, [19, 85, 129, 239, 391]), (x*y, [281,
  297]), (x*y+y^2, [283, 296, 383]), (-x, [15, 180]), (x, [2, 123, 156, 288,
@@ -903,7 +896,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     (x^2*y+x*y^2+y^3, [523]), (2x^2*y+2x*y^2+y^3, [823]), (-x^2, [133, 142, 144,
     208, 292, 800]), (-x^2-x*y, [108]), (-x^2+x*y, [13, 293, 538]), (-x^2-y^2,
     [367]), (-x^2+y^2, [217, 257]), (x^2, [127, 258, 667, 933]), (x^2-y^2,
-    [202]),(x^2*y^-1+x,[820]), (x*y^4, [71, 75]), (-x*y^3, [221, 222, 225, 296,
+    [202]),(x^2//y+x,[820]), (x*y^4, [71, 75]), (-x*y^3, [221, 222, 225, 296,
     300]), (x*y^3, [48, 49]), (-x*y^2, [67, 70, 592, 646]), (-x*y^2+y^3, [52,
     577]), (x*y^2, [121, 122, 123, 124, 197, 346]), (x*y^2-y^3, [32, 557]),
     (-2x*y, [18]), (-2x*y-y^2, [145]), (-x*y, [16, 26, 132, 183, 332, 543, 657,
@@ -915,7 +908,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     5,84,86,88, 96, 99, 105, 138, 140, 170, 243, 251, 405, 440, 481, 502, 518,
     527,629,645, 661, 665, 877, 918, 962, 964, 1045]), (x-y, [232, 289]), (x+y,
     [2,83,116, 136, 161, 163, 180, 241, 245, 321, 322, 323, 404, 482, 484, 641,
-    642, 725, 802, 803, 881, 1043, 1124]), (-x*y^-1, [771]), (-x*y^-1-1, [791]),
+    642, 725, 802, 803, 881, 1043, 1124]), (-x//y, [771]), (-x//y-1, [791]),
     (-y^3, [35, 59]), (y^3, [55, 1048]), (-y^2, [19, 30, 65, 201, 220, 277, 549,
     586,952]),(y^2, [10, 130, 185, 209, 219, 260, 284, 351, 496, 553, 652, 796,
     932,1021]),(-y, [37, 120, 156, 157, 214, 240, 253, 270, 317, 328, 399, 419,
@@ -929,13 +922,13 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
   f23(x,y)=
     expandrep(5,15,Tuple{typeof(x*y), Vector{Int64}}[(-2x^3, [109]), (-x^3, [62,
     409]), (x^3, [135, 136, 139, 147, 150, 439, 446, 450]), (x^3-x^2*y-x*y^2,
-    [72]), (x^3+x^2*y, [146, 437]), (-x^3*y^-1-x^2, [362]), (-x^2*y, [35, 60,
+    [72]), (x^3+x^2*y, [146, 437]), (-x^3//y-x^2, [362]), (-x^2*y, [35, 60,
     61]),(x^2*y, [71, 73, 106, 131, 137, 140, 148, 149, 406, 410, 431, 435, 436,
     440, 449]), (-2x^2, [118]), (-x^2, [123, 184, 335, 360, 361, 418, 423, 442,
     559,634, 659, 784, 1039, 1046, 1050]), (-x^2-x*y, [12, 87, 287, 737]), (x^2,
     [16, 23, 24, 39, 48, 50, 51, 55, 67, 69, 113, 114, 122, 128, 130, 144, 210,
     211, 413, 428, 585, 586, 589, 597, 600, 822, 1009]), (x^2+x*y, [596]),
-    (x^2*y^-1, [367]), (x^2*y^-1+x, [512]), (-x*y^2, [32]), (x*y^2, [447]),
+    (x^2//y, [367]), (x^2//y+x, [512]), (-x*y^2, [32]), (x*y^2, [447]),
     (-x*y, [13, 25, 36, 42, 49, 117, 260, 372, 426, 445, 710, 735, 736, 1006,
     1010, 1031, 1035, 1036, 1040, 1049]), (-x*y-y^2, [297, 747]), (x*y, [115,
     129,283, 284, 397, 416, 556, 581, 587, 590, 598, 599, 673, 746, 823, 1038]),
@@ -945,7 +938,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     639, 641, 642, 655, 669, 691, 723, 724, 742, 789, 801, 803, 805, 819, 883,
     884, 885, 886, 934, 962, 965, 1018, 1023, 1042, 1044, 1114, 1121, 1122,
     1125]), (x+y, [82, 163, 245, 321, 402, 403, 482, 522, 565, 725, 804, 881,
-    896,963, 1045, 1123, 1124]), (-x*y^-1, [517]), (x*y^-1, [497]), (-y^2, [257,
+    896,963, 1045, 1123, 1124]), (-x//y, [517]), (x//y, [497]), (-y^2, [257,
     387,707]), (-y, [171, 240, 250, 273, 274, 567, 700, 711, 792, 931, 956, 974,
     1016]), (y, [1, 4, 5, 7, 103, 164, 243, 244, 312, 401, 483, 562, 644, 645,
     721, 802, 856, 882, 887, 1041]), (-1, [306, 327, 535, 759, 842, 938, 968,
@@ -1011,15 +1004,14 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     521, 617, 1413, 1431, 1667, 1748, 1855]), (1, [277, 677, 1077, 1481, 1498,
     1677, 1778, 1885]), (-x^-1*y^2, [208, 259, 263]), (-x^-1*y, [1408, 1459,
     1463]), (x^-1*y, [278, 936, 1340]), (x^-1, [1037, 1478])])
-  function f27(x,y,v)
-    s=v*root(x*y)
+  function f27(x,y,s)
     expandrep(5, 20, Tuple{typeof(s), Vector{Int64}}[(s*x^3+s*x^2*y-x^2*y^2,
     [1602]), (s*x^3+s*x^2*y+x*y^3+y^4, [1603, 1702]), (s*x^3-s*x*y^2+x*y^3,
     [1701, 1711, 1905, 1915]), (-s*x^2*y-s*x*y^2-y^4, [1604, 1614, 1805, 1815]),
     (s*x^2*y-s*y^3+y^4, [1512]), (-s*x^2-2s*x*y-s*y^2, [1950]), (-s*x^2-s*x*y,
     [1647, 1746]), (-s*x^2-s*x*y+s*y^2+x^2*y-y^3, [1627]), (-s*x^2-s*x*y-x*y^2,
     [1649, 1850]), (-s*x^2-s*x*y-y^3, [1303, 1609, 1629, 1810, 1830]),
-    (-s*x^2*y^-1-s*x+x^2+x*y-y^2, [1642]), (-s*x*y^2-s*y^3, [1502]),
+    (-s*x^2//y-s*x+x^2+x*y-y^2, [1642]), (-s*x*y^2-s*y^3, [1502]),
     (s*x*y^2+s*y^3-x*y^3-y^4, [1204]), (-2s*x*y+x^2*y+x*y^2-y^3, [1607]),
     (-s*x*y,[1648, 1706, 1726, 1747, 1910, 1930]), (-s*x*y-s*y^2, [1628, 1727]),
     (-s*x*y-s*y^2+x*y^2+y^3,[1608, 1707]), (-s*x*y+x^2*y+x*y^2, [1924]), (s*x*y,
@@ -1031,7 +1023,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     1270]), (-s*x-y^2, [1619, 1632, 1637, 1639, 1820, 1840]), (s*x, [621, 1347,
     1655, 1666, 1854]), (s*x-s*y-x*y, [1672]), (s*x+s*y, [1122, 1218, 1328,
     1348]), (s*x+s*y-y^2, [1542]),(s*x-x^2-x*y, [1667]), (s*x-x*y, [622, 1919]),
-    (-s*x*y^-1+x-y, [1662]), (s*x*y^-1+s, [1343]), (-s*y^3-x^3*y+x*y^3, [1205,
+    (-s*x//y+x-y, [1662]), (s*x//y+s, [1343]), (-s*y^3-x^3*y+x*y^3, [1205,
     1215, 1501, 1511]), (s*y^3+x^3*y-x*y^3, [1612]), (-s*y^2, [1821, 1823]),
     (-s*y^2-x^3+x*y^2, [1102, 1112]), (-s*y^2-x^2*y-x*y^2, [1624, 1825]),
     (-s*y^2-x*y^2, [1622]), (-s*y^2-x*y^2-y^3,[1522]), (-s*y^2+x*y^2+y^3, [1210,
@@ -1042,8 +1034,8 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     [1022]), (s*y-x*y-y^2, [823, 1308]), (s*y-y^2, [1552]), (-s, [450, 1017,
     1294, 1373, 1663, 1677, 1679, 1687, 1762, 1781, 1880, 1980, 1990]), (-s+x+y,
     [423, 1580]), (-s+y, [818]), (s, [318, 925, 1167, 1172, 1280, 1290, 1333,
-    1338, 1353, 1475, 1562, 1581]), (s-x, [1692]), (s-y,[1318]), (s*y^-1, [1177,
-    1187, 1363]), (s*y^-1-1, [418, 1480]), (-s*x^-1*y^2, [1532]), (s*x^-1*y,
+    1338, 1353, 1475, 1562, 1581]), (s-x, [1692]), (s-y,[1318]), (s//y, [1177,
+    1187, 1363]), (s//y-1, [418, 1480]), (-s*x^-1*y^2, [1532]), (s*x^-1*y,
     [1033, 1432]), (-s*x^-1, [431, 967, 1085, 1094, 1381]), (s*x^-1, [1378]),
     (-x^2*y-2x*y^2-y^3, [1921, 1925]), (-x^2*y-x*y^2, [1721]), (x^2*y, [1548]),
     (x^2*y+x*y^2, [1250, 1546]), (x^2*y+2x*y^2+y^3, [1223]), (x^2, [1146]),
@@ -1067,8 +1059,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     1188, 1461, 1496]), (1, [898, 1162, 1383, 1393]), (-x^-1*y, [956]), (-x^-1,
     [978])])
   end
-  function f31(x,y,v)
-    s=v*root(x*y)
+  function f31(x,y,s)
     expandrep(5, 20, Tuple{typeof(s), Vector{Int64}}[(s*x^8*y^-8+s*x^7*y^-7+
     s*x^6*y^-6+2s*x^5*y^-5+3s*x^4*y^-4+2s*x^3*y^-3+x^8*y^-7+2x^7*y^-6+4x^6*y^-5+
     x^5*y^-4, [571]), (-s*x^7*y^-7-3s*x^6*y^-6-6s*x^5*y^-5-6s*x^4*y^-4-3s*x^3*y^-
@@ -1289,8 +1280,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
      [841, 1394, 1891]), (-x^-1*y^2, [1340, 1637]), (x^-1*y^2, [329, 827, 1703]),
      (x^-2*y^3, [1933])])
   end
-  function f35(x,y,s)
-    v=s*root(x*y)
+  function f35(x,y,v)
     expandrep(5,24,Tuple{typeof(v), Vector{Int64}}[(-v*x^4-3v*x^3*y-4v*x^2*y^2-
     3v*x*y^3-v*y^4, [2768]), (-v*x^4-3v*x^3*y-4v*x^2*y^2-3v*x*y^3-v*y^4+x^5+
     5x^4*y+11x^3*y^2+11x^2*y^3+5x*y^4+y^5, [2767]), (-v*x^4-3v*x^3*y-4v*x^2*y^2-
@@ -1474,8 +1464,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
      3569, 3575, 3583, 3585, 3586, 3721, 3725, 3849, 3877, 3880, 3946, 4034, 4047,
      4108, 4133, 4144, 4148, 4342, 4345, 4406, 4431, 4446, 4493]), (y+x^-1*y^2,
      [2726, 2727, 2729, 2736]), (-x^-1*y^2, [919]), (x^-1*y^2, [2025, 2572])])
-  function f42(x,y,v)
-    s=v*root(x*y)
+  function f42(x,y,s)
     expandrep(5, 36, Tuple{typeof(s), Vector{Int64}}[(-s*x^8*y^-8-s*x^7*y^-7-
    3s*x^6*y^-6-2s*x^5*y^-5-s*x^4*y^-4-2s*x^3*y^-3-2s*x^2*y^-2-s*x*y^-1+x^9*y^-8+
    x^8*y^-7+2x^7*y^-6+2x^6*y^-5+2x^5*y^-4+3x^4*y^-3+3x^3*y^-2+x^2*y^-1, [5944]),
@@ -2010,8 +1999,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     [5354]),(x^-1*y, [7828, 7850]), (-x^-1, [6820]), (x^-1, [2414, 2807, 4019]),
     (x^-1*y^-1, [1004, 6144]), (x^-1*y^-2, [7751, 7760]), (-x^-2, [7438, 7444,
     7632, 7944]), (-x^-2*y^-1, [7427])])
-  function f48(x,y,v)
-    s=v*root(x*y)
+  function f48(x,y,s)
     expandrep(5, 40, Tuple{typeof(s), Vector{Int64}}[(s*x^4*y^-4+2s*x^3*y^-3+
     2s*x^2*y^-2+s*x*y^-1, [632]), (-s*x^3*y^-3-2s*x^2*y^-2-2s*x*y^-1-s, [1041]),
     (-s*x^3*y^-3-2s*x^2*y^-2-s*x*y^-1, [32, 52, 231, 251, 868, 1071, 7032]), (-
@@ -2258,55 +2246,57 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     3208,3400, 3431, 3645, 5486, 5682, 6641, 6837, 7797, 8007, 8480, 9148, 9576,
     9633, 9645, 9867]), (1, [1132, 4561, 4613, 4807, 6192, 7083, 7780, 7841,
     7998, 8911, 9618, 10119]), (x^-1*y, [7097])])
+  x,y=para[1]
+  roo=root(x*y)
   if i==1 f1(x)
   elseif i==2  f1(y)
-  elseif i==3  f6(y,x,1)
-  elseif i==4  f6(x,y,-1)
-  elseif i==5  f6(y,x,-1)
-  elseif i==6  f6(x,y,1)
+  elseif i==3  f6(y,x,roo)
+  elseif i==4  f6(x,y,-roo)
+  elseif i==5  f6(y,x,-roo)
+  elseif i==6  f6(x,y,roo)
   elseif i==7  f7(x,y)
   elseif i==8  f7(y,x)
   elseif i==9  f9(x,y)
   elseif i==10 f9(y,x)
-  elseif i==11 f11(x,y,-1)
-  elseif i==12 f11(x,y,1)
+  elseif i==11 f11(x,y,-roo)
+  elseif i==12 f11(x,y,roo)
   elseif i==13 f14(y,x)
   elseif i==14 f14(x,y)
   elseif i==15 f16(y,x)
   elseif i==16 f16(x,y)
-  elseif i==17 f19(x,y,1)
-  elseif i==18 f19(y,x,1)
-  elseif i==19 f19(x,y,-1)
-  elseif i==20 f19(y,x,-1)
+  elseif i==17 f19(x,y,roo)
+  elseif i==18 f19(y,x,roo)
+  elseif i==19 f19(x,y,-roo)
+  elseif i==20 f19(y,x,-roo)
   elseif i==21 f21(x,y)
   elseif i==22 f21(y,x)
   elseif i==23 f23(x,y)
   elseif i==24 f23(y,x)
   elseif i==25 f25(x,y)
   elseif i==26 f26(x,y)
-  elseif i==27 f27(x,y,-1)
-  elseif i==28 f27(y,x,1)
-  elseif i==29 f27(x,y,1)
-  elseif i==30 f27(y,x,-1)
-  elseif i==31 f31(x,y,1)
-  elseif i==32 f31(y,x,1)
-  elseif i==33 f31(x,y,-1)
-  elseif i==34 f31(y,x,-1)
-  elseif i==35 f35(x,y,-1)
-  elseif i==36 f35(x,y,1)
+  elseif i==27 f27(x,y,-roo)
+  elseif i==28 f27(y,x,roo)
+  elseif i==29 f27(x,y,roo)
+  elseif i==30 f27(y,x,-roo)
+  elseif i==31 f31(x,y,roo)
+  elseif i==32 f31(y,x,roo)
+  elseif i==33 f31(x,y,-roo)
+  elseif i==34 f31(y,x,-roo)
+  elseif i==35 f35(x,y,roo)
+  elseif i==36 f35(x,y,-roo)
   elseif i==37 f37(x,y)
   elseif i==38 f37(y,x)
   elseif i==39 nothing
   elseif i==40 nothing
   elseif i==41 nothing
-  elseif i==42 f42(x,y,1)
-  elseif i==43 f42(y,x,1)
-  elseif i==44 f42(x,y,-1)
-  elseif i==45 f42(y,x,-1)
+  elseif i==42 f42(x,y,roo)
+  elseif i==43 f42(y,x,roo)
+  elseif i==44 f42(x,y,-roo)
+  elseif i==45 f42(y,x,-roo)
   elseif i==46 f46(x,y)
   elseif i==47 f46(y,x)
-  elseif i==48 f48(x,y,-1)
-  elseif i==49 f48(x,y,1)
+  elseif i==48 f48(x,y,-roo)
+  elseif i==49 f48(x,y,roo)
   elseif i==50 nothing
   elseif i==51 nothing
   elseif i==52 nothing
@@ -2320,14 +2310,14 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
   end
 end)
 
-chevieset(:G31, :Representation, function (i,)
+chevieset(:G31, :Representation, function (i)
   r=chevieget(:G31,:HeckeRepresentation)(fill([1,-1]//1,5),[],i)
   if !isnothing(r) return r end
   f(j)=chevieget(:G31, :Representation)(j)
   #if i=27 map(kron,f(3),f(7)) # unnecessary but good to know
   #if i=31 map(kron,f(3),f(9)) # unnecessary but good to know
-  if i==39 map(kron,f(9),f(11))
-  elseif i==40 map(x->-x,f(39))
+  if i==39 map(x->-x,f(40))
+  elseif i==40 map(kron,f(9),f(11))
   elseif i==41 map(x->Matrix(SPerm(x)),[
    [2,1,6,7,8,3,4,5,-14,-15,12,11,18,-9,-10,-20,-21,13,22,-16,-17,19,-25,33,-23,34,35,36,31,-32,29,-30,24,26,27,28],
    [-2,-1,-6,-5,-4,-3,8,7,10,9,13,-18,11,-15,-14,19,23,-12,16,22,25,20,17,26,21,24,-29,30,-27,28,-35,36,-34,-33,-31,32],
@@ -2335,10 +2325,10 @@ chevieset(:G31, :Representation, function (i,)
    [4,8,9,1,7,15,5,2,3,14,17,20,24,10,6,21,11,27,28,12,16,29,26,13,30,23,18,19,22,25,36,34,35,32,33,31],
    [5,8,11,7,1,12,4,2,17,16,3,6,18,21,20,10,9,13,23,15,14,-25,19,27,-22,28,24,26,-30,-29,32,31,35,36,33,34]])
   #if i=42 map(kron,f(3),f(13)) # unnecessary but good to know
-  elseif i==50 map(kron, f(3), f(15))
-  elseif i==51 map(x->-x,f(50))
-  elseif i==52 conj(f(50))
-  elseif i==53 map(x->-x,f(52))
+  elseif i==50 conj(f(52))
+  elseif i==51 map(x->-x,f(52))
+  elseif i==52 map(kron, f(3), f(15))
+  elseif i==53 map(x->-x,f(50))
   #if i=57 map(x->exterior_power(x,2),f(17)) # unnecessary but good to know
   elseif i==58 map(kron, f(3), f(25))
   elseif i==59 conj(f(58))
