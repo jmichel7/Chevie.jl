@@ -1,5 +1,4 @@
 # Programs for making CharTables of Hecke algebras
-exponentdenominator(p::Mvp)=lcm(map(m->lcm(collect(denominator.(powers(m)))),monomials(p)))
 
 #schur relations
 function schurrel(H;p=Perm())
@@ -83,13 +82,12 @@ end
 
 # get central characters without having to know Chartable
 # for algebras above group algebra
-function HeckeCentralCharacters(H,z=gcd(degrees(H.W)))
+function HeckeCentralCharacters(H,z=gcd(degrees(H.W));spec=group_specialization(H))
   W=H.W
   v=map(m->root(m,z),central_monomials(H))
   v1=CharTable(W).irr[:,position_regular_class(W,z)]
   v2=CharTable(W).irr[:,position_class(W,one(W))]
-  pp=group_specialization(H)
-  map((x,y,z)->x*y//z//value(x,pp...),v,v1,v2)
+  map((x,y,z)->x*y//z//value(x,spec...),v,v1,v2)
 end
 
 # cutz(l,z) for word l returns a,l' such that l'=replace a times z->[] in l
@@ -259,7 +257,7 @@ function mergepartial(t,vals)
 end
 
 # give a primitive root of pi -- returns partial chartable for its powers
-function fromrootpi(H,w)
+function fromrootpi(H,w;spec=group_specialization(H))
   W=H.W
   o=div(sum(degrees(W).+codegrees(W)),length(w))
   z=gcd(degrees(W))
@@ -283,7 +281,7 @@ function fromrootpi(H,w)
   for x in p[setdiff(1:length(p),bad)]
     @show x
     t[:,x[2]]=map((m,c)->m^(x[1]//o)*c[x[2]]//
-                       value(m^(x[1]//o),group_specialization(H)...),
+                       value(m^(x[1]//o),spec...),
        central_monomials(H),eachrow(CharTable(W).irr))
   end
   t
@@ -390,29 +388,34 @@ end
 #  od;
 #end;
 
+exponentdenominator(p::Mvp)=lcm(map(m->lcm(collect(denominator.(powers(m)))),monomials(p)))
+
+exponentdenominator2(a::AbstractArray{<:Mvp})=
+ gcd(map(p->gcd(map(m->gcd(collect(numerator.(powers(m)))),monomials(p))),a))//
+ lcm(map(p->lcm(map(m->lcm(collect(denominator.(powers(m)))),monomials(p))),a))
+
 # eigenvalues of π^r π_I^r1
-function eigenrootspi(H,r,I,r1)
+function eigenrootspi(H,r,I,r1;spec=group_specialization(H))
   W=H.W
   WI=reflection_subgroup(W,I)
   HI=hecke(WI,H.para[simple_reps(W)[inclusiongens(WI)]])
-  e=HeckeCentralCharacters(H).^r
+  e=HeckeCentralCharacters(H;spec).^r
   t=Integer.(induction_table(WI,W).scalar)
-  eI=HeckeCentralCharacters(HI,order(W(I...))).^r1
+  eI=HeckeCentralCharacters(HI,order(W(I...));spec).^r1
   res=map((c,ei)->vcat(map((i,m)->fill(m*ei,i),c,eI)...),eachrow(t),e)
   rat=map(c->lcm(exponentdenominator.(c)),eachrow(CharTable(H).irr))
-  res=map((v,r)->filter(x->mod(r,exponentdenominator(x))==0,v),res,rat)
+  res=map((v,r)->filter(x->isinteger(r//exponentdenominator(x)),v),res,rat)
   fields=map(c->NF(union(coefficients.(c)...)),eachrow(CharTable(H).irr))
   res=map((v,F)->filter(x->all(y->y in F,coefficients(x)),v),res,fields)
   tally.(res)
 end
 
-function hard32(H,i)
-  if i==30 l=eigenrootspi(H,1//2,[1,4],1)
-  elseif i==41 l=eigenrootspi(H,1//2,[1],1)
-  elseif i==58 l=eigenrootspi(H,3//2,[1],1)
+function hard32(H,i;spec=group_specialization(H))
+  if i==30 l=eigenrootspi(H,1//2,[1,4],1;spec)
+  elseif i==41 l=eigenrootspi(H,1//2,[1],1;spec)
+  elseif i==58 l=eigenrootspi(H,3//2,[1],1;spec)
   end
   t=from_representations(H)[:,i]
-  spec=group_specialization(H)
   ct=CharTable(H.W).irr[:,i]
   for j in eachindex(l)
     if length(l[j])==0 
