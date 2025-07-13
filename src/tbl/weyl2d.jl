@@ -241,9 +241,10 @@ chevieset(Symbol("2D"),:Ennola,function(n)
 end)
 
 chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
-  uc=deepcopy(chevieget(:D, :UnipotentClasses)(r, p))
+  uc=copy(chevieget(:D, :UnipotentClasses)(r, p))
   if p==2 return uc end
-  for cc in uc[:classes]
+  uc[:classes]=map(uc[:classes])do cc
+    cc=copy(cc)
     cc[:red]=coxgroup()
     for j in tally(cc[:parameter])
       d=div(j[2],2)
@@ -256,6 +257,7 @@ chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
       else cc[:red]=Cosets.extprod(cc[:red],torus([-1;;]))
       end
     end
+    cc
   end
   uc
 end)

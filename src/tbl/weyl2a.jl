@@ -153,15 +153,17 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
 end)
 
 chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
-  uc=deepcopy(chevieget(:A, :UnipotentClasses)(r, p))
-  for c in uc[:classes]
+  uc=copy(chevieget(:A, :UnipotentClasses)(r, p))
+  uc[:classes]=map(uc[:classes])do c
     t=refltype(c[:red])
     if isempty(t) m=reflrep(c[:red],one(c[:red]))
     else m=reflrep(c[:red],Perm(vcat(map(x->reverse(indices(x)),t)...)))
     end
     p=tally(c[:parameter])
     for i in 1:length(p)-1 m[end+1-i,end+1-i]=-1 end
+    c=copy(c)
     c[:red]=spets(c[:red],m)
+    c
   end
   uc
 end)

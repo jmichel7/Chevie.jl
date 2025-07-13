@@ -2128,7 +2128,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     sort!(uc[:harishChandra],by=x->x[:charNumbers])
     extra=[]
     for f in uc[:harishChandra]
-      addextra = false
+      addextra=false
       S=csy[f[:charNumbers][1]]
       l=r-Symbols.relative_rank(S)
       f[:levi]=1:l
@@ -2150,10 +2150,10 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       s=map(x->0:x-1,s)
       f[:cuspidalName]=ImprimitiveCuspidalName(s)
       if addextra
-        s=deepcopy(f[:charNumbers])
-        f[:charNumbers]=s[[1]]
-        f=deepcopy(f)
-        f[:charNumbers]=s[[2]]
+        s=copy(f[:charNumbers])
+        f[:charNumbers]=[s[1]]
+        f=copy(f)
+        f[:charNumbers]=[s[2]]
         f[:cuspidalName]*='2'
         push!(extra, f)
       end

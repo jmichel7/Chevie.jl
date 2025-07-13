@@ -190,15 +190,23 @@ chevieset(Symbol("3D4"),:UnipotentCharacters,
 
 chevieset(Symbol("3D4"), :UnipotentClasses, function(p)
   class(n)=uc[:classes][findfirst(x->x[:name]==n,uc[:classes])]
-  uc=deepcopy(chevieget(:D, :UnipotentClasses)(4,p))
+  uc=copy(chevieget(:D, :UnipotentClasses)(4,p))
+  uc[:classes]=copy(uc[:classes])
   for c in [["11111111", perm"(1,2,4)"],
             ["221111", perm"(1,2,3)"]]
-    if p!=2 class(c[1])[:red]=spets(class(c[1])[:red],c[2]) end
+    i=findfirst(x->x[:name]==c[1],uc[:classes])
+    if p!=2 
+      u=copy(uc[:classes][i])
+      u[:red]=spets(u[:red],c[2]) 
+      uc[:classes][i]=u
+    end
   end
-  c=class("3311")
+  i=findfirst(x->x[:name]=="3311",uc[:classes])
+  u=copy(uc[:classes][i])
   g=coxgroup(:G,2)
-  c[:red]=torus(g,5)
-  c[:F]=g(1,2,1,2)
-  c[:AuAction]=ExtendedReflectionGroup(Group(c[:red]),longest(g))
+  u[:red]=torus(g,5)
+  u[:F]=g(1,2,1,2)
+  u[:AuAction]=ExtendedReflectionGroup(Group(u[:red]),longest(g))
+  uc[:classes][i]=u
   uc
 end)

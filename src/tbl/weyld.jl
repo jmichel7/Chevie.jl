@@ -356,9 +356,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     if !(cl[1].sp[2] isa Vector)
       cl[1].sp[3]=1-cl[1].sp[3]
       cc[:name]*="+"
-      cc=deepcopy(cc)
+      cc=copy(cc)
       cc[:name]=replace(cc[:name],r".$"=>"-")
-      if haskey(cc, :dynkin) cc[:dynkin][[1, 2]] = cc[:dynkin][[2, 1]] end
+      if haskey(cc,:dynkin) 
+        cc[:dynkin]=vcat(cc[:dynkin][[2,1]],cc[:dynkin][3:end])
+      end
       push!(uc[:classes], cc)
       for s in cl addSpringer(s, length(uc[:classes]), cc) end
     end

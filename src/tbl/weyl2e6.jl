@@ -330,7 +330,7 @@ chevieset(Symbol("2E6"), :UnipotentCharacters,
 chevieset(Symbol("2E6"), :Ennola, SPerm())
 
 chevieset(Symbol("2E6"), :UnipotentClasses, function (p,)
-  uc=deepcopy(chevieget(:E6, :UnipotentClasses)(p))
+  uc=copy(chevieget(:E6, :UnipotentClasses)(p))
   l=[("1", perm"(1,6)(3,5)"), ("A_1", perm"(1,5)(2,4)"), 
      ("A_2", perm"(1,2)(3,4)"), ("D_4", perm"(1,2)"), ("D_5", [-1;;]), 
      ("D_5(a_1)", [-1;;]), ("A_4{+}A_1", [-1;;]), ("A_4", [1 0;0 -1]), 
@@ -338,9 +338,12 @@ chevieset(Symbol("2E6"), :UnipotentClasses, function (p,)
      ("A_2{+}2A_1", [1 0;0 -1]), ("A_3", Diagonal([1,1,-1])), 
      ("A_2{+}A_1", [0 1 0;1 0 0;0 0 -1]), ("3A_1", perm"(1,2)"), 
      ("2A_1", Diagonal([1,1,1,-1]))]
+  uc[:classes]=copy(uc[:classes])
   for p in l
-    u=uc[:classes][findfirst( x->x[:name]==p[1],uc[:classes])]
+    i=findfirst(x->x[:name]==p[1],uc[:classes])
+    u=copy(uc[:classes][i])
     u[:red]=spets(u[:red],p[2])
+    uc[:classes][i]=u
   end
-  return uc
+  uc
 end)

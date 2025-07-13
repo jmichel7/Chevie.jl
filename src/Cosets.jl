@@ -729,10 +729,10 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   get!(WF,:refltype)do
     W=Group(WF)
     t=refltype(W)
-    c=map(x->indices(x),t)
+    c=indices.(t)
     phires=Perm(action.(Ref(W),eachindex(roots(W)),WF.phi))
     map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c)),eachindex(c)))do c
-      o=deepcopy(t[c])
+      o=copy.(t[c])
       J=indices(o[1])
       twist=Perm(J,J.^(phires^length(c)))
       if o[1].series==:D && length(J)==4
