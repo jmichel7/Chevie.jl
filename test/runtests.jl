@@ -584,7 +584,7 @@ end
 end
 @testset "Nf.jl" begin
 @test mytest("Nf.jl","F=NF(E(5))","CF(5)")
-@test mytest("Nf.jl","K=NF(root(5))","NF(5,-1₅)")
+@test mytest("Nf.jl","K=NF(root(5))","NF(5,[4])")
 @test mytest("Nf.jl","conductor(K)","5")
 @test mytest("Nf.jl","E(5)+E(5,-1) in NF(root(5))","true")
 @test mytest("Nf.jl","elements(galois(F))","4-element Vector{Chevie.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
@@ -592,16 +592,16 @@ end
 @test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [8₂₄]\n [11₂₄, -7₂₄]\n [-8₂₄]")
 @test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24),Mod(5,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [5₂₄, -1₂₄]\n [8₂₄]\n [-8₂₄]")
 @test mytest("Nf.jl","Nf.LenstraBase(15,Group([Mod(4,15)]),Group(Mod.(prime_residues(15),15)))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₁₅, 4₁₅]\n [2₁₅, -7₁₅]\n [7₁₅, -2₁₅]\n [-4₁₅, -1₁₅]")
-@test mytest("Nf.jl","NF(E(3),root(5))","NF(15,4₁₅)")
-@test mytest("Nf.jl","NF([E(3),root(5)])","NF(15,4₁₅)")
-@test mytest("Nf.jl","F=NF(root(5))","NF(5,-1₅)")
-@test mytest("Nf.jl","s=Aut(F,3)","Aut(NF(5,-1₅),2₅)")
+@test mytest("Nf.jl","NF(E(3),root(5))","NF(15,[4])")
+@test mytest("Nf.jl","NF([E(3),root(5)])","NF(15,[4])")
+@test mytest("Nf.jl","F=NF(root(5))","NF(5,[4])")
+@test mytest("Nf.jl","s=Aut(F,3)","Aut(NF(5,[4]),2₅)")
 @test mytest("Nf.jl","root(5)^s","Cyc{Int64}: -√5")
 @test mytest("Nf.jl","K=CF(5)","CF(5)")
-@test mytest("Nf.jl","F=NF(root(5))","NF(5,-1₅)")
+@test mytest("Nf.jl","F=NF(root(5))","NF(5,[4])")
 @test mytest("Nf.jl","galois(K)","Group(Chevie.Nf.NFAut[Aut(CF(5),2₅)])")
 @test mytest("Nf.jl","elements(galois(K))","4-element Vector{Chevie.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
-@test mytest("Nf.jl","elements(galois(F))","2-element Vector{Chevie.Nf.NFAut}:\n Aut(NF(5,-1₅),1₅)\n Aut(NF(5,-1₅),2₅)")
+@test mytest("Nf.jl","elements(galois(F))","2-element Vector{Chevie.Nf.NFAut}:\n Aut(NF(5,[4]),1₅)\n Aut(NF(5,[4]),2₅)")
 end
 @testset "PermRoot.jl" begin
 @test mytest("PermRoot.jl","W=complex_reflection_group(4)","G₄")

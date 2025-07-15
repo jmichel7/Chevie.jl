@@ -87,7 +87,6 @@ chevieset(:G32, :HeckeCharTable, function (para, rt)
   # possibilities are a=+-1 c=+-1 b in 1, -1, 3, -3 e in +-1,+-3,+-5
   a=b=c=e=1
 # a=Mvp(:a); b=Mvp(:b); c=Mvp(:c); e=Mvp(:e);
-  d=E(3)
   u,v,w=para[1]
   f1(u)=map(i->u^length(i),chevieget(:G32, :WordsClassRepresentatives))
   f4(v,w)=[4,v+3*w,w*(2*w+v),2*w*(w+v),v^2+3*w^2,2*w^3,
@@ -1008,7 +1007,7 @@ u^10*v^13*w^24-4*u^10*v^15*w^22-4*u^10*v^16*w^21+u^11*v^12*w^24-
 40*u^10*v^12*w^18,40*u^20*v^24*w^36]
   function f45(u,v,w,j)
     d=-j # d=+-E(3)
-    [45,18*u+18*v+9*w,8*u*v+2*u*w+2*v*w+
+  [45,18*u+18*v+9*w,8*u*v+2*u*w+2*v*w+
 3*u^2+3*v^2,14*u*v+8*u*w+8*v*w+7*u^2+7*v^2+w^2,18*u^2+18*v^2+9*w^2,-5*u*v*w+
 3*u^3+3*v^3,4*u*v*w+4*u*v^2+4*u^2*v+2*u^2*w+2*v^2*w+u^3+v^3,-j^2*u*v*w+
 u*v^2+u^2*v,7*u*v^2+4*u*w^2+4*v*w^2+7*u^2*v+4*u^2*w+4*v^2*w+7*u^3+7*v^3+w^3,-
@@ -1964,7 +1963,8 @@ u^20*v^20*w^20*(v^3-4*w*v*u+u^3+w^3),27*r*u^33*v^33*w^33*(w^2+v^2+u^2),9*r*u^13*
 ^13*w^13*(v+u+w)^2,27*r^2*u^6*v^6*w^6*(v+u+w),81*r^2*u^6*v^6*w^6,9*u^20*v^20*w^
 20*(v+u+w)^2,27*u^20*v^20*w^20*(w^2+v^2+u^2),27*r*u^13*v^13*w^13*(v+u+w),27*u^20
 *v^20*w^20*(v+u+w),81*r*u^33*v^33*w^33,81*u^20*v^20*w^20,81*r*u^13*v^13*w^13,81
-*r^2*u^26*v^26*w^26];end
+*r^2*u^26*v^26*w^26]
+  end
   res=Dict{Symbol, Any}(:name => "H(G32)", :identifier => "H(G32)",
     :parameter => para, :size => 155520, :order => 155520, :dim => 4,
     :degrees => [12, 18, 24, 30], :reflclasses => [2],
