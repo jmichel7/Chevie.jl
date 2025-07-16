@@ -1068,10 +1068,10 @@ isG333(t::TypeIrred)=haskey(t,:p) && (t.p,t.q,t.rank)==(3,3,3)
 function PermRoot.refltype(WF::PRC)
   get!(WF,:refltype)do
     W=Group(WF)
-    t=deepcopy(refltype(W))
     if isone(WF.phi)
-      return map(x->TypeIrred(orbit=[x],twist=Perm()),t)
+     return map(x->TypeIrred(orbit=[x],twist=Perm()),refltype(W))
     end
+    t=deepcopy(refltype(W))
     subgens=map(x->refls(W,x.indices),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     if isnothing(c) && any(isG333,t)

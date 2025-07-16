@@ -652,7 +652,7 @@ julia> W=coxgroup(:A,3) # the adjoint group
 A₃
 
 julia> fundamental_group(W) # the 12th root is the lowest one
-Group((1,12,3,2))
+Group((1,2,3,12))
 
 julia> W=rootdatum(:sl,4) # the semisimple simply connected group
 sl₄
@@ -1028,7 +1028,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> fundamental_group(intermediate_group(W,Int[])) # adjoint
-Group((1,12,3,2))
+Group((1,2,3,12))
 
 julia> fundamental_group(intermediate_group(W,Int[2])) # intermediate
 Group((1,3)(2,12))
