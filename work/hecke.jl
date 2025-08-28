@@ -1,15 +1,15 @@
 # Programs for making CharTables of Hecke algebras
 using Primes, Chevie
 """
-`generic_hecke(W,type;power=1)` gives `hecke(W,para)` depending on `type`:
+`generic_hecke(W,type;power=1)` returns `hecke(W,para)` depending on `type`:
   - 0: [a,b,c]  10: [x0,x1,x2]
   - 1: [1,b,c]  11: [1,x1,x2]
-  - 2: [1,q,q^2] if several Hplanes take Lcm 12! [1,Pol(),Pol()^2]
+  - 2: [1,q,q^2] if several Hplanes take Lcm 12: [1,Pol(),Pol()^2]
   - 3: [q,E3,E3^2] Spetsial 13: [Pol(),E3,E3^2]
   - 4: [1,E3,E3^2]
   - 5: [1,2,3] primes
   - 6: [a,E(3)*b,E(3)^2*c] 16: [x0,E(3)*x1,E(3)^2*x2]
-the variables are raised to `power`
+if `power` given the parameters are raised to `power`
 """
 function generic_hecke(W,type;power=1)
   p=1
@@ -92,7 +92,7 @@ end
  
 # classtext of "canonical" generator of the center
 function centerword(W)
-  if length(refltype(W))>1 error() end
+  if length(refltype(W))>1 error("W should be irreducible") end
   classinfo(W).classtext[position_regular_class(W,gcd(degrees(W)))]
 end
 
@@ -609,3 +609,26 @@ function meminfo_julia()
 end
 
 malleperm=perm"(1,2)(3,6,5,4)(7,8)(9,10)(13,14)(15,16)(17,18,19,20)(21,22,24,23)(27,30,29,28)(31,32)(33,34)(37,38)(39,40)(42,43)(44,45)(46,47)(50,51,52,53)(54,55)(56,57)"
+
+"""
+Schur elements and subalgebras:
+if R is a Hecke subalgebra of H we have for any ψ∈Irr(R)
+∑_{χ in Irr(H)} <Res_χ,ψ>/S_χ=1/S_ψ
+"""
+function schur_subalgebra(H,I;c=1)
+  W=H.W
+  R=reflection_subgroup(W,I)
+  HR=hecke(R,H.para[I])
+  t=induction_table(R,W)
+  s=factorized_schur_elements(H)
+  Lcm=lcm(s...)
+  s=Ref(Lcm).//s
+  print("expanding lcm(Sᵪ)/Sᵪ quotients..")
+  println("done in ",@elapsed s=HeckeAlgebras.expand.(s;c))
+  r=factorized_schur_elements(HR)
+  r=Ref(Lcm).//r
+  print("expanding lcm(Sχ)/Sψ quotients..")
+  println("done in ",@elapsed r=HeckeAlgebras.expand.(r;c))
+# Lcm=HeckeAlgebras.expand(Lcm;c)
+  vec(transpose(s)*t.scalar).==r
+end

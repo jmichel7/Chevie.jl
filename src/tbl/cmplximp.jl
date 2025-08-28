@@ -2044,7 +2044,7 @@ end)
 chevieset(:imp, :Representation, function (p, q, r, i;gen=false)
   o=chevieget(:imp,:ordergens)(p,q,r)
   chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->
-                x==2 ? [1,-1] : E.(x,0:x-1),o),[],i;gen)
+     x==2 ? [1,-1] : Cyc.(E.(x,0:x-1)),o),[],i;gen)
 end)
 
 # the family of uc containing symbols

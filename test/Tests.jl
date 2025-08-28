@@ -5,7 +5,7 @@ The tests available are printed by Tests.tests()
 
 The spets to which they are applied are Tests.all_ex
 
-See the helpstring for RG  to see how to apply them.
+See the helpstring for Tests.RG  to see how to apply them.
 
 There  are  also  some  useful  functions:  `cmpvec,  cmptables,  cmpcycpol,
 check_relation`
@@ -63,13 +63,13 @@ function tests()
 end
   
 """
-`RG(s::Symbol;log=false)` apply test `s` (function `Ts`) to `Tests.all_ex`
-
-write result on `stdout` or file `log`
+`RG(s::Symbol;log="")` apply test `s` (function `Ts`) to `Tests.all_ex`.
+See `Tests.tests()` for available tests. 
+Errors are logged by default on `stdout` or on file `log`
 """
-function RG(s::Symbol;log=false)
-  if log 
-    global curio=open("log",create=true,write=true,append=true)
+function RG(s::Symbol;log="")
+  if !isempty(log)
+    global curio=open(log,create=true,write=true,append=true)
   end
   if !haskey(test,s)
     error("test $s unknown. Known tests are ",collect(keys(test)))
@@ -82,14 +82,11 @@ function RG(s::Symbol;log=false)
     printstyled(rio(),s,"(",W,")";bold=true,color=:magenta)
     @time getfield(Tests,Symbol(:T,s))(W) 
   end end
-  if log close(curio) end
+  if !isempty(log) close(curio) end
 end
 
-"`RG(W;log=false)` apply all tests to group or spets `W`"
-function RG(W;log=false)
-  if log 
-    global curio=open("log",create=true,write=true,append=true)
-  end
+"`RG(W)` apply all tests to group or spets `W`"
+function RG(W)
   printstyled(rio(),"Tests for W=",W," -------------------------------\n";
             bold=true,color=:magenta)
   global curW=W
@@ -97,15 +94,22 @@ function RG(W;log=false)
 # @time for (i,(s,t)) in enumerate(sort(collect(test),by=first))
     global curtest=s
     if t.applicable(W) 
-      printstyled(i,"/",length(test),"  ",s,": ",t.comment,"\n";color=:green)
-@time    getfield(Tests,Symbol(:T,s))(W) 
+      printstyled(rio(),i,"/",length(test)," ",s,"(",W,") ",t.comment,"\n";color=:green)
+      @time getfield(Tests,Symbol(:T,s))(W) 
     end 
   end
-  if log close(curio) end
 end
 
-"`RG(v::Vector;log=false)` apply all tests to spets in `v`"
-RG(v::Vector;log=false)=for W in v RG(W;log=log) end
+"""
+`RG(v::Vector=all_ex;log="")` apply all tests to spets in `v`
+"""
+function RG(v::Vector=all_ex;log="")
+  if !isempty(log)
+    global curio=open(log,create=true,write=true,append=true)
+  end
+  for W in v RG(W) end
+  if !isempty(log) close(curio) end
+end
 
 "`RG(Symbol::s,W)` apply test `s` to `W`"
 function RG(s::Symbol,W)
@@ -113,9 +117,6 @@ function RG(s::Symbol,W)
   printstyled(s,": ",t.comment,"\n";color=:green)
   @time getfield(Tests,Symbol(:T,s))(W) 
 end
-
-"`RG(;log=false)` apply all tests to `all_ex`"
-RG(;log=false)=RG(all_ex;log=log)
 
 """
 `cmpvec(a,b;na="a",nb="b",pr=ChevieErr)`
@@ -292,7 +293,7 @@ test[:representations]=(
      t=t.orbit[1]
      return true
    end,
-   comment="check they exist and match characters")
+   comment="check they can be computed and match characters")
 
 #---------------- test: lusztiginduction ------------------------
 function Tlusztiginduction(WF)
@@ -304,7 +305,7 @@ function Tlusztiginduction(WF)
 end
 test[:lusztiginduction]=(
    applicable=W->isspetsial(W) && W!=crg(34),
-   comment="check it is computable and verifies mackey with tori")
+   comment="check it can be computed and verifies mackey with tori")
 
 function Tlusztiginduction(WF,J::AbstractVector{<:Integer})
   for L in twistings(WF,J) Tlusztiginduction(WF,L) end
@@ -402,8 +403,7 @@ function Tclassinfo(W)
   end
 end
 
-test[:classinfo]=(applicable=W->!(W isa Spets),
-                  comment="check classinfo")
+test[:classinfo]=(applicable=W->!(W isa Spets),comment="check it")
 
 #---------------- test: positionclasses ------------------------
 function Tpositionclasses(W)
@@ -411,7 +411,8 @@ function Tpositionclasses(W)
   if cl!=1:length(cl) error("classes") end
 end
 
-test[:positionclasses]=(applicable=W->true, comment="check classreps contains all positions")
+test[:positionclasses]=(applicable=W->true, 
+  comment="check position_class.(classreps)==1:nconjugacy_classes")
 
 #---------------- test: unipotentclasses ------------------------
 function Tunipotentclasses(W,p=nothing)
@@ -923,7 +924,7 @@ function Tcharparams(W)
 end
 
 test[:charparams]=(applicable=W->W isa Group,
-   comment="check they are consistent with Michel/Thiel rules")
+   comment="check they agree with Michel/Thiel rules")
 
 #---------------- test: HCdegrees ------------------------
 function THCdegrees(W)
@@ -1200,7 +1201,7 @@ function Tfeg(W)
   cmpvec(degree.(fd),charinfo(W).B;na="computed B",nb="charinfo B")
 end
 
-test[:feg]=(applicable=x->true, comment="recompute fakedegrees")
+test[:feg]=(applicable=x->true, comment="recompute fegs")
 
 #---------------- test: fakedegrees induce ------------------------
 
@@ -1225,7 +1226,7 @@ function Tfeginduce(W,J)
   end
 end
 
-test[:feginduce]=(applicable=W->W!=crg(34), comment="check fakedegrees induce")
+test[:feginduce]=(applicable=W->W!=crg(34), comment="check fegs induce")
 
 #---------------- test: invariants ------------------------
 
@@ -1280,7 +1281,7 @@ test[:udfdimprimitive]=(applicable=function(W)
     else n.series in [:A,:B,:C,:D,:G,:I] || (n.series==:ST && haskey(n,:p))
     end
   end,
-comment="unideg and feg of imprimitive Spets agree with formulae")
+comment="unideg and feg agree with formulae")
 
 """
 `Tfamilies(W[,famno];hard=false)`
@@ -1462,7 +1463,7 @@ function TdegsHCinduce(W,J)
 end
 
 test[:degsHCinduce]=(applicable=W->isspetsial(W) && W!=crg(34),
-  comment="unidegs are consistent with HC induction from split levis")
+  comment="unidegs agree with HC induction from split levis")
 
 #------------------------- Curtis duality -----------------------------
 # For a Group generated by true reflections,
@@ -1550,8 +1551,7 @@ function Tsumsquares(W)
   if f'*f!=d'*d ChevieErr("fails\n") end
 end
 
-test[:sumsquares]=(applicable=isspetsial,
-   comment="of fakedegrees and unipotent degrees coincide")
+test[:sumsquares]=(applicable=isspetsial,comment="of fegs and unidegs coincide")
 
 #------------------------- aA -----------------------------
 # check that stored a and A are correct
@@ -1653,7 +1653,7 @@ function Tbraidrel(W,r=braid_relations(W))
 end
 
 test[:braidrel]=(applicable=W->!(W isa Spets),comment=
-"W of type t satisfies braid relations of type t")
+ "W satisfies braid relations of refltype(W)")
 
 #------------------------- root system -----------------------------
 
@@ -1699,7 +1699,7 @@ function Trootsystem(W)
 end
 
 test[:rootsystem]=(applicable=W->!(W isa Spets),comment=
- "W.roots is a distinguished root system in the sense of BCM")
+  "roots(W) is a distinguished root system in the sense of BCM")
  
 #------------------------- galois auts -----------------------------
 function Tgaloisauts(W)
@@ -1720,7 +1720,7 @@ function Tgaloisauts(W)
 end
 
 test[:galoisauts]=(applicable=W->!(W isa Spets),comment=
-             "check that reflrep(W) is globally invariant by Gal(k_W/Q)")
+  "check that reflrep is globally invariant by Gal(k_W/Q)")
 
 #------------------------- very good classreps -----------------------------
 
@@ -1754,7 +1754,7 @@ function Tclassreps(W)
 end
 
 test[:classreps]=(applicable=W->W isa Union{CoxeterGroup,CoxeterCoset}, 
-   comment= "check they are very good in the sense of Geck-Michel")
+  comment= "check they are very good in the sense of Geck-Michel")
 
 #------------------------- minuscule weights -----------------------------
 
@@ -1782,7 +1782,7 @@ function Tminusculeweights(W)
 end
 
 test[:minusculeweights]=(applicable=isweylgroup,
-  comment="are coeffs 1 of highest coroot on simple coroots")
+  comment="are where coeffs==1 of highest coroot on simple coroots")
 
 #------------------------- CharTable(3D4) -----------------------------
 
@@ -1991,12 +1991,12 @@ function Tdiscriminant(W)
   ii=invariants(W)
   ii=map(x->x(map(i->Mvp(Symbol("x",i))*big(1),1:rank(W))...),ii).*big(1)
   j=j(ii...)
-  if r*last(first(j.d))!=j*last(first(r.d)) ChevieErr("disagrees\n") end
+  if r*last(term(j,1))!=j*last(term(r,1)) ChevieErr("disagrees\n") end
 end
 
 test[:discriminant]=(
-  applicable=W->!(W isa Spets) && length(W)<1152, # F4 first painful clientend
-  comment="agrees with hyperplane product")
+  applicable=W->!(W isa Spets) && length(W)<1152, # F4 first painful client
+  comment="agrees with product of hyperplanes")
 
 #----------------------- tests not translated from GAP3 ---------------------
 #function frombraidrel(W)
