@@ -103,13 +103,23 @@ function charvalues_parabolic(H,w)
   W=H.W
   pw=parabolic_closure(W,sort(unique(w)))
   WI=reflection_subgroup(W,pw)
-  if WI==W return end
-  println("w=",joindigits(w))
+  if WI==W 
+    println(joindigits(w)," parabolic closure is W")
+    return 
+  end
   p=inclusiongens(WI,W)
-  if !all(x->x in p,w) return end
+  if !all(x->x in p,w) 
+    println("parabolic ",pw," for ",joindigits(w)," is not standard")
+    return 
+  end
   q=prod(x->prod(x)^0,H.para)
-  cc=char_values(hecke(WI,H.para[simple_reps(W)[p]]),restriction(WI)[w])
-  if nothing in cc return end
+  HI=hecke(WI,H.para[simple_reps(W)[p]])
+  cc=char_values(HI,restriction(WI)[w])
+  xprintln(HI)
+  if nothing in cc 
+    println("could not compute charvalues")
+    return 
+  end
   induction_table(WI,W).scalar*(cc*q)
 end
 
@@ -128,7 +138,7 @@ function group_specialization(H)
           error(p[i]," is not a power of a variable")
         end
         m=first(term(p[i],1))
-        first(variables(m))=>coefftype(H)(root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m))))
+       first(variables(m))=>root(E(e)^(i-1)*last(term(p[i],1)),first(powers(m)))
       else
         if degree(p[i])!=valuation(p[i])
           error(p[i]," is not a power of a variable")
@@ -247,30 +257,28 @@ function checkparabolic(W)
   triples
 end
 
-#showregular:=function(W)local tbl,txt,d,cl,q,already,i,cc,lpi,lb,ci;
-#  ci:=ChevieClassInfo(W);
-#  txt:=ci.classtext;
-#  cc:=txt[position_cox(W)];Print("c=",IntListToString(cc),"\n");
-#  cl:=List(ConjugacyClasses(W),Representative);
-#  lpi:=Sum(ReflectionDegrees(W)+ReflectionCoDegrees(W));
-#  already:=[]; tbl:=[];lb:=[];
-#  for d in Reversed(RegularEigenvalues(W)) do
-#    q:=[];
-#    for i in PrimeResidues(d) do
-#      q:=PositionRegularClass(W,i/d);
-#      if not q in already then 
-#        Add(already,q);
-#        Add(lb,SPrint(i/d));
-#        Add(tbl,[q,lpi*i/d,Length(txt[q]),EncodeClass(txt[q],ci),
-#	  ChevieClassInfo(W).classnames[q]]);
-#      fi;
-#    od;
-#  od;
-#  Print(FormatTable(tbl,
-#    rec(rowLabels:=lb,
-#        columnLabels:=["class","th. lg","lg","txt","name"],
-#	rowsLabel:="RegEig")));
-#end;
+function showregular(W)
+  ci=classinfo(W)
+  txt=ci.classtext
+  cc=txt[position_cox(W)];println("c=",joindigits(cc))
+  cl=classreps(W)
+  lpi=sum(degrees(W)+codegrees(W))
+  already=Int[]; tbl=[];lb=Root1[]
+  for d in reverse(regular_eigenvalues(W))
+    for i in prime_residues(order(d))
+      q=position_regular_class(W,E(order(d),i))
+      if !(q in already)
+        push!(already,q)
+        push!(lb,E(order(d),i))
+        push!(tbl,[q,div(lpi*i,order(d)),length(txt[q]),EncodeClass(txt[q],ci),
+	  classinfo(W).classnames[q]])
+      end
+    end
+  end
+  showtable(rio(),toM(tbl),row_labels=lb,
+    col_labels=["class","th.lg","lg","word","name"],
+    rows_label="RegEig")
+end
 
 # partial chartable of Hecke algebra H on classtexts n some W_I<z>
 function fromparabolic(H)
@@ -282,15 +290,10 @@ function fromparabolic(H)
   v=HeckeCentralCharacters(H)
   for i in 1:n
     nbz,noz=cutz(ct[i],zt)
-    println("class $i:z^$nbz.",joindigits(noz))
-    if length(unique(noz))<ngens(W)
-      c=charvalues_parabolic(H,noz)
-      if !isnothing(c)
-        xprintln(reflection_subgroup(W,unique(noz)))
-        t[:,i]=map((x,y)->x*y^nbz,c,v)
-      else @show noz
-      end
-    end
+    print("class $i:",nbz!=0 ? "z^$nbz." : "",joindigits(noz)," ")
+    if length(unique(noz))==ngens(W) println("uses all gens");continue end
+    c=charvalues_parabolic(H,noz)
+    if !isnothing(c) t[:,i]=map((x,y)->x*y^nbz,c,v) end
   end
   t
 end
@@ -321,44 +324,48 @@ function fromHI(H,I)
   t
 end
 
-# merge chartable t with partial table vals
+# merge partial table t with partial table vals
 function mergepartial(t,vals)
+  bad=Tuple{Int,Int}[]
   for i in axes(t,1), j in axes(t,2)
     if !ismissing(vals[i,j])
       if !ismissing(t[i,j]) && t[i,j]!=vals[i,j] 
-        error("t[$i,$j]=",t[i,j]," but vals[$i,$j]=",vals[i,j])
+        xprintln("t[$i,$j]=",t[i,j]," but vals[$i,$j]=",vals[i,j])
+        push!(bad,(i,j))
+      else
+        t[i,j]=vals[i,j]
       end
-      t[i,j]=vals[i,j]
     end
   end
+  bad
 end
 
 # give a primitive root of pi -- returns partial chartable for its powers
 function fromrootpi(H,w;spec=group_specialization(H))
   W=H.W
-  o=div(sum(degrees(W).+codegrees(W)),length(w))
-  z=gcd(degrees(W))
-  wz=centerword(W)
+  o=div(sum(degrees(W).+codegrees(W)),length(w)) # order of w
   if order(W(w...))!=o error(w," is not root of π") end
   pospoww=map(i->position_class(W,W(w...)^i),1:o-1)
-  println("gives classes ",sort(unique(pospoww)))
-  p=unique(map(i->findfirst(==(i),pospoww),pospoww))
-  p=map(x->[x,pospoww[x]],p)
   ct=classinfo(W).classtext
-  iword(i)=vcat(repeat(wz,div(z*i,o)),repeat(w,mod(i,div(o,z))))
-  bad=filter(i->ct[p[i][2]]!=iword(p[i][1]),1:length(p))
-  if !isempty(bad)
-    for i in bad
-      println("Warning!! ",p[i][2],"-th representative is ",
-              joindigits(ct[p[i][2]])," instead of ",joindigits(iword(i)))
-    end
+  p=Tuple{Int,Int}[]
+  print("gives classes ")
+  wz=centerword(W)
+  z=gcd(degrees(W))
+  for i in unique(map(i->findfirst(==(i),pospoww),pospoww))
+    pow=i
+    cl=pospoww[i]
+    print(cl,"=w^",pow," ")
+    # we assume some power of w is central?
+    iword(pow)=vcat(repeat(wz,div(z*pow,o)),repeat(w,mod(pow,div(o,z))))
+    if ct[cl]==iword(pow) push!(p,(pow,cl)); continue end
+    println("Warning!! ",cl,"-th representative is ",
+            joindigits(ct[cl])," instead of ",joindigits(iword(pow)))
   end
-  n=length(ct)
+  println()
+  n=nconjugacy_classes(W)
   t=convert(Matrix{Union{Missing,coefftype(H)}},fill(missing,n,n))
-  for x in p[setdiff(1:length(p),bad)]
-    @show x
-    t[:,x[2]]=map((m,c)->m^(x[1]//o)*c[x[2]]//
-                       value(m^(x[1]//o),spec...),
+  for (pow,cl) in p
+    t[:,cl]=map((m,c)->m^(pow//o)*c[cl]//value(m^(pow//o),spec...),
        central_monomials(H),eachrow(CharTable(W).irr))
   end
   t
@@ -385,8 +392,8 @@ end
 #  return Concatenation(List([1..Length(v)],i->List([1..v[i]],j->i/Length(v))));
 #end;
 #
-#coxclasses:=W->Set(List(Arrangements(W.generators,Length(W.generators)),
-#   x->position_class(W,Product(x))));
+coxclasses(W)=unique(map(x->position_class(W,prod(x)),permutations(gens(W))))
+#   
 #
 #refssmaller:=function(W,w)local refs, r;
 #  refs:=Reflections(W);
@@ -620,15 +627,37 @@ function schur_subalgebra(H,I;c=1)
   R=reflection_subgroup(W,I)
   HR=hecke(R,H.para[I])
   t=induction_table(R,W)
-  s=factorized_schur_elements(H)
-  Lcm=lcm(s...)
+  s=CycPol.(schur_elements(H))
+  Lcm=lcm(s)
   s=Ref(Lcm).//s
   print("expanding lcm(Sᵪ)/Sᵪ quotients..")
-  println("done in ",@elapsed s=HeckeAlgebras.expand.(s;c))
-  r=factorized_schur_elements(HR)
+  println("done in ",@elapsed s=map(p->p(Mvp(:x)),s))
+  r=CycPol.(schur_elements(HR))
   r=Ref(Lcm).//r
   print("expanding lcm(Sχ)/Sψ quotients..")
-  println("done in ",@elapsed r=HeckeAlgebras.expand.(r;c))
-# Lcm=HeckeAlgebras.expand(Lcm;c)
-  vec(transpose(s)*t.scalar).==r
+  println("done in ",@elapsed r=map(p->p(Mvp(:x)),r))
+# s=invpermute(s,perm"(3,5)(17,19)(27,29)(35,36)(39,40)(50,52)(51,53)")
+  vec(transpose(map(i->Mvp(Symbol(:x,i)),eachindex(s)))*t.scalar).-r
+# vec(transpose(s)*t.scalar).==r
 end
+
+# effect of x->-x on CharTable(hecke(crg(31),-x^2)) same effect on schur_elts
+pq=perm"(3,5)(4,6)(11,12)(17,19)(18,20)(27,29)(28,30)(31,33)(32,34)(35,36)(39,40)(42,44)(43,45)(48,49)(50,52)(51,53)"
+# effect of i->-i on CharTable(hecke(crg(31),-x^2)): (58,59)
+dims=[[1, 2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12], [13, 14], 
+[15, 16, 17, 18, 19, 20], [21, 22, 23, 24], [25], 
+[26, 27, 28, 29, 30, 31, 32, 33, 34], [35, 36], [37, 38, 39, 40], 
+[41, 42, 43, 44, 45], [46, 47, 48, 49, 50, 51, 52, 53], [54, 55, 56, 57], 
+[58, 59]]
+W=crg(31)
+@Mvp x
+H=hecke(W,-x^2)
+ct=CharTable(H)
+
+gg=Group(Perm(3,5),Perm(4,6),Perm(11,12),Perm(17,19),Perm(18,20),Perm(27,29),
+  Perm(28,30),Perm(31,33),Perm(32,34),Perm(35,36),Perm(39,40),Perm(42,44),
+  Perm(43,45),Perm(48,49),Perm(50,52),Perm(51,53))
+
+gg=Group(perm"(3,4)(5,6)",perm"(17,18)(19,20)",perm"(27,28)(29,30)",
+         perm"(31,32)(33,34)",perm"(28,31)(30,33)",perm"(42,43)(44,45)",
+         perm"(48,50)(49,52)",perm"(50,51)(52,53)")

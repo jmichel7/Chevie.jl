@@ -217,26 +217,30 @@ function cmpcycpol(a,b;na="a",nb="b")
   end
 end
 #---------------- test: representations ------------------------
+
+function charfromrepr(gr,words)
+  if gr isa NamedTuple gens=vcat(gr.gens,[gr.F])
+    words=map(x->vcat(x,length(gens)),words)
+  else gens=gr
+  end
+  if isempty(gens) return fill(1,length(inds)) end
+  traces_words_mats(gens,words)
+end
+  
 # find matrices gr as a representation of a group or Hecke algebra
-function findrepresentation(W,gr;check=false)
-  O=W
-  if O isa HeckeAlgebra W=O.W end
+function findrepresentation(H,gr;check=false)
+  if (H isa HeckeAlgebra)||(H isa HeckeCoset) W=H.W 
+  else W=H
+  end
   t=word.(conjugacy_classes(W))
-  l=1:length(t)
-  l=sort(l,by=i->length(t[i]))
-  t=t[l]
-  ct=CharTable(O).irr
+  l=sort(1:length(t),by=i->length(t[i]))
+  ct=CharTable(H).irr
   pos=1:length(l)
-  gens=gr
-  if isempty(gens) return 1 end
-  if check rr=traces_words_mats(gens,t) end
-  for (i,w) in enumerate(t)
-    if check r=rr[i]
-    else r=traces_words_mats(gens,[w])[1]
-    end
+  if check rr=charfromrepr(gr,t) end
+  for i in l
+    r=check ? rr[i] : charfromrepr(gr,[t[i]])
 #   println("w=$w r=$r")
-#   if O isa HeckeAlgebra r=r*O.unit end
-    pos=filter(j->iszero(ct[j,l[i]]-r),pos)
+    pos=filter(j->r==ct[j,i],pos)
     if !check && length(pos)==1 return pos[1]
     elseif isempty(pos) return false
     end
@@ -247,37 +251,32 @@ function findrepresentation(W,gr;check=false)
   end
 end
 
-Base.numerator(p::Mvp)=p*denominator(p)
-function Trepresentations(W,l=Int[];check=true)
-  O=W
-  if (W isa HeckeAlgebra) || (W isa HeckeCoset)
-    H=W
+function Trepresentations(H,l=Int[];check=true)
+  if (H isa HeckeAlgebra) || (H isa HeckeCoset)
     W=H.W
-  else H=hecke(W)
+  else W=H
   end
   cl=length.(conjugacy_classes(W))
-  ct=CharTable(O).irr
   if isempty(l) l=1:length(cl) end
   for i in l
    InfoChevie("# Representation n⁰$i/$(length(cl))")
-    gr=representation(O,i)
+    gr=representation(H,i)
     if gr==false || gr===nothing println("=$gr")
     else
       r=gr
       if !isempty(r) print(" dim:",(r isa AbstractVector) ? size(r[1],1) :
                           size(r.gens[1],1),"...") end
       if !isrepresentation(H,r) ChevieErr(i," is not a representation") end
-      if r isa NamedTuple println();continue end # for now... Should be fixed
-      pos=findrepresentation(O,gr;check)
+      pos=findrepresentation(H,gr;check)
       if pos==i println("found")
       elseif pos!=false 
          ChevieErr("repr. ",i," character found at ",pos,"\n")
       else 
-        pos=collect(zip(ct[i,:],traces_words_mats(gr,classinfo(W).classtext)))
+        ct=CharTable(H).irr
+        pos=collect(zip(ct[i,:],charfromrepr(gr,classinfo(W).classtext)))
 	f=findall(x->x[2]!=x[1],pos)
         ChevieErr("character does not match\n")
-        ChevieErr(Format.Table(toM(pos[f]),row_labels=f,
-           col_labels=["is","should be"]))
+        Format.Table(toM(pos[f]),row_labels=f,col_labels=["is","should be"])
       end
     end
   end

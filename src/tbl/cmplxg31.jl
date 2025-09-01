@@ -147,7 +147,9 @@ chevieset(:G31,:SchurModels,Dict{Symbol,Any}(
   :f45_8s=>Dict{Symbol,Any}(:coeff=>-1,:factor=>-11,:vcyc=>[1,1,1,1,1,1,1,1,4,4,7]),
   :f64_9=>Dict{Symbol,Any}(:coeff=>4,:factor=>-8,:vcyc=>[4,4,6,6,10,12])))
 
-chevieset(:G31,:SchurData,[
+p31=perm"(3,5)(17,19)(27,29)(35,36)(39,40)(50,52)(51,53)"
+
+chevieset(:G31,:SchurData,invpermute([
    Dict{Symbol,Any}(:name=>"f1_0",:order=>[1,2]),
    Dict{Symbol,Any}(:name=>"f1_0",:order=>[2,1]),
    Dict{Symbol,Any}(:name=>"f4_1",:order=>[2,1],:rootPower=>0),
@@ -206,7 +208,7 @@ chevieset(:G31,:SchurData,[
    Dict{Symbol,Any}(:name=>"f45_8s",:order=>[1,2]),
    Dict{Symbol,Any}(:name=>"f45_8s",:order=>[2,1]),
    Dict{Symbol,Any}(:name=>"f64_9",:order=>[1,2]),
-   Dict{Symbol,Any}(:name=>"f64_9",:order=>[1,2])])
+   Dict{Symbol,Any}(:name=>"f64_9",:order=>[1,2])],p31))
 
 chevieset(:G31, :SchurElement, function (p, para, rootpara)
   ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
@@ -869,7 +871,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     149, 168, 211, 224, 250, 278, 280, 286, 317, 327, 333, 334, 367, 377, 382,
     384, 388, 418, 428, 436, 440, 441, 445, 497, 500]), (1, [62, 72, 87, 92])])
   function f19(x,y,s)
-    expandrep(5,10,Tuple{typeof(s),Vector{Int64}}[(-s*x^2-s*x*y, [48, 243]),
+    expandrep(5,10,Tuple{typeof(s//1),Vector{Int64}}[(-s*x^2-s*x*y, [48, 243]),
  (-s*x^2-s*x*y-s*y^2+x*y^2, [143]), (-s*x^2-s*x*y+y^3, [32, 42]), (s*x*y,
  [132]), (s*x*y+s*y^2, [232]), (s*x+s*y, [98, 198, 293, 393]), (-s*y^2, [142,
  148]), (-s*y^2-x^2*y, [133]), (-s*y, [382]), (s*y, [292, 396]), (-s, [348,

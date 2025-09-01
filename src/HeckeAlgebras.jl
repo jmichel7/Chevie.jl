@@ -54,11 +54,11 @@ instance  when constructing  the Jones  polynomial. If  for all `s` we have
 For  some  Iwahori-Hecke  algebras  the  character  table,  and  in general
 Kazhdan-Lusztig  bases, require  a square  root of  `-uₛ₀uₛ₁`. These square
 roots  can be specified  with the keyword  `rootpara` when constructing the
-algebra;  after  this  the  function  `rootpara(H)`  will return the chosen
-roots. If not specified, we try to extract roots automatically when needed;
-`rootpara(H)`  informs  on  the  choices  made. Note that some mathematical
-results  require an explicit choice of one  of the two possible roots which
-cannot be automatically made thus require a keyword initialisation.
+algebra;  after  this  `H.rootpara`  will  return  the chosen roots. If not
+specified, we try to extract roots automatically when needed; `rootpara(H)`
+informs on the choices made. Note that some mathematical results require an
+explicit  choice  of  one  of  the  two  possible  roots  which  cannot  be
+automatically made thus require a keyword initialisation.
 
 There  is a universal choice  for `R` and `uₛᵢ`:  Let `uₛᵢ:s∈ S,i∈[0,1]` be
 indeterminates   such  that  `uₛᵢ=uₜᵢ`  whenever  `mₛₜ`  is  odd,  and  let
@@ -148,17 +148,20 @@ generic  Hecke algebra is the ``ℤ[uₛᵢ^{±1}]ₛᵢ``-algebra `H` with gene
 `T_s`  for each `s∈  S` presented by  the braid relations  and the deformed
 order relations ``(T_s-u_{s,0})…(T_s-u_{s,e-1})=0``.
 
-Ariki,  Koike and Malle have computed the  character table of some of these
-algebras,  including  those  for  all  2-dimensional reflection groups, see
-[Broué-Malle 1993](biblio.htm#BM93) and [Malle 1996](biblio.htm#Mal96); our
-data  has  models  of  all  representation  and  character  tables for real
-reflection  groups; it  contains the  same for  imprimitive groups  and for
-primitive groups of dimension 2 and 3 (these last representations have been
-computed  in [Malle-Michel 2010](biblio.htm#MM10)) and contains also models
-and  character tables computed  by Michel for  `G₂₉` and `G₃₃`; it contains
-also  partial lists of representations and partial character tables for the
-remaining  groups `G₃₁,G₃₂`  and `G₃₄`,  computed by  Malle and  Michel for
-`G₃₂` and by Michel for the other two algebras.
+Ariki and Koike have described models of representations for these algebras
+corresponding  to imprimitive complex  reflection groups, and Halverson-Ram
+and  some other  authors have  computed the  character tables in this case.
+Malle has given representation models and the character table for the other
+2-dimensional  reflection  groups,  see [Broué-Malle 1993](biblio.htm#BM93)
+and   [Malle   1996](biblio.htm#Mal96);   our   data   has  models  of  all
+representations,  and  character  tables,  for  real  reflection groups; it
+contains  the  same  for  imprimitive  groups  and  for primitive groups of
+dimension  2  and  3  (these  last  representations  have  been computed in
+[Malle-Michel   2010](biblio.htm#MM10))   and   contains   also  models  of
+representations  and  character  tables  computed  by  Michel for `G₂₉` and
+`G₃₃`;  it  contains  also  partial  lists  of  representations and partial
+character  tables for the remaining groups `G₃₁,G₃₂` and `G₃₄`, computed by
+Malle and Michel for `G₃₂` and by Michel for the other two algebras.
 
 The quotient of the Hecke algebra obtained by the specialisation ``u_{𝐬,i}↦
 ζₑⁱ``  is isomorphic to the group algebra of `W`. It was conjectured for 20
@@ -285,11 +288,11 @@ parameters for the corresponding conjugacy class of braid reflections.
 
 An  entry in  `parameter` for  a reflection  of order  `e` can  be either a
 single scalar value or a `Vector` of length 'e'. If it is a `Vector`, it is
-interpreted as the list `[u₀,…,u_(e-1)]` of parameters for that reflection.
-If  it is not  a vector, let  `q` be its  value; it is  then interpreted as
+interpreted as the list `[u₀,…,uₑ₋₁]` of parameters for that reflection. If
+it  is  not  a  vector,  let  `q`  be  its value; it is then interpreted as
 specifying  the  list  of  parameters  for  the Spetsial algebra, which are
-`[q,ζ_e,…,ζ_{e-1}]`  (thus the  list `[q,-1]`  of the one-parameter algebra
-for Coxeter groups).
+`[q,ζₑ,…,ζₑᵉ⁻¹]`  (thus the list `[q,-1]`  of the one-parameter algebra for
+Coxeter groups).
 
 When  printing an Hecke algebra the parameter list is abbreviated using the
 same conventions.
@@ -300,7 +303,8 @@ extract  roots of the  parameters. These roots  are extracted automatically
 by  giving  a  keyword  argument  `rootpara`:  if  it is a vector it should
 contain at the `i`-th position a square root of
 `-parameter[i][1]*parameter[i][2]`;   if  a   scalar  it   is  replaced  by
-`fill(rootpara,ngens(W))`.
+`fill(rootpara,ngens(W))`. The function `rootpara(H)` tries to fill
+automatically missing entries in  `H.rootpara`.
 
 # Example
 ```julia-repl
@@ -335,13 +339,13 @@ hecke(B₂,q²,rootpara=q)
 julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
 hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
 
-julia> H.para,rootpara(H)
+julia> H.para,H.rootpara
 (Vector{Pol{Int64}}[[q², -1], [q⁴, -1]], Pol{Int64}[q, q²])
 
 julia> H=hecke(W,9,rootpara=3)
 hecke(B₂,9,rootpara=3)
 
-julia> H.para,rootpara(H)
+julia> H.para,H.rootpara
 ([[9, -1], [9, -1]], [3, 3])
 
 julia> @Mvp x,y,z,t
@@ -371,7 +375,7 @@ julia> hecke(complex_reflection_group(3,1,2),q).para # spetsial parameters
  [q, -1]
 ```
 """
-function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
+function hecke(W::Group,para::Vector{<:Vector{C}};rootpara=fill(nothing,ngens(W)))where C
  if applicable(simple_reps,W) && ngens(W)>0
   para=map(eachindex(gens(W)))do i
     j=simple_reps(W)[i]
@@ -384,14 +388,13 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
     end
   end
   end
-  d=Dict{Symbol,Any}(:equal=>allequal(para))
-  if !isempty(rootpara) d[:rootpara]=rootpara end
+  d=Dict{Symbol,Any}(:equal=>allequal(para),:rootpara=>rootpara)
   p=findfirst(i->length(para[i])!=order(W(i)),eachindex(para))
   if !isnothing(p) error("parameter no. $p should be of length ",order(W(p))) end
   HeckeAlgebra(W,para,d)
 end
 
-function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
+function hecke(W::Group,p::Vector;rootpara=fill(nothing,ngens(W)))
   oo=ordergens(W)
   para=map(p,oo)do p, o
     if p isa Vector return p end
@@ -400,46 +403,44 @@ function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
   if isempty(para)
    return HeckeAlgebra(W,Vector{Int}[],Dict{Symbol,Any}(:rootpara=>rootpara))
   end
-  hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
+  hecke(W,para;rootpara)
 end
 
-function hecke(W::Group,p::C=1;rootpara::C=zero(p))where C
+function hecke(W::Group,p::C=1;rootpara=nothing)where C
   if ngens(W)==0 para=Vector{C}[]
   elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
   else para=map(o->vcat([p],E.(o,1:o-1)),ordergens(W))
   end
   H=HeckeAlgebra(W,para,Dict{Symbol,Any}(:equal=>true))
-  if !iszero(rootpara) H.rootpara=fill(rootpara,ngens(W)) end
+  H.rootpara=fill(rootpara,ngens(W))
   H
 end
 
-function hecke(W::Group,p::Tuple;rootpara=nothing)
+function hecke(W::Group,p::Tuple;rootpara=fill(nothing,ngens(W)))
   if length(p)==1
     para=fill(p[1],ngens(W))
-    rootpara= isnothing(rootpara) ? eltype(p[1])[] : rtpara
+    rootpara=fill(rootpara[1],ngens(W))
   else
     s=simple_reps(W,1:ngens(W))
     C=sort(unique(s))
     para=fill(first(p),ngens(W))
-    if !isnothing(rootpara) rtpara=fill(first(rootpara),ngens(W)) end
-    for i in 1:ngens(W)
-      para[i]=p[findfirst(==(s[i]),C)]
-      if !isnothing(rootpara)
-        rtpara[i]=rootpara[findfirst(==(s[i]),C)]
-      end
-    end
-    rootpara= isnothing(rootpara) ? eltype(p[1])[] : rtpara
+    para=map(i->p[findfirst(==(s[i]),C)],1:ngens(W))
+    rootpara=map(i->rootpara[findfirst(==(s[i]),C)],1:ngens(W))
   end
-  hecke(W,para;rootpara=rootpara)
+  hecke(W,para;rootpara)
 end
 
 function rootpara(H::HeckeAlgebra)
-  get!(H,:rootpara)do
-    map(eachindex(H.para)) do i
-       if isone(-prod(H.para[i])) return -prod(H.para[i]) end
-       return root(-prod(H.para[i]))
+  if any(isnothing,H.rootpara)
+    H.rootpara=map(eachindex(H.para)) do i
+      if isnothing(H.rootpara[i])
+        p=-prod(H.para[i])
+        isone(p) ? p : root(p)
+      else H.rootpara[i]
+      end
     end
   end
+  H.rootpara
 end
 
 equalpara(H::HeckeAlgebra)::Bool=H.equal
@@ -457,7 +458,7 @@ end
 function Base.show(io::IO, H::HeckeAlgebra)
   if isempty(H.para) print(io,"hecke(",H.W,")"); return end
   print(io,"hecke(",H.W,",",simplify_para(H.para))
-  if haskey(H,:rootpara)
+  if !all(isnothing,H.rootpara)
     rp=rootpara(H)
     if !isempty(rp) && allequal(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
@@ -500,8 +501,7 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
     if isempty(refltype(W)) ct=prod(CharTable[])
     else
       ct=prod(map(refltype(W))do t
-        ct=chevieget(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
-                 rootpara(H)[t.indices] : fill(nothing,length(H.para)))
+        ct=chevieget(t,:HeckeCharTable,H.para[t.indices],H.rootpara[t.indices])
         if ct[:irreducibles] isa Matrix irr=ct[:irreducibles] 
         else error("should not happen") end
         CharTable(irr,
@@ -567,9 +567,8 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
   tt=refltype(H.W)
   if isempty(tt) return Matrix{Int}[] end
   dims=chevieget.(tt,:NrConjugacyClasses)
-  rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
-  mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],rp,j),tt,
-                                                    lin2cart(dims,i))
+  mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],
+                      H.rootpara[t.indices],j),tt,lin2cart(dims,i))
   if any(isnothing,mm) return nothing end
 # if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm) end
   n=length(tt)
@@ -582,11 +581,15 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
 end
 
 """
-`isrepresentation(H::HeckeAlgebra,r)`
+`isrepresentation(H::HeckeAlgebra,r;details=false)` or
+
+`isrepresentation(W::ComplexReflectionGroup,r;details=false)`
 
 returns `true` or `false`, according to whether a given set `r` of elements
-corresponding  to  the  standard  generators  of the reflection group `H.W`
-defines a representation of the Hecke algebra `H` or not.
+corresponding  to  the  standard  generators  of  the  reflection group `W`
+defines a representation of the Hecke algebra `H` or not
+(`isrepresentation(W,r)` is equivalent to `isrepresentation(hecke(W)),r)`.
+If `details=true` the functions gives details of the cause of a failure.
 
 ```julia-repl
 julia> H=hecke(coxgroup(:F,4))
@@ -599,27 +602,29 @@ julia> isrepresentation(H,Tbasis(H).(1:4))
 true
 ```
 """
-function isrepresentation(H::HeckeAlgebra,t;verbose=false)
+function isrepresentation(H::HeckeAlgebra,t;details=false)
   W=H.W
   res=true
 #   bug in sparsearrays: q*one(m) is of type Any for SparseMatrix m
   myone(m,q)=m isa AbstractMatrix ? Diagonal(fill(q,size(m,1))) : q*one(m) 
   for i in eachindex(gens(W))
     if !iszero(prod(q->t[i]-myone(t[i],q+0),H.para[i]))
-      if !verbose return false end
+      if !details return false end
       println("Error in ",ordinal(i)," parameter relation");
       res=false
     end
   end
   for (l,r) in braid_relations(W)
     if !iszero(prod(t[l])-prod(t[r]))
-      if !verbose return false end
+      if !details return false end
       println("Error in relation ",l,"=",r)
       res=false
     end
   end
   res
 end
+
+isrepresentation(W,t;details=false)=isrepresentation(hecke(W),t;details)
 
 """
 `reflection_representation(H::HeckeAlgebra)` or `reflrep(H)`
@@ -707,7 +712,7 @@ function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
   end
   S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
                                          rootpara(H)[1]//H.para[1][2])
-  if !isrepresentation(H,S;verbose=true) error() end
+  if !isrepresentation(H,S;details=true) error() end
   improve_type(S)
 end
 
@@ -1571,9 +1576,25 @@ julia> representations(H)
 """
 Chars.representations(H::Union{HeckeAlgebra,HeckeCoset})=representation.(Ref(H),1:nconjugacy_classes(H.W))
 
-function isrepresentation(H::HeckeCoset,r)
-  all(i->iszero(r.gens[i]*r.F-r.F*r.gens[action(Group(H.W),i,H.W.phi)]),
-      eachindex(r.gens)) && isrepresentation(H.H,r.gens)
+"""
+`isrepresentation(H::HeckeCoset,r;details=false)` or
+
+`isrepresentation(W::Spets,r;details=false)`
+
+returns `true` or `false`, according to whether `NamedTuple` `r`
+defines a representation of `H` or not.
+```
+"""
+function isrepresentation(H::HeckeCoset,r;details=false)
+  res=true
+  for i in eachindex(gens(Group(H.W)))
+    if r.gens[i]*r.F!=r.F*r.gens[action(Group(H.W),i,H.W.phi)]
+      if !details return false end
+      println("Error: F does not act as it should on ",ordinal(i)," generator");
+      res=false
+    end
+  end
+  res && isrepresentation(H.H,r.gens;details=false)
 end
 
 struct HeckeTCElt{TH<:HeckeCoset,C,P}<:HeckeElt{TH,C,P}

@@ -54,26 +54,24 @@ chevieset(:G2, :ClassParameter, w->chevieget(:G2,:ClassNames)[
     [[1],[2,1,2],[1,2,1,2,1]],[[2,1],[1,2]],[[2,1,2,1],[1,2,1,2]],
     [[1,2,1,2,1,2]]])])
 
-#  schur_elements, CharTable and representations of Hecke algebras
-#  need the square root of the product of the parameters for 2-dimensional
-#  representations.
-#  If  sqrtpara are not bound, the function squv knows how to compute this
+#  schur_elements, CharTable and representations of H(G2,[u,v])
+#  need root(u*v) for 2-dimensional representations.
+#  If  rootpara are not bound, the function squv knows how to compute this
 #  root only if u and v are equal or one is the cube of the other one.
-chevieset(:G2, :squv, function (para, sqrtpara)
+chevieset(:G2, :squv, function (para, rootpara)
   u=prod(para[1])
   v=prod(para[2])
-  u==v ? u : u==v^3 ? -v^2 : v==u^3 ? -u^2 : all(!isnothing,sqrtpara) ?
-    prod(sqrtpara) : root(u*v)
+  u==v ? u : u==v^3 ? -v^2 : v==u^3 ? -u^2 : all(!isnothing,rootpara) ?
+    prod(rootpara) : root(u*v)
 end)
 
-chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
+chevieset(:G2, :HeckeCharTable, function (para, rootpara)
   x,y=para[1]
   z,t=para[2]
-  one=(x*y*z*t)^0
-  f1(u,v)=[1,v,u,v*u,v^2*u^2,v^3*u^3]*one
+  f1(u,v)=[1,v,u,v*u,v^2*u^2,v^3*u^3]
   function f2(x,y,z,t,eps)
-    squv=eps*chevieget(:G2,:squv)(para,sqrtpara)
-    [2,z+t,x+y,-squv,-x*y*z*t,2*squv^3]*one
+    squv=eps*chevieget(:G2,:squv)(para,rootpara)
+    [2,z+t,x+y,-squv,-x*y*z*t,2*squv^3]
   end
   tbl=Dict{Symbol,Any}(:identifier=>"H(G2)",:parameter=>[[x,y],[z,t]],:size=>12,
     :irreducibles=>
@@ -84,7 +82,7 @@ chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
   tbl
 end)
 
-chevieset(:G2, :HeckeRepresentation, function(para, sqrtpara, i)
+chevieset(:G2, :HeckeRepresentation, function(para, rootpara, i)
   one = prod(para[1])^0*prod(para[2])^0
   x,y=para[1]
   z,t=para[2]
@@ -92,7 +90,7 @@ chevieset(:G2, :HeckeRepresentation, function(para, sqrtpara, i)
   elseif i==2 return [[y;;],[t;;]]*one
   elseif i==3 return [[y;;],[z;;]]*one
   elseif i==4 return [[x;;],[t;;]]*one
-  else squv=chevieget(:G2,:squv)(para, sqrtpara)
+  else squv=chevieget(:G2,:squv)(para, rootpara)
     if i==6 squv=-squv end
     [[y -1;0 x],[z 0;squv+y*z+x*t t]] * one
   end
@@ -117,7 +115,7 @@ chevieset(:G2, :SchurData, [
   Dict{Symbol, Any}(:name => "f2", :order => [1, 2, 3, 4], :rootPower => -1),
   Dict{Symbol, Any}(:name => "f2", :order => [1, 2, 3, 4], :rootPower => 1)])
 
-chevieset(:G2, :SchurElement, function (phi, para, sqrtpara)
+chevieset(:G2, :SchurElement, function (phi, para, rootpara)
   u=-para[1][1]//para[1][2]
   v=-para[2][1]//para[2][2]
   p=findfirst(==(phi),chevieget(:G2, :CharInfo)()[:charparams])
@@ -126,7 +124,7 @@ chevieset(:G2, :SchurElement, function (phi, para, sqrtpara)
   elseif p==3 return (u^2+v^2+u*v)*(1+u)*(v+1)//u^3
   elseif p==4 return (u^2+v^2+u*v)*(1+u)*(v+1)//v^3
   end
-  squv=chevieget(:G2, :squv)(para, sqrtpara)//para[1][2]//para[2][2]
+  squv=chevieget(:G2, :squv)(para, rootpara)//para[1][2]//para[2][2]
   if p==6 squv=-squv end
   2*(u*v)^-1*(u*v+1+squv)*(u+v-squv)
 end)

@@ -331,16 +331,17 @@ Cpbasis(H::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
 `Cbasis(H::HeckeAlgebra)`
 
 returns  a function which gives the  `C`-basis of the Iwahori-Hecke algebra
-`H`. The algebra `H` should have the functon `rootpara` defined. This basis
-is  defined as follows (see e.g. [(5.1)Lusztig1985](biblio.htm#Lus85)). Let
-`W`  be the underlying Coxeter group. For  `x,y ∈ W` let ``P_{x,y}`` be the
-corresponding  Kazhdan--Lusztig polynomial. If ``\\{T_w ∣ w∈ W\\}`` denotes
-the usual T-basis, then ``C_x=\\sum_{y\\le
-x}(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1}  T_y`` for `x  ∈ W`. For
-example,  we have `Cₛ=qₛ⁻½Tₛ-qₛ½T₁`  for `s ∈  S`. Thus, the transformation
-matrix between the `T`-basis and the `C`-basis is lower unitriangular, with
-monomials  in `qₛ` along the diagonal.  In the one-parameter case (all `qₛ`
-are equal to `v²`) the multiplication rules for the `C` basis are given by:
+`H`.  The algebra `H` should have all entries of `H.rootpara` defined after
+calling   `rootpara(H)`.  This  basis  is  defined  as  follows  (see  e.g.
+[(5.1)Lusztig1985](biblio.htm#Lus85)).  Let `W`  be the  underlying Coxeter
+group.  For `x,y ∈ W` let ``P_{x,y}`` be the corresponding Kazhdan--Lusztig
+polynomial.  If  ``\\{T_w  ∣  w∈  W\\}``  denotes  the  usual T-basis, then
+``C_x=\\sum_{y\\le x}(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1} T_y``
+for  `x ∈ W`. For example, we have `Cₛ=qₛ⁻½Tₛ-qₛ½T₁` for `s ∈ S`. Thus, the
+transformation  matrix  between  the  `T`-basis  and the `C`-basis is lower
+unitriangular,   with  monomials  in  `qₛ`   along  the  diagonal.  In  the
+one-parameter  case (all `qₛ`  are equal to  `v²`) the multiplication rules
+for the `C` basis are given by:
 
 `Cₛ⋅Cₓ =-(v+v⁻¹)Cₓ`, if `sx<x`, and `Cₛₓ+∑ₜ μ(t,x)Cₜ` if `sx>x`.
 
@@ -415,7 +416,7 @@ Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
 function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
-  if !isempty(rootpara(H)) un=one(inv(rootpara(H)[1])) else un=1 end
+  if !isnothing(rootpara(H)[1]) un=one(inv(rootpara(H)[1])) else un=1 end
   cdict=get!(H,Symbol("C'->T"))do
     Dict(one(W)=>one(H)*un)
   end
