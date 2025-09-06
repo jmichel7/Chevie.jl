@@ -682,11 +682,9 @@ chevieset(:H4, :cycpolfakedegrees, [[1, 0], [1, 60], [1, 1, 4, 4, 12, 20, 36],
   [[1, 0, 1, 1, 2, 2, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 1, 2, 2, 1, 1, 0, 1], 8],
   [[1, 0, 0, 0, 1, -1, 1, 0, 0, 0, 1], 9, 4, 4, 4, 8, 12, 20]])
 
-chevieset(:H4, :HeckeCharTable, function(param, sqrtparam)
+chevieset(:H4, :HeckeCharTable, function(param, rootpara)
   q=-param[1][1]//param[1][2]
-  if sqrtparam[1]===nothing v=root(q)
-  else v=-sqrtparam[1]//param[1][2]
-  end
+  v= ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(H4)",
   :text=>"the ordering of the characters is that of Alvis-Lusztig(1982)",
   :parameter=>[v^2,v^2,v^2,v^2],
@@ -734,11 +732,10 @@ chevieset(:H4, :WGraph, function (i,)
   end
 end)
 
-chevieset(:H4, :HeckeRepresentation, function (param, sqrtparam, i)
-  if sqrtparam[1]===nothing v=root(-param[1][1]//param[1][2])
-  else v=-sqrtparam[1]//param[1][2]
-  end
-  -param[1][2]*WGraphToRepresentation(4,chevieget(:H4, :WGraph)(i), v)
+chevieset(:H4, :HeckeRepresentation, function (para, rootpara, i)
+  v=ismissing(rootpara[1]) ? root(-para[1][1]//para[1][2]) :
+         -rootpara[1]//para[1][2]
+  -para[1][2]*WGraphToRepresentation(4,chevieget(:H4, :WGraph)(i), v)
 end)
 
 CHEVIE[:families][:HS4]=Family(Dict{Symbol, Any}(:group=>"SL2(5)",:name=>"H4",

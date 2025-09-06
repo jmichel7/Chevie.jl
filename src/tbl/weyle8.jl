@@ -2817,11 +2817,11 @@ chevieset(:E8, :ClassParameter,w->
   chevieget(:E8, :ClassNames)[findfirst(==(tally(cycletype(prod(
  chevieget(:E8,:generators)[w],init=Perm())))),chevieget(:E8,:cyclestructure))])
 
-chevieset(:E8,:HeckeCharTable,function(para,sqrtpara)
+chevieset(:E8,:HeckeCharTable,function(para,rootpara)
   q,y=para[1]
   if y!=-1 q//=-y end
-  v=sqrtpara[1]
-  if v!==nothing
+  v=rootpara[1]
+  if !ismissing(v)
     if y!=-1 v//=-y end
   else v=root(q)
   end
@@ -2829,7 +2829,7 @@ chevieset(:E8,:HeckeCharTable,function(para,sqrtpara)
     :text => "origin: Jean Michel, March 1995",
     :cartan => chevieget(:E8, :CartanMat),
     :parameter => para,
-    :rootparameter => sqrtpara, :size => 696729600)
+    :rootparameter => rootpara, :size => 696729600)
   merge!(tbl, chevieget(:E8, :ClassInfo))
   merge!(tbl, chevieget(:E8, :CharInfo)())
   cl=tbl[:classtext]
@@ -2962,11 +2962,11 @@ chevieset(:E8, :WGraph, function(i)
   gr[i]
 end)
 
-chevieset(:E8, :HeckeRepresentation, function (para, sqrtpara, i)
+chevieset(:E8, :HeckeRepresentation, function (para, rootpara, i)
   q,y=para[1]
   if y!=-1 q//=-y end
-  v=sqrtpara[1]
-  if v!==nothing
+  v=rootpara[1]
+  if !ismissing(v)
     if y!=-1 v//=-y end
   else v=root(q)
   end

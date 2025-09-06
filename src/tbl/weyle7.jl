@@ -698,18 +698,17 @@ chevieset(:E7, :ClassParameter, function(w)
   chevieget(:E7, :ClassNames)[[3, 5, 20, 21, 40, 43][i]]
 end)
 
-chevieset(:E7, :HeckeCharTable, function (para, sqrtpara)
+chevieset(:E7, :HeckeCharTable, function (para, rootpara)
   q,y=para[1]
   if y!=-1 q//=-y end
-  v=sqrtpara[1]
-  if v!==nothing
-    if y!=-1 v//=-y end
+  v=rootpara[1]
+  if !ismissing(v) if y!=-1 v//=-y end
   else v=root(q)
   end
   tbl=Dict{Symbol, Any}(:identifier => "H(E7)",
-    :text => "origin: Meinolf Geck, July 1992",
-    :cartan => chevieget(:E7, :CartanMat),
-    :parameter => para, :rootparameter => sqrtpara, :size => 2903040)
+    :text=>"origin: Meinolf Geck, July 1992",
+    :cartan=>chevieget(:E7, :CartanMat),
+    :parameter=>para, :rootparameter=>rootpara, :size=>2903040)
   merge!(tbl, chevieget(:E7, :ClassInfo))
   merge!(tbl, chevieget(:E7, :CharInfo)())
   cl=tbl[:classtext]
@@ -2858,11 +2857,11 @@ chevieset(:E7, :WGraph, function (i,)
   end
 end)
 
-chevieset(:E7, :HeckeRepresentation, function (para, sqrtpara, i)
+chevieset(:E7, :HeckeRepresentation, function (para, rootpara, i)
   q,y=para[1]
   if y!=-1 q//=-y end
-  v=sqrtpara[1]
-  if v!==nothing
+  v=rootpara[1]
+  if !ismissing(v)
     if y!=-1 v//=-y end
   else v=root(q)
   end

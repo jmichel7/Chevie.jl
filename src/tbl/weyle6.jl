@@ -309,10 +309,10 @@ chevieset(:E6, :ClassParameter, w->
   chevieget(:E6, :ClassNames)[findfirst(==(tally(cycletype(prod(
     chevieget(:E6,:generators)[w],init=Perm())))),chevieget(:E6,:cyclestructure))])
 
-chevieset(:E6, :HeckeCharTable, function (param, sqrtparam)
+chevieset(:E6, :HeckeCharTable, function (param, rootpara)
   q=-param[1][1]//param[1][2]
   tbl=Dict(:identifier=>"H(E6)",:text=>"origin: Meinolf Geck, April 1992",
-    :parameter=>param,:rootparameter=>sqrtparam,
+    :parameter=>param,:rootparameter=>rootpara,
     :cartan=>chevieget(:E6, :CartanMat), :size => 51840,
     :irreducibles=>map(i->map(j->j(q),i),chevieget(:E6,:vpolheckeirreducibles)))
   merge!(tbl,chevieget(:E6, :ClassInfo))
@@ -348,10 +348,9 @@ chevieset(:E6, :WGraph, function (i,)
   end
 end)
 
-chevieset(:E6, :HeckeRepresentation, function (param, sqrtparam, i)
-  if sqrtparam[1]===nothing v=root(-param[1][1]//param[1][2])
-  else v=-sqrtparam[1]//param[1][2]
-  end
+chevieset(:E6, :HeckeRepresentation, function (param, rootpara, i)
+  v=ismissing(rootpara[1]) ? root(-param[1][1]//param[1][2]) :
+      -rootpara[1]//param[1][2]
   -param[1][2]*WGraphToRepresentation(6,chevieget(:E6,:WGraph)(i),v)
 end)
 

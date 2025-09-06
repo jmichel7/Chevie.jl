@@ -61,7 +61,7 @@ chevieset(:G2, :ClassParameter, w->chevieget(:G2,:ClassNames)[
 chevieset(:G2, :squv, function (para, rootpara)
   u=prod(para[1])
   v=prod(para[2])
-  u==v ? u : u==v^3 ? -v^2 : v==u^3 ? -u^2 : all(!isnothing,rootpara) ?
+  u==v ? u : u==v^3 ? -v^2 : v==u^3 ? -u^2 : all(!ismissing,rootpara) ?
     prod(rootpara) : root(u*v)
 end)
 

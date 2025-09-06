@@ -42,7 +42,7 @@ chevieset(Symbol("3D4"),:CharInfo,function()
   res
 end)
 
-chevieset(Symbol("3D4"), :HeckeCharTable, function (param, sqrtparam)
+chevieset(Symbol("3D4"), :HeckeCharTable, function (param, rootpara)
            q=improve_type(-param[1][1]//param[1][2])
   tbl=Dict{Symbol, Any}(:identifier => "H(3D4)", :parameter=>[q,q,q,q],
     :sqrtparameter=>[],:cartan=>chevieget(Symbol("3D4"),:CartanMat),:size=>192,
@@ -65,11 +65,9 @@ chevieset(Symbol("3D4"), :PhiFactors, [1, E(3), 1, E(3, 2)])
 chevieset(Symbol("3D4"), :Representation,i->chevieget(Symbol("3D4"),
   :HeckeRepresentation)([[1,-1],[1,-1],[1,-1],[1,-1]],[1,1,1,1],i))
 
-chevieset(Symbol("3D4"), :HeckeRepresentation,function(param,sqrtparam,i)
+chevieset(Symbol("3D4"), :HeckeRepresentation,function(param,rootpara,i)
   q=-param[1][1]//param[1][2]
-  if sqrtparam[1]===nothing v=root(q)
-  else v=-sqrtparam[1]//param[1][2]
-  end
+  v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   if i==1     (gens=[[v^2;;],[v^2;;],[v^2;;],[v^2;;]],F=[1;;])
   elseif i==2 (gens=[[-1;;],[-1;;],[-1;;],[-1;;]],F=[1;;])
   elseif i==3 

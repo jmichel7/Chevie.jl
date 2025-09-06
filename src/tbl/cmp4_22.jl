@@ -1700,6 +1700,7 @@ const Embed4_22=[[[1,3,-1],[3]],[[2],[3]],[[1],[3]],[[1],[2],[3]],
   [[3,3],[1],[-2,1,2]],[[1],[2]],[[1],[2],[3,3]],[[3],[1,3,-1]],[[1],[3]],
   [[2],[3]],[[1],[2],[3]],[[2],[1,2,-1]],[[1],[2]],[[1],[2,1,-2],[-2,1,2]]]
 
+# roots not yet used
 chevieset(:G4_22, :HeckeRepresentation, function(ST,para,roots,i)
   X,Y,Z=chevieget(:G4_22,:ParamSpecialization)(ST,para)
   function rep(char)

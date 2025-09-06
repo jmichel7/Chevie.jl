@@ -52,14 +52,18 @@ chevieset(:I, :ClassInfo, function (m)
   res
 end)
 
-chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
+chevieset(:I, :squv,function (m,para, rootpara)
   u=-para[1][1]//para[1][2]
   v=-para[2][1]//para[2][2]
   if isodd(m) squv=u
-  elseif rootpara[1]!==nothing && rootpara[2]!==nothing
-      squv=rootpara[1]*rootpara[2]
+  elseif !any(ismissing,rootpara) squv=prod(rootpara)
   else squv=root(u*v)
   end
+  u,v,squv
+end)
+
+chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
+  u,v,squv=chevieget(:I,:squv)(m,para,rootpara)
   ct=[[u,v]]
   if iseven(m)
     append!(ct,[[u,-u^0],[-v^0,v]])
@@ -135,6 +139,7 @@ chevieset(:I, :Representation, (m,i)->
   chevieget(:I, :HeckeRepresentation)(m,[[1,-1],[1,-1]],[1,1],i))
 
 chevieset(:I, :HeckeRepresentation, function (m, param, rootparam, i)
+  u,v,squv=chevieget(:I,:squv)(m,para,rootpara)
   if i==1 return [[param[1][1];;], [param[2][1];;]] end
   if iseven(m) i-=2 end
   if i==0 
@@ -144,13 +149,6 @@ chevieset(:I, :HeckeRepresentation, function (m, param, rootparam, i)
   elseif i==2 
     [[param[1][2];;],[param[2][2];;]]
   else
-    u=-param[1][1]//param[1][2]
-    v=-param[2][1]//param[2][2]
-    if isodd(m) squv=u
-    elseif rootparam[1]!==nothing && rootparam[2]!==nothing
-      squv=rootparam[1]*rootparam[2]
-    else squv=root(u*v)
-    end
     [-[-u^0 u^0;0u u]*param[1][2],
      -[v 0v;u+v+squv*(E(m,i-2)+E(m,2-i)) -v^0]*param[2][2]]
   end
@@ -173,8 +171,7 @@ chevieset(:I,:SchurElement, function (m,phi,para,rootpara)
     ci=ci[:malleParams][findfirst(==(phi),ci[:charparams])]
     return chevieget(:imp,:SchurElement)(m,1,2,ci,[E.(m,0:m-1),para[2]],[])//m
   end
-  u=-para[1][1]//para[1][2]
-  v=-para[2][1]//para[2][2]
+  u,v,squv=chevieget(:I,:squv)(m,para,rootpara)
   m2=div(m,2)
   if phi[1]==1
     if phi[2]==m2
@@ -190,10 +187,7 @@ chevieset(:I,:SchurElement, function (m,phi,para,rootpara)
     end
   else
     e=E(m,phi[2])+E(m,-phi[2])
-    if all(i->rootpara[i]!==nothing,[1,2]) ruv=prod(rootpara)
-    else ruv=root(u*v)
-    end
-    -m*(u*v+1-ruv*e)*(u+v+e*ruv)//(u*v*(e^2-4))
+    -m*(u*v+1-squv*e)*(u+v+e*squv)//(u*v*(e^2-4))
   end
 end)
 

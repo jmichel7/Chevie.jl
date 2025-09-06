@@ -96,12 +96,10 @@ chevieset(:H3, :sparseFakeDegrees,
    [1,8,1,10,1,12],[1,1,1,5,1,9],[1,3,1,5,1,7],[1,3,1,7,1,9,1,11],
    [1,4,1,6,1,8,1,12]])
 
-chevieset(:H3, :HeckeCharTable, function (param, sqrtparam)
+chevieset(:H3, :HeckeCharTable, function (param, rootpara)
   a=(1+root(5))//2
   q=-param[1][1]//param[1][2]
-  if sqrtparam[1]===nothing v=root(q)
-  else v=-sqrtparam[1]//param[1][2]
-  end
+  v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(H3)",
     :text=>"the representing matrices are those of Lusztig(1981)",
     :parameter => [q, q, q], :cartan => chevieget(:H3, :CartanMat),
@@ -135,11 +133,10 @@ chevieset(:H3, :WGraph, function(i)
   end
 end)
 
-chevieset(:H3, :HeckeRepresentation, function (param, sqrtparam, i)
-  if sqrtparam[1]===nothing v=root(-param[1][1]//param[1][2])
-  else v=-sqrtparam[1]//param[1][2]
-  end
-  -param[1][2]*WGraphToRepresentation(3,chevieget(:H3, :WGraph)(i),v)
+chevieset(:H3, :HeckeRepresentation, function (para, rootpara, i)
+  v=ismissing(rootpara[1]) ? root(-para[1][1]//para[1][2]) :
+         -rootpara[1]//para[1][2]
+  -para[1][2]*WGraphToRepresentation(3,chevieget(:H3, :WGraph)(i),v)
 end)
 
 chevieset(:H3, :UnipotentCharacters, function ()

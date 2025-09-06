@@ -216,17 +216,23 @@ chevieset(:G31, :SchurElement, function (p, para, rootpara)
   r=chevieget(:G31,:SchurModels)[Symbol(data[:name])]
   x,y=para[1][data[:order]]
   q=x//y
-  if haskey(r,:root) q=root(x*y)//y*(-1)^data[:rootPower] end
+  if haskey(r,:root)
+    if ismissing(rootpara[1]) roo=root(x*y) else roo=E(4)*rootpara[1] end
+    q=roo//y*(-1)^data[:rootPower]
+  end
   r[:coeff]*q^r[:factor]*prod(x->cyclotomic_polynomial(x)(q),r[:vcyc])
 end)
 
-chevieset(:G31, :FactorizedSchurElement, function (p, para, rt)
+chevieset(:G31, :FactorizedSchurElement, function (p, para, rootpara)
   ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
   data=chevieget(:G31, :SchurData)[ci]
   r=chevieget(:G31, :SchurModels)[Symbol(data[:name])]
   x,y=para[1][data[:order]]
   q=x//y
-  if haskey(r, :root) q=root(x*y)//y*(-1)^data[:rootPower] end
+  if haskey(r, :root) 
+    if ismissing(rootpara[1]) roo=root(x*y) else roo=E(4)*rootpara[1] end
+    q=roo//y*(-1)^data[:rootPower]
+  end
   res=Dict(:factor=>Mvp(r[:coeff]*q^r[:factor]),:vcyc=>
     map(v->Dict{Symbol,Any}(:monomial=>q,:pol=>CycPol([1,0,v])),r[:vcyc]))
   HeckeAlgebras.simplify(HeckeAlgebras.FactSchur(res[:factor],
@@ -234,7 +240,7 @@ chevieset(:G31, :FactorizedSchurElement, function (p, para, rt)
 end)
 
 # Computed JM  2006, 2012; some columns contain  unknown entries
-chevieset(:G31, :HeckeCharTable, function (para,rt)
+chevieset(:G31, :HeckeCharTable, function (para,rootpara)
   r,p=para[1]
   tbl=Dict{Symbol, Any}(:identifier => "H(G31)", :size => 46080,:order=>46080)
   merge!(tbl, chevieget(:G31, :ClassInfo))
@@ -778,7 +784,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rt)
   32*I*q^46,-8*q^30+16*q^31-8*q^32,-4*I*q^15+12*I*q^16-12*I*q^17+
   4*I*q^18,4*q^30-12*q^31+12*q^32-4*q^33,4*q^20,64*I*q^15,-64*I*q^45,-64*q^30])
   end
-  roo=root(r*p)
+  if ismissing(rootpara[1]) roo=root(r*p) else roo=E(4)*rootpara[1] end
   tbl[:irreducibles]=toM([f1(r),f1(p),
     f6(p,r,-roo),f6(r,p,roo),f6(p,r,roo),f6(r,p,-roo),
     f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-roo),f11(r,p,roo),
@@ -2250,7 +2256,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     9633, 9645, 9867]), (1, [1132, 4561, 4613, 4807, 6192, 7083, 7780, 7841,
     7998, 8911, 9618, 10119]), (x^-1*y, [7097])])
   x,y=para[1]
-  roo=root(x*y)
+  if ismissing(rt[1]) roo=root(x*y) else roo=E(4)*rt[1] end
   if i==1 f1(x)
   elseif i==2  f1(y)
   elseif i==3  f6(y,x,roo)

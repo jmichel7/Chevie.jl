@@ -1,14 +1,13 @@
 """
-The  Chevie package started as a port to Julia of the GAP3 package with the
-same name. This port started at the end of 2018 and the package is still in
-flux  so some function names or  interfaces may still change. Pull requests
-and issues are welcome.
+The  `Chevie` package  started in  2018 as  a port  to Julia  of the `GAP3`
+package  with the same name. As the package is still in flux, some function
+names or interfaces may change. I welcome pull requests and issues.
 
-I  have implemented the GAP functionality  needed to make Chevie work; most
-of  this infrastructure is  already registered as  separate packages. These
-packages  may have advantages compared to  other Julia packages providing a
-similar  functionality; you should have a  look at them. These packages are
-loaded  and  re-exported  so  that  their  functionality  is  automatically
+I  have also  implemented the  `GAP` functionality  needed to make `Chevie`
+work,  and most of this infrastructure  is already registered, as packages.
+They may have advantages compared to other Julia packages providing similar
+functionality.  You  should  take  a  look  at  them.  They  are loaded and
+re-exported  by  `Chevie`  so  that  their  functionality  is automatically
 available when you use `Chevie`. In other words, `Chevie` is a meta-package
 for the following packages:
 
@@ -27,10 +26,10 @@ for the following packages:
   * [GroupPresentations](https://github.com/jmichel7/GroupPresentations.jl) (presentations of groups, and groups defined by generators and relations)
   * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose a package with the current environment)
 
-Have  a look at the  documentation of the above  packages to see how to use
-their   features.  
+Take  a  look  at  the  documentation  for  the  above packages to see what
+features they provide and how to use them.
 
-I  have implemented  some other  infrastructure which  currently resides in
+Some other  infrastructure I have implemented which  currently resides in
 `Chevie` but may eventually become separate packages:
 
   * factorizing polynomials over finite fields (module `FFfac`)
@@ -38,28 +37,28 @@ I  have implemented  some other  infrastructure which  currently resides in
   * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
 
 For permutation groups I have often replaced GAP's sophisticated algorithms
-with  naive  but  easy-to-write  methods  suitable  only  for  small groups
-(sufficient  for the rest of  the package but perhaps  not for your needs).
-Otherwise  the infrastructure code  is often competitive  with GAP, despite
-using  much less code (often  100 lines of Julia  replace 1000 lines of C);
-and I am sure it could be optimised better than I did. Comments on code and
-design  are  welcome.  For  functions  that  are too inefficient or I found
-difficult  to  implement  (such  as  character tables of arbitrary groups),
-`Chevie`  uses the `GAP`  package as an  extension. This means  that if you
-have the `GAP` package installed, `Chevie` will automatically call `GAP` to
-implement these functions.
+with  naive  but  easy-to-write  methods  that  are only suitable for small
+groups.  These are sufficient for  the rest of the  package but perhaps not
+for your needs. Otherwise the infrastructure code is often competitive with
+`GAP`'s,  despite using much less code --- often 100 lines of Julia replace
+1000  lines of `C`; and I am sure  it could be optimised better than I did.
+Comments  on  code  and  design  are  welcome.  For  functions that are too
+inefficient  or  difficult  to  implement  (such  as  character  tables  of
+arbitrary  groups), `Chevie` uses  the `GAP` package  as an extension. This
+means  that  if  you  have  the  `GAP`  package  installed,  `Chevie`  will
+automatically call `GAP` to implement these functions.
 
-Functions  in the  `Chevie.jl` package  are often  10 times faster than the
-equivalent functions in GAP3/Chevie (after the maddeningly long compilation
-time on the first run --- Julia's TTFP).
+The functions in the `Chevie.jl` package are often 10 times faster than the
+equivalent   functions  in  `GAP3/Chevie`,  after  the  frustratingly  long
+compilation time on the first run (Julia's TTFP).
 
-The  `Chevie` package  currently implements  almost all  of the GAP3 Chevie
-functionality  (as well  as some  functionality from  the GAP3  Algebra and
-VKcurve  packages). It has also some  new functionality not present in GAP3
-Chevie.  If you are a user of  GAP3/Chevie, the `gap` function can help you
-to  find the equivalent functionality in `Chevie.jl` to a GAP3 function: it
-takes  a string and gives you Julia  translations of functions in GAP3 that
-match that string (it is case-insensitive).
+The  `Chevie` package currently implements  almost all of the `GAP3/Chevie`
+functionality,  as well as some functionality from the `GAP3` `Algebra` and
+`VKcurve`  packages.  It  also  has  some  new functionality not present in
+`GAP3/Chevie`.  If you are a user  of `GAP3/Chevie`, the `gap` function can
+help  you to find the equivalent  functionality in `Chevie.jl` for a `GAP3`
+function:  it takes  a string  and provides  Julia translations of matching
+`GAP3` functions (the match is case-insensitive).
 
 ```julia-rep1
 julia> gap("words")
@@ -71,9 +70,9 @@ You can then access online help for the functions you have found.
 
 ### Installing
 
-This is a registered package that can be installed/upgraded in the standard
-way.  For Julia newbies,  we will remind  you what this  is. To install, do
-this at the REPL command line:
+`Chevie`  is a  registered package  that can  be installed/upgraded  in the
+standard  way. For  Julia newbies,  here's a  reminder of  what this is. To
+install, enter the following at the REPL command line:
 
   *  enter package mode with ]
   *  do the command
@@ -84,7 +83,8 @@ this at the REPL command line:
 ```
 julia> using Chevie
 ```
-and you are set up. For first help, type "?Chevie".
+and you are set up. For first help, type "?Chevie". Have a look at the
+[documentation](https://jmichel7.github.io/Chevie.jl/).
 
 To update later to the latest version, do
 

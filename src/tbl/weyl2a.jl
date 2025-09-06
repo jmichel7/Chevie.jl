@@ -61,8 +61,7 @@ end)
 
 chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   q=-param[1][1]//param[1][2]
-  v=rootparam[1]
-  if isnothing(v) v=root(q,2) end
+  v=rootparam[1]; if ismissing(v) v=root(q) end
   tbl=Dict{Symbol,Any}(:identifier=>"H(^2A_$r)")
   merge!(tbl,chevieget(Symbol("2A"),:ClassInfo)(r))
   W=coxgroup(:A,r)

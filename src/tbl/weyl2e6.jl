@@ -256,9 +256,7 @@ end
 # We give the values of the *preferred* extensions defined in [CS,17.2 (b)].
 chevieset(Symbol("2E6"), :HeckeCharTable, function (param, rootparam)
   q=-param[1][1]//param[1][2]
-  if rootparam[1]===nothing v=root(q)
-  else v=rootparam[1]
-  end
+  v=ismissing(rootparam[1]) ? root(q) : rootparam[1]
   tbl=Dict{Symbol, Any}(:identifier => "H(^2E6)",
     :text => "origin: Jean Michel, June 1996",
     :parameter=>map(i->[q,-1],1:6),

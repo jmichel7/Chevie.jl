@@ -2017,7 +2017,8 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
       end
       if para[2]!=para[3] error("should not happen") end
       if para[1]==E.(e,0:e-1) para=[E.(p,0:p-1),para[2]]
-      else para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]], para[2]]
+      else # special-case q==2
+        para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]], para[2]]
       end
     end
     extra=false

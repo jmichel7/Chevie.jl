@@ -56,7 +56,7 @@ chevieset(Symbol("2I"), :FakeDegree, function (m, phi, q)
   end
 end)
 
-chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
+chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, rootpara)
   q=-param[1][1]//param[1][2]
   if m==4 ident = "2B"
   elseif m==6 ident = "2G"
@@ -64,9 +64,7 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
   end
   ident=string(ident,"(",m,")")
   if q!=1 ident=string("H(", ident, ")") end
-  if sqrtparam[1]===nothing v=root(q)
-  else v=sqrtparam[1]
-  end
+  v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   cl=chevieget(Symbol("2I"),:ClassInfo)(m)
   cos(i)=E(2m,i)+E(2m,-i)
   ct=map(i->map(j->cos(1)*0*v,cl[:classtext]), cl[:classtext])
@@ -94,11 +92,9 @@ chevieset(Symbol("2I"), :CharTable,m->
 chevieset(Symbol("2I"), :Representation,(m, i)->
   chevieget(Symbol("2I"),:HeckeRepresentation)(m,[[1,-1],[1,-1]],[1,1],i))
 
-chevieset(Symbol("2I"), :HeckeRepresentation, function (m, param, sqrtparam, i)
+chevieset(Symbol("2I"), :HeckeRepresentation, function (m, param, rootpara, i)
   q=-param[1][1]//param[1][2]
-  if sqrtparam[1]===nothing v=root(q)
-  else v = sqrtparam[1]
-  end
+  v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   e=E(2m)
   if i==1 (gens=[[v^2;;],[v^2;;]],F=[1;;])
   elseif i==2 (gens=[[-1;;],[-1;;]]*v^0,F=[1;;])

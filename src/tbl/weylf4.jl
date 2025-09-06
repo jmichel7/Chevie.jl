@@ -132,7 +132,7 @@ chevieset(:F4, :ClassParameter, function (w,)
   chevieget(:F4,:cyclestructure))]
 end)
 
-chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
+chevieset(:F4, :HeckeCharTable, function (param, rootpara)
   u=improve_type(-param[1][1]//param[1][2])
   uinv=improve_type(-param[1][2]//param[1][1])
   v=improve_type(-param[3][1]//param[3][2])
@@ -291,14 +291,14 @@ chevieset(:F4, :WGraph, function (i)
   end
 end)
 
-chevieset(:F4, :HeckeRepresentation, function (param, sqrtparam, i)
+chevieset(:F4, :HeckeRepresentation, function (param, rootpara, i)
   u=-param[1][1]//param[1][2]
   v=-param[3][1]//param[3][2]
-  if sqrtparam[1]===nothing u=root(u)
-  else u=-sqrtparam[1]//param[1][2]
+  if ismissing(rootpara[1]) u=root(u)
+  else u=-rootpara[1]//param[1][2]
   end
-  if sqrtparam[3]===nothing v=root(v)
-  else v=-sqrtparam[3]//param[3][2]
+  if ismissing(rootpara[3]) v=root(v)
+  else v=-rootpara[3]//param[3][2]
   end
   if u==v
     return -param[1][2]*WGraphToRepresentation(4,chevieget(:F4,:WGraph)(i),v)

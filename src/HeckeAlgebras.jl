@@ -270,7 +270,7 @@ Algebras.dim(H::HeckeAlgebra)=length(H.W)
 Algebras.basis(H::HeckeAlgebra,i::Integer)=Tbasis(H)(elements(H.W)[i])
 
 """
-`hecke( W [, parameter];rootpara=nothing)`
+`hecke( W [, parameter];rootpara=missing)`
 
 Hecke  algebra for the complex reflection group or Coxeter group `W`. If no
 `parameter` is given, `1` is assumed which gives the group algebra of `W`.
@@ -304,7 +304,7 @@ by  giving  a  keyword  argument  `rootpara`:  if  it is a vector it should
 contain at the `i`-th position a square root of
 `-parameter[i][1]*parameter[i][2]`;   if  a   scalar  it   is  replaced  by
 `fill(rootpara,ngens(W))`. The function `rootpara(H)` tries to fill
-automatically missing entries in  `H.rootpara`.
+automatically missing entries in  `H.rootpara` and returns the result.
 
 # Example
 ```julia-repl
@@ -328,7 +328,7 @@ hecke(B₂,q²,rootpara=-q)
 julia> H=hecke(W,q^2)
 hecke(B₂,q²)
 
-julia> rootpara(H)
+julia> rootpara(H) # automatically computed
 2-element Vector{Pol{Int64}}:
  q
  q
@@ -375,7 +375,7 @@ julia> hecke(complex_reflection_group(3,1,2),q).para # spetsial parameters
  [q, -1]
 ```
 """
-function hecke(W::Group,para::Vector{<:Vector{C}};rootpara=fill(nothing,ngens(W)))where C
+function hecke(W::Group,para::Vector{<:Vector{C}};rootpara=fill(missing,ngens(W)))where C
  if applicable(simple_reps,W) && ngens(W)>0
   para=map(eachindex(gens(W)))do i
     j=simple_reps(W)[i]
@@ -394,7 +394,7 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara=fill(nothing,ngens(W)
   HeckeAlgebra(W,para,d)
 end
 
-function hecke(W::Group,p::Vector;rootpara=fill(nothing,ngens(W)))
+function hecke(W::Group,p::Vector;rootpara=fill(missing,ngens(W)))
   oo=ordergens(W)
   para=map(p,oo)do p, o
     if p isa Vector return p end
@@ -406,7 +406,7 @@ function hecke(W::Group,p::Vector;rootpara=fill(nothing,ngens(W)))
   hecke(W,para;rootpara)
 end
 
-function hecke(W::Group,p::C=1;rootpara=nothing)where C
+function hecke(W::Group,p::C=1;rootpara=missing)where C
   if ngens(W)==0 para=Vector{C}[]
   elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
   else para=map(o->vcat([p],E.(o,1:o-1)),ordergens(W))
@@ -416,7 +416,7 @@ function hecke(W::Group,p::C=1;rootpara=nothing)where C
   H
 end
 
-function hecke(W::Group,p::Tuple;rootpara=fill(nothing,ngens(W)))
+function hecke(W::Group,p::Tuple;rootpara=fill(missing,ngens(W)))
   if length(p)==1
     para=fill(p[1],ngens(W))
     rootpara=fill(rootpara[1],ngens(W))
@@ -431,9 +431,9 @@ function hecke(W::Group,p::Tuple;rootpara=fill(nothing,ngens(W)))
 end
 
 function rootpara(H::HeckeAlgebra)
-  if any(isnothing,H.rootpara)
+  if any(ismissing,H.rootpara)
     H.rootpara=map(eachindex(H.para)) do i
-      if isnothing(H.rootpara[i])
+      if ismissing(H.rootpara[i])
         p=-prod(H.para[i])
         isone(p) ? p : root(p)
       else H.rootpara[i]
@@ -458,7 +458,7 @@ end
 function Base.show(io::IO, H::HeckeAlgebra)
   if isempty(H.para) print(io,"hecke(",H.W,")"); return end
   print(io,"hecke(",H.W,",",simplify_para(H.para))
-  if !all(isnothing,H.rootpara)
+  if !all(ismissing,H.rootpara)
     rp=rootpara(H)
     if !isempty(rp) && allequal(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
@@ -1147,9 +1147,7 @@ end
 
 function schur_element(H::HeckeAlgebra,p)
   t=map((t,phi)->chevieget(t,:SchurElement,phi,H.para[t.indices],
-      haskey(H,:rootpara) ?  H.rootpara[t.indices] :
-      fill(nothing,length(H.para))),
-      refltype(H.W),p)
+                           H.rootpara[t.indices]),refltype(H.W),p)
   if any(==(false),t) return nothing end
   prod(t)
 end
@@ -1403,7 +1401,7 @@ julia> factorized_schur_element(H,[[2,5]])
 function factorized_schur_element(H::HeckeAlgebra,phi)
   t=map(refltype(H.W),phi)do t,psi
      chevieget(t,:FactorizedSchurElement,psi,H.para[t.indices],
-    haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
+    H.rootpara[t.indices])
   end
   if false in t return false
   else return prod(t)
@@ -1499,10 +1497,9 @@ function Base.show(io::IO, H::HeckeCoset)
   if allequal(H.H.para) print(io,tr(H.H.para[1]))
   else print(io,map(tr,H.H.para))
   end
-  if haskey(H.H,:rootpara)
-    rp=rootpara(H.H)
-    if allequal(rp) print(io,",rootpara=",rp[1])
-    else print(io,",rootpara=",rp)
+  if !all(ismissing,H.H.rootpara)
+    if allequal(H.H.rootpara) print(io,",rootpara=",H.H.rootpara[1])
+    else print(io,",rootpara=",H.H.rootpara)
     end
   end
   print(io,")")
@@ -1513,8 +1510,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices
-      ct=chevieget(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ?
-               rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
+      ct=chevieget(t,:HeckeCharTable,H.H.para[inds],rootpara(H.H)[inds])
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
       else                     names=charnames(t;opt...,TeX=true)
       end
@@ -1535,9 +1531,8 @@ function Chars.representation(H::HeckeCoset,i::Int)
   tt=refltype(H.W)
   if isempty(tt) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
   dims=chevieget.(tt,:NrConjugacyClasses)
-  rp=haskey(H.H,:rootpara) ? rootpara(H.H) : fill(nothing,length(H.H.para))
   mm=map(tt,lin2cart(dims,i)) do t,j
-    r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rp,j)
+    r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rootpara(H.H),j)
     if r==nothing return nothing
     elseif r isa Vector # untwisted component
       (gens=r,F=one(r[1]))

@@ -54,11 +54,9 @@ chevieset(Symbol("2F4"),:ClassParameter,function(w)
   end
 end)
 
-chevieset(Symbol("2F4"), :HeckeCharTable, function (param, sqrtparam)
+chevieset(Symbol("2F4"), :HeckeCharTable, function (param, rootpara)
   q=-param[1][1]//param[1][2]
-  if sqrtparam[1]===nothing v=root(q)
-  else v=-sqrtparam[1]//param[1][2]
-  end
+  v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(2F4)", :parameter => [q, q, q, q],
    :sqrtparameter=>[v,v,v,v],:cartan=>chevieget(Symbol("2F4"), :CartanMat),
    :size=>1152,:irreducibles=>[
@@ -82,9 +80,8 @@ end)
 chevieset(Symbol("2F4"), :PhiFactors, [1, -1, 1, -1])
 
 chevieset(Symbol("2F4"), :HeckeRepresentation, function (para, rootpara, i)
-  if rootpara[1]!==nothing v=rootpara[1]*para[1][2]
-  else v=root(-para[1][1]//para[1][2])
-  end
+  v=ismissing(rootpara[1]) ? rootpara[1]*para[1][2] :
+                   root(-para[1][1]//para[1][2])
   F(i)=WGraphToRepresentation(4,chevieget(:F4,:WGraph)(i),v)*v^0*-para[1][2]
   if i==1     (gens=F(1),F=[1;;]) 
   elseif i==2 (gens=F(4),F=[1;;]) 
