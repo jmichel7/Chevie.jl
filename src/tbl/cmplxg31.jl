@@ -147,7 +147,7 @@ chevieset(:G31,:SchurModels,Dict{Symbol,Any}(
   :f45_8s=>Dict{Symbol,Any}(:coeff=>-1,:factor=>-11,:vcyc=>[1,1,1,1,1,1,1,1,4,4,7]),
   :f64_9=>Dict{Symbol,Any}(:coeff=>4,:factor=>-8,:vcyc=>[4,4,6,6,10,12])))
 
-p31=perm"(3,5)(17,19)(27,29)(35,36)(39,40)(50,52)(51,53)"
+p31=perm"(4,6)(11,12)(18,20)(28,30)(31,33)(32,34)(42,44)(43,45)(48,49)"
 
 chevieset(:G31,:SchurData,invpermute([
    Dict{Symbol,Any}(:name=>"f1_0",:order=>[1,2]),
@@ -210,15 +210,18 @@ chevieset(:G31,:SchurData,invpermute([
    Dict{Symbol,Any}(:name=>"f64_9",:order=>[1,2]),
    Dict{Symbol,Any}(:name=>"f64_9",:order=>[1,2])],p31))
 
+chevieset(:G31,:root,function(para,rootpara)
+  if ismissing(rootpara[1]) root(prod(para[1])) else E(4)*rootpara[1] end
+end)
+      
 chevieset(:G31, :SchurElement, function (p, para, rootpara)
   ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
   data=chevieget(:G31,:SchurData)[ci]
   r=chevieget(:G31,:SchurModels)[Symbol(data[:name])]
   x,y=para[1][data[:order]]
-  q=x//y
   if haskey(r,:root)
-    if ismissing(rootpara[1]) roo=root(x*y) else roo=E(4)*rootpara[1] end
-    q=roo//y*(-1)^data[:rootPower]
+    q=chevieget(:G31,:root)(para,rootpara)//y*(-1)^data[:rootPower]
+  else q=x//y
   end
   r[:coeff]*q^r[:factor]*prod(x->cyclotomic_polynomial(x)(q),r[:vcyc])
 end)
@@ -228,10 +231,9 @@ chevieset(:G31, :FactorizedSchurElement, function (p, para, rootpara)
   data=chevieget(:G31, :SchurData)[ci]
   r=chevieget(:G31, :SchurModels)[Symbol(data[:name])]
   x,y=para[1][data[:order]]
-  q=x//y
   if haskey(r, :root) 
-    if ismissing(rootpara[1]) roo=root(x*y) else roo=E(4)*rootpara[1] end
-    q=roo//y*(-1)^data[:rootPower]
+    q=chevieget(:G31,:root)(para,rootpara)//y*(-1)^data[:rootPower]
+  else q=x//y
   end
   res=Dict(:factor=>Mvp(r[:coeff]*q^r[:factor]),:vcyc=>
     map(v->Dict{Symbol,Any}(:monomial=>q,:pol=>CycPol([1,0,v])),r[:vcyc]))
@@ -784,7 +786,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rootpara)
   32*I*q^46,-8*q^30+16*q^31-8*q^32,-4*I*q^15+12*I*q^16-12*I*q^17+
   4*I*q^18,4*q^30-12*q^31+12*q^32-4*q^33,4*q^20,64*I*q^15,-64*I*q^45,-64*q^30])
   end
-  if ismissing(rootpara[1]) roo=root(r*p) else roo=E(4)*rootpara[1] end
+  roo=chevieget(:G31,:root)(para,rootpara)
   tbl[:irreducibles]=toM([f1(r),f1(p),
     f6(p,r,-roo),f6(r,p,roo),f6(p,r,roo),f6(r,p,-roo),
     f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-roo),f11(r,p,roo),
@@ -805,7 +807,7 @@ chevieset(:G31, :HeckeCharTable, function (para,rootpara)
 end)
 
 chevieset(:G31, :CharTable, function()
-  res=chevieget(:G31, :HeckeCharTable)(map(x->[1,-1],1:4),[])
+  res=chevieget(:G31, :HeckeCharTable)(map(x->[1,-1],1:5),fill(1,5))
   res[:identifier]=res[:name]="G31"
   res[:galomorphisms] = Group(perm"(7,9)(8,12)(13,17)(15,16)(19,21)(20,23)(25,27)(26,28)(31,32)(35,37)(38,40)(42,45)(43,44)(46,49)(51,52)(54,55)(57,58)")
   res[:text]="origin: mostly CharTable(H(G31))"
@@ -823,7 +825,7 @@ chevieset(:G31, :CharTable, function()
   res
 end)
 
-chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
+chevieset(:G31, :HeckeRepresentation, function (para, rootpara, i)
   f1(x)=[[x;;], [x;;], [x;;], [x;;], [x;;]]
   function f6(x,y,v)
     [[x 0 0 0;
@@ -2256,7 +2258,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     9633, 9645, 9867]), (1, [1132, 4561, 4613, 4807, 6192, 7083, 7780, 7841,
     7998, 8911, 9618, 10119]), (x^-1*y, [7097])])
   x,y=para[1]
-  if ismissing(rt[1]) roo=root(x*y) else roo=E(4)*rt[1] end
+  roo=chevieget(:G31,:root)(para,rootpara)
   if i==1 f1(x)
   elseif i==2  f1(y)
   elseif i==3  f6(y,x,roo)
@@ -2320,7 +2322,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
 end)
 
 chevieset(:G31, :Representation, function (i)
-  r=chevieget(:G31,:HeckeRepresentation)(fill([1,-1]//1,5),[],i)
+  r=chevieget(:G31,:HeckeRepresentation)(fill([1,-1]//1,5),fill(1,5),i)
   if !isnothing(r) return r end
   f(j)=chevieget(:G31, :Representation)(j)
   #if i=27 map(kron,f(3),f(7)) # unnecessary but good to know

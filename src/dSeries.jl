@@ -1284,7 +1284,7 @@ function RelativeSeries(s)
   if haskey(s,:span) s.span=invpermute(s.span,p) end
   aA=map(x->E(order(s.d)^2,valuation(x)+degree(x)),u1)
   p=position_regular_class(WGL,s.d)
-  if p == false && length(WGL)==1 p=1 end
+  if isnothing(p) && length(WGL)==1 p=1 end
   o=map(x->x[p]//x[1], eachrow(CharTable(WGL).irr))
   s.predictedEigen=map(i->aA[i]*o[i], 1:length(o)) *
     eigen(UnipotentCharacters(s.levi))[s.cuspidal]

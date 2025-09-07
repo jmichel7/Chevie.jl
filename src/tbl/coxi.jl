@@ -138,19 +138,19 @@ end)
 chevieset(:I, :Representation, (m,i)->
   chevieget(:I, :HeckeRepresentation)(m,[[1,-1],[1,-1]],[1,1],i))
 
-chevieset(:I, :HeckeRepresentation, function (m, param, rootparam, i)
+chevieset(:I, :HeckeRepresentation, function (m, para, rootpara, i)
   u,v,squv=chevieget(:I,:squv)(m,para,rootpara)
-  if i==1 return [[param[1][1];;], [param[2][1];;]] end
+  if i==1 return [[para[1][1];;], [para[2][1];;]] end
   if iseven(m) i-=2 end
   if i==0 
-    [[param[1][1];;],[param[2][2];;]]
+    [[para[1][1];;],[para[2][2];;]]
   elseif i==1 
-    [[param[1][2];;],[param[2][1];;]]
+    [[para[1][2];;],[para[2][1];;]]
   elseif i==2 
-    [[param[1][2];;],[param[2][2];;]]
+    [[para[1][2];;],[para[2][2];;]]
   else
-    [-[-u^0 u^0;0u u]*param[1][2],
-     -[v 0v;u+v+squv*(E(m,i-2)+E(m,2-i)) -v^0]*param[2][2]]
+    [-[-u^0 u^0;0u u]*para[1][2],
+     -[v 0v;u+v+squv*(E(m,i-2)+E(m,2-i)) -v^0]*para[2][2]]
   end
 end)
 

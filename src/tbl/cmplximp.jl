@@ -320,15 +320,20 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     e1=div(q,2)
     Z=root.(Z,e1)
     Z=vcat(map(i->Z.*E(e1,i),0:e1-1)...)
+    # H is a subalgebra of H(G(p,2,2)) with parameters Z
     ci=chevieget(:imp, :CharInfo)(p, q, r)
     function entry2(char, class)
       char=ci[:malle][findfirst(==(char),ci[:charparams])]
-      if char[1] == 1
+      if char[1]==1
         w=[Z[char[4]],X[char[2]],Y[char[3]]]
         return prod(i->iszero(i) ? prod(w) : w[i],class;init=1)
       else
-        w=char[2]*root(X[1]*X[2]*Y[1]*Y[2]*Z[char[3]]*Z[char[4]]*
+        if q==2 && p==4 && !any(ismissing,rootpara)
+          w=-char[2]*E(4)*rootpara[1]*rootpara[2]*rootpara[3]*
+            root(E(div(p,2),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
+        else w=char[2]*root(prod(X)*prod(Y)*Z[char[3]]*Z[char[4]]*
           E(div(p,2),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
+        end
         class=map(i->count(==(i),class), 0:3)
         if class[2]>0 char=sum(x->x^class[2],Z[char[[3,4]]])
         elseif class[3]>0 char=sum(X)
@@ -347,7 +352,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     res[:centralizers]=cl[:centralizers]
     if haskey(cl,:powermaps) res[:powermaps]=cl[:powermaps] end
     res[:classes] = map(x->div(res[:size],x),res[:centralizers])
-    reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i),
+    reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,rootpara,i),
              1:length(res[:classes]))
     res[:irreducibles]=toM(improve_type(map(reps)do r
       traces_words_mats(r,cl[:classtext])
@@ -365,7 +370,7 @@ chevieset(:imp, :CharTable, function (p, q, r)
   get!(impchartableCache,(p,q,r))do
   oo=chevieget(:imp,:ordergens)(p,q,r)
   chevieget(:imp, :HeckeCharTable)(p,q,r,
-            map(o->o==1 ? [1] : o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
+    map(o->o==1 ? [1] : o==2 ? [1,-1] : E.(o,0:o-1),oo),fill(1,r+1))
   end
 end)
 
@@ -721,7 +726,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
       if isempty(l) return [] end
       m=conjugate_partition(m)
       append!(m,fill(0,max(0,l[1]-length(m))))
-      m=(1 .+m).-(1:length(m))
+      m=(m.+1).-(1:length(m))
       vcat(map(i->(l[i]-i).+m[1:l[i]],1:length(l))...)
     end
     res=Dict(:coeff=>(-1)^(r*(p-1)),:factor=>fill(0,p),:vcyc=>[])
@@ -731,8 +736,8 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
     for s in 1:p
       for t in 1:p
         for h in GenHooks(phi[s], phi[t])
-          v = fill(0, max(0, (1 + p) - 1))
-          if s != t
+          v=fill(0,p)
+          if s!=t
             v[[s, t]] = [1, -1]
             push!(v, h)
             push!(res[:vcyc], [v, 1])
@@ -746,48 +751,32 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
       end
     end
     return res
-  elseif [q, r] == [2, 2]
+  elseif (q,r)==(2,2)
     ci = chevieget(:imp, :CharInfo)(p, q, r)
     phi = ci[:malle][findfirst(==(phi),ci[:charparams])]
     p2 = div(p, 2)
     if phi[1] == 1
-      res = Dict{Symbol, Any}(:coeff => 1, :factor => fill(0, max(0, (1 + (4 + p2)) - 1)), :vcyc => [])
+      res=Dict(:coeff=>1,:factor=>fill(0,4+p2),:vcyc=>[])
       for l in [[1, -1, 0, 0], [0, 0, 1, -1]]
         append!(l,fill(0,p2))
         push!(res[:vcyc],[l,1])
       end
-      for i in 2:p2
-        for l in [[0, 0, 0, 0, 1], [1, -1, 1, -1, 1]]
-          append!(l,fill(0,p2-1))
-          l[4+i]=-1
-          push!(res[:vcyc],[l,1])
-        end
+      for i in 2:p2, l in [[0, 0, 0, 0, 1], [1, -1, 1, -1, 1]]
+        append!(l,fill(0,p2-1))
+        l[4+i]=-1
+        push!(res[:vcyc],[l,1])
       end
     else
-     res=Dict(:coeff=>-2,:factor=>fill(0,4+p2),:vcyc=>[],:root=>fill(0//1,4+p2))
-      res[:rootCoeff]=E(p2,2-phi[3]-phi[4])
-      res[:root][1:6] = [1, 1, 1, 1, 1, 1] // 2
-      for i in 3:p2
-        for j in [1, 2]
-          l=fill(0,4+p2)
-          l[[4+j,4+i]]=[1,-1]
-          push!(res[:vcyc], [l,1])
-        end
+      res=Dict(:coeff=>-2,:factor=>fill(0,4+p2),:vcyc=>[],
+               :root=>vcat(fill(1//2,6),fill(0,p2-2)),
+               :rootCoeff=>E(p2,2-phi[3]-phi[4]))
+      for i in 3:p2, j in 1:2
+        l=fill(0,4+p2);l[4+j]=1;l[4+i]=-1
+        push!(res[:vcyc], [l,1])
       end
-      if haskey(CHEVIE, :old)
-        for l in [[0,-1,0,-1,-1,0],[0,-1,-1,0,-1,0],[-1,0,-1,0,-1,0],
-                  [-1,0,0,-1,-1,0]]
-          append!(l,fill(0,max(0,p2-2)))
-          push!(l,1)
-          push!(res[:vcyc],[l,1])
-        end
-      else
-        for l in [[0,-1,0,-1,-1,0],[0,-1,-1,0,0,-1],[-1,0,-1,0,-1,0],
-                  [-1,0,0,-1,0,-1]]
-          append!(l,fill(0,max(0,p2-2)))
-          push!(l,1)
-          push!(res[:vcyc],[l,1])
-        end
+      for l in [[0,-1,0,-1,-1,0],[0,-1,-1,0,0,-1],[-1,0,-1,0,-1,0],
+                [-1,0,0,-1,0,-1]]
+        push!(res[:vcyc],[vcat(l,fill(0,max(0,p2-2)),1),1])
       end
     end
     return res
@@ -797,7 +786,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
 end)
 
 chevieset(:imp, :SchurData, function (p, q, r, phi)
-  if [q, r] == [2, 2]
+  if (q,r)==(2,2)
     ci=chevieget(:imp, :CharInfo)(p, q, r)
     phi=ci[:malle][findfirst(==(phi),ci[:charparams])]
     if phi[1]==1
@@ -814,22 +803,22 @@ chevieset(:imp, :SchurData, function (p, q, r, phi)
   end
 end)
 
-chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
+chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rootpara)
   if r==1
-   VcycSchurElement(vcat(para[1],[0]),chevieget(:imp,:SchurModel)(p,q,r,phi))
+    VcycSchurElement(vcat(para[1],0),chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif p==1
     VcycSchurElement([0,-para[1][1]//para[1][2]],
                      chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif q==1
     VcycSchurElement(vcat(para[1],[-para[2][1]//para[2][2]]),
                      chevieget(:imp,:SchurModel)(p,q,r,phi))
-  elseif r==2 && mod(q,2)==0
+  elseif r==2 && iseven(q)
     e1=div(q,2)
-    Z=map(x->root(x,e1),para[1])
+    Z=root.(para[1],e1)
     Z=vcat(map(j->Z*E(e1,j),0:e1-1)...)
     VcycSchurElement(vcat(para[2],para[3],Z),
-                     chevieget(:imp,:SchurModel)(p,2,r,phi),
-                     chevieget(:imp,:SchurData)(p,2,r,phi))//e1
+                     chevieget(:imp,:SchurModel)(p,2,2,phi),
+                     chevieget(:imp,:SchurData)(p,2,2,phi))//e1
   elseif p==q
     if phi[end] isa Integer
       m=length(phi)-2
@@ -848,7 +837,15 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
     if para[1]==map(i->E(p//q,i-1),1:p//q)
       para=[E.(p,0:p-1),para[2]]
     else
-      para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]],para[2]]
+      if q==2 
+        if !ismissing(rootpara[1])
+             Z=[rootpara[1],-E(4)*para[1][2]].//root(-para[1][2])
+        else Z=[root(para[1][1]),root(para[1][2])]
+        end
+        Z=vcat(Z,-Z)
+      else Z=[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]]
+      end
+      para=[Z,para[2]]
     end
     p//q*chevieget(:imp,:SchurElement)(p,1,r,phi,para,[])//m
   else
@@ -856,34 +853,35 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
   end
 end)
 
-chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
+chevieset(:imp,:FactorizedSchurElement,function(p,q,r,phi,para,rootpara)
   if r==1
    VFactorSchurElement(vcat(para[1],[0]),chevieget(:imp,:SchurModel)(p,q,r,phi))
-  elseif p == 1
+  elseif p==1
     VFactorSchurElement([0,-para[1][1]//para[1][2]],
                       chevieget(:imp,:SchurModel)(p, q, r, phi))
-  elseif q == 1
+  elseif q==1
     VFactorSchurElement(vcat(para[1],[-para[2][1]//para[2][2]]),
                         chevieget(:imp,:SchurModel)(p, q, r, phi))
-  elseif [q,r]==[2,2]
+  elseif (q,r)==(2,2)
     VFactorSchurElement(vcat(para[[2,3,1]]...),
    chevieget(:imp,:SchurModel)(p,q,r,phi),chevieget(:imp,:SchurData)(p,q,r,phi))
-  elseif p == q
+  elseif p==q
     if phi[end] isa Integer
-      m=length(phi) - 2
+      m=length(phi)-2
       phi=fullsymbol(phi)
     else
       m=p
     end
     if para[1]!=para[2]
-      InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+      InfoChevie("# FactorizedSchurElements(H(G($p,$q,$r),",
+           HeckeAlgebras.simplify_para(para),") not implemented\n")
       return nothing
     end
     F=chevieget(:imp,:FactorizedSchurElement)(p,1,r,phi,vcat([E.(p,0:p-1)],
                                                            para[2:end]), [])
     F[:factor]//=m
     F
-  elseif para[2] == para[3]
+  elseif para[2]==para[3]
     if phi[end] isa Integer
       m=length(phi)-2
       phi=fullsymbol(phi)
@@ -899,7 +897,8 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
     F[:factor]=p//(q*m)*F[:factor]
     F
   else
-    InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+    InfoChevie("# FactorizedSchurElements(H(G($p,$q,$r),",
+           HeckeAlgebras.simplify_para(para),") not implemented\n")
   end
 end)
 
@@ -1944,19 +1943,26 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     end
     return -para[2][2]*res
   elseif (p,q,r)==(4,4,3)
-    x=-para[2][1]//para[2][2]
-    r=x^0*[[[x -1 -1 0 0 0;0 -1 0 0 0 0;0 0 -1 0 0 0;0 0 0 -1 0 0;0 0 -1+x -1 x 0;0 1 -1 -1 0 x],
-       [-1 0 0 0 0 0;-x x 0 0 0 x;0 0 0 0 -x 0;0 0 0 x 0 0;0 0 -1 0 -1+x 0;0 0 0 0 0 -1],
-       [x -1 0 0 0 -1;0 -1 0 0 0 0;0 0 x 0 1 -1;0 -x 0 x -1 1-x;0 0 0 0 -1 0;0 0 0 0 0 -1]],
-      [[-1 0 0;0 0 1;0 x -1+x],[x 0 0;-1 -1 0;1 0 -1],[0 1 0;x -1+x 0;0 0 -1]],
-      [[x 0 0;x -1 0;x 0 -1],[-1 2 0;0 x 0;0 (-E(4)+1)*x -1],[-1 0 1;0 -1 (E(4)+1)//2;0 0 x]],
-      [[x 0 0;x -1 0;x 0 -1],[-1 2 0;0 x 0;0 (E(4)+1)*x -1],[-1 0 1;0 -1 (-E(4)+1)//2;0 0 x]],
-      [[-1;;],[-1;;],[-1;;]],
-      [[x -1 0;0 -1 0;0 -1 x],[-1+x 0 1;0 x 0;x 0 0],[0 x 0;1 -1+x 0;0 0 x]],
-      [[-1 0 0;-1 x 0;-1 0 x],[x -2x 0;0 -1 0;0 -E(4)-1 x],[x 0 -x;0 x (E(4)-1)//2*x;0 0 -1]],
-      [[-1 0 0;-1 x 0;-1 0 x],[x -2x 0;0 -1 0;0 E(4)-1 x],[x 0 -x;0 x (-E(4)-1)//2*x;0 0 -1]],
-      [[-1 0;-1 x],[-1 0;-1 x],[x -x;0 -1]],[[x;;],[x;;],[x;;]]]
-    return -para[2][2]*r[i]
+    x,y=para[1]
+    return [[[x y y 0 0 0;0 y 0 0 0 0;0 0 y 0 0 0;0 0 0 y 0 0;0 0 x+y y x 0;
+       0 -y y y 0 x], 
+      [y 0 0 0 0 0;-x x 0 0 0 x;0 0 0 0 -x 0;0 0 0 x 0 0;0 0 y 0 x+y 0;
+       0 0 0 0 0 y], 
+      [x y 0 0 0 y;0 y 0 0 0 0;0 0 x 0 -y y;0 -x 0 x y -x-y;
+       0 0 0 0 y 0;0 0 0 0 0 y]], 
+     [[y 0 0;0 0 -y;0 x x+y], [x 0 0;y y 0;-y 0 y], [0 -y 0;x x+y 0;0 0 y]], 
+     [[x 0 0;x y 0;x 0 y], [y -2y 0;0 x 0;0 (1-E(4))x y], 
+      [y 0 -y;0 y (-1-E(4))y//2;0 0 x]], 
+     [[x 0 0;x y 0;x 0 y], [y -2y 0;0 x 0;0 (1+E(4))x y], 
+      [y 0 -y;0 y (-1+E(4))y//2;0 0 x]], 
+     [[y;;], [y;;], [y;;]], 
+     [[x y 0;0 y 0;0 y x], [x+y 0 -y;0 x 0;x 0 0], [0 x 0;-y x+y 0;0 0 x]], 
+     [[y 0 0;y x 0;y 0 x], [x -2x 0;0 y 0;0 (1+E(4))y x], 
+      [x 0 -x;0 x (-1+E(4))x//2;0 0 y]], 
+     [[y 0 0;y x 0;y 0 x], [x -2x 0;0 y 0;0 (1-E(4))y x], 
+      [x 0 -x;0 x (-1-E(4))x//2;0 0 y]], 
+     [[y 0;y x], [y 0;y x], [x -x;0 y]], 
+     [[x;;], [x;;], [x;;]]][i]
   elseif q==1
     # Model of Ariki,  Halverson-Ram for reps of G(p,1,r): 
     # needs rational fractions if the parameters are indeterminates
@@ -1995,30 +2001,42 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
     if p==q para=[E.(p,0:p-1),para[1]]
     else e=div(p, q)
-      if mod(q,2)==0 && r==2
-        S=chevieget(:imp, :CharInfo)(p, q, r)[:malle][i]
-        if S[1]==1
-          return [[para[1][1+mod(S[4]-1,e)];;],[para[2][S[2]];;],
-                  [para[3][S[3]];;]]
+      if iseven(q) && r==2
+        char=chevieget(:imp, :CharInfo)(p,q,r)[:malle][i]
+        Z,X,Y=para
+        if char[1]==1
+          return [[Z[mod1(char[4],e)];;],[X[char[2]];;],[Y[char[3]];;]]
         else
-          Y=para[2]
-          T=para[3]
+          X=para[2]
+          Y=para[3]
           if q>2
-            X=map(y->root(y,div(q,2)),para[1])
-            X=vcat(map(i->E(div(q,2),i)*X,0:div(q,2)-1)...)
-          else X=para[1]
+            Z=map(y->root(y,div(q,2)),para[1])
+            Z=vcat(map(i->E(div(q,2),i)*Z,0:div(q,2)-1)...)
+          else Z=para[1]
           end
-          X = X[S[[3, 4]]]
-          v=S[2]*root(prod(X)*prod(Y)*prod(T)*E(div(p,2),2-S[3]-S[4]),2)*E(p,S[3]+S[4]-2)
-          d=1+sum(X)*0+sum(Y)*0+sum(T)*0
-          return [(d*[X[1] sum(y->1//y,Y)-X[2]//v*sum(T);0 X[2]])^div(q,2),
-             [sum(Y) 1//X[1];-prod(Y)*X[1] 0],[0 -prod(T)//v;v sum(T)]]
+          Z=Z[char[3:4]]
+          if q==2 && div(p,q)==2 && !any(ismissing,rootpara)
+            v=-char[2]*E(4)*rootpara[1]*rootpara[2]*rootpara[3]*
+              root(E(div(p,2),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
+          else v=char[2]*root(prod(Z)*prod(X)*prod(Y)*
+                       E(div(p,2),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
+          end
+          return [[Z[1] sum(y->1//y,X)-Z[2]//v*sum(Y);0 Z[2]]^div(q,2),
+             [sum(X) 1//Z[1];-prod(X)*Z[1] 0],[0 -prod(Y)//v;v sum(Y)]]
         end
       end
-      if para[2]!=para[3] error("should not happen") end
+      # now para[2]==para[3]
       if para[1]==E.(e,0:e-1) para=[E.(p,0:p-1),para[2]]
       else # special-case q==2
-        para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]], para[2]]
+        if q==2 
+          if !ismissing(rootpara[1])
+               Z=[rootpara[1],-E(4)*para[1][2]].//root(-para[1][2])
+          else Z=[root(para[1][1]),root(para[1][2])]
+          end
+          Z=vcat(Z,-Z)
+        else Z=[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]]
+        end
+        para=[Z,para[2]]
       end
     end
     extra=false
@@ -2027,7 +2045,7 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
       d=length(S)-2
       S=fullsymbol(S)
     end
-    p1=length(para[1])
+    p1=length(para[1]);if p1!=p error() end
     v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],
       findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]);gen=true)
     v*=1//1
@@ -2045,7 +2063,7 @@ end)
 chevieset(:imp, :Representation, function (p, q, r, i;gen=false)
   o=chevieget(:imp,:ordergens)(p,q,r)
   chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->
-     x==2 ? [1,-1] : Cyc.(E.(x,0:x-1)),o),[],i;gen)
+    x==2 ? [1,-1] : Cyc.(E.(x,0:x-1)),o),fill(1,r+1),i;gen)
 end)
 
 # the family of uc containing symbols

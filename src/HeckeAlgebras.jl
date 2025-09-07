@@ -1149,7 +1149,7 @@ function schur_element(H::HeckeAlgebra,p)
   t=map((t,phi)->chevieget(t,:SchurElement,phi,H.para[t.indices],
                            H.rootpara[t.indices]),refltype(H.W),p)
   if any(==(false),t) return nothing end
-  prod(t)
+  prod(t;init=one(coefftype(H)))
 end
 
 """
@@ -1404,7 +1404,7 @@ function factorized_schur_element(H::HeckeAlgebra,phi)
     H.rootpara[t.indices])
   end
   if false in t return false
-  else return prod(t)
+  else return prod(t;init=FactSchur(Mvp(1),[]))
   end
 end
 
@@ -1442,6 +1442,12 @@ factorized_schur_elements(H::HeckeAlgebra)=
     map(p->factorized_schur_element(H,p),charinfo(H.W).charparams)
 
 const FactorizedSchurElements=factorized_schur_elements
+
+function hecke_subalgebra(H::HeckeAlgebra,I)
+  WI=reflection_subgroup(H.W,I)
+  hecke(WI,H.para[simple_reps(H.W)[I]];rootpara=H.rootpara[simple_reps(H.W)[I]])
+end
+
 #---------------------- Hecke Cosets
 @doc """
 `HeckeCoset`s  are  `Hϕ`  where  `H`  is  an  Iwahori-Hecke algebra of some
@@ -1510,7 +1516,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices
-      ct=chevieget(t,:HeckeCharTable,H.H.para[inds],rootpara(H.H)[inds])
+      ct=chevieget(t,:HeckeCharTable,H.H.para[inds],H.H.rootpara[inds])
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
       else                     names=charnames(t;opt...,TeX=true)
       end

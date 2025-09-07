@@ -43,7 +43,7 @@ end
 # Check SchurElements(H) satisfy Schur relations
 # c is here to be able to make it big(1)
 function CheckSchurRelations(H;c=1,perm=Perm())
-  un=prod(vcat(map(x->one.(x),H.para)...))
+  un=prod(vcat(map(x->one.(x),H.para)...);init=one(coefftype(H)))
   if un isa Mvp
     s=factorized_schur_elements(H)
     Lcm=lcm(s...)
@@ -101,26 +101,25 @@ position_cox(W)=position_regular_class(W,maximum(degrees(W)))
 # charvalues of H on word w living in some parabolic 
 function charvalues_parabolic(H,w)
   W=H.W
-  pw=parabolic_closure(W,sort(unique(w)))
-  WI=reflection_subgroup(W,pw)
+  I=parabolic_closure(W,sort(unique(w)))
+  WI=reflection_subgroup(W,I)
   if WI==W 
     println(joindigits(w)," parabolic closure is W")
     return 
   end
   p=inclusiongens(WI,W)
   if !all(x->x in p,w) 
-    println("parabolic ",pw," for ",joindigits(w)," is not standard")
+    println("parabolic ",I," for ",joindigits(w)," is not standard")
     return 
   end
-  q=prod(x->prod(x)^0,H.para)
-  HI=hecke(WI,H.para[simple_reps(W)[p]])
+  HI=HeckeAlgebras.hecke_subalgebra(H,p)
   cc=char_values(HI,restriction(WI)[w])
   xprintln(HI)
   if nothing in cc 
     println("could not compute charvalues")
     return 
   end
-  induction_table(WI,W).scalar*(cc*q)
+  induction_table(WI,W).scalar*cc
 end
 
 # find the specialization of Mvp parameters leading to group algebra
@@ -281,13 +280,13 @@ function showregular(W)
 end
 
 # partial chartable of Hecke algebra H on classtexts n some W_I<z>
-function fromparabolic(H)
+function fromparabolic(H;spec=group_specialization(H))
   W=H.W 
   ct=classinfo(W).classtext
   n=length(ct)
   t=convert(Matrix{Union{Missing,coefftype(H)}},fill(missing,n,n))
   zt=centerword(W)
-  v=HeckeCentralCharacters(H)
+  v=HeckeCentralCharacters(H;spec)
   for i in 1:n
     nbz,noz=cutz(ct[i],zt)
     print("class $i:",nbz!=0 ? "z^$nbz." : "",joindigits(noz)," ")
@@ -308,7 +307,7 @@ function fromHI(H,I)
   t=convert(Matrix{Union{Missing,eltype(v)}},fill(missing,n,n))
   R=reflection_subgroup(W,I)
   rgens=inclusiongens(R)
-  HR=hecke(R,H.para[simple_reps(W)[rgens]])
+  HR=HeckeAlgebras.hecke_subalgebra(H,rgens)
   tbl=induction_table(R,W).scalar
   for i in 1:n
     nbz,noz=cutz(reps[i],zt)
@@ -482,7 +481,7 @@ exponentdenominator2(a::AbstractArray{<:Mvp})=
 function eigenrootspi(H,r,I,r1;spec=group_specialization(H))
   W=H.W
   WI=reflection_subgroup(W,I)
-  HI=hecke(WI,H.para[simple_reps(W)[inclusiongens(WI)]])
+  HI=HeckeAlgebras.hecke_subalgebra(H,I)
   e=HeckeCentralCharacters(H;spec).^r
   t=Integer.(induction_table(WI,W).scalar)
   eI=HeckeCentralCharacters(HI,order(W(I...));spec).^r1
@@ -625,7 +624,10 @@ if R is a Hecke subalgebra of H we have for any ψ∈Irr(R)
 function schur_subalgebra(H,I;c=1)
   W=H.W
   R=reflection_subgroup(W,I)
-  HR=hecke(R,H.para[I])
+  if !isparabolic(R)
+    xprintln(R," is not parabolic; closure=",parabolic_closure(W,I))
+  end
+  HR=HeckeAlgebras.hecke_subalgebra(H,I)
   t=induction_table(R,W)
   s=CycPol.(schur_elements(H))
   Lcm=lcm(s)
@@ -637,8 +639,8 @@ function schur_subalgebra(H,I;c=1)
   print("expanding lcm(Sχ)/Sψ quotients..")
   println("done in ",@elapsed r=map(p->p(Mvp(:x)),r))
 # s=invpermute(s,perm"(3,5)(17,19)(27,29)(35,36)(39,40)(50,52)(51,53)")
-  vec(transpose(map(i->Mvp(Symbol(:x,i)),eachindex(s)))*t.scalar).-r
-# vec(transpose(s)*t.scalar).==r
+# vec(transpose(map(i->Mvp(Symbol(:x,i)),eachindex(s)))*t.scalar).-r
+  vec(transpose(s)*t.scalar).==r
 end
 
 # effect of x->-x on CharTable(hecke(crg(31),-x^2)) same effect on schur_elts
@@ -654,10 +656,10 @@ W=crg(31)
 H=hecke(W,-x^2)
 ct=CharTable(H)
 
-gg=Group(Perm(3,5),Perm(4,6),Perm(11,12),Perm(17,19),Perm(18,20),Perm(27,29),
-  Perm(28,30),Perm(31,33),Perm(32,34),Perm(35,36),Perm(39,40),Perm(42,44),
-  Perm(43,45),Perm(48,49),Perm(50,52),Perm(51,53))
-
 gg=Group(perm"(3,4)(5,6)",perm"(17,18)(19,20)",perm"(27,28)(29,30)",
          perm"(31,32)(33,34)",perm"(28,31)(30,33)",perm"(42,43)(44,45)",
          perm"(48,50)(49,52)",perm"(50,51)(52,53)")
+
+gg=Group(Perm(3,5),Perm(4,6),Perm(11,12),Perm(17,19),Perm(18,20),Perm(27,29),
+  Perm(28,30),Perm(31,33),Perm(32,34),Perm(35,36),Perm(39,40),Perm(42,44),
+  Perm(43,45),Perm(48,49),Perm(50,52),Perm(51,53))

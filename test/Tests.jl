@@ -223,7 +223,7 @@ function charfromrepr(gr,words)
     words=map(x->vcat(x,length(gens)),words)
   else gens=gr
   end
-  if isempty(gens) return fill(1,length(inds)) end
+  if isempty(gens) return fill(1,length(words)) end
   traces_words_mats(gens,words)
 end
   
@@ -1858,7 +1858,7 @@ function Thgal(W)
   conjPerm=Perm(ct,conj(ct);dims=1)
   x=Pol()
   d=degrees(W)
-  z=isempty(d) ? 1 : gcd(d)
+  z=isempty(d) ? 1 : gcd(filter(!=(1),d))
   H=hecke(W,x^z)
   ct=CharTable(H).irr
   if any(ismissing,ct) 
