@@ -145,6 +145,8 @@ Chevie.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
 Chevie.gap(p::Integer)=string(p)
 
+Chevie.gap(p::Missing)="Unknown()"
+
 function Chevie.gap(p::Cyc)
   res=join(map(pairs(p.d)) do (deg,v)
     den=denominator(v)

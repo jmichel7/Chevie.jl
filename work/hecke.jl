@@ -614,8 +614,6 @@ function meminfo_julia()
   println("Max. RSS:", pr(Sys.maxrss()/2^20),"MB")
 end
 
-malleperm=perm"(1,2)(3,6,5,4)(7,8)(9,10)(13,14)(15,16)(17,18,19,20)(21,22,24,23)(27,30,29,28)(31,32)(33,34)(37,38)(39,40)(42,43)(44,45)(46,47)(50,51,52,53)(54,55)(56,57)"
-
 """
 Schur elements and subalgebras:
 if R is a Hecke subalgebra of H we have for any ψ∈Irr(R)
@@ -638,28 +636,5 @@ function schur_subalgebra(H,I;c=1)
   r=Ref(Lcm).//r
   print("expanding lcm(Sχ)/Sψ quotients..")
   println("done in ",@elapsed r=map(p->p(Mvp(:x)),r))
-# s=invpermute(s,perm"(3,5)(17,19)(27,29)(35,36)(39,40)(50,52)(51,53)")
-# vec(transpose(map(i->Mvp(Symbol(:x,i)),eachindex(s)))*t.scalar).-r
   vec(transpose(s)*t.scalar).==r
 end
-
-# effect of x->-x on CharTable(hecke(crg(31),-x^2)) same effect on schur_elts
-pq=perm"(3,5)(4,6)(11,12)(17,19)(18,20)(27,29)(28,30)(31,33)(32,34)(35,36)(39,40)(42,44)(43,45)(48,49)(50,52)(51,53)"
-# effect of i->-i on CharTable(hecke(crg(31),-x^2)): (58,59)
-dims=[[1, 2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12], [13, 14], 
-[15, 16, 17, 18, 19, 20], [21, 22, 23, 24], [25], 
-[26, 27, 28, 29, 30, 31, 32, 33, 34], [35, 36], [37, 38, 39, 40], 
-[41, 42, 43, 44, 45], [46, 47, 48, 49, 50, 51, 52, 53], [54, 55, 56, 57], 
-[58, 59]]
-W=crg(31)
-@Mvp x
-H=hecke(W,-x^2)
-ct=CharTable(H)
-
-gg=Group(perm"(3,4)(5,6)",perm"(17,18)(19,20)",perm"(27,28)(29,30)",
-         perm"(31,32)(33,34)",perm"(28,31)(30,33)",perm"(42,43)(44,45)",
-         perm"(48,50)(49,52)",perm"(50,51)(52,53)")
-
-gg=Group(Perm(3,5),Perm(4,6),Perm(11,12),Perm(17,19),Perm(18,20),Perm(27,29),
-  Perm(28,30),Perm(31,33),Perm(32,34),Perm(35,36),Perm(39,40),Perm(42,44),
-  Perm(43,45),Perm(48,49),Perm(50,52),Perm(51,53))
