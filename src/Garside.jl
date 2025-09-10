@@ -2388,10 +2388,13 @@ end
 
 """
 `hurwitz(l,i::Integer)`
-the  Hurwitz action of the  generator σᵢ of the  braid group Bₙ on the list
-`l`   of  length  `n`  of  group  elements,  which  replaces  `lᵢ,lᵢ₊₁`  by
+the  Hurwitz action of  the generator `σᵢ`  of the braid  group `Bₙ` on the
+list  `l`  of  length  `n`  of  group elements, which replaces `lᵢ,lᵢ₊₁` by
 `lᵢ₊₁,lᵢ^lᵢ₊₁`.  If `i<0`, does the action of `inv(σⱼ)` where `j=-i`, which
 replaces `lⱼ,lⱼ₊₁` by `lⱼ₊₁^inv(lⱼ),lⱼ`.
+
+The  following  expression  computes  the  orbit  of the list `l` under the
+various Huwitz actions: `orbit(1:length(l)-1,l,hurwitz)`.
 """
 function hurwitz(l,i::Integer)
   l=copy(l)
@@ -2420,8 +2423,8 @@ hurwitz(l,b::GarsideElt)=hurwitz(l,word(b))
 
 # For a list l of group elements, returns the Hurwitz orbit of l.
 # To find the dual atoms apply it to an expression for a Coxeter element
-# and take union(orbit...)
-hurwitzorbit(l::AbstractVector)=orbit(1:length(l)-1,l,(l,i)->hurwitz(l,i))
+# like l=B.(1:ngens(W)) and take union(hurwitzorbit(l)...)
+hurwitzorbit(l::AbstractVector)=orbit(1:length(l)-1,l,hurwitz)
 
 include("cp.jl") # Corran-Picantin monoid
 
