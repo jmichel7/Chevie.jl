@@ -1,19 +1,20 @@
 """
 Garside  monoids are a general class  of monoids whose most famous examples
 are  the braid and dual braid monoids. They have groups of fractions, which
-in both examples is the braid group. Here we implement braid groups as part
-of a general implementation of Garside monoids and groups.
+in  both above examples is the braid  group. We implement braid groups as a
+special case of a general implementation of Garside monoids and groups.
 
-To  define Garside monoids we  introduce some vocabulary about divisibility
-in  monoids. A *left-divisor*  of `x` is  a `d` such  that there exists `y`
-with  `x=dy` (and then  we say that  `x` is a  *right multiple* of `d`, and
-write  `d≼ x`). We say that a monoid `M` is left cancellable if an equality
-`dx=dy`   implies  `x=y`.  We  define  symmetrically  right-divisors,  left
-multiples and right cancellability. We say that `x` is an *atom* if `1` and
-`x`  are its only  divisors. A *left  gcd* of `x`  and `y` is a common left
-divisor  `d` of `x`  and `y` such  that any other  common left-divisor is a
-left-divisor  of `d`. Similarly  a *right lcm*  of `x` and  `y` is a common
-multiple which is a left-divisor of any other common multiple.
+We  first  introduce  some  vocabulary  about  divisibility  in  monoids. A
+*left-divisor*  of `x` is a `d` such that there exists `y` with `x=dy` (and
+then  we say that `x` is  a *right multiple* of `d`,  and write `d≼ x`). We
+say  that a monoid `M`  is left cancellable if  an equality `dx=dy` implies
+`x=y`.  We  define  symmetrically  right-divisors,  left  multiples,  right
+cancellability  and the symbol `≽`. We say that `x` is an *atom* if `1` and
+`x`  are its only left or right divisors. A  *left gcd* of `x` and `y` is a
+common  left  divisor  `d`  of  `x`  and  `y`  such  that  any other common
+left-divisor  is a left-divisor of `d`. Similarly  a *right lcm* of `x` and
+`y`  is  a  common  multiple  which  is  a left-divisor of any other common
+multiple.
 
 We  call *Garside* a monoid `M` which:
   * is left and right cancellable.
@@ -23,24 +24,32 @@ We  call *Garside* a monoid `M` which:
   * admits a *Garside element*, which is an element `Δ` whose set of left and right-divisors coincide and generate `M`.
 
 Garside  elements are not  unique, but there  is a unique  minimal one (for
-divisibility);  we assume that a Garside  element `Δ` has been chosen. Then
-the  divisors of  `Δ` are  called the  *simples* of  `M`. A  Garside monoid
-embeds  into its group of  fractions, which is called  a *Garside group* (a
-group  can have  several different  Garside structures,  for instance braid
-groups of finite Coxeter groups have an ordinary and a dual braid monoid).
+divisibility);  we assume that  a Garside element  `Δ` has been chosen. The
+divisors  of `Δ` are called  the *simples* of `M`.  A Garside monoid embeds
+into  its group of fractions, which is called a *Garside group*; the monoid
+defines  a *Garside structure* for the group of fractions. A group can have
+several  different Garside structures, for  instance braid groups of finite
+Coxeter groups have an ordinary and a dual braid monoid.
 
-We  also implement *locally Garside* monoids,  which are monoids where lcms
-do  not always exist, but  exist if any common  multiple exists; the set of
-simples is then not defined by a Garside element, but by the condition that
-they  contain the atoms and are closed  under lcms and taking divisors (see
-[BDM01](biblio.htm#BDM01));  we  keep  the  condition  that each element is
-divisible  by  finitely  many  simples  (but  the  number of simples can be
-infinite).  The most important  example is the  Artin monoid of an infinite
-Coxeter  group. It  is not  known whether  locally Garside monoids embed in
-their  group of fractions (although this  has been proved for Artin monoids
-of   Coxeter  groups  by  Paris  [Paris01](biblio.htm#Paris01)),  and  thus
-computing  in the monoid does not help for computing in the group; only the
-monoid is implemented here for these cases.
+We  also implement more generally *locally Garside* monoids, which have the
+same  axioms, excepted lcms  do not always  exist, but exist  if any common
+multiple exists; they also do not have Garside elements. The set of simples
+is  then not defined by  a Garside element, but  by the condition that they
+contain  the  atoms  and  are  closed  under  lcms and taking divisors (see
+[BDM01](biblio.htm#BDM01));  each  element  is  still divisible by finitely
+many  simples,  but  the  set  simples  can be infinite. The most important
+example  is the Artin monoid of an  infinite Coxeter group. It is not known
+whether locally Garside monoids embed in their group of fractions (although
+this  has  been  proved  for  Artin  monoids  of  Coxeter  groups  by Paris
+[Paris01](biblio.htm#Paris01)),  and thus computing in  the monoid does not
+help  for computing in the  group; only the monoid  is implemented here for
+these cases.
+
+There  is another  generalization, *quasi-Garside  monoids*, where we relax
+the  axiom  that  an  element  has  finititely  many divisors (there may me
+infinitely  atoms).  We  do  not  implement  this but the package `AffineA`
+implements,  following the work of François Digne, the dual braid monoid of
+the affine Coxeter group `W(Ãₙ)` which is of this type.
 
 What allows computing with Garside and locally Garside monoids, and Garside
 groups,  is the fact  that they admit  normal forms ---  these normal forms
@@ -48,18 +57,24 @@ were   exhibited   for   braid   monoids   of  Coxeter  groups  by  Deligne
 [Del72](biblio.htm#Del72),  who extended  earlier work  of Brieskorn, Saito
 [BS72](biblio.htm#BS72) and Garside [Gar69](biblio.htm#Gar69):
 
-  1. Let `M` be a locally Garside monoid. Then for `b∈ M` there is a unique  maximal simple left-divisor `α(b)` of `b`; any other simple dividing `b` divides `α(b)`.
+  1. Let `M` be a locally Garside monoid. Then for any `b∈ M` there is a unique  maximal (for divisibility) simple left-divisor `α(b)` of `b`. In a Garside monoid it is the `leftgcd(b,Δ)`.
 
   2. Let `M` be a Garside monoid with Garside element `Δ` and group of fractions `G`. Then for any `x∈  G`, for large enough `i` we have `Δⁱx∈ M`.
 
-A  consequence of 1. is that every element has a canonical decomposition as
-a product of simples, its *left-greedy* normal form. If we define `ω(x)` by
-`x=α(x)ω(x)`, then the normal form of `x` is `α(x)α(ω(x))α(ω^2(x))…` We use
-the  normal form to represent  elements of `M`, and  when `M` is Garside we
-use  2. to represent elements of `G`:  given `x∈ G` we compute the smallest
-power `i` such that `Δⁱ x∈ M`, and we represent `x` by the pair `(i,Δ⁻ⁱx)`.
-We  are thus reduced to the case where  `x∈ M`, not divisible by `Δ`, where
-we represent `x` by the sequence of simples that make up its normal form.
+A  consequence  of  1.  is  that  every  element  of  `M`  has  a canonical
+decomposition as a product of simples, its *left-greedy* normal form. If we
+define   `ω(x)`  by   `x=α(x)ω(x)`,  then   the  normal   form  of  `x`  is
+`α(x)α(ω(x))α(ω^2(x))…`  For locally Garside monoids we use the normal form
+to  represent elements of `M`.  When `M` is Garside  we use 2. to represent
+any  element of `G`:  given `x∈ G`  we compute the  smallest power `i` such
+that  `Δⁱ x∈ M`, and  we represent `x` by  the pair `(-i,Δⁱx)`. We are thus
+reduced  to the case where `x∈ M`, not divisible by `Δ`, where we represent
+`x`  by the sequence of simples that make up its normal form (this sequence
+thus  does  not  contain  the  identity  or  `Delta`).  We  see that in our
+implementation  the  simples  is  another  type  that  the  type of Garside
+elements.  Thus a Garside monoid is  a parametrized type whose most general
+instance is the type `LocallyGarsideMonoid{T}` where `T` is the type of the
+simples.
 
 We  now describe Artin-Tits braid monoids. Let `(W,S)` be a Coxeter system,
 that is `W` has presentation
@@ -71,11 +86,11 @@ the group defined by the presentation
 
 `⟨𝐬∈ 𝐒∣ 𝐬𝐭𝐬⋯ =𝐭𝐬𝐭⋯  (mₛₜ factors on each side) for 𝐬,𝐭∈ 𝐒⟩`
 
-The  *positive* braid monoid `B⁺` associated with `W` is the monoid defined
+The  associated *positive* braid monoid `B⁺` is the monoid defined
 by  the  presentation  above  ---  it  identifies with the submonoid of `B`
 generated  by `𝐒` by [Paris01](biblio.htm#Paris01).  This monoid is locally
 Garside,  with the set of simples in bijection with the elements of `W` and
-with  `𝐒` as atoms; we will denote by `𝐖 ` the set of simples, and by `𝐰 ↦
+with  `𝐒` as atoms; we will denote by `𝐖 ` the set of simples, and by `𝐰 ↔
 w`  the bijection between simples and elements  of `W`. The group `W` has a
 length  defined  in  terms  of  reduced expressions. Similarly, having only
 homogeneous relations, `B⁺` has a natural length function. Then `𝐖 ` can be
@@ -89,10 +104,6 @@ also  a reflection group in  a real vector space,  thus in its complexified
 the  space `Vʳᵉᵍ/W`, where `Vʳᵉᵍ`  is the set of  elements of `V` which are
 not fixed by any non-identity element of `S`; however, we will not use this
 here.
-
-We  implement in general only  monoids which have a  finite number of atoms
-(the  package `AffineA` implements,  following the work  of François Digne,
-the dual braid monoid of the affine Coxeter group `W(Ãₙ)`).
 
 Given a Coxeter group `W`,
 ```julia-repl
@@ -109,9 +120,36 @@ a list of generators indices given as arguments:
 ```julia-repl
 julia> w=B(1,2,3,4) # represents 𝐬₁𝐬₂𝐬₃𝐬₄
 1234
+```
+The  operations `*`  and `^`  (exponentiation) are  implemented for locally
+Garside  elements (and also multiplication of a Garside element by a simple)
+and  in addition  the operations  `\\` and  '/' (left and
+right  division),  `inv`  and  `^`  (inverse  and  conjugation) for Garside
+elements (and conjugation of a Garside element by a simple).
+```julia-repl
+julia> w*w
+1213243.4
+
+julia> w*W(1) # multiplication by a simple
+12134
+
+julia> W(1)*w
+1.1234
 
 julia> w^3  # the terms of the normal form are printed separated by a .
 121321432.343
+
+julia> B(1,2)\\w
+34
+
+julia> w/B(3,4)
+12
+
+julia> w^B(1) # conjugation
+2134
+
+julia> w^W(1) # conjugation by a simple
+2134
 
 julia> word(α(w^3))
 9-element Vector{Int64}:
@@ -129,6 +167,9 @@ julia> w^4
 Δ.232432
 
 julia> inv(w)
+(1234)⁻¹
+
+julia> B(-4,-3,-2,-1) # another way of entering the same element
 (1234)⁻¹
 ```
 How  an  element  of  a  Garside  group  is  printed  is  controlled by the
@@ -173,21 +214,22 @@ which generates `W`. Then we have the theorem:
 Suppose  `w` is Garside for the `l_S`.  Then the monoid `M` with generators
 `[1,w]`   and   relations   `xy=z`   whenever   `xy=z`  holds  in  `W`  and
 `l_S(x)+l_S(y)=l_S(z)`, is a Garside monoid, with simples `[1,w]` and atoms
-`S`. It is called the interval monoid defined by the interval `[1,w]`.
+`S`.  It is called  the interval monoid  defined by `l_S`  and the interval
+`[1,w]`.
 
 The  Artin-Tits braid monoid  is an interval  monoid by taking  for `S` the
 Coxeter  generators, in which case `l_S`  is the Coxeter length, and taking
 for `w` the longest element of `W`. The dual monoid, constructed by Birman,
 Ko  and  Lee  for  type  `A`  and  by Bessis for all well-generated complex
 reflection  groups, is obtained in  a similar way, by  taking this time for
-`w`  a Coxeter element, for `l_S` the reflection length 'reflength' and for
-`S_S`  the  reflections  which  divide  `w`  for the reflection length (for
-Coxeter  groups all reflections  divide `w` but  for well-generated complex
-reflection  groups not  all reflections  divide); for  the dual  monoid the
-simples  are of cardinality  the generalized Catalan  numbers `catalan`. An
-interval  monoid has naturally an inverse  morphism from `M` to `W`, called
-'image'  which is the  quotient map from  the interval monoid  to `W` which
-sends back simple braids to `[1,w]`.
+`w`  a Coxeter element,  for `l_S` the  reflection length (see `reflength`)
+and  for `S_S` the  reflections which divide  `w` for the reflection length
+(for  Coxeter groups all  reflections divide a  Coxeter element but this is
+not  the case for well-generated complex reflection groups); the simples of
+the  dual monoid  are of  cardinality the  generalized Catalan numbers (see
+[`catalan`](@ref)).  An interval  monoid has  naturally an inverse morphism
+from `M` to `W`, called 'image' which is the quotient map from the interval
+monoid to `W` which sends back simple braids to `[1,w]`.
 
 A last pertinent notion is *reversible* monoids. Since we store left normal
 forms,  it is easy to compute left lcms and gcds, but hard to compute right
@@ -215,25 +257,27 @@ in  the group is if there exists `y∈  M` such that `w=xy` and `w'=yx`. This
 relation  is not transitive in general,  but we call *cyclic conjugacy* the
 transitive closure of this relation, a restricted form of conjugacy.
 
-The  next  observation  is  that  if  `w,w'`  are conjugate in the group of
-fractions  of the Garside monoid `M` then  they are conjugate in `M`, since
-if `wx=xw'` then there is a power `Δⁱ` which is central and such that `xΔⁱ∈
+The next observation is that if `w,w'∈M` where `M` is Garside are conjugate
+in  the group  of fractions  `G` then  they are  conjugate in `M`, since if
+`wx=xw'`  then there is a  power `Δⁱ` which is  central and such that `xΔⁱ∈
 M`. Then `wxΔⁱ=xΔⁱ w'` is a conjugation in `M`.
 
-The  crucial observation for solving the  conjugacy problem is to introduce
-`inf(w):=sup{i such that Δ⁻ⁱw∈ M}` and `sup(w):=inf{i such that w⁻¹Δⁱ∈ M}`,
-and  to notice  that the  number of  conjugates of  `w` with same `inf` and
-`sup`  as `w` is finite (since our  monoids have a finite number of atoms).
-Further, a theorem of Birman shows that the maximum `inf` and minimum `sup`
-in a conjugacy class can be achieved simultaneously; the elements achieving
-this are called the super summit set of `w`. Thus a way to determine if two
-elements are conjugate is to find a representative of both of them in their
-super  summit set, and then solve conjugacy  within that set. This can also
-be  used to compute the centralizer of an element: if we consider the super
-summit   set  as  the  objects  of  a  category  whose  morphisms  are  the
-conjugations   by  simple  elements,  the   centralizer  is  given  by  the
-endomorphisms  of  the  given  object.  For  the  implementation  of finite
-categories we use, see the docstrings of `Category` and `endomorphisms`.
+The crucial observation for solving the conjugacy problem in Garside groups
+is  to introduce `inf(w):=sup{i such that Δ⁻ⁱw∈ M}` and `sup(w):=inf{i such
+that  w⁻¹Δⁱ∈ M}`, and to  notice that the number  of conjugates of `w` with
+same  `inf` and  `sup` as  `w` is  finite (since  our monoids have a finite
+number  of simples).  Further, a  theorem of  Birman shows that the maximum
+`inf`   and  minimum   `sup`  in   a  conjugacy   class  can   be  achieved
+simultaneously; the elements achieving this are called the super summit set
+of  `w`,  denoted  `SS(w)`.  Thus  a  way  to determine if `w` and `w'` are
+conjugate  is to find  representatives `w₁∈SS(w)`, `w'₁∈SS(w')`  of them in
+their  super summit set, and then enumerate  `SS(w)` and see if it contains
+`w'₁`.  This can also be used to  compute the centralizer of an element: if
+we  consider  the  super  summit  set  as  a category whose objects are its
+elements  and  morphisms  are  the  conjugations  by  simple  elements, the
+centralizer  of `w₁` is given by the  endomorphisms of that object. For the
+implementation   of  finite  categories  we  use,  see  the  docstrings  of
+`Category` and `endomorphisms`.
 
 We illustrate this on an example:
 ```julia-repl
@@ -243,7 +287,7 @@ julia> b=B(2,1,4,1,4)
 julia> c=B(1,4,1,4,3)
 14.143
 
-julia> d=conjugating_elt(b,c)
+julia> d=conjugating_elt(b,c) # would return nothing if b, c are not conjugate
 (1)⁻¹21321432
 
 julia> b^d
@@ -255,10 +299,10 @@ julia> centralizer_gens(b)
  21.1
  4
 
-julia> C=conjcat(b;ss=Val(:ss))
+julia> C=conjcat(b;ss=Val(:ss)) # SS(b) as a category
 category with 10 objects and 32 generating maps
 
-julia> C.obj
+julia> C.obj # the elements of SS(b). Notice it contains c
 10-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1214.4
  214.14
@@ -273,7 +317,7 @@ julia> C.obj
 ```
 
 There   is  a   faster  solution   to  the   conjugacy  problem   given  in
-[gebgon10](biblio.htm#gebgon10):  for each `b∈ M`, they define a particular
+[gebgon10](biblio.htm#gebgon10):  for each `b∈M`, they define a particular
 simple  left-divisor of `b`, its *preferred prefix* such that the operation
 *slide*  which  cyclically  conjugates  `b`  by  its  preferred  prefix, is
 eventually periodic, and the period is contained in the super summit set of
@@ -291,17 +335,15 @@ julia> word(W,preferred_prefix(b))
 julia> b^B(preferred_prefix(b))
 1214.4
 
-julia> b1=b^B(preferred_prefix(b))
-1214.4
-
-julia> C=conjcat(b)
+julia> C=conjcat(b) # with no Val argument computes the sliding circuits
 category with 2 objects and 6 generating maps
 
-julia> C.obj
+julia> C.obj # the elements of the sliding circuits
 2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1214.4
  1343.1
 ```
+
 Finally,  we have implemented  Hao Zheng's algorithm  to extract roots in a
 Garside monoid:
 
@@ -378,13 +420,13 @@ function leftgcdc(M::LocallyGarsideMonoid{T},simp::Vararg{T,N})where {T,N}
 end
 
 """
-`leftgcd(M::LocallyGarsideMonoid,simp...)`
-`leftgcdc(M::LocallyGarsideMonoid,simp...)`
+`leftgcd(M::LocallyGarsideMonoid,s₁,…,sₙ)`
+`leftgcdc(M::LocallyGarsideMonoid,s₁,…,sₙ)`
 
-`simp`  should be simples of `M`. The  function returns the left gcd `d` of
-the `simp`.
+`s₁,…,sₙ` should be simples of `M`. The  function returns the left gcd `d` of
+the `sᵢ`.
 
-`leftgcdc` returns `d` followed by the tuple of complements `inv(d).*simp`
+`leftgcdc` returns `(d,(d⁻¹s₁,…,d⁻¹sₙ))`
 """
 leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=first(leftgcdc(simp...))
 
@@ -405,13 +447,13 @@ function rightgcdc(M::LocallyGarsideMonoid{T},simp::Vararg{T,N})where {T,N}
 end
 
 """
-`rightgcd(M::LocallyGarsideMonoid,simp...)`
-`rightgcdc(M::LocallyGarsideMonoid,simp...)`
+`rightgcd(M::LocallyGarsideMonoid,s₁,…,sₙ)`
+`rightgcdc(M::LocallyGarsideMonoid,s₁,…,sₙ)`
 
-`simp`  should be simples of `M`. The function returns the right gcd `d` of
-the `simp`.
+`s₁,…,sₙ` should be simples of `M`. The  function returns the right gcd `d` of
+the `sᵢ`.
 
-`rightgcdc` returns `d` followed by the tuple of complements `simp./d`
+`rightgcdc` returns `(d,(s₁d⁻¹,…,sₙd⁻¹))`
 """
 rightgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N}) where{T,N}=
   first(rightgcdc(M,simp...))
@@ -442,13 +484,13 @@ function rightlcmc(M::GarsideMonoid{T},simp::Vararg{T,N})where {T,N}
 end
 
 """
-`rightlcm(M::GarsideMonoid,simp...)`
-`rightlcmc(M::GarsideMonoid,simp...)`
+`rightlcm(M::GarsideMonoid,s₁,…,sₙ)`
+`rightlcmc(M::GarsideMonoid,s₁,…,sₙ)`
 
-`simp`  should be simples of `M`. The function returns the right lcm `m` of
-the `simp`.
+`s₁,…,sₙ` should be simples of `M`. The  function returns the right lcm `m` of
+the `sᵢ`.
 
-`rightlcmc` returns `m` followed by the tuple of complements `simp.\\m`
+`rightlcmc` returns `(m,(s₁⁻¹m,…,sₙ⁻¹m))`
 """
 rightlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
   first(rightlcmc(M,simp...))
@@ -459,13 +501,13 @@ function leftlcmc(M::GarsideMonoid{T},simp::Vararg{T,N})where {T,N}
 end
 
 """
-`leftlcm(M::GarsideMonoid,simp...)`
-`leftlcmc(M::GarsideMonoid,simp...)`
+`leftlcm(M::GarsideMonoid,s₁,…,sₙ)`
+`leftlcmc(M::GarsideMonoid,s₁,…,sₙ)`
 
-`simp`  should be simples of `M`. The  function returns the left lcm `m` of
-the  `simp`.
+`s₁,…,sₙ` should be simples of `M`. The  function returns the left lcm `m` of
+the `sᵢ`.
 
-`leftlcmc` returns `m` followed by  the tuple of complements `m./simp`
+`leftlcmc` returns `(m,(ms₁⁻¹,…,msₙ⁻¹))`
 """
 leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
    first(leftlcmc(M,simp...))
@@ -478,7 +520,7 @@ function (M::LocallyGarsideMonoid{T})(l::Vararg{<:Integer})where {T}
   else res=inv(M(-l[1]))
   end
   for s in l[2:end]
-    res*= s>0 ? atom(M,s) : M(s)
+    res*= s>0 ? atom(M,s) : M(s) # not very efficient when negative indices
   end
   res
 end
@@ -486,15 +528,9 @@ end
 # whether the simple x is one
 Base.isone(M::LocallyGarsideMonoid,x)=x==one(M)
 
-function (M::GarsideMonoid{T})(r::T)where T
-  if r==M.δ GarsideElt(M,T[],1;check=false)
-  elseif isone(M,r) GarsideElt(M,T[];check=false)
-  else GarsideElt(M,[r];check=false)
-  end
-end
-
 function (M::LocallyGarsideMonoid{T})(r::T)where T
-  if isone(M,r) GarsideElt(M,T[];check=false)
+  if hasfield(typeof(M),:δ) && r==M.δ GarsideElt(M,T[],1;check=false)
+  elseif isone(M,r) GarsideElt(M,T[];check=false)
   else GarsideElt(M,[r];check=false)
   end
 end
@@ -1015,7 +1051,7 @@ head(x::LocallyGarsideElt)=x[1]
 `α(b::LocallyGarsideElt)`
 
 returns as a Garside element  the first term in  the normal form of  `b`
-(`b[1]` returns this term as a simple).
+(the expression `b[1]` returns this term as a simple).
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -1614,23 +1650,24 @@ end
 
 #----------------------------------------------------------------------------
 """
-`Category{TO,TM}` is the type of a finite category whose objects are of type
-`TO` and maps of type `TM`.  It is represented as a `struct` with two fields:
+The `struct Category{TO,TM}` represents a finite category whose objects are
+of type `TO` and maps of type `TM`. It has two fields:
 
-  - `obj::Vector{TO}` the objects
-  - `atoms::Vector{Vector{Pair{TM,Int}}}` a vector representing the atoms
-    (generators) of the category. It is such that `atoms[i]` is a `Vector` of 
-    pairs `m=>j` representing a map `m` from `obj[i]` to `obj[j]`. If the julia
-    objects of type `TM` belong to a monoid, a general map can be represented
-    as a triple `(i,m,j)` where `m` is of type `TM` representing a map from
-    `obj[i]` to `obj[j]`.
+  - `.obj::Vector{TO}` the objects
+  - `.atoms::Vector{Vector{Pair{TM,Int}}}` a vector of same length as `.obj` representing  the atoms (generators)  of the category;  `atoms[i]` is a `Vector` of pairs `m=>j` holding a map `m` from `obj[i]` to `obj[j]`.
 
-A category is graphically shown by giving the `:graph` io property:
 ```julia-rep1
-julia> W=coxsym(4);M=BraidMonoid(W)
-BraidMonoid(𝔖 ₄)
+julia> W=coxsym(4);B=BraidMonoid(W);b=B(1,1,2,2,3)
+1.12.23
 
-julia> xprint(conjcat(M(1,1,2,2,3));graph=true)
+julia> print(conjcat(b))
+Category([B(1,2,2,1,3),B(2,1,3,1,2),B(2,1,3,3,2),B(3,2,2,1,3)],[
+[B(1,2)=>2, B(2,1,3)=>3],
+[B(2,1,3)=>1, B(1,3,2,1)=>4],
+[B(2,1,3)=>4, B(1,2,3,2)=>1],
+[B(2,1,3)=>2, B(3,2)=>3]])
+
+julia> xprint(conjcat(b);graph=true) # show graphically the category
 category with 4 objects and 8 generating maps
       1232       12       213       213       213       32 
 213.32―――➔ 12.213―➔ 213.12――➔ 12.213――➔ 213.32――➔ 32.213―➔ 213.32
@@ -1643,18 +1680,34 @@ struct Category{TO,TM}
   atoms::Vector{Vector{Pair{TM,Int}}}
 end
 
-function Base.show(io::IO,C::Category)
+function Base.show(io::IO,::MIME"text/plain",C::Category)
   print(io,"category with ",length(C.obj)," objects and ",
         sum(length,C.atoms)," generating maps")
   if get(io,:graph,false) println(io);showgraph(io,C) end
 end
 
+function Base.show(io::IO,C::Category)
+  if get(io,:limit,false) show(io,MIME("text/plain"),C)
+  else
+    print(io,"Category([")
+    join(io,C.obj,",")
+    print(io,"],[\n")
+    join(io,map(x->"["*join(map(((m,o),)->repr(m)*"=>"*repr(o),x),", "),C.atoms),"],\n")
+    print(io,"]])")
+  end
+end
+
+#   If the  julia objects  of type  `TM` belong  to a  monoid, a
+#   general  map can be represented  as a triple `(i,m,j)`  where `m` is of
+#   type `TM` representing a map from `obj[i]` to `obj[j]`.
 """
 `Category(atomsfrom::Function,o;action::Function=^)`
 
-constructs   a  category  from  an  initial   object  `o`  and  a  function
-`atomsfrom(o)`  which given object `o` returns atoms from `o` as "maps" `m`
-such that the target object is `action(o,m)`.
+constructs a category from an initial object `o` and two functions:
+  - `atomsfrom(o)` given an object `o` returns  the list of atoms from `o`. - `action(o,m)` returns the resulting object obtained by applying the map `m`  to the object  `o`. If `action`  is not given,  it is assumed that `o^m` does the job.
+
+The  result is  a `Category{TO,TM}`  where `TO=typeof(o)`  and `TM`  is the
+`eltype`  of the result of  `atomsfrom`. 
 
 As an example we construct a Garside category associated to the braid group
 of  `G₃₁`, realized as the  centralizer of a 4th  root of `δ³⁰` in the dual
@@ -1707,6 +1760,7 @@ function Category(atomsfrom::Function,o;action::Function=^)
   C
 end
 
+# io properties :showobj and :showmap can vary the output
 function showgraph(io,C::Category)
   maps=vcat(map(i->map(((m,t),)->[i,m,t],sort(C.atoms[i],by=x->abs(x[2]-i))),
                  eachindex(C.obj))...)
@@ -1731,7 +1785,7 @@ function showgraph(io,C::Category)
     maps=new
   end
   showobj=get(io,:showobj,show)
-  showmap=get(io,:showobj,show)
+  showmap=get(io,:showmap,show)
   for f in maps
     l1=l2=""
     for i in 1:2:length(f)-2
@@ -1752,19 +1806,20 @@ function showgraph(io,C::Category)
 end
 
 """
-`endomorphisms(C::Category,o)`
-returns generators of the endomorphisms of `C.obj[o]`
+`endomorphisms(C::Category,o::Integer)`
+Assuming  the atoms of `C`  are invertible by `inv`  and maps multiply with
+`*`, returns generators of the endomorphisms of `C.obj[o]`
 ```julia-repl
 julia> W=coxsym(4);M=BraidMonoid(W)
 BraidMonoid(𝔖 ₄)
 
-julia> endomorphisms(conjcat(M(1,1,2,2,3)),1)
+julia> endomorphisms(conjcat(M(1,1,2,2,3)),1) # generators of centralizer
 2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
  213.1232
  12.213
 ```
 """
-function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
+function endomorphisms(C::Category{TO,TM},o::Integer)where {TO,TM}
   paths=[Tuple{Int,Int}[] for i in eachindex(C.obj)]
   paths[o]=Tuple{Int,Int}[]
   if isempty(C.atoms[o]) return TM[] end
@@ -1804,7 +1859,7 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
 end
 
 # return one map in C from o to o1 or nothing if none exists
-function from(C::Category{TO,TM},o,o1)where {TO,TM}
+function mapbetween(C::Category{TO,TM},o,o1)where {TO,TM}
   if isempty(C.atoms[o]) m=one(TM)
   else m=one(first(C.atoms[o][1]))
   end
@@ -1825,7 +1880,7 @@ function from(C::Category{TO,TM},o,o1)where {TO,TM}
 end
 
 # returns atoms from a in F-twisted s-conjugacy category
-function AtomicMaps(a,::Val{s}=Val(:sc),F::Function=(x,y=1)->x)where s
+function conjatoms(a,::Val{s}=Val(:sc),F::Function=(x,y=1)->x)where s
   M=a.M
   res=typeof(a)[]
   for i in eachindex(M.atoms)
@@ -1844,7 +1899,8 @@ function minc(a,x,::Val{:cyc},F::Function=(x,y=1)->x)
   if isleftdescent(a,findfirst(==(x),a.M.atoms)) return x end
 end
 
-# Inf(a,x)  minimal m such that x≼ m and inf(a^m)>=inf(a).
+# given a Garside element a and a simple x, returns the
+# minimal m such that x≼ m and inf(inv(m)*a*F(m))>=inf(a).
 # m is simple; see algorithm 2 in Franco-Gonzales 1.
 function minc(a,x,::Val{:inf},F::Function=(x,y=1)->x)
   M=a.M
@@ -1877,8 +1933,9 @@ function decycle(b)
   b^w,w
 end
 
-# SS(a,x)  Assumes a in SSS(a). Returns minimal m such that x<m and
-# a^m is in SSS(a). m is simple. See algorithm 5 in Franco-Gonzales 1
+# given a Garside element a assumed to be in SSS(a) and a simple x, 
+# returns the minimal m such that x<m and a^m is in SSS(a). 
+# m is simple. See algorithm 5 in Franco-Gonzales 1
 function minc(a,x,::Val{:ss},F::Function=(x,y=1)->x)
   ai=inv(a)
   while true
@@ -1918,8 +1975,8 @@ function representativeSC(b,F::Function=(x,y=1)->x)
   (conj=l[t][2],circuit=first.(l[t:end-1]))
 end
 
-# minc(a::GarsideElt,x::simple,:sc)
-# minimal simple m such that x<m and a^m is in SC(a).
+# given a Garside element a assumed to be in SC(a) and a simple x, 
+# minimal m such that x<m and inv(m)*a*F(m) is in SC(a). m is simple
 function minc(a,x,::Val{:sc},F::Function=(x,y=1)->x)
   M=a.M
 # Gebhart-Gonzalez function F for a in SC such that a^x in SSS
@@ -1965,8 +2022,7 @@ type.
   - By default,  computes the  category of  sliding circuits  of `b`.
   - If `ss==Val(:ss)`,  computes  the  super  summit  set.
   - If `ss==Val(:cyc)`, computes the cyclic  conjugacy category.
-  - If `ss==Val(:inf)` computes the category of all conjugate elements with
-    same `Inf` as `b`.
+  - If `ss==Val(:inf)` computes the category of all conjugate elements with same `Inf` as `b`.
 
 If  an argument  `F` is  given it  should be  the Frobenius of a Reflection
 coset attached to `b.M.W`. Then the `F`-conjugacy category is returned.
@@ -2005,7 +2061,7 @@ julia> conjcat(w;ss=Val(:ss)).obj # the super summit set
 """
 function conjcat(b,F::Function=(x,y=1)->x;ss=Val(:sc))
   if ss==Val(:sc) || ss==Val(:ss) b=representativeSC(b,F).circuit[1] end
-  Category(x->AtomicMaps(x,ss,F),b;action=(b,m)->^(b,m,F))
+  Category(x->conjatoms(x,ss,F),b;action=(b,m)->^(b,m,F))
 end
 
 """
@@ -2072,7 +2128,7 @@ function conjugating_elt(b,c,F::Function=(x,y=1)->x;ss=Val(:sc))
   res=[bconj]
   class=[b]
   for (i,a) in enumerate(class)
-    for m in AtomicMaps(a,ss,F)
+    for m in conjatoms(a,ss,F)
       target=^(a,m,F)
       if !(target in class)
         e=res[i]*m
@@ -2280,7 +2336,7 @@ function LaurentPolynomials.root(b0::GarsideElt,n=2)
     class=[sc.circuit[1]]
     if cst(class[1]) return conj[1] end
     for a in class
-      for m in AtomicMaps(a)
+      for m in conjatoms(a)
         target=a^m
         if !(target in class)
           e=conj[findfirst(==(a),class)]*m
