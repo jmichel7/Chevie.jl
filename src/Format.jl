@@ -69,7 +69,8 @@ Other functions to ease formatting are described below: see `showtable`,
 `joindigits`, `ordinal`, `cut`.
 """
 module Format
-using ..Chevie: stringexp, stringprime
+using LaurentPolynomials: stringexp
+using CycPols: stringprime
 using PermGroups: @GapObj
 export showtable, ordinal, fromTeX, printTeX, joindigits, cut, rio, xprint, 
   xprintln, xdisplay, hdisplay, xrepr, TeX, TeXs, hasdecor

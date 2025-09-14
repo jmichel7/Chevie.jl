@@ -267,9 +267,10 @@ is  to introduce `inf(w):=sup{i such that Δ⁻ⁱw∈ M}` and `sup(w):=inf{i su
 that  w⁻¹Δⁱ∈ M}`, and to  notice that the number  of conjugates of `w` with
 same  `inf` and  `sup` as  `w` is  finite (since  our monoids have a finite
 number  of simples).  Further, a  theorem of  Birman shows that the maximum
-`inf`   and  minimum   `sup`  in   a  conjugacy   class  can   be  achieved
-simultaneously; the elements achieving this are called the super summit set
-of  `w`,  denoted  `SS(w)`.  Thus  a  way  to determine if `w` and `w'` are
+`inf` and minimum `sup` in a conjugacy class can be achieved simultaneously
+(by iterated cycling and decycling. See `Garside.cycle` and
+`Garside.decycle`); the elements achieving this are called the super summit
+set  of `w`, denoted `SS(w)`.  Thus a way to  determine if `w` and `w'` are
 conjugate  is to find  representatives `w₁∈SS(w)`, `w'₁∈SS(w')`  of them in
 their  super summit set, and then enumerate  `SS(w)` and see if it contains
 `w'₁`.  This can also be used to  compute the centralizer of an element: if
@@ -319,7 +320,7 @@ julia> C.obj # the elements of SS(b). Notice it contains c
 There   is  a   faster  solution   to  the   conjugacy  problem   given  in
 [gebgon10](biblio.htm#gebgon10):  for each `b∈M`, they define a particular
 simple  left-divisor of `b`, its *preferred prefix* such that the operation
-*slide*  which  cyclically  conjugates  `b`  by  its  preferred  prefix, is
+slide  which  cyclically  conjugates  `b`  by  its  preferred  prefix, is
 eventually periodic, and the period is contained in the super summit set of
 `x`.  We say that `x`  is in its sliding  circuit if some iterated slide of
 `x` is equal to `x`. The set of sliding circuits in a given conjugacy class
@@ -1267,15 +1268,12 @@ function Base.:*(a::GarsideElt{T},b::GarsideElt{T})where T
   res
 end
 
-# conjugation of positive b by simple r such that r divides b*r
+# conjugation of positive b by simple r assuming that r divides b*r
 # About 30% faster than b^b.M(r) for long words
-function Base.:^(b::GarsideElt{T},r::T) where T
+function Base.:^(b::GarsideElt{T},r::T,F::Function=x->x) where T
   if isone(b.M,r) return b end
-  r\(b*r)
+  r\(b*F(r))
 end
-
-#Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:Perm=y.M(r)\(y*F(r))
-Base.:^(y::GarsideElt{T},r::T,F::Function) where T=y.M(r)\(y*F(r))
 
 Base.:^(a::LocallyGarsideElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                              Base.power_by_squaring(inv(a),-n)
@@ -1892,7 +1890,7 @@ function conjatoms(a,::Val{s}=Val(:sc),F::Function=(x,y=1)->x)where s
   filter(x->count(y->(y\x).pd>=0,res)==1,res)
 end
 
-# a braid x atom
+# a braid x atom; return x if x≼a, nothing else
 function minc(a,x,::Val{:cyc},F::Function=(x,y=1)->x)
   if a.pd>0 return x end
   if isone(a) return nothing end
@@ -1901,7 +1899,7 @@ end
 
 # given a Garside element a and a simple x, returns the
 # minimal m such that x≼ m and inf(inv(m)*a*F(m))>=inf(a).
-# m is simple; see algorithm 2 in Franco-Gonzales 1.
+# Since m=Δ works, m exists and is simple; see algorithm 2 in Franco-Gonzales 1.
 function minc(a,x,::Val{:inf},F::Function=(x,y=1)->x)
   M=a.M
   m=x
@@ -1915,7 +1913,12 @@ function minc(a,x,::Val{:inf},F::Function=(x,y=1)->x)
   m
 end
 
-# returns (cycle(b),simple r) such that b^r=cycle(b)
+"""
+`cycle(b)`
+
+if the normal form of `b` is `Δⁱb₁…bₙ` then `cycle(b)=b^δad(b₁,-i)`.
+returns `(cycle(b),δad(b₁,-i))`.
+"""
 function cycle(b)
   M=b.M
   l=length(b.elm)
@@ -1925,7 +1928,12 @@ function cycle(b)
   clone(b,b.elm[2:end])*w,w
 end
 
-# returns (decycle(b),simple r) such that b^r=decycle(b)
+"""
+`decycle(b)`
+
+if the normal form of `b` is `Δⁱb₁…bₙ` then `decycle(b)=b^inv(bₙ)`.
+returns `(decycle(b),inv(bₙ))`.
+"""
 function decycle(b)
   M=b.M
   if length(b.elm)==0 return b,M() end
@@ -1946,6 +1954,12 @@ function minc(a,x,::Val{:ss},F::Function=(x,y=1)->x)
   end
 end
 
+"""
+`preferred_prefix(b)`
+
+if the normal form of `b` is `Δⁱb₁…bₙ` then 
+`preferred_prefix(b)=inv(bₙ)*α(bₙΔ⁻ⁱ(b₁))`.
+"""
 function preferred_prefix(b,F::Function=(x,y=1)->x)
   M=b.M
   if isempty(b.elm) return one(M) end
@@ -1953,23 +1967,17 @@ function preferred_prefix(b,F::Function=(x,y=1)->x)
   F(\(M,o,α2(M,o,F(δad(M,b.elm[1],-b.pd)))[1]),-1)
 end
 
-# returns (slide(b),r) such that b^r=slide(b)
-function slide(b,F::Function=(x,y=1)->x)
-  r=preferred_prefix(b,F)
-  e=b.M(r)
-  ^(b,e,F),e
-end
-
 # representativeSC(b) returns
-# (conj=minimal r such that b^r in sliding circuit,
-#  circuit=sliding circuit)
+# (conj=minimal r such that b^r is in a sliding circuit,
+#  circuit=sliding circuit of b^r)
 function representativeSC(b,F::Function=(x,y=1)->x)
   seen=Set{typeof(b)}()
   l=[(b,b^0)]
   while !(b in seen)
     push!(seen,b)
-    b,e=slide(b,F)
-    push!(l,(b,l[end][2]*e))
+    r=preferred_prefix(b,F)
+    b=^(b,r,F) # slide b
+    push!(l,(b,l[end][2]*b.M(r)))
   end
   t=findfirst(x->x[1]==b,l)
   (conj=l[t][2],circuit=first.(l[t:end-1]))
@@ -2020,9 +2028,9 @@ minc(a,x,F::Function=(x,y=1)->x)=minc(a,x,Val(:sc),F)
 returns  the conjugacy category  of the summit  set of `b`  of the required
 type.
   - By default,  computes the  category of  sliding circuits  of `b`.
-  - If `ss==Val(:ss)`,  computes  the  super  summit  set.
-  - If `ss==Val(:cyc)`, computes the cyclic  conjugacy category.
-  - If `ss==Val(:inf)` computes the category of all conjugate elements with same `Inf` as `b`.
+  - If `ss==Val(:ss)`,  computes  the  super  summit  set of `b`..
+  - If `ss==Val(:cyc)`, computes the cyclic  conjugacy category of `b`.
+  - If `ss==Val(:inf)` computes the category of all elements conjugate to `b` and with at least same `Inf`.
 
 If  an argument  `F` is  given it  should be  the Frobenius of a Reflection
 coset attached to `b.M.W`. Then the `F`-conjugacy category is returned.
@@ -2266,8 +2274,6 @@ Base.:(==)(a::TPMSimple,b::TPMSimple)=(a.v==b.v)&&(a.t==b.t)&&(a.M==b.M)
 Base.hash(a::TPMSimple, h::UInt)=hash(a.v,hash(a.t,hash(a.M,h)))
 
 Base.copy(a::TPMSimple)=TPMSimple(copy(a.v),a.t,a.M)
-
-Base.:^(y::GarsideElt{T},r::T,F::Function) where T<:TPMSimple=y.M(r)\(y*F(r))
 
 function Base.show(io::IO,r::TPMSimple)
   if r.t print(io,"t") end
