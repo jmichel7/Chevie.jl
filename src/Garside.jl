@@ -4,17 +4,17 @@ are  the braid and dual braid monoids. They have groups of fractions, which
 in  both above examples is the braid  group. We implement braid groups as a
 special case of a general implementation of Garside monoids and groups.
 
-We  first  introduce  some  vocabulary  about  divisibility  in  monoids. A
-*left-divisor*  of `x` is a `d` such that there exists `y` with `x=dy` (and
-then  we say that `x` is  a *right multiple* of `d`,  and write `d≼ x`). We
-say  that a monoid `M`  is left cancellable if  an equality `dx=dy` implies
-`x=y`.  We  define  symmetrically  right-divisors,  left  multiples,  right
-cancellability  and the symbol `≽`. We say that `x` is an *atom* if `1` and
-`x`  are its only left or right divisors. A  *left gcd* of `x` and `y` is a
-common  left  divisor  `d`  of  `x`  and  `y`  such  that  any other common
-left-divisor  is a left-divisor of `d`. Similarly  a *right lcm* of `x` and
-`y`  is  a  common  multiple  which  is  a left-divisor of any other common
-multiple.
+To  define  Garside  monoids,  we  first  introduce  some  vocabulary about
+divisibility  in monoids. A *left-divisor* of `x`  is a `d` such that there
+exists  `y` with `x=dy` (and then we say  that `x` is a *right multiple* of
+`d`,  and write `d≼ x`). We say that a monoid `M` is left cancellable if an
+equality  `dx=dy`  implies  `x=y`.  We define symmetrically right-divisors,
+left multiples, right cancellability and the symbol `≽`. We say that `x` is
+an  *atom* if `1` and `x` are its only left or right divisors. A *left gcd*
+of  `x` and `y` is a  common left divisor `d` of  `x` and `y` such that any
+other common left-divisor is a left-divisor of `d`. Similarly a *right lcm*
+of  `x` and `y` is  a common multiple which  is a left-divisor of any other
+common multiple.
 
 We  call *Garside* a monoid `M` which:
   * is left and right cancellable.
@@ -31,29 +31,28 @@ defines  a *Garside structure* for the group of fractions. A group can have
 several  different Garside structures, for  instance braid groups of finite
 Coxeter groups have an ordinary and a dual braid monoid.
 
-We  also implement more generally *locally Garside* monoids, which have the
-same  axioms, excepted lcms  do not always  exist, but exist  if any common
-multiple exists; they also do not have Garside elements. The set of simples
-is  then not defined by  a Garside element, but  by the condition that they
-contain  the  atoms  and  are  closed  under  lcms and taking divisors (see
+We  implement more generally *locally Garside* monoids, which have the same
+axioms, excepted lcms do not always exist, but exist if any common multiple
+exists. In general they do not have Garside elements; the set of simples is
+not  defined by a Garside  element, but by the  condition that they contain
+the   atoms  and   are  closed   under  lcms   and  taking   divisors  (see
 [BDM01](biblio.htm#BDM01));  each  element  is  still divisible by finitely
-many  simples,  but  the  set  simples  can be infinite. The most important
-example  is the Artin monoid of an  infinite Coxeter group. It is not known
-whether locally Garside monoids embed in their group of fractions (although
-this  has  been  proved  for  Artin  monoids  of  Coxeter  groups  by Paris
-[Paris01](biblio.htm#Paris01)),  and thus computing in  the monoid does not
-help  for computing in the  group; only the monoid  is implemented here for
-these cases.
+many  simples, but the set simples can be infinite. The main example is the
+Artin  monoid of an infinite Coxeter group. It is not known whether locally
+Garside  monoids embed in their group  of fractions, although this has been
+proved for Artin monoids of Coxeter groups by Paris
+[Paris01](biblio.htm#Paris01).  Thus computing in the  monoid does not help
+for  computing in the group; only the  monoid is implemented here.
 
 There  is another  generalization, *quasi-Garside  monoids*, where we relax
 the  axiom  that  an  element  has  finititely  many divisors (there may me
 infinitely  atoms).  We  do  not  implement  this but the package `AffineA`
 implements,  following the work of François Digne, the dual braid monoid of
-the affine Coxeter group `W(Ãₙ)` which is of this type.
+the affine Coxeter group `W(Ãₙ)` which is quasi-Garside.
 
 What allows computing with Garside and locally Garside monoids, and Garside
-groups,  is the fact  that they admit  normal forms ---  these normal forms
-were   exhibited   for   braid   monoids   of  Coxeter  groups  by  Deligne
+groups, is the fact that their elements admit normal forms --- these normal
+forms  were  exhibited  for  braid  monoids  of  Coxeter  groups by Deligne
 [Del72](biblio.htm#Del72),  who extended  earlier work  of Brieskorn, Saito
 [BS72](biblio.htm#BS72) and Garside [Gar69](biblio.htm#Gar69):
 
@@ -64,17 +63,17 @@ were   exhibited   for   braid   monoids   of  Coxeter  groups  by  Deligne
 A  consequence  of  1.  is  that  every  element  of  `M`  has  a canonical
 decomposition as a product of simples, its *left-greedy* normal form. If we
 define   `ω(x)`  by   `x=α(x)ω(x)`,  then   the  normal   form  of  `x`  is
-`α(x)α(ω(x))α(ω^2(x))…`  For locally Garside monoids we use the normal form
-to  represent elements of `M`.  When `M` is Garside  we use 2. to represent
-any  element of `G`:  given `x∈ G`  we compute the  smallest power `i` such
-that  `Δⁱ x∈ M`, and  we represent `x` by  the pair `(-i,Δⁱx)`. We are thus
-reduced  to the case where `x∈ M`, not divisible by `Δ`, where we represent
-`x`  by the sequence of simples that make up its normal form (this sequence
-thus  does  not  contain  the  identity  or  `Delta`).  We  see that in our
-implementation  the  simples  is  another  type  that  the  type of Garside
-elements.  Thus a Garside monoid is  a parametrized type whose most general
-instance is the type `LocallyGarsideMonoid{T}` where `T` is the type of the
-simples.
+`α(x)α(ω(x))α(ω^2(x))…`.  For locally Garside monoids  we use this sequence
+of  simples to represent elements of `M`. When  `M` is Garside we use 2. to
+represent  any element of `G`:  given `x∈ G` we  compute the smallest power
+`i`  such that `Δⁱ x∈  M`, and we represent  `x` by the pair `(-i,Δⁱx)`. We
+are  thus reduced to the case where `x∈  M`, not divisible by `Δ`, where we
+represent `x` by the sequence of simples that make up its normal form (this
+sequence thus does not contain the identity or `Delta`). 
+
+In  our implementation a  Garside monoid is  a parametrized type whose most
+general  instance is the abstract  type `LocallyGarsideMonoid{T}` where `T`
+is the type of the simples.
 
 We  now describe Artin-Tits braid monoids. Let `(W,S)` be a Coxeter system,
 that is `W` has presentation
@@ -86,24 +85,19 @@ the group defined by the presentation
 
 `⟨𝐬∈ 𝐒∣ 𝐬𝐭𝐬⋯ =𝐭𝐬𝐭⋯  (mₛₜ factors on each side) for 𝐬,𝐭∈ 𝐒⟩`
 
-The  associated *positive* braid monoid `B⁺` is the monoid defined
-by  the  presentation  above  ---  it  identifies with the submonoid of `B`
-generated  by `𝐒` by [Paris01](biblio.htm#Paris01).  This monoid is locally
-Garside,  with the set of simples in bijection with the elements of `W` and
-with  `𝐒` as atoms; we will denote by `𝐖 ` the set of simples, and by `𝐰 ↔
-w`  the bijection between simples and elements  of `W`. The group `W` has a
-length  defined  in  terms  of  reduced expressions. Similarly, having only
-homogeneous relations, `B⁺` has a natural length function. Then `𝐖 ` can be
+The  associated *positive* braid  monoid `B⁺` is  the monoid defined by the
+presentation above --- it identifies with the submonoid of `B` generated by
+`𝐒`  by [Paris01](biblio.htm#Paris01). This monoid is locally Garside, with
+the  set of simples in  bijection with the elements  of `W` and with `𝐒` as
+atoms;  we will  denote by  `𝐖 `  the set  of simples,  and by  `𝐰 ↔ w` the
+bijection  between simples and elements of `W`.  The group `W` has a length
+defined in terms of reduced expressions. Similarly, having only homogeneous
+relations,   `B⁺`  has  a  natural  length  function.  Then  `𝐖  `  can  be
 characterised  as the subset  of elements of  `B⁺` with the  same length as
 their image in `W`.
 
 If  `W` is finite, then `B⁺` is Garside with Garside element the element of
-`𝐖  ` whose image is the longest element  of `W`. A finite Coxeter group is
-also  a reflection group in  a real vector space,  thus in its complexified
-`V`,  and `B` also has a topological definition as the fundamental group of
-the  space `Vʳᵉᵍ/W`, where `Vʳᵉᵍ`  is the set of  elements of `V` which are
-not fixed by any non-identity element of `S`; however, we will not use this
-here.
+`𝐖  ` whose image is the longest element  of `W`. 
 
 Given a Coxeter group `W`,
 ```julia-repl
@@ -115,7 +109,8 @@ BraidMonoid(A₄)
 ```
 constructs  the associated braid monoid, and  then, used as a function, `B`
 constructs  elements of the braid monoid (or group when `W` is finite) from
-a list of generators indices given as arguments:
+a list of generators indices (or negative numbers representing inverses of
+generators) given as arguments:
 
 ```julia-repl
 julia> w=B(1,2,3,4) # represents 𝐬₁𝐬₂𝐬₃𝐬₄
@@ -244,6 +239,14 @@ goes  from the dual monoid  for the Coxeter element  `w` to the dual monoid
 for  the Coxeter element  `w⁻¹`. The operations  'rightlcm' and 'rightgcd',
 and  some other algorithms, have faster implementations if the monoid has a
 `reverse` operation.
+
+A  finite Coxeter group is also a  reflection group in a real vector space,
+thus  in its complexified `V`, and `B` also has a topological definition as
+the  fundamental group of  the space `Vʳᵉᵍ/W`,  where `Vʳᵉᵍ` is  the set of
+elements  of `V` which  are not fixed  by any non-identity  element of `S`.
+This  definition of  a braid  group can  be extended  to any finite complex
+reflection  group, and following  the work of  Bessis we also implement the
+dual braid monoid of well-generated complex reflection groups.
 
 This  module implements also  functions to solve  the conjugacy problem and
 compute  centralizers  in  Garside  groups,  following  the work of Franco,
@@ -1193,7 +1196,7 @@ function Base.:*(x::T,b::LocallyGarsideElt{T})where T
   GarsideElt(M,push!(res,x))
 end
 
-# multiply a simple x by a Garside element b; Gap3 PrefixToNormal
+# multiply a simple x by a Garside element b (Gap3 PrefixToNormal)
 function Base.:*(x::T,b::GarsideElt{T})where T
   M=b.M
   v=b.elm
@@ -1532,9 +1535,9 @@ element  of `W`, given as a  word (a `Vector{Int}`) specifiying the element
 `W(c...)`. 
 
 If  no `c`  is given  a particular  one is  chosen (what the notation `xxx`
-above tries to convey).
+above tries to convey). The choice is as follows:
 
-For  `Ẁ` a Coxeter  groups the Coxeter  diagram is partitioned  in two sets
+For  `W` a Coxeter  group the Coxeter  diagram is partitioned  in two sets
 where  in each set reflections commute pairwise;  `c` is the product of the
 product of the reflections in each set.
 
@@ -2215,16 +2218,17 @@ function centralizer_gens(b,F::Function=(x,y=1)->x;ss=Val(:sc))
 end
 
 """
-`Presentation(M::GarsideMonoid)`
+`Presentation(M::GarsideMonoid;vars=Symbol.("x",eachindex(M.atoms)))`
 
 returns  a presentation of  the Garside group  defined by `M`  (as given in
-theorem 4.1 of [Dehornoy-Paris 1999](biblio.htm#DePa99)).
+theorem 4.1 of [Dehornoy-Paris 1999](biblio.htm#DePa99)), using `vars` as names
+for the generators.
 
 ```julia-repl
 julia> M=DualBraidMonoid(coxgroup(:A,3))
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
-julia> p=Presentation(M)
+julia> p=Presentation(M,vars=Symbol.(collect("abcdef")))
 Presentation: 6 generators, 15 relators, total length 62
 ```
 
@@ -2239,8 +2243,8 @@ julia> display_balanced(p)
 3: cbc=bcb
 ```
 """
-function GroupPresentations.Presentation(M::GarsideMonoid)
-  F=FpGroup(map(i->Symbol("x",i),eachindex(M.atoms))...)
+function GroupPresentations.Presentation(M::GarsideMonoid;vars=Symbol.("x",eachindex(M.atoms)))
+  F=FpGroup(vars...)
   rels=AbsWord[]
   for i in eachindex(M.atoms)
     for j in 1:i-1

@@ -26,8 +26,8 @@ If  `uₛ₀=1` and  `uₛ₁=-1` for  all `s`  then the quadratic relations bec
 Since  the generators `Tₛ`  satisfy the braid  relations, `H` is  in fact a
 quotient  of the group algebra of the  braid group associated with `W`. The
 braid relations also imply that for any reduced expression `s_1⋯ s_m` of `w
-∈  W` the product `Tₛ_1⋯ Tₛ_m` has the same value, that we denote `T_w`. We
-have `T_1=1`; if one of the `uₛᵢ` is invertible, the `{T_w}_{w∈ W}` form an
+∈  W` the product `Tₛ_₁⋯ Tₛ_ₘ` has the same value, that we denote `T_w`. We
+have  `T₁=1`; if one of the `uₛᵢ` is invertible, the `{T_w}_{w∈ W}` form an
 `R`-basis  of the Iwahori-Hecke algebra  which specializes to the canonical
 basis of the group algebra `R[W]` for `uₛ₀↦1` and `uₛ₁↦-1`.
 
