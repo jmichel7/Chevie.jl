@@ -1360,7 +1360,8 @@ end
 function VFactorSchurElement(para,r,data=nothing)
   if data!==nothing para=para[data[:order]] end
   function monomial(v)
-    res=prod((para.*1//1).^v)
+#   res=prod((para.*1//1).^v)
+    res=prod(map((x,p)->(x*1//1)^p,para,v))
     if length(v)>length(para) res*=rt^v[end] end
     res
   end
