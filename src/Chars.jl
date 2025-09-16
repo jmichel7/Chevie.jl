@@ -746,7 +746,7 @@ function charinfo(W)
     if any(x->haskey(x,:hgal),p)
       res.hgal=map(x->haskey(x,:hgal) ? x.hgal : Perm(), p)
       gt=cartesian(map(x->1:length(x.charparams), p)...)
-      res.hgal=Perm(gt, map(t->map((x,i)->x^i,t,res.hgal),gt))
+      res.hgal=Perm(gt, map(t->t.^res.hgal,gt))
     end
     res
   end::CharInfo
@@ -1323,7 +1323,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   tt=refltype(W)
   if isempty(tt) return Matrix{Int}[] end
   dims=chevieget.(tt,:NrConjugacyClasses)
-  mm=map((t,j)->chevieget(t,:Representation,j),tt,lin2cart(dims,i))
+  mm=chevieget.(tt,:Representation,lin2cart(dims,i))
   if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
     FF=map(x->x[:F],mm)
@@ -1876,7 +1876,7 @@ This provides an interface to some decomposition matrices for Weyl groups
 available in the Chevie library: those for `E₆, E₇, E₈` for `p=2,3,5,7`.
 """
 function decomposition_matrix(W,p)
-  m=map(t->decomposition_matrix(t,p),refltype(W))
+  m=decomposition_matrix.(refltype(W),p)
   map(x->prod.(cartesian(x)),cartesian(toL.(m)...))
 end
 

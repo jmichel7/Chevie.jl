@@ -257,7 +257,7 @@ function codegrees(t::TypeIrred)
     else
       f=chevieget(t,:PhiFactors)
       if isnothing(f) return f end
-      f=Cyc.(improve_type(reverse(map(x->f[a]//x,f))))
+      f=Cyc.(improve_type(reverse(f[a].//f)))
     end
     d=collect(zip(d,Cyc.(f)))
   elseif order(t.twist)==1

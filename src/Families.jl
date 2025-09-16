@@ -205,7 +205,7 @@ Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 
 function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
-  if !haskey(f,:charLabels) f.charLabels=map(string,1:length(f)) end
+  if !haskey(f,:charLabels) f.charLabels=string.(1:length(f)) end
   if haskey(d,:signs)
     signs=d[:signs]
     f.fourierMat=Diagonal(signs)*f.fourierMat*Diagonal(signs)
@@ -226,7 +226,7 @@ function Base.:*(f::Family,g::Family)
   res=Family(Dict{Symbol,Any}())
   res.charLabels=join.(tcartesian(f.charLabels,g.charLabels),"\\otimes")
   res.fourierMat=kron(f.fourierMat,g.fourierMat)
-  res.eigenvalues=map(prod,tcartesian(f.eigenvalues,g.eigenvalues))
+  res.eigenvalues=prod.(tcartesian(f.eigenvalues,g.eigenvalues))
   res.name=join((f.name,g.name),"\\otimes ")
   #xprint("arg=",arg,"\n")
   res.printname=join((f.printname,g.printname),"*")
@@ -242,7 +242,7 @@ function Base.:*(f::Family,g::Family)
     if res.cospecial==res.special delete!(res.prop,:cospecial) end
   end
   if all(x->haskey(x,:perm) || length(x)==1,arg)
-    res.perm=Perm(tcartesian(map(x->1:length(x),arg)...),
+   res.perm=Perm(tcartesian(map(x->1:length(x),arg)...),
       tcartesian(map(x->haskey(x,:perm) ? invpermute(1:length(x),x.perm) : [1],arg)...))
   end
   if all(x->haskey(x,:lusztig) || length(x)==1,arg)
@@ -463,8 +463,7 @@ end
 chevieset(:families,:ExtPowCyclic,function(e,n)
   g=Family(Dict{Symbol,Any}())
   g.charSymbols=combinations(0:e-1,n)
-  g.charLabels=map(s->join(map(x->xrepr(E(e,x),TeX=true),s),
-                           "\\!\\wedge\\!"), g.charSymbols)
+  g.charLabels=map(s->join(xrepr.(E.(e,s),TeX=true),"\\!\\wedge\\!"), g.charSymbols)
   if iszero(e%2) g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1))
   else           g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1))
   end
@@ -512,19 +511,19 @@ end)
 # The big family f of dihedral groups. For e=5 occurs in H3, H4
 chevieset(:families,:Dihedral,function(e)
   e1=div(e,2)
-# the cuspidal chars are S(k,l) where 0<k<l<e-k
-  nc=[[k,l] for k in 1:e1-1 for l in k+1:e-k-1]
-  if iseven(e) nc=vcat([[0,e1,1],[0,e1,-1]],map(l->[0,l],1:e1-1),nc)
-# the principal series for even e are:[S(0,l) with 0<l<e1]+[S(0,e1)',S(0,e1)'']
-  else nc=vcat(map(l->[0,l],1:e1),nc)
-# The principal series for odd e are:[S(0,l) with 0<l<e1+1]
+  if iseven(e) nc=vcat([[0,e1,1],[0,e1,-1]],vcat.(0,1:e1-1))
+# the principal series for even e are:vcat([S(0,e1)',S(0,e1)''],[S(0,l) with 1≤l<e1])
+  else nc=vcat.(0,1:e1)
+# The principal series for odd e are:[S(0,l) with 1≤l≤e1]
   end
+# the cuspidal chars are S(k,l) where 0<k<l<e-k
+  nc=vcat(nc,[[k,l] for k in 1:e1-1 for l in k+1:e-k-1])
   c=a->E(e,a)+E(e,-a)
   f=Family(Dict{Symbol,Any}())
   f.eigenvalues=map(s->E(e,-prod(s[1:2])),nc)
   f.size=length(nc)
   f.parameters=nc
-  f.charLabels=map(repr,nc)
+  f.charLabels=repr.(nc)
   f.name="0"^(e-2)*"11"
   f.explanation="Dihedral($e) family"
   f.printname="Family(:Dihedral)($e)"
@@ -700,7 +699,7 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
       ez=elements(zg)
       x1=ez[findfirst(x->order(x)==o,ez)]
       zg=Group(ez[findfirst(x->order(x)==o && x^div(o,order(c))==c,ez)])
-      zg.classreps=map(i->zg(1)^i,0:o-1)
+      zg.classreps=zg(1).^(0:o-1)
       x1=invmod(findfirst(i->x1^i==zg(1),1:o),o)
       r[:charNames]=map(i->xrepr(E(o)^(i*x1);TeX=true),0:o-1)
       r[:chars]=[E(o)^(i*j) for i in 0:o-1, j in 0:o-1]
@@ -888,7 +887,7 @@ function twisted_drinfeld_double_cyclic(n,ζ,pivotal=(1,1))
   #if the given pivotal structure is not of the expected form, we bail out
   res.pivotal=(piv1e,piv2)
   res.charparams=[(E(n,i1),i2) for (i1,i2) in simple]
-  res.charLabels=map(x->xrepr(x;TeX=true),res.charparams)
+  res.charLabels=xrepr.(res.charparams;TeX=true)
   res.bar=(E(n,-2piv1), inv(piv2^2*γ(1,piv1,-piv1)*γ(1,piv1,-2piv1)))
   res.fourierMat=[piv2^i1*piv2^j1*i2^piv1*j2^piv1*i2^j1*j2^i1 
                   for (i1,i2) in simple, (j1,j2) in simple]//(n*piv2^(-2piv1))
@@ -1216,7 +1215,7 @@ function Zbasedring(S::Matrix,special::Int=1;opt...)
   d=size(S,1)
   multable=Matrix{Vector{Pair{Int,eltype(S)}}}(undef,d,d)
   for i in 1:d, j in 1:i
-    multable[i,j]=filter(x->x[2]!=0,map(Pair,1:d,s*(S[i,:].*S[j,:]))) 
+    multable[i,j]=filter(x->x[2]!=0,Pair.(1:d,s*(S[i,:].*S[j,:])))
   end
   for i in 1:d, j in i+1:d multable[i,j]=multable[j,i] end
   if !all(r->all(p->isinteger(p[2]),r),multable)
@@ -1226,7 +1225,7 @@ function Zbasedring(S::Matrix,special::Int=1;opt...)
   positive=all(r->all(p->p[2]>0,r),multable)
   A=ZBasedRing(S,special,involution,duality,multable,positive,
                    Dict{Symbol,Any}())
-  d=map(ratio,eachcol(irr),eachcol(S)) # d=inv.(S[special,:]) ?
+  d=ratio.(eachcol(irr),eachcol(S)) # d=inv.(S[special,:]) ?
   if nothing in d  error() end
   A.cDim=d[special]^2
   A.qDim=d[special].//d

@@ -231,7 +231,7 @@ function Base.show(io::IO,t::Table)
   cols_widths=map(i->maximum(textwidth.(t[rows,i])),axes(t,2))
   if !isnothing(col_labels)
     cols_widths=max.(cols_widths,textwidth.(col_labels))
-    if !TeX col_labels=map(lpad,col_labels,cols_widths) end
+    if !TeX col_labels=lpad.(col_labels,cols_widths) end
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
   function hline(ci;last=false,first=false)

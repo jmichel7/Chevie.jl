@@ -446,12 +446,12 @@ end
 equalpara(H::HeckeAlgebra)::Bool=H.equal
 
 function simplify_para(para)
-  tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
-  if isempty(para) para
-  elseif allequal(tr.(para))
-    p=tr(para[1])
+  if isempty(para) return para end
+  trpara=map(p->all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p,para)
+  if allequal(trpara)
+    p=trpara[1]
     p isa Vector ? [p] : p
-  else map(tr,para)
+  else trpara
   end
 end
 
@@ -1183,7 +1183,7 @@ julia> CycPol.(s)
 ```
 """
 schur_elements(H::HeckeAlgebra)=
-  improve_type(map(p->schur_element(H,p), charinfo(H.W).charparams))
+  improve_type(schur_element.(Ref(H),charinfo(H.W).charparams))
 
 #@test (H=hecke(coxgroup(:I,2,8),[Mvp(:x)^2,Mvp(:y)^2]);transpose(CharTable(H).irr)*inv.(schur_elements(H))==[1,0,0,0,0,0,0])
 
@@ -1360,7 +1360,7 @@ end
 function VFactorSchurElement(para,r,data=nothing)
   if data!==nothing para=para[data[:order]] end
   function monomial(v)
-    res=prod(map((x,p)->(x*1//1)^p,para,v))
+    res=prod((para.*1//1).^v)
     if length(v)>length(para) res*=rt^v[end] end
     res
   end
@@ -1439,7 +1439,7 @@ julia> factorized_schur_elements(H)
 ```
 """
 factorized_schur_elements(H::HeckeAlgebra)=
-    map(p->factorized_schur_element(H,p),charinfo(H.W).charparams)
+   factorized_schur_element.(Ref(H),charinfo(H.W).charparams)
 
 const FactorizedSchurElements=factorized_schur_elements
 
@@ -1501,7 +1501,7 @@ function Base.show(io::IO, H::HeckeCoset)
   print(io,"hecke(",H.W,",")
   tr(p)= p[2]==-one(p[2]) ? p[1] : p
   if allequal(H.H.para) print(io,tr(H.H.para[1]))
-  else print(io,map(tr,H.H.para))
+  else print(io,tr.(H.H.para))
   end
   if !all(ismissing,H.H.rootpara)
     if allequal(H.H.rootpara) print(io,",rootpara=",H.H.rootpara[1])

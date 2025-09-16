@@ -53,7 +53,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
       if 0==degree(gcd(fp,derivative(fp))) break end
     end
     info("#I  starting factorization mod p:  ", etime())
-    lp=vcat(map(x->fill(x[1],x[2]),collect(factor(fp)))...)
+    lp=vcat(map(x->fill(x...),collect(factor(fp)))...)
     sort!(lp,by=degree)
     info("#I  finishing factorization mod p: ", etime())
         # if <fp> is irreducible so is <f>
@@ -71,7 +71,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
       LP=lp
     end
         # compute the possible degrees
-    tmp=unique(sum.(combinations(map(degree, lp))))
+    tmp=unique(sum.(combinations(degree.(lp))))
     if 1==i deg=tmp
     else deg=intersect(deg, tmp)
     end
@@ -82,7 +82,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
         return NamedTuple(t)
     end
   end
-  LP=map(Pol{Int},LP) # convert factors <LP> back to the integers
+  LP=Pol{Int}.(LP) # convert factors <LP> back to the integers
     # return the chosen prime
   info("#I  choosing prime ", P, " with ", length(LP), " factors")
   info("#I  possible degrees: ", sort!(deg))
@@ -403,8 +403,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
           return res
         end
     # compute the factor coefficient bounds
-        k=HenselBound(f)
-        bounds=map(i->min(bounds[i], k[i]), 1:length(k))
+        bounds=min.(bounds,HenselBound(f))
         k=2*abs(lc)*bounds[maximum(filter(i->2i<=degree(f), t.degrees))]
         info("#I  new Hensel bound==", k)
     # remove true factors from <l> and corresponding <rep>
@@ -495,12 +494,10 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
 # for u in l xprintln("***=",u) end
   res=Dict{Symbol, Any}(:irreducibles => [], :irrFactors => [], :reducibles => [], :redFactors => [], :remaining => collect(1:length(l)))
   # coefficients should be in [-p/2,p/2]
-  deli=map(degree, l)
+  deli=degree.(l)
   sel=collect(1:length(l))
 # create List of binomial coefficients to speed up the 'Combinations' process
-  binoli=map(0:length(l)-1) do i
-    map(j->binomial(i,j),0:i)
-  end
+  binoli=map(i->binomial.(i,0:i),0:length(l)-1)
   fastbinomial(i,j)=binoli[i+1][j+1]
   step=0
   act=1
@@ -670,7 +667,7 @@ function ApproxRootBound(f::Pol{<:Rational})
     tp=f(x*app)
     tp=tp.c
     tp/=tp[1]
-    tp=map(i->ApproxRational(i,10),tp)
+    tp=ApproxRational.(tp,10)
     # now check, by using the Lehmer/Schur method, whether tp has a root
     # in the unit circle, i.e. f has a root in the app-circle
     v=0
@@ -682,7 +679,7 @@ function ApproxRootBound(f::Pol{<:Rational})
         # compute T[p]=\bar a_n p-a_0 p*, everything rational.
         pl=p
         p=p[1]*p-p[d]*reverse(p)
-        p=map(i->ApproxRational(i,10),p)
+        p=ApproxRational.(p,10)
         d=findlast(!iszero,p[2:end])
         if isnothing(d) d=1 else d+=1 end
         p=p[1:d]
@@ -723,7 +720,6 @@ function RootBound(f)
   # did the numerical part fail?
   if isnothing(a)
     b=f.baseRing
-    # we use, that AbsInt works for also for rationals!
     b=Pol([2],degree(f))-Pol(abs.(f.c))
     a=ApproxRootBound(b)
     if isnothing(a)
@@ -735,8 +731,8 @@ function RootBound(f)
       b=maximum(map(i->iroot(d*Int(abs(c[d-i])+1//2),i)+1,1:d-1)) 
       if b<a a=b end
       if all(!iszero,c)
-        b=map(i->2*ans(c[i-1]/c[i]),3:d)
-        push!(b,ans(c[1]/c[2]))
+        b=map(i->2*abs(c[i-1]/c[i]),3:d)
+        push!(b,abs(c[1]/c[2]))
         b=maximum(b)
         if b<a a=b end
       end

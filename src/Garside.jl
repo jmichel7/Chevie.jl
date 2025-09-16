@@ -2248,9 +2248,8 @@ function GroupPresentations.Presentation(M::GarsideMonoid;vars=Symbol.("x",eachi
   rels=AbsWord[]
   for i in eachindex(M.atoms)
     for j in 1:i-1
-      v=leftlcmc(M,M.atoms[i],M.atoms[j])
-      v=map(x->word(M,x),v[2]);
-      push!(v[1],i);push!(v[2],j);
+      v=word.(M,leftlcmc(M,M.atoms[i],M.atoms[j])[2])
+      push!(v[1],i);push!(v[2],j)
       push!(rels,F(vcat(v[1],-reverse(v[2]))...))
     end
   end

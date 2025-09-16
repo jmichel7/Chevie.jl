@@ -401,7 +401,7 @@ chevieset(:G4_22, :ParamSpecialization, function (ST, para)
   end
 end)
 
-PowerMaps4_22=
+PowerMaps4_22= # powermaps for G7, G11, G19
   [[nothing,[1,3,5,7,9,11,1,3,5,7,9,11,1,3,5,7,9,11,39,41,31,33,35,37,39,41,31,
 	  33,35,37,27,29,19,21,23,25,27,29,19,21,23,25],
 	 [1,4,7,10,1,4,7,10,1,4,7,10,13,16,13,16,13,16,1,4,7,10,1,4,7,10,1,
@@ -776,7 +776,7 @@ chevieset(:G4_22, :PowerMaps, function (ST)
   for (i,x) in enumerate(res)
     if isnothing(x) continue end
     res[i]=indexin(x[l],l)
-    if res[i]==eachindex(l) || res[i] in res[1:i-1] res[i]=nothing end
+#   if res[i]==eachindex(l) || res[i] in res[1:i-1] res[i]=nothing end
   end
   res[1:findlast(!isnothing,res)]
 end)

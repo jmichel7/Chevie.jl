@@ -1267,7 +1267,7 @@ function RelativeSeries(s)
     ChevieErr(s.Hecke, " fractional: wrong set of SchurElements")
     return res
   end
-  u1=map(x->degree(s)//CycPol(x), u1)
+  u1=degree(s).//CycPol.(u1)
   degcusp=CycPoldegrees(UnipotentCharacters(s.levi))[s.cuspidal]
   ud=map(x->x*sign(Int((x//degcusp)(Cyc(s.d)))),
          CycPoldegrees(UnipotentCharacters(s.spets))[charnumbers(s)])

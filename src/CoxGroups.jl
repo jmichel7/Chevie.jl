@@ -355,7 +355,7 @@ julia> e[1]==longest(W)
 true
 ```
 """
-function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
+function Groups.elements(W::CoxeterGroup{T}, l::Integer)::Vector{T} where T
   elts=get!(()->OrderedDict(0=>[one(W)]),W,:elements)::OrderedDict{Int,Vector{T}}
   get!(elts,l)do
   if ngens(W)==1 return l>1 ? T[] : gens(W) end
@@ -391,7 +391,7 @@ function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
 end
 
 function Groups.elements(W::CoxeterGroup,I::AbstractVector{<:Integer})
-  reduce(vcat,map(i->elements(W,i),I))
+  reduce(vcat,elements.(Ref(W),I))
 end
 
 function Groups.elements(W::CoxeterGroup)
@@ -423,12 +423,10 @@ function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
     end
   end
   ww[l]=wordtype([])
-  d=inclusiongens(H)
+  d=maxpara(W) # inclusiongens(H,W)
   for i in max(0,l+1-length(rc)):l
     e=words(H,i)
     for x in rc[1+l-i], w in e push!(ww[l],vcat(d[w],x)) end
-#   somewhat slower variant
-#   for x in rc[1+l-i] append!(ww[l],vcat.(e,Ref(x))) end
   end
   ww[l]
 end
@@ -454,7 +452,7 @@ true
 ```
 """
 function Groups.words(W::CoxeterGroup)
-  reduce(vcat,map(i->words(W,i),0:nref(W)))
+  reduce(vcat,words.(Ref(W),0:nref(W)))
 end
 
 """
@@ -792,7 +790,7 @@ function braid_relations(t::TypeIrred)
   r=if t.series==:ST Tuple.(chevieget(t,:BraidRelations))
   else
     m=coxmat(cartan(t))
-    p(i,j)=map(k->iszero(k%2) ? j : i,1:m[i,j])
+    p(i,j)=map(k->iseven(k) ? j : i,1:m[i,j])
     vcat(map(i->map(j->(p(i,j),p(j,i)),1:i-1),axes(m,1))...)
   end
   haskey(t,:indices) ? map(x->map(y->t.indices[y],x),r) : r
@@ -934,7 +932,7 @@ PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
   [TypeIrred(series=:A,indices=collect(1:length(W.d)-1))]
 end
 
-PermRoot.inclusiongens(W::CoxSym)=W.d
+PermRoot.inclusiongens(W::CoxSym)=W.d[1:end-1]
 function Groups.classreps(W::CoxSym)
   get!(W,:classreps)do
     map(x->W(x...),classinfo(W).classtext)

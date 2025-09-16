@@ -41,7 +41,7 @@ function FindCuspidalInLevi(n,HF)
     replace(n,Regex("($s)*\$")=>"")
   end
   cusp=findfirst(==(strip(n,"\\\\otimes ")),
-    map(x->strip(x,"\\\\otimes "),charnames(UnipotentCharacters(HF);TeX=true)))
+    strip.(charnames(UnipotentCharacters(HF);TeX=true),"\\\\otimes "))
   if isnothing(cusp) error("cuspidal ",n," not found in ",HF,"\n") end
   cusp
 end
@@ -50,9 +50,9 @@ ChevieErr(x...)=printstyled(rio(),"Error: ",x...;color=:red)
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.
 function FindIntSol(l)
-  vars=vcat([1], map(i->Symbol("x$i"),2:length(l[1])))
+  vars=vcat([1], Symbol.("x",2:length(l[1])))
 # println("l=$l vars=$vars")
-  l= map(v->sum(v.*Mvp.(vars)),l)
+  l=map(v->sum(v.*Mvp.(vars)),l)
 # println("l=$l")
   simplify=function()
     l=map(function(p)
@@ -73,7 +73,7 @@ function FindIntSol(l)
       f=scalar(vals[i])
       if !isnothing(f) vals[i]=[f] end
     end
-    l=map(x->value(x,v=>val),l)
+    l=value.(l,v=>val)
     simplify()
   end
   # variable v is val: mvp

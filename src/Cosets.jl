@@ -963,25 +963,23 @@ function spets(W::PermRootGroup,F::AbstractMatrix;NC=false)
     end
     if length(unique(map(x->unique(sort(x.scal)),scal)))>1 error("theory") end
     l=intersect(map(x->x.scal,scal)...)
-    if isempty(l) return false end
+    if isempty(l) return nothing end
     l=Root1.(l)
     if nothing in l
       error("only reflection cosets of finite order implemented")
-      return false
+      return nothing
     end
-    # choose simplest scal
-    l=minimum(map(x->[order(x),exponent(x)],l))
-    l=E(l[1],l[2])
-    [l,map(x->x.ind[findfirst(==(l),x.scal)],scal)]
+    l=argmin(x->(order(x),exponent(x),l)) # choose simplest scal
+    (l,map(x->x.ind[findfirst(==(l),x.scal)],scal))
   end
-  if false in s
+  if any(isnothing,s)
     ChevieErr("Spets(",W,",F=",F,
     " must normalize set of roots of parent up to scalars.\n")
     return false
   end
-  scalars=map(x->x[1],s)[simple_reps(W)[eachindex(gens(W))]]
+  scalars=first.(s[simple_reps(W)[eachindex(gens(W))]])
   perm=fill(0,length(roots(W)))
-  for i in eachindex(t) perm[t[i]]=s[i][2] end
+  for i in eachindex(t) perm[t[i]]=last(s[i]) end
   while true
     i=filter(j->!iszero(perm[j]),eachindex(perm))
     if length(i)==length(perm) break end
@@ -1096,15 +1094,15 @@ function PermRoot.refltype(WF::PRC)
       end
   #   subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
       subgens=map(x->refls(W,x.indices),t)
-      c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
+      c=Perm(map(x->sort(x.^WF.phi),subgens),sort.(subgens))
     end
     c=orbits(inv(c),eachindex(t))
     prr=roots(parent(W))
     function scals(rr,img)
-      map(ratio,prr[inclusion(W,rr).^WF.phi],prr[inclusion(W,img)])
+      ratio.(prr[inclusion(W,rr).^WF.phi],prr[inclusion(W,img)])
     end
     typ=map(c) do orb
-      to=TypeIrred(orbit=map(copy,t[orb]))
+      to=TypeIrred(orbit=copy.(t[orb]))
       scalar=Cyc{Rational{Int}}[]
       for i in eachindex(orb)
         next=i==length(orb) ? 1 : i+1
