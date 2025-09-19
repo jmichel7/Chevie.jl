@@ -804,6 +804,42 @@ Base.:*(b::Union{Number,Pol,Mvp}, a::HeckeElt)=a*b
 
 Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                         Base.power_by_squaring(inv(a),-n)
+
+"""
+`representation(h::HeckeElt,r)`
+
+`r`  should be a representation  of `h.H`, or an  integer, in which case it
+means  `representation(h.H,r)`. The value of that representation applied to
+`h` is returned. Here `h.H` can be an Hecke algebra or an Hecke coset.
+```julia-repl
+julia> H=hecke(coxsym(4),Pol());T=Tbasis(H);
+
+julia> representation(T(1,2)^2,2)
+3×3 Matrix{Pol{Rational{Int64}}}:
+ -x²  -x²   0
+ x²   0     0
+ -x   -x+1  1
+```
+"""
+function Chars.representation(h::HeckeElt,r)
+  H=h.H
+  h=Tbasis(H)(h)
+  if H isa HeckeCoset
+    res=zero(r.gens[1])
+    for (p,c) in h
+      res+=c*prod(r.gens[word(H.W,p)],init=one(r.gens[1]))*r.F
+    end
+  else
+    res=zero(r[1])
+    for (p,c) in h
+      res+=c*prod(r[word(H.W,p)],init=one(r[1]))
+    end
+  end
+  res
+end
+
+Chars.representation(h::HeckeElt,i::Integer)=representation(h,representation(h.H,i))
+
 #--------------------------------------------------------------------------
 const MM=ModuleElt # HModuleElt is 3 times slower
 

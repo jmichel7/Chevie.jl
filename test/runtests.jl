@@ -956,7 +956,7 @@ end
 @test mytest("Weyl.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Weyl.jl","inversions(W,[2,1,2])","3-element Vector{Int64}:\n 2\n 4\n 1")
 @test mytest("Weyl.jl","W=coxgroup(:A,2)","A₂")
-@test mytest("Weyl.jl","map(N->with_inversions(W,N),combinations(1:nref(W)))","8-element Vector{Union{Nothing, Perm{Int16}}}:\n ()\n (1,4)(2,3)(5,6)\n (1,3)(2,5)(4,6)\n nothing\n nothing\n (1,6,2)(3,5,4)\n (1,2,6)(3,4,5)\n (1,5)(2,4)(3,6)")
+@test mytest("Weyl.jl","with_inversions.(Ref(W),combinations(1:nref(W)))","8-element Vector{Union{Nothing, Perm{Int16}}}:\n ()\n (1,4)(2,3)(5,6)\n (1,3)(2,5)(4,6)\n nothing\n nothing\n (1,6,2)(3,5,4)\n (1,2,6)(3,4,5)\n (1,5)(2,4)(3,6)")
 @test mytest("Weyl.jl","W=coxgroup(:E,6)","E₆")
 @test mytest("Weyl.jl","R=reflection_subgroup(W,[20,30,19,22])","E₆₍₁‚₉‚₁₉‚₂₀₎=A₄₍₃₁₂₄₎Φ₁²")
 @test mytest("Weyl.jl","p=standard_parabolic(W,R)","(1,4,49,12,10)(2,54,62,3,19)(5,17,43,60,9)(6,21,34,36,20)(7,24,45,41,53)(8,65,50,15,22)(11,32,31,27,28)(13,48,46,37,40)(14,51,58,44,29)(16,23,35,33,30)(18,26,39,55,38)(42,57,70,72,56)(47,68,67,63,64)(52,59,71,69,66)")
@@ -983,7 +983,7 @@ end
 @test mytest("Weyl.jl","diagram(H)","O Ã₁\n1\nO A₁\n2")
 @test mytest("Weyl.jl","elH=word.(Ref(H),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [1, 2]")
 @test mytest("Weyl.jl","elW=word.(Ref(W),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [2]\n [1, 2, 1, 2, 1]\n [1, 2, 1, 2, 1, 2]")
-@test mytest("Weyl.jl","map(w->H(w...),elH)==map(w->W(w...),elW)","true")
+@test mytest("Weyl.jl","splat(H).(elH)==splat(W).(elW)","true")
 end
 @testset "cp.jl" begin
 @test mytest("cp.jl","C=CorranPicantinMonoid(3,3)","CorranPicantinMonoid(3,3,3)")
@@ -1022,5 +1022,7 @@ end
 @test mytest("gendec.jl","W=rootdatum(:psu,6)","psu₆")
 @test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
 @test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n┌────┬────────┐\n│    │ps ps A₂│\n├────┼────────┤\n│²A₅ │ .  .  .│\n│.3  │ 1  .  .│\n│3.  │ 1  .  .│\n│.21 │ 1  1  .│\n│1.2 │ 2  1  .│\n│21. │ 1  1  .│\n│2.1 │ 2  1  .│\n│.111│ .  1  1│\n│111.│ .  1  1│\n│1.11│ 1  2  1│\n│11.1│ 1  2  1│\n└────┴────────┘")
+end
+@testset "runtests.jl" begin
 end
 end

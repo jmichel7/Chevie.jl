@@ -1309,7 +1309,8 @@ is  a `NamedTuple` with fields `gens`,  a representation of `Group(W)`, and
 `F`,  the matrix for `W.phi` in the representation). This function is based
 on  the  classification,  and  is  not  yet fully implemented for `G₃₄`; 78
 representations  are  missing  out  of  169,  that  is,  representations of
-dimension ≥140, except half of those of dimensions 315, 420 and 840.
+dimension  ≥140,  except  half  of  those  of  dimensions 315, 420 and 840.
+`nothing` is returned for a missing representation.
 
 ```julia-repl
 julia> representation(complex_reflection_group(24),3)

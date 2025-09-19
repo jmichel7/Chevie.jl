@@ -538,10 +538,10 @@ function shapesSymbols(e,r,c=1,def=0)
     append!(res,new)
     m+=1
   end
-  res=reduce(vcat,map(x->arrangements(x,e),res))
+  res=reduce(vcat,arrangements.(res,e))
   # for symbols of content 1 only one circshift of the shape has Malledefect=0
-  filter(s->Malledefect(s)==def  &&
-    all(x->Malledefect(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
+  filter(s->Malledefect(s)==def &&
+     all(x->Malledefect(x)!=def || x<=s,circshift.(Ref(s),1:length(s)-1)),res)
 end
 
 function isreduced(s::CharSymbol)
@@ -617,7 +617,7 @@ julia> symbols(2,4,0,1) # unipotent characters of ²D₄
  (012,3)
 ```
 """
-symbols(e,r,c=1,def=0)=vcat(map(s->Symbolsshape(r,s),shapesSymbols(e,r,c,def))...)
+symbols(e,r,c=1,def=0)=vcat(Symbolsshape.(r,shapesSymbols(e,r,c,def))...)
 
 # for S β-numbers ∏(x^{ei}-x^{ej}) for i>j, i,j∈S
 function Δ(S,e) 
@@ -663,7 +663,7 @@ function fakedegree(s::CharSymbol,p=0) # See Mal95, 2.11 and 5.7
   if d==1 res*=CycPol(1,sum(((x,y),)->x*sum(y),zip(0:e-1,s.S)))
   else
     rot=circshift.(Ref(s.S),e:-1:1)
-    u=map(j->ep^j,0:e-1).*map(s->Pol([1],sum(((x,y),)->x*sum(y),zip(0:e-1,s))),rot)
+    u=ep.^(0:e-1).*map(s->Pol([1],sum(((x,y),)->x*sum(y),zip(0:e-1,s))),rot)
     res*=CycPol(sum(u))
     res=div(res,count(==(s.S), rot))
     if e==2 && ep==-1 res=-res end
@@ -701,12 +701,12 @@ function gendeg(S::CharSymbol)
   elseif d==0 res=Θ([r-1],e)*CycPol(Pol([1],r)-E(e,defect))
   end
   res*=(-1)^(sum(((x,y),)->x*binomial(y,2),zip(0:e-1,sh)))*
-    prod(i->prod(j->reduce(*,map(l->reduce(*,map(m->CycPol(l-m),
+    prod(i->prod(j->prod(map(l->prod(map(m->CycPol(l-m),
     filter(m->i<j || degree(m)<degree(l),
-       map(l->Pol([E(e,j)],l),S.S[j+1])));init=one(CycPol)),
-       map(l->Pol([E(e,i)],l),S.S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
+       Pol.(Ref([E(e,j)]),S.S[j+1])));init=one(CycPol)),
+       Pol.(Ref([E(e,i)]),S.S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
     (prod(x->Θ(x,e),S.S)*(E(4)^binomial(e-1,2)*root(e)^e)^m
-      *CycPol(1,sum(map(x->binomial(x,2),e.*(1:m-1).+d))))
+      *CycPol(1,sum(binomial.(e.*(1:m-1).+d,2))))
   if d==0 res*=findfirst(i->circshift(S.S,-i)==S.S,1:e) end
   if defect==0 || r!=2 || e<=2 return res
   else return E(e)^-1*subs(res,Pol([E(2*e)],1)) # 2I(e)

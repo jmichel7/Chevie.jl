@@ -18,6 +18,7 @@ factorized_schur_element
 factorized_schur_elements
 HeckeAlgebras.FactSchur
 representation(::HeckeAlgebra,::Integer)
+representation(::HeckeElt,::Any)
 representations(::Union{HeckeAlgebra,HeckeCoset})
 isrepresentation
 reflection_representation(::HeckeAlgebra)

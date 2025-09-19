@@ -173,7 +173,7 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
     if IsSpecial(WF,c) res[3]=2res[3] end
     res
   end
-  labels=map(joindigits, orbits(WF.phi, inclusion(W,1:nref(W))))
+  labels=joindigits.(orbits(WF.phi, inclusion(W,1:nref(W))))
   good=map(p->Cyc(prod(i->t^roots(W,i),p[1]))*Cso(WF)[p[1][1]]==1,Rs)
   Rs=Rs[good]
   labels=labels[good]

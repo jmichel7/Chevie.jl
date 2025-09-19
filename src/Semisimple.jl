@@ -256,14 +256,14 @@ Base.cmp(a::SemisimpleElement,b::SemisimpleElement)=cmp(a.v,b.v)
 Base.isless(a::SemisimpleElement,b::SemisimpleElement)=cmp(a,b)==-1
 
 ss(W::FiniteCoxeterGroup,v::AbstractVector{<:Number})=
-SemisimpleElement(W,map(x->Root1(;r=Rational{Int}(x)),v))
+                      SemisimpleElement(W,map(x->Root1(;r=x),v))
 
 ss(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(E(1),rank(W)))
 
 Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 
 Base.:^(a::SemisimpleElement,m::AbstractMatrix)=SemisimpleElement(a.W,
-                                 map(v->prod(a.v .^v),eachcol(m)))
+                                 map(v->prod(a.v.^v),eachcol(m)))
 
 Base.:^(a::SemisimpleElement,p::Perm)=a^YMatrix(parent(a.W.G),inv(p))
 
@@ -475,7 +475,7 @@ function algebraic_center(W)
     s=transpose(s)*inv(Rational.(vcat(Z0.complement,Z0.gens)))
     ss(W,vec(transpose(vec(s)[1:semisimplerank(W)])*Z0.complement))
   end
-  ssl=map(toAZ,gens(descAZ))
+  ssl=toAZ.(gens(descAZ))
   #println("AZ=$descAZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(descAZ))
@@ -610,7 +610,7 @@ function weightinfo(W)
                                    x->vcat(x[:minusculeWeights],[0]),l)...),
     :minusculeCoweights=>cartesian(map(
                                    x->vcat(x[:minusculeCoweights],[0]),l)...),
-    :decompositions=>map(x->vcat(x...),tcartesian(map(x->vcat(x[:decompositions],
+    :decompositions=>splat(vcat).(tcartesian(map(x->vcat(x[:decompositions],
                                  [0 .*x[:moduli]]),l)...)),
     :moduli=>reduce(vcat,map(x->x[:moduli],l)),
 # center of simply connected group: the generating minuscule coweights
@@ -776,7 +776,7 @@ function Perms.reflength(W::Affine,w)
   mov=map(v->AffineRootAction(W,w,v)-v,eachrow(Id))
   l=push!(map(i->refls(W0,i),eachindex(gens(W0))),refls(W0,nref(W0)))
   p=reflength(W0,prod(l[word(W,w)]))
-  dimw=minimum(map(length,filter(x->RankMat(vcat(mov,roots(W0,x)))==length(x),
+  dimw=minimum(length.(filter(x->RankMat(vcat(mov,roots(W0,x)))==length(x),
                       ParabolicSubgroups(W0))))
   2*dimw-p
 end
@@ -924,7 +924,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
     pp=vcat(map(i->combinations(d,i),1:length(H))...)
     filter(P->length(orbits(stabilizer(H,P,onsets),P))==1,pp) #possible sets Ωₜ
   end
-  res=map(x->vcat(x...),tcartesian(l...))
+  res=splat(vcat).(tcartesian(l...))
   res=filter(res)do P
     S=stabilizer(H,P,onsets)
     all(I->length(orbits(S,intersect(P,I)))==1,ind)
@@ -1112,7 +1112,7 @@ function semisimple_centralizer_representatives(W,p=0)
     filter(I->all(x->x==0 || x%p!=0, smith(toM(W.rootdec[I]))),cent)
   end
   if isempty(l) return [Int[]] end
-  map(x->vcat(x...),tcartesian(l...))
+  splat(vcat).(tcartesian(l...))
 end
 
 const sscentralizer_reps=semisimple_centralizer_representatives

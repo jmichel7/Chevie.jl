@@ -543,7 +543,7 @@ function QuotientAu(Au,chars)
   end
   # q=Au/k,  ww=words in q images of gens(Au)
   finish=function(q,ww)
-    h=Hom(Au,q,map(x->q(x...),ww))
+    h=Hom(Au,q,splat(q).(ww))
     fusion=map(c->position_class(q,h(c)),classreps(Au))
     ctu=CharTable(Au).irr
     cth=CharTable(q).irr
@@ -570,7 +570,7 @@ function QuotientAu(Au,chars)
   elseif isabelian(Au/k)
     q=Au/k
     q=Group(AbGens(q))
-    h=Hom(Au,q,map(x->NormalCoset(k,x),gens(Au)))
+    h=Hom(Au,q,NormalCoset.(Ref(k),gens(Au)))
     f=map(x->word(q,h(x)),gens(Au))
 #  Print(prod(map(x->Z(order(x)),gens(q)))," ",f,"\n");
     return finish(prod(map(x->Z(order(x)),gens(q))),f)
@@ -1012,7 +1012,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
   println(io,uc)
   TeX=get(io,:TeX,false)
   if get(io,:order,true) println(io,uc.orderclasses) end
-  sp = map(copy, uc.springerseries)
+  sp=copy.(uc.springerseries)
   if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][detPerm(p[:relgroup])] end
   end
@@ -1022,7 +1022,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
   if uc.p!=0 || !any(x->haskey(x,:balacarter),uc.classes)
     io=IOContext(io,:balacarter=>false)
   end
-  tbl = map(uc.classes)do u
+  tbl= map(uc.classes)do u
     res= iszero(uc.p) ? [joindigits(u.dynkin)] : String[]
     push!(res, string(u.dimBu))
     if get(io,:balaCarter,true)
@@ -1039,11 +1039,11 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
     end
     if get(io,:springer,true)
       i=findfirst(==(u),uc.classes)
-      cc(ss)=map(function (i)
-                c1 = charnames(io,u.Au)[ss[:locsys][i][2]]
-                c2 = charnames(io,ss[:relgroup])[i]
-                (c1=="") ? c2 : c1*":"*c2
-           end, findall(y->y[1]==i,ss[:locsys]))
+      cc(ss)=map(findall(y->y[1]==i,ss[:locsys]))do i
+        c1=charnames(io,u.Au)[ss[:locsys][i][2]]
+        c2=charnames(io,ss[:relgroup])[i]
+        (c1=="") ? c2 : c1*":"*c2
+      end
       append!(res, map(ss->join(cc(ss), TeX ? "\\kern 0.8em " : " "),sp))
     end
     res
@@ -1055,14 +1055,14 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
   if get(io,:centralizer,true) push!(col_labels, "C_{\\bf G}(u)") end
   if get(io,:springer,true)
     append!(col_labels,
-      map(function (ss,)
+      map(sp)do ss
         res=string(xrepr(io,ss[:relgroup]),"(",
           xrepr(io,subspets(WF,ss[:levi]);parent=false),")")
         if !all(isone,ss[:Z])
           res*=string("/", join(map(q->xrepr(io,q),ss[:Z]),","))
         end
-        return res
-    end, sp))
+        res
+    end)
   end
   row_labels=name.(Ref(io),uc.classes)
   if get(io,:rows,false)==false
@@ -1210,7 +1210,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   n=length(f)
   # matrix of q^{-bᵢ-bⱼ}*fakedegree(χᵢ ⊗ χⱼ ⊗ sgn)
   tbl=bigcell_decomposition([q^(-res.dimBu[i]-res.dimBu[j])*
-                            sum(map(*,f,decompose_tensor(R,i,j,k)))
+                            sum(f.*decompose_tensor(R,i,j,k))
      for i in 1:n,j in 1:n], res.blocks) # //1 needed in D7
   if subst tbl=map(y->map(x->x(var),y),tbl); q=var end
   res.scalar=tbl[1]
@@ -1241,7 +1241,7 @@ function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
     sort!(rows,by=i->[x.dimBu[i],x.locsys[i]])
     io=IOContext(io,:rows=>rows,:cols=>rows)
   end
-  tbl=get(io,:cycpol,true) ? map(CycPol,x.scalar) : x.scalar
+  tbl=get(io,:cycpol,true) ? CycPol.(x.scalar) : x.scalar
   col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
   if get(io,:rowlocsys,false) row_labels=col_labels
@@ -1650,7 +1650,7 @@ function TwoVarGreen(W,L)
       else pw=prod(Group(RG).toparent[pw])*L.phi
       end
       Lo=subspets(L,Int.(s[:levi]),pw/L.phi)
-      r=map(last,filter(x->isone(first(x)),degrees(Lo)))
+      r=last.(filter(x->isone(first(x)),degrees(Lo)))
       prod(x->q-x,r)//length(centralizer(RL,w))
     end
     transpose(tL.scalar[tL.indices[i],:])*

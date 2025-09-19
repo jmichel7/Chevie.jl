@@ -552,7 +552,7 @@ Returns  the  element  `w`  of  `W` such that `N==inversions(W,w)`. Returns
 julia> W=coxgroup(:A,2)
 A₂
 
-julia> map(N->with_inversions(W,N),combinations(1:nref(W)))
+julia> with_inversions.(Ref(W),combinations(1:nref(W)))
 8-element Vector{Union{Nothing, Perm{Int16}}}:
  ()
  (1,4)(2,3)(5,6)
@@ -863,7 +863,7 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   r=Ref(transpose(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
-  mats=map(reflectionMatrix,eachrow(rr),eachrow(cr)) # reflrep
+  mats=reflectionMatrix.(eachrow(rr),eachrow(cr)) # reflrep
   # permutations of the roots effected by mats
 # gens=map(M->sortPerm(Ref(transpose(M)).*r),mats).\sortPerm(r)
   gens=map(M->Perm(Vector{Perms.Idef}(indexin(Ref(transpose(M)).*r,r))),mats)
@@ -1078,7 +1078,7 @@ julia> elW=word.(Ref(W),elements(H))
  [1, 2, 1, 2, 1]
  [1, 2, 1, 2, 1, 2]
 
-julia> map(w->H(w...),elH)==map(w->W(w...),elW)
+julia> splat(H).(elH)==splat(W).(elW)
 true
 ```
 We  implement finite  reflection groups  as permutation  groups on a set of

@@ -487,7 +487,7 @@ function Base.show(io::IO, t::TypeIrred)
       end
     else
       print(io,"spets(",t.orbit)
-      p=prod(map((x...)->Perm(x...),map(x->x.indices,t.orbit)...))*t.twist
+      p=prod(Perm.(map(x->x.indices,t.orbit)...))*t.twist
       if !isone(p) print(io,",",p) end
       print(io,")")
     end
@@ -1171,7 +1171,7 @@ function reflection_eigenvalues(W)
     if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
        (haskey(x,:scalar) && !all(isone,x.scalar))),t)
       if isempty(t) ll=[Root1[]]
-      else ll=map(x->vcat(x...),tcartesian(map(refleigen,t)...))
+      else ll=splat(vcat).(tcartesian(refleigen.(t)...))
       end
       central=(W isa Spets ? torusfactors(W) :
                             fill(E(1),rank(W)-semisimplerank(W)))
@@ -1553,7 +1553,7 @@ function parabolic_reps(W::PermRootGroup,s)
   t=refltype(W)
   sols=filter(l->sum(l)==s,tcartesian(map(x->0:rank(x),t)...))
   vcat(map(sols)do c
-        map(x->vcat(x...),tcartesian(map(eachindex(c))do i
+    splat(vcat).(tcartesian(map(eachindex(c))do i
     r=parabolic_reps(t[i],c[i])
     if r===nothing
       R=reflection_subgroup(W,t[i].indices)
@@ -1741,7 +1741,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};NC=false,T1=Perms.Idef)
 # println("r=",r,"\ncr=",cr)
   if isempty(r) error("should call torus instead") end
-  matgens=map(reflectionMatrix,r,cr)
+  matgens=reflectionMatrix.(r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
   r=convert.(Vector{T},r)
   cr=convert.(Vector{T},cr)

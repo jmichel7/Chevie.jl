@@ -275,7 +275,7 @@ function SerNames(io::IO,sers)
     n=fromTeX(io,ser[:cuspidalName])
     if isempty(tt) nn=[n]
     else nn=charnames(io,tt)
-      if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end
+      if !isempty(ser[:levi]) nn=string.(n,":",nn) end
     end
     res[charnumbers(ser)]=nn
   end
@@ -636,7 +636,7 @@ function UnipotentCharacters(WF::Spets)
     if length(simp)==1
       extra[a]=map(x->[x],getproperty(r,a))
     elseif all(x->haskey(x,a),simp)
-      extra[a]=cartesian(map(x->getproperty(x,a),simp)...)
+      extra[a]=cartesian(getproperty.(simp,a)...)
     end
   end
 
@@ -737,7 +737,7 @@ Base.length(uc::UnipotentCharacters)=length(uc.charParams)
 function Families.fourier(uc::UnipotentCharacters)
   get!(uc,:fourier)do
     l=length(uc)
-    T=reduce(promote_type,map(eltype,improve_type(fourier.(uc.families))))
+    T=reduce(promote_type,eltype.(improve_type(fourier.(uc.families))))
     i=fill(T(0),l,l)
     for f in uc.families
      i[f.charNumbers,f.charNumbers]=fourier(f)

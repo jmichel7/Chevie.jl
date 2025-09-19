@@ -1539,33 +1539,35 @@ above tries to convey). The choice is as follows:
 
 For  `W` a Coxeter  group the Coxeter  diagram is partitioned  in two sets
 where  in each set reflections commute pairwise;  `c` is the product of the
-product of the reflections in each set.
+product of the reflections in each set (see `bipartite_decomposition`).
 
 For  a complex  reflection group  the representative  stored in the Coxeter
 class is used for `c`.
 
-The function returns the dual braid monoid determined by `W` and `c`
+The  function returns the dual braid monoid  determined by `W` and `c`, the
+interval  monoid  for  `W`  generated  by  its reflections and the interval
+`[1,c]`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
 A₃
 
-julia> B=DualBraidMonoid(W)
+julia> D=DualBraidMonoid(W)
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
-julia> B(2,1,2,1,1)
+julia> D(2,1,2,1,1)
 12.1.1.1
 
-julia> B(-1,-2,-3,1,1)
+julia> D(-1,-2,-3,1,1)
 (25.1)⁻¹1.1
 
 julia> W=crg(4)
 G₄
 
-julia> B=DualBraidMonoid(W)
+julia> D=DualBraidMonoid(W)
 DualBraidMonoid(G₄,c=[1, 2])
 
-julia> left_divisors(B(B.δ))
+julia> left_divisors(D(D.δ))
 5-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, PRG{Cyc{Rational{Int64}}, Int16}}}}:
  .
  1
@@ -1629,15 +1631,17 @@ function atomsinbraidmonoid(M::DualBraidMonoid) # for coxeter groups
 end
 
 """
-`(B::BraidMonoid)(M::DualBraidMonoid,i::Integer)`
+`(B::BraidMonoid)(D::DualBraidMonoid,i::Integer)`
 
-convert to an element of `B` the `i`-th atom of `M`.
+For  monoids of the  same Coxeter group,  convert to an  element of `B` the
+`i`-th atom of `D`.
 """
 (B::BraidMonoid)(M::DualBraidMonoid,i::Integer)=atomsinbraidmonoid(M)[i]
 """
-`(B::BraidMonoid)(M::DualBraidMonoid,s)`
+`(B::BraidMonoid)(D::DualBraidMonoid,s)`
 
-convert to an element of `B` the simple `s` of `M`.
+For  monoids of the  same Coxeter group,  convert to an  element of `B` the
+simple `s` of `D`.
 """
 (B::BraidMonoid)(M::DualBraidMonoid,s)=prod(B.(M,word(M,s)))
 """

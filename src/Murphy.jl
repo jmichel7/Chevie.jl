@@ -73,7 +73,7 @@ end
 istableau(t)=all(x->x==sort(unique(x)),t) && 
              all(x->x==sort(unique(x)),conjugate_tableau(t))
 
-shortTableau(t)=join(map(joindigits,t),"/")
+shortTableau(t)=join(joindigits.(t),"/")
 
 #------------------The Murphy basis code proper---------------------
 """
@@ -238,7 +238,7 @@ function Base.show(io::IO, h::HeckeMElt)
     TeX=get(io,:TeX,false)
     repl=get(io,:limit,false)
     H=h.H
-    TeXTableau(tab)="\\tab("*join(map(join,tab),",")*")"
+    TeXTableau(tab)="\\tab("*join(join.(tab),",")*")"
     StringTableau(t)=repl ? shortTableau(t) :
       "["*join(map(p->"["*join(p,",")*"]",t),",")*"]"
       u=H.Murphy.Tableaux[mu][t]
@@ -388,7 +388,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
         # partition. Our <tab> above becomes [[5,6,7,8],[1,2,3],[4],[9]].
         sort!(tab, by=x->(-length(x),x[1]))
         # which gives us the (shape of the) new tableau
-        tnu = H.Murphy.tableaux[code_partition(H, map(length, tab))][1]
+        tnu = H.Murphy.tableaux[code_partition(H, length.(tab))][1]
         # and finally we have <d>. The point is that tab = T_d^-1*tnu*T_d.
         d=W(Permtableaux(Tableau(H,tnu), tab)...)
         # <tab> is now under control, but we still need to compute <h>
@@ -400,8 +400,8 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
         J=gtab[node.row][1:end-1]
         append!(J,gtab[node.row+1][1:end-1])
         K=setdiff(J,[a-1,b])
-        h=map(inv,vcat(reduced(reflection_subgroup(W,K),
-                               reflection_subgroup(W,J))...))
+        h=inv.(vcat(reduced(reflection_subgroup(W,K),
+                            reflection_subgroup(W,J))...))
         h=HeckeTElt(ModuleElt([w=>one(coefftype(H)) for w in h];check=false),H)
         # the multiplication below is quite costly as it is recursive; 
         # but it is only done once as we store the result in g.Garnir.
