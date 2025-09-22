@@ -12,11 +12,12 @@ using PermGroups: Group
 using Combinat: Combinat, collectby
 using LinearAlgebra: LinearAlgebra, tr
 using GenLinearAlgebra: solutionmat, independent_rows, charpoly
+using GroupPresentations: Presentation
 using ..Chars: CharTable
 using ..Tools: improve_type
 using ..Chevie: Chevie, root, gap, Cyc, conductor
 using ..Util: toL
-using GroupPresentations: Presentation
+using ..Format: xrepr
 
 LinearAlgebra.tr(a::Mvp)=a # for tr(Diagonal(Mvp)) to work
 LinearAlgebra.tr(a::Pol)=a # for tr(Diagonal(Pol)) to work
@@ -190,17 +191,7 @@ end
 
 Chevie.gap(m::Monomial)=join([string(v)*(p==1 ? "" : p isa Integer ? string("^",p) : string("^(",gap(p),")")) for (v,p) in m.d],"*")
 
-function Chevie.gap(p::Mvp)
-  res=join(map(collect(p.d))do (k,c)
-    c=bracket_if_needed(gap(c))
-    kk=gap(k)
-    if isempty(c) kk
-    elseif isempty(kk) c
-    else c*"*"*kk
-    end
-  end,"+")
-  isempty(res) ? "0" : res
-end
+Chevie.gap(p::Mvp)=xrepr(p,naive=true,prod=true)
 
 Chevie.gap(f::Float64)="evalf(\"$f\")"
 Chevie.gap(f::Complex{Float64})="Complex("*gap(real(f))*","*gap(imag(f))*")"

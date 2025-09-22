@@ -786,12 +786,13 @@ function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
     w=word(h.H.W,e)
     res=basisname(h)
-    if hasdecor(io) res*=isempty(w) ? "." : "_"*joindigits(w,"{}";always=true)
+    if hasdecor(io) && !get(io,:naive,false) 
+         res*=isempty(w) ? "." : "_"*joindigits(w,"{}";always=true)
     else            res*="("*join(w,",")*")"
     end
     fromTeX(io,res)
   end
-  show(IOContext(io,:showbasis=>showbasis),h.d)
+  show(rio(io,limit=true,showbasis=showbasis),h.d)
 end
 
 
@@ -1269,11 +1270,11 @@ Base.setindex!(x::FactSchur,v,s::Symbol)=
   if s==:factor x.factor=v else x.vcyc=v end
 
 function Base.show(io::IO,x::FactSchur)
- if !(get(io,:TeX,false)||get(io,:limit,false))
-   print(io,"FactSchur(",x.factor,",",x.vcyc,")")
-   return
- end
- v=map(x.vcyc) do l
+  if !hasdecor(io)
+    print(io,"FactSchur(",x.factor,",",x.vcyc,")")
+    return
+  end
+  v=map(x.vcyc) do l
     if get(io,:Maple,false) || degree(l.pol)==1
       "("*xrepr(io,l.pol(l.monomial))*")"
     else
