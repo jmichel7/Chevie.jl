@@ -390,12 +390,12 @@ end
 @test mytest("Garside.jl","pi=BraidMonoid(W)(longest(W))^2","Δ²")
 @test mytest("Garside.jl","words(pi)","8-element Vector{Vector{Int64}}:\n [1, 1, 2, 1, 1, 2]\n [1, 2, 1, 1, 2, 1]\n [1, 2, 1, 2, 1, 2]\n [1, 2, 2, 1, 2, 2]\n [2, 1, 1, 2, 1, 1]\n [2, 1, 2, 1, 2, 1]\n [2, 1, 2, 2, 1, 2]\n [2, 2, 1, 2, 2, 1]")
 @test mytest("Garside.jl","W=coxgroup(:A,3)","A₃")
-@test mytest("Garside.jl","B=DualBraidMonoid(W)","DualBraidMonoid(A₃,c=[1, 3, 2])")
-@test mytest("Garside.jl","B(2,1,2,1,1)","12.1.1.1")
-@test mytest("Garside.jl","B(-1,-2,-3,1,1)","(25.1)⁻¹1.1")
+@test mytest("Garside.jl","D=DualBraidMonoid(W)","DualBraidMonoid(A₃,c=[1, 3, 2])")
+@test mytest("Garside.jl","D(2,1,2,1,1)","12.1.1.1")
+@test mytest("Garside.jl","D(-1,-2,-3,1,1)","(25.1)⁻¹1.1")
 @test mytest("Garside.jl","W=crg(4)","G₄")
-@test mytest("Garside.jl","B=DualBraidMonoid(W)","DualBraidMonoid(G₄,c=[1, 2])")
-@test mytest("Garside.jl","left_divisors(B(B.δ))","5-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, PRG{Cyc{Rational{Int64}}, Int16}}}}:\n .\n 1\n 2\n 3\n δ")
+@test mytest("Garside.jl","D=DualBraidMonoid(W)","DualBraidMonoid(G₄,c=[1, 2])")
+@test mytest("Garside.jl","left_divisors(D(D.δ))","5-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, PRG{Cyc{Rational{Int64}}, Int16}}}}:\n .\n 1\n 2\n 3\n δ")
 @test mytest("Garside.jl","W=coxgroup(:E,8);M=DualBraidMonoid(W)","DualBraidMonoid(E₈,c=[1, 4, 6, 8, 3, 2, 5, 7])")
 @test mytest("Garside.jl","s4=left_divisors(M,M.δ,4);","nothing")
 @test mytest("Garside.jl","s=M(s4[findfirst(x->x*δad(M,x,8)==M.δ,s4)])","(1 8 17 35)")
@@ -494,6 +494,8 @@ end
 @test mytest("HeckeAlgebras.jl","WGraphToRepresentation(H,g)","3-element Vector{Matrix{Pol{Int64}}}:\n [q² 0 … 0 0; 0 -1 … 0 0; … ; 0 0 … -1 q; 0 0 … 0 q²]\n [-1 0 … 0 0; 0 -1 … q 0; … ; 0 0 … q² 0; 0 0 … q -1]\n [q² 0 … 0 0; 0 q² … 0 0; … ; 0 q … -1 0; 0 0 … 0 -1]")
 @test mytest("HeckeAlgebras.jl","H=hecke(coxgroup(:H,3),Pol(:q))","hecke(H₃,q)")
 @test mytest("HeckeAlgebras.jl","central_monomials(H)","10-element Vector{Pol{Cyc{Int64}}}:\n 1\n q³⁰\n q¹²\n q¹⁸\n q¹⁰\n q¹⁰\n q²⁰\n q²⁰\n q¹⁵\n q¹⁵")
+@test mytest("HeckeAlgebras.jl","H=hecke(coxsym(4),Pol());T=Tbasis(H);","nothing")
+@test mytest("HeckeAlgebras.jl","representation(T(1,2)^2,2)","3×3 Matrix{Pol{Rational{Int64}}}:\n -x²  -x²   0\n x²   0     0\n -x   -x+1  1")
 @test mytest("HeckeAlgebras.jl","H=hecke(coxgroup(:A,2),Pol(:q))","hecke(A₂,q)")
 @test mytest("HeckeAlgebras.jl","T=Tbasis(H);T(longest(H.W))^2","q³T.+(q³-2q²+q)T₂₁+(q³-q²)T₂+(q³-q²)T₁+(q³-2q²+2q-1)T₁₂₁+(q³-2q²+q)T₁₂")
 @test mytest("HeckeAlgebras.jl","W=crg(3,1,1)","G₃‚₁‚₁")
@@ -1022,7 +1024,5 @@ end
 @test mytest("gendec.jl","W=rootdatum(:psu,6)","psu₆")
 @test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
 @test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n┌────┬────────┐\n│    │ps ps A₂│\n├────┼────────┤\n│²A₅ │ .  .  .│\n│.3  │ 1  .  .│\n│3.  │ 1  .  .│\n│.21 │ 1  1  .│\n│1.2 │ 2  1  .│\n│21. │ 1  1  .│\n│2.1 │ 2  1  .│\n│.111│ .  1  1│\n│111.│ .  1  1│\n│1.11│ 1  2  1│\n│11.1│ 1  2  1│\n└────┴────────┘")
-end
-@testset "runtests.jl" begin
 end
 end

@@ -238,7 +238,7 @@ function findrepresentation(H,gr;check=false)
   pos=1:length(l)
   if check rr=charfromrepr(gr,t) end
   for i in l
-    r=check ? rr[i] : charfromrepr(gr,[t[i]])
+   r=check ? rr[i] : charfromrepr(gr,[t[i]])[1]
 #   println("w=$w r=$r")
     pos=filter(j->r==ct[j,i],pos)
     if !check && length(pos)==1 return pos[1]
@@ -259,7 +259,7 @@ function Trepresentations(H,l=Int[];check=true)
   cl=length.(conjugacy_classes(W))
   if isempty(l) l=1:length(cl) end
   for i in l
-   InfoChevie("# Representation n⁰$i/$(length(cl))")
+    InfoChevie("# Representation n⁰$i/$(length(cl))")
     gr=representation(H,i)
     if gr==false || gr===nothing println("=$gr")
     else

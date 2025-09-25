@@ -9306,7 +9306,7 @@ x^-1*y^3, [26844, 44659, 48472]), (-x^-1*y^2, [38721, 47362]), (-x^-1*y,
 end)
 
 chevieset(:G34, :Representation, function (i)
-  r=chevieget(:G34,:HeckeRepresentation)(fill([1,-1],6),[],i)
+  r=chevieget(:G34,:HeckeRepresentation)(fill([1,-1]//1,6),[],i)
   if !isnothing(r) return r end
   f(i)=chevieget(:G34,:Representation)(i)
 #if i=23 return SymmetricPower.(f(4),3)
