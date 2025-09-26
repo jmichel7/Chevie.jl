@@ -303,8 +303,11 @@ extract  roots of the  parameters. These roots  are extracted automatically
 by  giving  a  keyword  argument  `rootpara`:  if  it is a vector it should
 contain at the `i`-th position a square root of
 `-parameter[i][1]*parameter[i][2]`;   if  a   scalar  it   is  replaced  by
-`fill(rootpara,ngens(W))`. The function `rootpara(H)` tries to fill
-automatically missing entries in  `H.rootpara` and returns the result.
+`fill(rootpara,ngens(W))`.   The  function  `rootpara(H)`   tries  to  fill
+automatically  missing entries in `H.rootpara`  and returns the result. The
+same  mechanism  has  been  extended  to  some  complex  reflection  groups
+generated  by 2-reflections and needing only square roots of the parameters
+to split the Hecke algebra, that is to `G₂₄, G₂₉, G₃₁, G₃₃` and `G₄,₂,ᵣ`.
 
 # Example
 ```julia-repl

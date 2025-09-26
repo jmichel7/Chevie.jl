@@ -112,7 +112,9 @@ chevieset(:G29,:sparseFakeDegrees,[[1,0],[1,40],[1,4,1,8,1,12,1,16],
   [1,6,2,10,4,14,5,18,5,22,4,26,2,30,1,34],[2,9,4,13,5,17,5,21,4,25,3,29,1,33],
   [1,7,3,11,4,15,5,19,5,23,4,27,2,31],[2,8,4,12,6,16,6,20,6,24,4,28,2,32]])
 
-LaurentPolynomials.root(f::Frac)=root(numerator(f))//root(denominator(f))
+chevieset(:G29,:root,function(para,rootpara)
+  if ismissing(rootpara[1]) root(prod(para[1])) else E(4)*rootpara[1] end
+end)
 
 # Computed JM oct. 2005. Completed 18th column nov. 2012 using:
 # The  representative  w=3123cc  of  18th  class satisfies w^2=z2323 in BW,
@@ -127,9 +129,7 @@ LaurentPolynomials.root(f::Frac)=root(numerator(f))//root(denominator(f))
 # has to be an integral multiple of q^6 for 34 so by specialization is 0.
 # It has to be aq^6+bq^5+cq^7 for 37. By specialization a+b+c=2.
 # By Schur relations a=0 and b=1.
-chevieset(:G29, :HeckeCharTable, function (para, rt)
-  q=-para[1][1]//para[1][2]
-  r,p=para[1]
+chevieset(:G29, :HeckeCharTable, function (para, rootpara)
   tbl = Dict{Symbol, Any}(:identifier=>"H(G29)", :size => 7680,:order=>7680)
   merge!(tbl, chevieget(:G29, :ClassInfo))
   merge!(tbl, chevieget(:G29, :CharInfo)())
@@ -205,8 +205,7 @@ chevieset(:G29, :HeckeCharTable, function (para, rt)
     q=-r//p
     adj(p,[15,-6+9q,(1-5q)+4*q^2,(1-2q)+4*q^2,(2-8q)+5*q^2,(1-3q)+3*q^2,(3q-5*q^2)+2*q^3,-q^2+q^3,q^3,(q-3*q^2)+q^3,(1-6*q^2)+4*q^4,0,0,(q^13-3*q^14)+q^15,(2*q^2-4*q^3)+q^5,(q^2-3*q^3)+q^5,(q^36-5*q^37)+4*q^38,-q^6,0,(q^12-5*q^13)+4*q^14,(((((1-2q)+3*q^2)-4*q^3)+9*q^4)-6*q^5)+2*q^6,(4*q^3-2*q^4)+q^6,-q^14+q^15,(3*q^13-5*q^14)+2*q^15,((3*q^3+3*q^5)-4*q^6)+q^9,(q^24-5*q^25)+4*q^26,(q^24-3*q^25)+3*q^26,(q^12-3*q^13)+3*q^14,0,(2*q^12-8*q^13)+5*q^14,(q^12-6*q^14)+4*q^16,-6*q^12+9*q^13,((3*q^15+3*q^17)-4*q^18)+q^21,(4*q^15-2*q^16)+q^18,15*q^12,15*q^36,15*q^24])
   end
-  function f24(x, y, sgn)
-    v=sgn*root(x*y)
+  function f24(x, y, v)
     [16,6x+10y,5*x*y+x^2+5*y^2,4*x*y+4*y^2,8*x*y+2*x^2+6*y^2,(-2*x*y^2-3*x^2*y)-x^3,5*x*y^2+3*x^2*y+3*y^3,2*x*y^2+y^3,x*y^2+y^3,3*x*y^2+x^2*y+2*y^3,-4*x^2*y^2+4*y^4,-v*x*y^2,-v*x^4*y^7,(-2*v*x^7*y^15-3*v*x^8*y^14)-v*x^9*y^13,((-x*y^4-3*x^2*y^3)-x^3*y^2)+y^5,(-2*x^2*y^3-x^3*y^2)+y^5,(-5*v*x^22*y^39-5*v*x^23*y^38)-v*x^24*y^37,0,x^3*y^5,(-5*v*x^7*y^14-5*v*x^8*y^13)-v*x^9*y^12,6*x*y^5+8*x^2*y^4+6*x^3*y^3+3*x^4*y^2+2*x^5*y+x^6+2*y^6,(-3*x^2*y^4-2*x^3*y^3)+y^6,-v*x^7*y^15-2*v*x^8*y^14,(-3*v*x^7*y^15-5*v*x^8*y^14)-3*v*x^9*y^13,5*x^3*y^6+3*x^4*y^5+3*x^5*y^4+y^9,5*x^15*y^27+5*x^16*y^26+x^17*y^25,(-2*x^16*y^27-3*x^17*y^26)-x^18*y^25,2*v*x^8*y^14+3*v*x^9*y^13+v*x^10*y^12,x^6*y^10,(-6*v*x^7*y^14-8*v*x^8*y^13)-2*v*x^9*y^12,-4*v*x^7*y^16+4*v*x^9*y^14,-10*v*x^7*y^13-6*v*x^8*y^12,((-v*x^7*y^21-5*v*x^10*y^18)-3*v*x^11*y^17)-3*v*x^12*y^16,-v*x^7*y^18+3*v*x^9*y^16+2*v*x^10*y^15,-16*v*x^7*y^12,-16*v*x^22*y^37,16*x^15*y^25]
   end
   function f28(r, p)
@@ -229,12 +228,14 @@ chevieset(:G29, :HeckeCharTable, function (para, rt)
     q=-r//p
     adj(p,[30,-15+15q,(5-10q)+5*q^2,(3-8q)+3*q^2,(7-16q)+7*q^2,((2-5q)+5*q^2)-2*q^3,((-2+8q)-8*q^2)+2*q^3,2q-2*q^2,q-q^2,((-1+4q)-4*q^2)+q^3,(3-8*q^2)+3*q^4,0,0,((-q^10+4*q^11)-4*q^12)+q^13,((-q+4*q^2)-4*q^3)+q^4,3*q^2-3*q^3,(5*q^30-10*q^31)+5*q^32,q^5+q^7,0,(5*q^10-10*q^11)+5*q^12,(((((2-8q)+11*q^2)-12*q^3)+11*q^4)-8*q^5)+2*q^6,(-3*q^2+4*q^3)-3*q^4,2*q^11-2*q^12,((-2*q^10+8*q^11)-8*q^12)+2*q^13,((5*q^3-6*q^4)+6*q^5)-5*q^6,(5*q^20-10*q^21)+5*q^22,((2*q^20-5*q^21)+5*q^22)-2*q^23,((2*q^10-5*q^11)+5*q^12)-2*q^13,0,(7*q^10-16*q^11)+7*q^12,(3*q^10-8*q^12)+3*q^14,-15*q^10+15*q^11,((5*q^13-6*q^14)+6*q^15)-5*q^16,(-3*q^12+4*q^13)-3*q^14,30*q^10,30*q^30,30*q^20])
   end
+  r,p=para[1]
+  u=chevieget(:G29,:root)(para,rootpara)
   tbl[:irreducibles]=toM([f1(r), f1(p), f3(r, p), f3(p, r), f5(r, p, E(4)), 
     f5(p, r, E(4)), f5(r, p, -E(4)), f5(p, r, -E(4)), f9(r, p), f9(p, r),
     f11(r, p), f12(r, p), f12(p, r), f14(r, p, E(4)), f14(r, p, -E(4)),
     f17(r, p), f17(p, r), f18(r, p), f18(p, r), f22(r, p), f23(r, p),
-    f22(p, r), f23(p, r), f24(r, p, 1), f24(p, r, 1), f24(r, p, -1),
-    f24(p, r, -1), f28(r, p), f28(p, r), f30(r, p, E(4)), f30(p, r, E(4)),
+    f22(p, r), f23(p, r), f24(r, p, u), f24(p, r, u), f24(r, p, -u),
+    f24(p, r, -u), f28(r, p), f28(p, r), f30(r, p, E(4)), f30(p, r, E(4)),
     f30(r, p, -E(4)), f30(p, r, -E(4)), f34(r, p), f35(r, p, E(4)),
     f35(r, p, -E(4)), f37(r, p)])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
@@ -244,7 +245,7 @@ end)
 chevieset(:G29,:galomorphisms,perm"(6,9)(12,13)(17,20)(21,22)(23,24)(27,28)(32,33)(35,36)")
 
 # Completed JM dec. 2014 using Marin-Pfeiffer
-chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
+chevieset(:G29, :HeckeRepresentation, function (para, rootpara, i)
   f1(x)=[[x;;],[x;;],[x;;],[x;;]]
   f3(x,y)=WGraph2Representation([[[1,2,3],[1,2,4],[1,3,4],[2,3,4]],
         [[1,2,-x,y],[1,3,-x,y],[3,4,-x,y]]],[x,y])*x^0*y^0
@@ -256,7 +257,7 @@ chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
     R=WGraph2Representation([[[2],[1,3,4],[1,3],[1,2,4],[2,3],[4]],
       [[1,2,x,-y],[1,4,0,-y],[1,5,0,-y],[2,3,x,0],[2,6,-y,0],[3,4,-y,x],
        [3,5,-y,x],[4,6,-y,0],[5,6,-y,x]]],[x,y])*x^0*y^0
-    [R[1], R[2],inv(R[4])*R[3]*R[4],R[4]]
+    [R[1], R[2],improve_type(inv(R[4]//1)*R[3]*R[4]),R[4]]
   end
   function f17(x,y)
     R=WGraph2Representation([[[1,2,3],[1,3,4],[1,2,4],[2,3],[1,3,4],[2,4],
@@ -264,7 +265,7 @@ chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
       [2,6,y,-x],[3,5,-y,x],[3,6,y,0],[3,8,-y,0],[4,5,x,-y],[4,6,-y,x],
       [4,7,0,x-y],[4,10,0,x-y],[5,9,-y,0],[6,7,0,-x+y],[6,9,0,x-y],[7,8,x,-y],
       [8,9,y,-x],[8,10,-y,x],[9,10,x,-y]]],[x,y])*x^0*y^0
-    ir4=comatrix(R[4])//det_bareiss(R[4])
+    ir4=comatrix(R[4]).//det_bareiss(R[4])
     [R[1], R[2],ir4*R[3]*R[4],R[4]]
   end
   function f18(x,y)
@@ -273,7 +274,7 @@ chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
       [1,8,-y,0],[2,4,x,0],[2,5,x,-y],[2,6,x,0],[2,9,-x,0],[3,4,-y,x],
       [3,5,-y,0],[3,6,-y,0],[3,10,-y,0],[4,9,-y,x],[5,10,-x,y],[7,8,-y+x,0],
       [7,9,-y-x,0],[8,9,x,-y],[8,10,-x,y],[9,10,x,-y]]],[x,y])*y^0*x^0
-    [R[1], R[2],inv(R[4])*R[3]*R[4],R[4]]
+    [R[1], R[2],improve_type(inv(R[4]//1)*R[3]*R[4]),R[4]]
   end
   f21(x,y)=expandrep(4,15,Tuple{typeof(0+x*y),Vector{Int64}}[
     (x^3*y+x^2*y^2, [172, 176,352, 356]), (-x^3-x^2*y, [532, 536]),
@@ -307,10 +308,9 @@ chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
       [8,13,-y,0],[9,11,-y*x,1],[9,12,y^2,0],[9,14,-y+x,0],[10,11,x,-y],
       [10,12,-y,x],[10,14,0,y*x],[11,13,-x,0],[12,15,0,y^2*x^-1],
       [13,14,-1,y*x],[13,15,x,-y],[14,15,x^2,-y*x^-1]]],[x,y])*y^0*x^0
-    [R[1], R[2],inv(R[4])*R[3]*R[4],R[4]]
+    [R[1], R[2],improve_type(inv(R[4]//1)*R[3]*R[4]),R[4]]
   end
-  function f27(x,y,sgn)
-    v=sgn*root(x*y,2)
+  function f27(x,y,v)
     R=WGraph2Representation([[[1,3,4],[1,2,4],[1,2,3],[1,4],[1,3],[1,2],[1,2,3],
       [1,3,4],[1,2,4],[2,3],[1,3,4],[2,4],[3,4],[2,4],[2,3],[2,3,4]],
       [[1,4,-y,0],[1,5,-y,0],[1,6,-y,x],[1,16,-v,v],[2,4,-v,0],[2,5,-v,v],
@@ -322,7 +322,7 @@ chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
       [9,14,-x+y,0],[10,11,v,-v],[10,12,-y,x],[10,13,0,v],[10,16,0,-v],
       [11,13,-v+x,0],[11,15,0,v],[13,14,-v,v],[13,15,-v,v],[14,15,-x,y],
       [14,16,0,-y],[15,16,0,v]]],[x,y])*x^0*y^0
-    ir4=comatrix(R[4])//det_bareiss(R[4])
+    ir4=comatrix(R[4]).//det_bareiss(R[4])
     [R[1], R[2],ir4*R[3]*R[4],R[4]]
   end
   f28(x,y)=expandrep(4,20,Tuple{typeof(0+x*y),Vector{Int64}}[(-x^2*y^-1,[1596]),
@@ -703,6 +703,7 @@ y, [102, 203, 302, 403, 502, 601, 703, 799, 804, 904, 1002, 1003, 1101,
  [2601]), (1, [8, 157, 791, 990, 1283, 2516]), (y^-1, [824]), (-x^-1,
  [2633])])
   x,y=para[1]
+  u=chevieget(:G29,:root)(para,rootpara)
   if     i==1  f1(x)
   elseif i==2  f1(y)
   elseif i==3  f3(x, y)
@@ -713,11 +714,11 @@ y, [102, 203, 302, 403, 502, 601, 703, 799, 804, 904, 1002, 1003, 1101,
   elseif i==8  f5(y, x, -E(4))
   elseif i==9  f9(x, y)
   elseif i==10 f9(y, x)
-  elseif i==11 exterior_power.(f3(x,y),2).//x
+  elseif i==11 map(m->m.//x,exterior_power.(f3(x,y),2))
   elseif i==12 f12(x, y)
   elseif i==13 f12(y, x)
-  elseif i==14 exterior_power.(f5(x,y,E(4)),2).//x
-  elseif i==15 exterior_power.(f5(x,y,-E(4)),2).//x
+  elseif i==14 map(m->m.//x,exterior_power.(f5(x,y,E(4)),2))
+  elseif i==15 map(m->m.//x,exterior_power.(f5(x,y,-E(4)),2))
   elseif i==16 f17(y, x)
   elseif i==17 f17(x, y)
   elseif i==18 f18(y, x)
@@ -726,10 +727,10 @@ y, [102, 203, 302, 403, 502, 601, 703, 799, 804, 904, 1002, 1003, 1101,
   elseif i==21 f21(x, y)
   elseif i==22 f22(y, x)
   elseif i==23 f21(y, x)
-  elseif i==24 f27(y, x, 1)
-  elseif i==25 f27(x, y, 1)
-  elseif i==26 f27(y, x, -1)
-  elseif i==27 f27(x, y, -1)
+  elseif i==24 f27(y, x, u)
+  elseif i==25 f27(x, y, u)
+  elseif i==26 f27(y, x, -u)
+  elseif i==27 f27(x, y, -u)
   elseif i==28 f28(x, y)
   elseif i==29 f28(y, x)
   elseif i==30 f30(x, y, E(4))

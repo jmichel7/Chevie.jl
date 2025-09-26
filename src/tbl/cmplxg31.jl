@@ -776,13 +776,14 @@ v+3, -2v^6-12v^4+4v^3-6v^2, -v^6+v^5-4v^4+2v^3-2v^2+v, -5v^6-11v^4-9v^2-2,
     adj(p, 
   [64,-32+32*q,16-32*q+16*q^2,8-16*q+8*q^2,10-22*q+10*q^2,-2+8*q-8*q^2+2*q^3,12-
   36*q+36*q^2-12*q^3,4-10*q+10*q^2-4*q^3,-4+12*q-12*q^2+4*q^3,-1+4*q-4*q^2+q^3,-
-  5+16*q-16*q^2+5*q^3,2*q-2*q^2,I*q^9,missing,-q+2*q^2-q^3,-6+23*q-34*q^2+
-  23*q^3-6*q^4,-I*q^3,8-16*q+16*q^2-16*q^3+8*q^4,missing,0,missing,-1+
+  5+16*q-16*q^2+5*q^3,2*q-2*q^2,I*q^9,0,-q+2*q^2-q^3,-6+23*q-34*q^2+
+  23*q^3-6*q^4,-I*q^3,8-16*q+16*q^2-16*q^3+8*q^4,
+  (-1+I)q^4+2q^3-2q^2+(1-I)q,0,(3+I)q^4+(-8-2I)q^3+(8+2I)q^2+(-3-I)q,-1+
   8*q-17*q^2+17*q^3-8*q^4+q^5,0,0,-2*q+2*q^2+2*q^4-2*q^5,10*I*q^15-
   22*I*q^16+10*I*q^17,4-26*q+62*q^2-80*q^3+62*q^4-26*q^5+4*q^6,-
   10*I*q^45+22*I*q^46-10*I*q^47,q^6,2*q-11*q^2+23*q^3-23*q^4+11*q^5-
   2*q^6,-5*I*q^15+16*I*q^16-16*I*q^17+5*I*q^18,5*I*q^45-
-  16*I*q^46+16*I*q^47-5*I*q^48,0,-4*q^10,missing,-1+12*q^2-
+  16*I*q^46+16*I*q^47-5*I*q^48,0,-4*q^10,5I*q^5-5I*q^4,-1+12*q^2-
   29*q^3+36*q^4-36*q^5+29*q^6-12*q^7+q^9,missing,-4*I*q^5,-10*q^30+22*q^31-
   10*q^32,4*I*q^35,missing,-2*q^31+2*q^32,0,0,4*q^31-12*q^32+10*q^33-
   10*q^34+12*q^35-4*q^36,-I*q^16+2*I*q^17-I*q^18,16*I*q^15-
@@ -791,20 +792,20 @@ v+3, -2v^6-12v^4+4v^3-6v^2, -v^6+v^5-4v^4+2v^3-2v^2+v, -5v^6-11v^4-9v^2-2,
   32*I*q^46,-8*q^30+16*q^31-8*q^32,-4*I*q^15+12*I*q^16-12*I*q^17+
   4*I*q^18,4*q^30-12*q^31+12*q^32-4*q^33,4*q^20,64*I*q^15,-64*I*q^45,-64*q^30])
   end
-  roo=chevieget(:G31,:root)(para,rootpara)
+  v=chevieget(:G31,:root)(para,rootpara)
   tbl[:irreducibles]=toM([f1(r),f1(p),
-    f6(p,r,-roo),f6(r,p,roo),f6(p,r,roo),f6(r,p,-roo),
-    f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-roo),f11(r,p,roo),
+    f6(p,r,-v),f6(r,p,v),f6(p,r,v),f6(r,p,-v),
+    f7(r,p),f7(p,r),f9(r,p),f9(p,r),f11(r,p,-v),f11(r,p,v),
     f14(p,r),f14(r,p),f16(p,r),f16(r,p),
-    f17(r,p,-roo),f17(p,r,-roo),f17(r,p,roo),f17(p,r,roo),
+    f17(r,p,-v),f17(p,r,-v),f17(r,p,v),f17(p,r,v),
     f21(r,p),f21(p,r),f23(r,p),f23(p,r),f25(r,p),f26(r,p),
-    f27(r,p,-roo),f27(p,r,roo),f27(r,p,roo),f27(p,r,-roo),
-    f31(r,p,roo),f31(p,r,roo),f31(r,p,-roo),f31(p,r,-roo),
-    f35(r,p,roo),f35(r,p,-roo),f37(r,p),f37(p,r),
-    f39(r,p,roo//p),f39(r,p,-roo//p),
-    f41(r,p),f42(r,p,roo),f42(p,r,roo),f42(r,p,-roo),f42(p,r,-roo),
-    f46(r,p),f46(p,r),f48(r,p,-roo),f48(r,p,roo),
-    f50(r,p,roo//p),f50(p,r,roo//r),f50(r,p,-roo//p),f50(p,r,-roo//r),
+    f27(r,p,-v),f27(p,r,v),f27(r,p,v),f27(p,r,-v),
+    f31(r,p,v),f31(p,r,v),f31(r,p,-v),f31(p,r,-v),
+    f35(r,p,v),f35(r,p,-v),f37(r,p),f37(p,r),
+    f39(r,p,v//p),f39(r,p,-v//p),
+    f41(r,p),f42(r,p,v),f42(p,r,v),f42(r,p,-v),f42(p,r,-v),
+    f46(r,p),f46(p,r),f48(r,p,-v),f48(r,p,v),
+    f50(r,p,v//p),f50(p,r,v//r),f50(r,p,-v//p),f50(p,r,-v//r),
     f54(r,p),f54(p,r),
     f56(r,p),f56(p,r),f58(r,p,E(4)),f58(r,p,-E(4))])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
@@ -816,7 +817,7 @@ chevieset(:G31, :CharTable, function()
   res[:identifier]=res[:name]="G31"
   res[:galomorphisms] = Group(perm"(7,9)(8,12)(13,17)(15,16)(19,21)(20,23)(25,27)(26,28)(31,32)(35,37)(38,40)(42,45)(43,44)(46,49)(51,52)(54,55)(57,58)")
   res[:text]="origin: mostly CharTable(H(G31))"
-  res[:irreducibles][vcat(58:59),[14, 19, 21, 35, 37, 41]].=0
+  res[:irreducibles][58:59,[37,41]].=0
   res[:irreducibles]=Matrix{Cyc{Int}}(res[:irreducibles])
   res
 end)
@@ -2254,56 +2255,56 @@ chevieset(:G31, :HeckeRepresentation, function (para, rootpara, i)
     9633, 9645, 9867]), (1, [1132, 4561, 4613, 4807, 6192, 7083, 7780, 7841,
     7998, 8911, 9618, 10119]), (x^-1*y, [7097])])
   x,y=para[1]
-  roo=chevieget(:G31,:root)(para,rootpara)
+  v=chevieget(:G31,:root)(para,rootpara)
   if i==1 f1(x)
   elseif i==2  f1(y)
-  elseif i==3  f6(y,x,roo)
-  elseif i==4  f6(x,y,-roo)
-  elseif i==5  f6(y,x,-roo)
-  elseif i==6  f6(x,y,roo)
+  elseif i==3  f6(y,x,v)
+  elseif i==4  f6(x,y,-v)
+  elseif i==5  f6(y,x,-v)
+  elseif i==6  f6(x,y,v)
   elseif i==7  f7(x,y)
   elseif i==8  f7(y,x)
   elseif i==9  f9(x,y)
   elseif i==10 f9(y,x)
-  elseif i==11 f11(x,y,-roo)
-  elseif i==12 f11(x,y,roo)
+  elseif i==11 f11(x,y,-v)
+  elseif i==12 f11(x,y,v)
   elseif i==13 f14(y,x)
   elseif i==14 f14(x,y)
   elseif i==15 f16(y,x)
   elseif i==16 f16(x,y)
-  elseif i==17 f19(x,y,roo)
-  elseif i==18 f19(y,x,roo)
-  elseif i==19 f19(x,y,-roo)
-  elseif i==20 f19(y,x,-roo)
+  elseif i==17 f19(x,y,v)
+  elseif i==18 f19(y,x,v)
+  elseif i==19 f19(x,y,-v)
+  elseif i==20 f19(y,x,-v)
   elseif i==21 f21(x,y)
   elseif i==22 f21(y,x)
   elseif i==23 f23(x,y)
   elseif i==24 f23(y,x)
   elseif i==25 f25(x,y)
   elseif i==26 f26(x,y)
-  elseif i==27 f27(x,y,-roo)
-  elseif i==28 f27(y,x,roo)
-  elseif i==29 f27(x,y,roo)
-  elseif i==30 f27(y,x,-roo)
-  elseif i==31 f31(x,y,roo)
-  elseif i==32 f31(y,x,roo)
-  elseif i==33 f31(x,y,-roo)
-  elseif i==34 f31(y,x,-roo)
-  elseif i==35 f35(x,y,roo)
-  elseif i==36 f35(x,y,-roo)
+  elseif i==27 f27(x,y,-v)
+  elseif i==28 f27(y,x,v)
+  elseif i==29 f27(x,y,v)
+  elseif i==30 f27(y,x,-v)
+  elseif i==31 f31(x,y,v)
+  elseif i==32 f31(y,x,v)
+  elseif i==33 f31(x,y,-v)
+  elseif i==34 f31(y,x,-v)
+  elseif i==35 f35(x,y,v)
+  elseif i==36 f35(x,y,-v)
   elseif i==37 f37(x,y)
   elseif i==38 f37(y,x)
   elseif i==39 nothing
   elseif i==40 nothing
   elseif i==41 nothing
-  elseif i==42 f42(x,y,roo)
-  elseif i==43 f42(y,x,roo)
-  elseif i==44 f42(x,y,-roo)
-  elseif i==45 f42(y,x,-roo)
+  elseif i==42 f42(x,y,v)
+  elseif i==43 f42(y,x,v)
+  elseif i==44 f42(x,y,-v)
+  elseif i==45 f42(y,x,-v)
   elseif i==46 f46(x,y)
   elseif i==47 f46(y,x)
-  elseif i==48 f48(x,y,-roo)
-  elseif i==49 f48(x,y,roo)
+  elseif i==48 f48(x,y,-v)
+  elseif i==49 f48(x,y,v)
   elseif i==50 nothing
   elseif i==51 nothing
   elseif i==52 nothing

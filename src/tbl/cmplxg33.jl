@@ -156,9 +156,12 @@ chevieset(:G33,:sparseFakeDegrees,[[1,0],[1,45],[1,28,1,34,1,36,1,40,1,42],
   [1,6,2,8,4,10,5,12,7,14,8,16,9,18,9,20,9,22,8,24,7,26,5,28,4,30,2,32,1,34],
   [1,11,2,13,4,15,5,17,7,19,8,21,9,23,9,25,9,27,8,29,7,31,5,33,4,35,2,37,1,39]])
 
+chevieset(:G33,:root,function(para,rootpara)
+  if ismissing(rootpara[1]) root(-prod(para[1])) else rootpara[1] end
+end)
+
 # Computed JM may 2009; completed using Marin-Pfeiffer 2015
-chevieset(:G33, :HeckeCharTable, function (para, rt)
-  x,y=para[1]
+chevieset(:G33, :HeckeCharTable, function (para, rootpara)
   tbl=Dict{Symbol, Any}(:identifier => "H(G33)", :size => 51840,:order=>51840)
   merge!(tbl, chevieget(:G33, :ClassInfo))
   merge!(tbl, chevieget(:G33, :CharInfo)())
@@ -386,8 +389,7 @@ x^2*y^5+x^3*y^4-x^5*y^2-x^6*y,0,-x^2*y^5-5*x^3*y^4-3*x^4*y^3,
 -x^4*y^11-3*x^5*y^10-5*x^6*y^9-6*x^7*y^8-5*x^8*y^7-3*x^9*y^6-x^10*y^5,
 6*x^7*y^8,11*x^21*y^26+21*x^22*y^25+7*x^23*y^24,32*x^21*y^25+
 28*x^22*y^24,60*x^21*y^24]
-  function f37(x,y,s)
-    v=s*root(-x*y,2)
+  function f37(x,y,v)
     [64,32*x+32*y,32*x*y+16*x^2+16*y^2,22*x*y+10*x^2+
 10*y^2,8*x*y^2+8*x^2*y+2*x^3+2*y^3,4*x*y^2+4*x^2*y,-4*x*y^2-4*x^2*y-2*x^3-
 2*y^3,16*x*y^2+16*x^2*y+5*x^3+5*y^3,24*x*y^2+24*x^2*y+8*x^3+8*y^3,2*x*y^3+
@@ -434,21 +436,22 @@ x^5*y^4, -x*y^6-x^2*y^5+2*x^4*y^3+2*x^5*y^2, 0,
  x^6*y^9-3*x^7*y^8-6*x^8*y^7-7*x^9*y^6-3*x^10*y^5-x^11*y^4,
 0,9*x^25*y^22+27*x^26*y^21+18*x^27*y^20,36*x^25*y^21+45*x^26*y^20,
 81*x^25*y^20]
+  x,y=para[1]
+  v=chevieget(:G33,:root)(para,rootpara)
   tbl[:irreducibles]=toM([f1(x),f1(y),f3(x,y,E(3)),f3(y,x,E(3)),f3(x,y,E(3,2)),
     f3(y,x,E(3,2)),f7(x,y),f7(y,x),f9(x,y,E(3)),f9(y,x,E(3)),f9(x,y,E(3,2)),
     f9(y,x,E(3,2)),f13(x,y),f13(y,x),f15(x,y),f15(y,x),f17(x,y),f17(y,x),
     f19(x,y),f19(y,x),f21(x,y),f21(y,x),f23(x,y,E(3)),f23(y,x,E(3)),
     f23(x,y,E(3,2)),f23(y,x,E(3,2)),f27(x,y,E(3)),f27(y,x,E(3)),
     f27(x,y,E(3,2)),f27(y,x,E(3,2)),f31(x,y,E(3)),f31(y,x,E(3)),f31(x,y,E(3,2)),
-    f31(y,x,E(3,2)),f35(x,y),f35(y,x),f37(x,y,-1),f37(x,y,1),f39(x,y),f39(y,x)])
+    f31(y,x,E(3,2)),f35(x,y),f35(y,x),f37(x,y,-v),f37(x,y,v),f39(x,y),f39(y,x)])
   tbl[:centralizers]=div.(tbl[:order],tbl[:classes])
   tbl
 end)
 
 chevieset(:G33,:galomorphisms,perm"(4,5)(6,7)(10,11)(12,13)(14,15)(16,17)(18,19)(20,21)(25,26)(28,29)")
 
-chevieset(:G33, :HeckeRepresentation, function (para, rt, i)
-  r,p=para[1]
+chevieset(:G33, :HeckeRepresentation, function (para, rootpara, i)
   f1(r)=map(x->[r;;],1:5)
   f5(x,y,j)=WGraph2Representation([[[2,3,4,5],[1,3,4,5],[1,2,4,5],[1,2,3,5],
     [1,2,3,4]],[[1,2,x,-y],[2,3,-j*y,j^2*x],[2,4,-y,x],[3,4,x,-y],[4,5,x,-y]]],
@@ -458,13 +461,13 @@ chevieset(:G33, :HeckeRepresentation, function (para, rt, i)
     rep=WGraph2Representation([[[1,5],[1,3,4],[2],[2,5],[3],[4]],[[1,2,-y,x],
       [1,4,-y,x],[2,3,-y,x],[2,5,-y,0],[2,6,-y,0],[3,4,0,-y],[4,5,-y,x],
       [4,6,-y,x]]],[x,y])
-    ir5=comatrix(rep[5])//det_bareiss(rep[5])
+    ir5=comatrix(rep[5]).//det_bareiss(rep[5])
     rep[4]=ir5*rep[4]*rep[5]
-    ir4=comatrix(rep[4])//det_bareiss(rep[4])
+    ir4=comatrix(rep[4]).//det_bareiss(rep[4])
     rep[3]=rep[4]*rep[3]*ir4
     rep
   end
-  f10(r,p,a)=map(x->exterior_power(x,2)//r,f5(r,p,a))
+  f10(r,p,a)=map(x->exterior_power(x,2).//r,f5(r,p,a))
   f13(x, y)=expandrep(5,15,Tuple{typeof(x*y), Vector{Int64}}[(-x^3, [512, 518]),
  (-x^3-x^2*y, [502, 515, 516, 590]), (x^3, [522, 524, 597]), (x^3+x^2*y+x*y^2,
  [521, 596]), (-x^2*y, [476, 480, 504, 505, 555, 577, 579, 580, 591]),
@@ -1521,8 +1524,7 @@ y^2, [778, 1250, 1336, 1982, 2002, 2569, 2666, 2670, 2681, 2682, 2687, 2883,
  13978, 15178, 16449, 16452, 17283, 17573, 17679, 17969, 17984]), (1, [4360,
  4383, 4683, 9183, 12706, 12734, 12760, 12783, 13606, 13634, 13687, 14582,
  14602, 15183, 15482, 15487, 15782, 16344, 16469, 17669, 17873])])
-  function f37(x,y,s)
-    v=s*root(-x*y,2)
+  function f37(x,y,v)
     expandrep(5,64,Tuple{typeof(v), Vector{Int64}}[(v*x^8*y^-8+3v*x^7*y^-7+
 4v*x^6*y^-6+5v*x^5*y^-5+5v*x^4*y^-4+4v*x^3*y^-3+3v*x^2*y^-2+v*x*y^-1+x^6*y^-5+
 x^5*y^-4+x^4*y^-3, [4239]), (-v*x^7*y^-7-5v*x^6*y^-6-8v*x^5*y^-5-8v*x^4*y^-4-
@@ -2449,6 +2451,8 @@ y^3, [208, 250, 537, 613, 655, 916, 1022, 1078, 1081, 1125, 1171, 1339, 1440,
  8637, 9852, 16912, 17721, 20557, 20962, 23797, 24606, 25822, 31830, 31833,
  31868, 31875]), (-x^-1, [9013, 19747, 24504, 26633, 27312, 31825]), (x^-1,
  [18531, 19746, 21772, 22582]), (-x^-2*y, [10242]), (x^-2*y, [10257])])
+  r,p=para[1]
+  v=chevieget(:G33,:root)(para,rootpara)
   if i==1 f1(r)
   elseif i==2  f1(p)
   elseif i==3  f5(p, r, E(3, 2))
@@ -2485,8 +2489,8 @@ y^3, [208, 250, 537, 613, 655, 916, 1022, 1078, 1081, 1125, 1171, 1339, 1440,
   elseif i==34 f31(p, r, E(3, 2))
   elseif i==35 f35(r, p)
   elseif i==36 f35(p, r)
-  elseif i==37 f37(r, p, -1)
-  elseif i==38 f37(r, p, 1)
+  elseif i==37 f37(r, p, -v)
+  elseif i==38 f37(r, p, v)
   elseif i==39 f39(p, r)
   elseif i==40 f39(r, p)
   end

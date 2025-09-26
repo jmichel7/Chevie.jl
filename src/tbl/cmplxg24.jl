@@ -84,10 +84,12 @@ chevieset(:G24, :sparseFakeDegrees, [[1, 0], [1, 21], [1, 8, 1, 16, 1, 18],
   [1, 4, 1, 6, 1, 8, 1, 10, 1, 12, 2, 14, 1, 16], 
   [1, 5, 2, 7, 1, 9, 1, 11, 1, 13, 1, 15, 1, 17]])
 
+chevieset(:G24,:root,function(para,rootpara)
+  if ismissing(rootpara[1]) root(-prod(para[1])) else rootpara[1] end
+end)
+
 # Computed JM oct. 2005
-chevieset(:G24, :HeckeCharTable, function (param, roots)
-  r,p=param[1]
-  u=root(-p*r)
+chevieset(:G24, :HeckeCharTable, function (para,rootpara)
   f1(r)=[1, r, r^2, r^2, r^9, r^3, r^4, r^7, r^18, r^6, r^11, r^21]
   f3(p,r,b)=[3,2p+r,p^2,p*r+p^2,b*p^6*r^3,(-b-1)*p^2*r,
              -2*p^2*r^2+p^4,0,b*p^12*r^6,(-b-1)*p^4*r^2,-p^7*r^4,3*p^14*r^7]
@@ -96,15 +98,15 @@ chevieset(:G24, :HeckeCharTable, function (param, roots)
   f7(p,r)=[7,4p+3r,2*p*r+p^2,2*p*r+2*p^2+r^2,0,0,-2*p^2*r^2+p^4,p^4*r^3,0,0,
            -p^6*r^5,7*p^12*r^9]
   f8(p,r,u)=[8, 4p+4r, 2*p*r+p^2+r^2, 3*p*r+p^2+r^2, u*p^4*r^4, -p*r*u,
-   -2*p^2*r^2+p^4+r^4, p^3*r^3*u, -(p^9)*r^9, -(p^3)*r^3, 0, 8*p^10*r^10*u]
+   -2*p^2*r^2+p^4+r^4, p^3*r^3*u, -p^9*r^9, -p^3*r^3, 0, 8*p^10*r^10*u]
+  r,p=para[1]
+  b=E(7,3)+E(7,5)+E(7,6)
+  u=chevieget(:G24,:root)(para,rootpara)
   tbl=Dict(:identifier=>"H(G24)",:name=>"H(G24)",:size=>336,:order=>336,
-           :powermap=>chevieget(:G24,:PowerMaps),
-           :irreducibles=>toM([f1(r),f1(p),
-           f3(p,r,E(7,3)+E(7,5)+E(7,6)),
-           f3(r,p,E(7,3)+E(7,5)+E(7,6)),
-           f3(p,r,conj(E(7,3)+E(7,5)+E(7,6))),
-           f3(r,p,conj(E(7,3)+E(7,5)+E(7,6))),
-  f6(r,p),f6(p,r),f7(p,r),f7(r,p),f8(p,r,u),f8(p,r,-u)]),
+    :powermap=>chevieget(:G24,:PowerMaps),
+    :irreducibles=>toM([f1(r),f1(p),
+    f3(p,r,b), f3(r,p,b), f3(p,r,conj(b)), f3(r,p,conj(b)),
+    f6(r,p),f6(p,r),f7(p,r),f7(r,p),f8(p,r,u),f8(p,r,-u)]),
            :galomorphisms=>Group(perm"(5,6)(9,10)"))
   merge!(tbl, chevieget(:G24, :ClassInfo))
   merge!(tbl, chevieget(:G24, :CharInfo)())
@@ -114,7 +116,7 @@ end)
 
 chevieset(:G24,:galomorphisms,perm"(5,6)(9,10)")
 
-chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
+chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
   f1(r)=map(x->[r;;],1:3)
   f3(p,r,b)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
     [1,3,p,-r],[2,3,r*(b+1),p*b]]],[p,r]).*(p^0*r^0)
@@ -125,8 +127,7 @@ chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
    [[1,2,0,-r],[1,3,0,p],[1,4,p,-r],[1,5,0,-r],[1,6,-p,r],[2,5,-p,0],[2,7,-p,r],
     [3,4,-p,0],[3,5,p,-r],[3,6,p,0],[3,7,p,0],[4,6,0,-p],[4,7,-r,p],[5,6,-r,p],
     [5,7,-r,0]]], [p,r]).*(p^0*r^0)
-  function f11(x, y, e)
-    v=e*root(-x*y)
+  function f11(x, y, v)
     expandrep(3,8,Tuple{typeof(v),Vector{Int64}}[(-v*y,[105]),(-v*y+x*y,
       [79]),(v*y,[129]),(v*y-x^2-x*y, [153]), (-v, [113, 150]), (-v-y, [156,
       160]),(v,[74,77, 185]), (-x^2, [151]), (-x*y, [9, 152]), (-x, [37, 169]),
@@ -135,29 +136,31 @@ chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
       138, 163, 165, 191]), (-1, [65]), (1, [68])])
   end
   r,p=para[1]
+  u=chevieget(:G24,:root)(para,rootpara)
+  b=E(7,3)+E(7,5)+E(7,6)
   if     i==1  f1(r)
   elseif i==2  f1(p)
-  elseif i==3  f3(p, r, E(7,3)+E(7,5)+E(7,6))
-  elseif i==4  f3(r, p, E(7,3)+E(7,5)+E(7,6))
-  elseif i==5  f3(p, r, conj(E(7,3)+E(7,5)+E(7,6)))
-  elseif i==6  f3(r, p, conj(E(7,3)+E(7,5)+E(7,6)))
-  elseif i==7  f7(p, r)
-  elseif i==8  f7(r, p)
-  elseif i==9  f9(p, r)
-  elseif i==10 f9(r, p)
-  elseif i==11 f11(p, r, 1)
-  elseif i==12 f11(p, r, -1)
+  elseif i==3  f3(p,r,b)
+  elseif i==4  f3(r,p,b)
+  elseif i==5  f3(p,r,conj(b))
+  elseif i==6  f3(r,p,conj(b))
+  elseif i==7  f7(p,r)
+  elseif i==8  f7(r,p)
+  elseif i==9  f9(p,r)
+  elseif i==10 f9(r,p)
+  elseif i==11 f11(p,r,u)
+  elseif i==12 f11(p,r,-u)
   end
 end)
 
-CHEVIE[:families][:X7]=Family(Dict{Symbol, Any}(:name => "X7", :fourierMat =>
-   [-1//2 1//2 root(-7)//2 root(-7)//2 -1 -1 -1;
-    1//2 -1//2 root(-7)//2 root(-7)//2 1 1 1;
-    root(-7)//2 root(-7)//2 root(-7)//2 -root(-7)//2 0 0 0;
-    root(-7)//2 root(-7)//2 -root(-7)//2 root(-7)//2 0 0 0;
-    -1 1 0 0 -E(7,6)-E(7) -E(7,5)-E(7,2) -E(7,4)-E(7,3);
-    -1 1 0 0 -E(7,5)-E(7,2) -E(7,4)-E(7,3) -E(7,6)-E(7);
-    -1 1 0 0 -E(7,4)-E(7,3) -E(7,6)-E(7) -E(7,5)-E(7,2)]//root(-7),
+CHEVIE[:families][:X7]=Family(Dict{Symbol, Any}(:name=>"X7",:fourierMat=>
+   [-1 1 root(-7) root(-7) -2 -2 -2; 
+    1 -1 root(-7) root(-7) 2 2 2; 
+    root(-7) root(-7) root(-7) -root(-7) 0 0 0; 
+    root(-7) root(-7) -root(-7) root(-7) 0 0 0; 
+    -2 2 0 0 -2E(7)-2E(7,6) -2E(7,2)-2E(7,5) -2E(7,3)-2E(7,4);
+    -2 2 0 0 -2E(7,2)-2E(7,5) -2E(7,3)-2E(7,4) -2E(7)-2E(7,6);
+    -2 2 0 0 -2E(7,3)-2E(7,4) -2E(7)-2E(7,6) -2E(7,2)-2E(7,5)]//2root(-7),
    :eigenvalues => [1, 1, 1, -1, E(7,4), E(7,2), E(7)],
    :explanation => "mystery G24", :special => 1, :cospecial => 2))
 
