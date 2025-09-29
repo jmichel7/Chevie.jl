@@ -473,9 +473,8 @@ end
 """
 `CharTable(H::HeckeAlgebra or HeckeCoset)`
 
-returns  the `CharTable` of the Hecke algebra `H`. For the primitive groups
-`G₃₁,  G₃₂,  G₃₄`  there  are  `missing` entries corresponding to missing
-representations   (see  [`representation`](@ref)).   The  columns   of  the
+returns the `CharTable` of the Hecke algebra `H`. For the primitive complex
+reflection  group `G₃₄`  there are  `missing` entries.  The columns  of the
 `CharTable`  are labelled  by `classnames(H.W)`  and contain  the character
 values for the corresponding element given by `classreps(H.W)`.
 
@@ -1144,8 +1143,8 @@ computes  character values on a  lift of the element  of `W` defined by the
 word `v` in `gens(W)`.
 
 For  complex reflection  groups the  character table  of the  generic Hecke
-algebra  of  `W`  has  been  computed  (not  entirely for 3 exceptions, see
-`representation`)  in the  sense that,  if `s₁,…,sₙ`  are generators of the
+algebra  of  `W`  has  been  computed  (excepted for `G₃₄`)
+in the  sense that,  if `s₁,…,sₙ`  are generators of the
 braid  group lifting  the Broué-Malle-Rouquier-Bessis-Michel  generators of
 `W`,  there is at least one element `v`  in each conjugacy class of `W` and
 one  expression in the generators for it  such that the character values of
@@ -1154,8 +1153,9 @@ known.  Such an expression in the generators  will be called a *known* word
 (the  list of known words  is obtained by `word.(conjugacy_classes(W))`. If
 the  word `v` is known, the computation is quick using the character table.
 If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
-representation.   The   values   returned   are   `missing`  for  missing
-representations (see `representation`).
+representation.   The   values   returned   are   `missing`   for   missing
+representations  (see `representation`). There  are missing representations
+for `G₃₁,G₃₂` and `G₃₄`.
 ```julia-repl
 julia> W=crg(4)
 G₄
