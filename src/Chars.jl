@@ -436,15 +436,16 @@ function schur_functor(A,la)
   n=sum(la)
   S=coxsym(n)
   r=representation(S,findfirst(==(la),partitions(n)))
-  rep=function(x)x=word(S,x)
-    isempty(x) ? r[1]^0 : prod(r[x]) end
+  rep(x)=isone(x) ? one(r[1]) : prod(r[word(S,x)])
   f=j->prod(factorial,last.(tally(j)))
   basis=multisets(axes(A,1),n)
-  M=sum(x->kron(rep(x),toM(map(function(i)i=invpermute(i,x)
-  return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
+  M=sum(x->kron(rep(x),
+  toM(map(function(i)i=invpermute(i,x)
+      return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))
+               ),elements(S))
 # Print(Length(M),"=>");
-  M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
-  M=M[:,filter(i->!all(iszero,M[:,i]),axes(M,2))]
+  M=M[filter(i->!iszero(@view M[i,:]),axes(M,1)),:]
+  M=M[:,filter(i->!iszero(@view M[:,i]),axes(M,2))]
   m=sort.(collectby(i->M[:,i],axes(M,2)))
   m=sort(m)
   M=M[:,first.(m)]
@@ -1323,13 +1324,14 @@ julia> representation(complex_reflection_group(24),3)
 function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   tt=refltype(W)
   if isempty(tt) return Matrix{Int}[] end
-  dims=chevieget.(tt,:NrConjugacyClasses)
-  mm=chevieget.(tt,:Representation,lin2cart(dims,i))
+  if length(tt)==1 return chevieget(tt[1],:Representation,i) end
+  v=lin2cart(chevieget.(tt,:NrConjugacyClasses),i)
+  mm=chevieget.(tt,:Representation,v)
   if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
-    FF=map(x->x[:F],mm)
+    FF=map(x->x.F,mm)
     F=length(FF)==1 ? FF[1] : kron(FF...)
-    mm=map(x->x[:gens],mm)
+    mm=map(x->x.gens,mm)
   end
   n=length(tt)
   if n==1 reps=mm[1]

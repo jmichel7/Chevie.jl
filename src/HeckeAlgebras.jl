@@ -474,9 +474,11 @@ end
 `CharTable(H::HeckeAlgebra or HeckeCoset)`
 
 returns the `CharTable` of the Hecke algebra `H`. For the primitive complex
-reflection  group `G₃₄`  there are  `missing` entries.  The columns  of the
-`CharTable`  are labelled  by `classnames(H.W)`  and contain  the character
-values for the corresponding element given by `classreps(H.W)`.
+reflection group `G₃₄` there are `missing` entries. If `W=H.W`, the columns
+of  the  `CharTable`  are  labelled  by  `classnames(W)`; the `i`-th column
+contains   the  character  values   for  the  lift   to  `H`  of  the  word
+`classinfo(W).classreps[i]`   for   the   element   `classreps(W)[i]`  (see
+`char_values`for more information).
 
 ```julia-repl
 julia> H=hecke(crg(4),Pol())
@@ -1136,26 +1138,26 @@ char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 `char_values(H::HeckeAlgebra,v::Vector{<:Integer})`
 
 For an Iwahori-Hecke algebra this computes the character values of `H` on
-the `Tbasis(H)(v)`.
+`Tbasis(H)(v)`.
 
 For  `H` the Hecke algebra  of a complex reflection  group `W` this routine
 computes  character values on a  lift of the element  of `W` defined by the
 word `v` in `gens(W)`.
 
 For  complex reflection  groups the  character table  of the  generic Hecke
-algebra  of  `W`  has  been  computed  (excepted for `G₃₄`)
-in the  sense that,  if `s₁,…,sₙ`  are generators of the
-braid  group lifting  the Broué-Malle-Rouquier-Bessis-Michel  generators of
-`W`,  there is at least one element `v`  in each conjugacy class of `W` and
-one  expression in the generators for it  such that the character values of
-the  image `Tᵥ`  in the  Hecke algebra  of the  lift to the braid group are
-known.  Such an expression in the generators  will be called a *known* word
-(the  list of known words  is obtained by `word.(conjugacy_classes(W))`. If
+algebra of `W` has been computed (excepted for `G₃₄`) in the sense that, if
+`s₁,…,sₙ` are generators of the braid group lifting the
+Broué-Malle-Rouquier-Bessis-Michel generators of `W`, there is at least one
+element  `v`  in  each  conjugacy  class  of  `W` and one expression in the
+generators  for it such that the character  values of the image `Tᵥ` in the
+Hecke  algebra of the lift to the braid group are known. Such an expression
+in the generators will be called a *known* word (the list of known words is
+obtained  by `word.(conjugacy_classes(W))`  or `classinfo(W).classtext`. If
 the  word `v` is known, the computation is quick using the character table.
 If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
 representation.   The   values   returned   are   `missing`   for   missing
-representations  (see `representation`). There  are missing representations
-for `G₃₁,G₃₂` and `G₃₄`.
+representations  (see `representation`;  there are  missing representations
+for `G₃₁, G₃₂` and `G₃₄`).
 ```julia-repl
 julia> W=crg(4)
 G₄

@@ -16,6 +16,8 @@ module Tests
 using Chevie
 export RG
 
+CHEVIE[:CheckIndexChars]=true
+
 const test=Dict{Symbol,@NamedTuple{applicable::Function,comment::String}}()
 
 curtest::Symbol=:no
@@ -67,7 +69,7 @@ end
 See `Tests.tests()` for available tests. 
 Errors are logged by default on `stdout` or on file `log`
 """
-function RG(s::Symbol;log="")
+function RG(s::Symbol;log="",resume=coxgroup())
   if !isempty(log)
     global curio=open(log,create=true,write=true,append=true)
   end
@@ -77,7 +79,8 @@ function RG(s::Symbol;log="")
   t=test[s]
   global curtest=s
   println("testing ",s,"\n",t.comment)
-  for W in all_ex if t.applicable(W) 
+  start=findfirst(==(resume),all_ex)
+  for W in all_ex[start:end] if t.applicable(W) 
     global curW=W
     printstyled(rio(),s,"(",W,")";bold=true,color=:magenta)
     @time getfield(Tests,Symbol(:T,s))(W) 
@@ -103,11 +106,12 @@ end
 """
 `RG(v::Vector=all_ex;log="")` apply all tests to spets in `v`
 """
-function RG(v::Vector=all_ex;log="")
+function RG(v::Vector=all_ex;log="",resume=coxgroup())
   if !isempty(log)
     global curio=open(log,create=true,write=true,append=true)
   end
-  for W in v RG(W) end
+  start=findfirst(==(resume),v)
+  for W in v[start:end] RG(W) end
   if !isempty(log) close(curio) end
 end
 

@@ -969,7 +969,7 @@ function spets(W::PermRootGroup,F::AbstractMatrix;NC=false)
       error("only reflection cosets of finite order implemented")
       return nothing
     end
-    l=argmin(x->(order(x),exponent(x),l)) # choose simplest scal
+    l=argmin(x->(order(x),exponent(x)),l) # choose simplest scal
     (l,map(x->x.ind[findfirst(==(l),x.scal)],scal))
   end
   if any(isnothing,s)
