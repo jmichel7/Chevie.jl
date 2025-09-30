@@ -299,11 +299,14 @@ same conventions.
 
 Computing characters or representations of Hecke algebra needs sometimes to
 extract  roots of the  parameters. These roots  are extracted automatically
-(when  possible). For Coxeter groups it  is possible to give explicit roots
-by  giving  a  keyword  argument  `rootpara`:  if  it is a vector it should
-contain at the `i`-th position a square root of
-`-parameter[i][1]*parameter[i][2]`;   if  a   scalar  it   is  replaced  by
-`fill(rootpara,ngens(W))`.   The  function  `rootpara(H)`   tries  to  fill
+(when  possible). To control the roots, which is needed for example to have
+composable  specializations  or  make  sure  the  same  root  is  used  for
+subgroups,  for Coxeter  groups it  is possible  to give  explicit roots by
+giving  a keyword argument `rootpara`: if it  is a vector it should contain
+at  the `i`-th position a square root of `-parameter[i][1]*parameter[i][2]`
+(that  is, a square root of `q`  if `parameter[i]==[q,-1]`); if a scalar it
+is  replaced by `fill(rootpara,ngens(W))`. If  not specified the entries in
+`rootpara`  start  as  missing.  The  function  `rootpara(H)` tries to fill
 automatically  missing entries in `H.rootpara`  and returns the result. The
 same  mechanism  has  been  extended  to  some  complex  reflection  groups
 generated  by 2-reflections and needing only square roots of the parameters
