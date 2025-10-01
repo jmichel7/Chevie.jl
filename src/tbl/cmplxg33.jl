@@ -2452,7 +2452,6 @@ y^3, [208, 250, 537, 613, 655, 916, 1022, 1078, 1081, 1125, 1171, 1339, 1440,
  31868, 31875]), (-x^-1, [9013, 19747, 24504, 26633, 27312, 31825]), (x^-1,
  [18531, 19746, 21772, 22582]), (-x^-2*y, [10242]), (x^-2*y, [10257])])
   r,p=para[1]
-  v=chevieget(:G33,:root)(para,rootpara)
   if i==1 f1(r)
   elseif i==2  f1(p)
   elseif i==3  f5(p, r, E(3, 2))
@@ -2489,8 +2488,8 @@ y^3, [208, 250, 537, 613, 655, 916, 1022, 1078, 1081, 1125, 1171, 1339, 1440,
   elseif i==34 f31(p, r, E(3, 2))
   elseif i==35 f35(r, p)
   elseif i==36 f35(p, r)
-  elseif i==37 f37(r, p, -v)
-  elseif i==38 f37(r, p, v)
+  elseif i==37 f37(r, p, -chevieget(:G33,:root)(para,rootpara))
+  elseif i==38 f37(r, p, chevieget(:G33,:root)(para,rootpara))
   elseif i==39 f39(p, r)
   elseif i==40 f39(r, p)
   end

@@ -136,7 +136,6 @@ chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
       138, 163, 165, 191]), (-1, [65]), (1, [68])])
   end
   r,p=para[1]
-  u=chevieget(:G24,:root)(para,rootpara)
   b=E(7,3)+E(7,5)+E(7,6)
   if     i==1  f1(r)
   elseif i==2  f1(p)
@@ -148,8 +147,8 @@ chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
   elseif i==8  f7(r,p)
   elseif i==9  f9(p,r)
   elseif i==10 f9(r,p)
-  elseif i==11 f11(p,r,u)
-  elseif i==12 f11(p,r,-u)
+  elseif i==11 f11(p,r,chevieget(:G24,:root)(para,rootpara))
+  elseif i==12 f11(p,r,-chevieget(:G24,:root)(para,rootpara))
   end
 end)
 

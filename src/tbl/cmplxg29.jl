@@ -703,7 +703,6 @@ y, [102, 203, 302, 403, 502, 601, 703, 799, 804, 904, 1002, 1003, 1101,
  [2601]), (1, [8, 157, 791, 990, 1283, 2516]), (y^-1, [824]), (-x^-1,
  [2633])])
   x,y=para[1]
-  u=chevieget(:G29,:root)(para,rootpara)
   if     i==1  f1(x)
   elseif i==2  f1(y)
   elseif i==3  f3(x, y)
@@ -727,10 +726,10 @@ y, [102, 203, 302, 403, 502, 601, 703, 799, 804, 904, 1002, 1003, 1101,
   elseif i==21 f21(x, y)
   elseif i==22 f22(y, x)
   elseif i==23 f21(y, x)
-  elseif i==24 f27(y, x, u)
-  elseif i==25 f27(x, y, u)
-  elseif i==26 f27(y, x, -u)
-  elseif i==27 f27(x, y, -u)
+  elseif i==24 f27(y, x, chevieget(:G29,:root)(para,rootpara))
+  elseif i==25 f27(x, y, chevieget(:G29,:root)(para,rootpara))
+  elseif i==26 f27(y, x, -chevieget(:G29,:root)(para,rootpara))
+  elseif i==27 f27(x, y, -chevieget(:G29,:root)(para,rootpara))
   elseif i==28 f28(x, y)
   elseif i==29 f28(y, x)
   elseif i==30 f30(x, y, E(4))

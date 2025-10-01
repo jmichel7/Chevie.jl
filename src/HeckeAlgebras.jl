@@ -820,7 +820,7 @@ Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 means  `representation(h.H,r)`. The value of that representation applied to
 `h` is returned. Here `h.H` can be an Hecke algebra or an Hecke coset.
 ```julia-repl
-julia> H=hecke(coxsym(4),Pol());T=Tbasis(H);
+julia> H=hecke(coxsym(4),Pol(:x));T=Tbasis(H);
 
 julia> representation(T(1,2)^2,2)
 3×3 Matrix{Pol{Rational{Int64}}}:
