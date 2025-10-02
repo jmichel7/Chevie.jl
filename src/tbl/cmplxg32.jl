@@ -2303,7 +2303,7 @@ chevieset(:G32, :Representation, function(i)
   if i==31 r=map(kron, f(4), f(15))
   elseif i==32 r=map(x->schur_functor(x, [2, 2]), f(5))
   elseif i==33 r=E(3)* f(34)
-  elseif i==34 r=map(x->symmetric_power(x,3), f(4))
+  elseif i==34 r=symmetric_power.(f(4),3)
   elseif i==35 r=E(3,2)*f(34)
   elseif i==36 r=conj(f(33))
   elseif i==37 r=E(3)* f(36)
@@ -2504,6 +2504,7 @@ chevieset(:G32, :Representation, function(i)
   elseif i==88 r=E(3,2)*f(79)
   elseif i==89 r=E(3,2)*f(80)
   elseif i==90 r=E(3)*f(80)
+# elseif i==91 r=schur_functor.(f(4),Ref([3,2,1]))
   elseif i==91
     r=expandrep(4,64,[(-4,[8306,8374,9585,9653,9841,9909]),(-3,[8378,9657,9913,
  13940, 14008, 14194, 14262]), (-2, [2345, 4323, 5045, 5081, 7906, 8254, 8310,

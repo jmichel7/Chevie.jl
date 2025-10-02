@@ -1255,28 +1255,32 @@ function char_powers_class(powermap::AbstractVector,char::AbstractVector,
 end
 
 """
-`schur_functor(ct::CharTable,φ,λ)`
+`schur_functor(ct::CharTable,φ::AbstractVector,λ)`
 
-`φ`  should be  a vector  representing a  character (for  example, a row of
-`ct.irr`) and `λ` a partition of `n`. Returns the Schur functor `φ[λ]` of φ
-defined  by λ  (indexing a  representation of  `𝔖 ₙ`). This is the character
+`schur_functor(ct::CharTable,i::Integer,λ)`
+
+`ct`  should be a character table for some group `G`. In the first form `φ`
+should  be a vector representing a character of `G`, and in the second form
+`i`  denotes the `i`-th  character `φ` of  `G`. `λ` is  a partition of some
+integer  `n`, representing an irreducible character  of `𝔖 ₙ`. The function
+returns  the Schur functor `φ[λ]` of φ defined by λ . This is the character
 defined by the formula
 
 ``φ[λ](g)=∑_μ λ(μ)∏_{k∈1:n}φ(gᵏ)^{nₖ(μ)}``
 
-where  `mu` runs  over the  partitions of  `n`, representing the classes of
-`𝔖 ₙ`,  where `λ(μ)`  is the  value of  character `λ`  at the class `μ`, and
+where  `μ` runs over the partitions of  `n`, representing the classes of `𝔖
+ₙ`,  where `λ(μ)` is the  value of the character  `λ` at the class `μ`, and
 `nₖ(μ)` is the number of parts of `μ` equal to `k`.
 
-Particular examples are the exterior powers, corresponding to the partition
-`1ⁿ`, and the symmetric powers, corresponding to the partition `n`.
+Particular  examples are the exterior  powers, corresponding to `λ=1ⁿ`, and
+the symmetric powers, corresponding `λ=n`.
 
 `ct`  should  have  `.powermaps`  containing  powermaps  for  at  least the
-divisors of the order of the group.
+prime divisors of the order of `G`.
 """
 function schur_functor(ct::CharTable,ch::AbstractVector,λ::AbstractVector)
   n=sum(λ)
-  if length(λ)>1 && !reduce(>=,λ) error("λ shoud be decreasing") end
+  if any(i->λ[i-1]<λ[i],2:length(λ)) error("λ shoud be decreasing") end
   Sn=coxsym(n)
   pp=partitions(n)
   Csn=CharTable(Sn)
@@ -1291,6 +1295,8 @@ function schur_functor(ct::CharTable,ch::AbstractVector,λ::AbstractVector)
   end
 end
       
+schur_functor(ct::CharTable,i::Integer,λ)=schur_functor(ct,ct.irr[i,:],λ)
+
 """
 `eigen(ct::CharTable,char::AbstractVector,class)``
 
@@ -1349,10 +1355,10 @@ reflection  group or Spets `W`, a list of matrices images of the generating
 reflections  of `W` in a model of the representation (for Spets, the result
 is  a `NamedTuple` with fields `gens`,  a representation of `Group(W)`, and
 `F`,  the matrix for `W.phi` in the representation). This function is based
-on  the  classification,  and  is  not  yet fully implemented for `G₃₄`; 78
-representations  are  missing  out  of  169,  that  is,  representations of
-dimension  ≥140,  except  half  of  those  of  dimensions 315, 420 and 840.
-`nothing` is returned for a missing representation.
+on  the  classification,  and  is  not  yet fully implemented for `G₃₄`; 60
+representations   are  missing  out   of  169,  that   is,  about  half  of
+representations  of  dimension  ≥140.  `nothing`  is returned for a missing
+representation.
 
 ```julia-repl
 julia> representation(complex_reflection_group(24),3)

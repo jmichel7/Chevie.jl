@@ -593,10 +593,10 @@ end
 `isrepresentation(W::ComplexReflectionGroup,r;details=false)`
 
 returns `true` or `false`, according to whether a given set `r` of elements
-corresponding  to  the  standard  generators  of  the  reflection group `W`
-defines a representation of the Hecke algebra `H` or not
-(`isrepresentation(W,r)` is equivalent to `isrepresentation(hecke(W)),r)`.
-If `details=true` the functions gives details of the cause of a failure.
+in bijection with `gens(H.W)` defines a representation of the Hecke algebra
+`H` or not; `isrepresentation(W,r)` is equivalent to
+`isrepresentation(hecke(W)),r)`.  If  `details=true`  the  functions  gives
+details of the cause of a failure.
 
 ```julia-repl
 julia> H=hecke(coxgroup(:F,4))
@@ -615,14 +615,18 @@ function isrepresentation(H::HeckeAlgebra,t;details=false)
 #   bug in sparsearrays: q*one(m) is of type Any for SparseMatrix m
   myone(m,q)=m isa AbstractMatrix ? Diagonal(fill(q,size(m,1))) : q*one(m) 
   for i in eachindex(gens(W))
-    if !iszero(prod(q->t[i]-myone(t[i],q+0),H.para[i]))
+    n=length(H.para[i])
+    if H.para[i]==E(n).^(0:n-1) rel= t[i]^n==one(t[i])
+    else rel= iszero(prod(q->t[i]-myone(t[i],q+0),H.para[i]))
+    end
+    if !rel
       if !details return false end
       println("Error in ",ordinal(i)," parameter relation");
       res=false
     end
   end
   for (l,r) in braid_relations(W)
-    if !iszero(prod(t[l])-prod(t[r]))
+    if prod(t[l])!=prod(t[r])
       if !details return false end
       println("Error in relation ",l,"=",r)
       res=false
