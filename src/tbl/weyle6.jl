@@ -35,7 +35,7 @@ chevieset(:E6,:PowerMaps,[nothing,
   [1,2,3,4,5,6,7,8,1,10,11,12,13,14,15,16,17,18,19,20,21,22,23,16,25],
   nothing,1:25,nothing,nothing,nothing,1:25])
 
-chevieset(:E6, :ClassInfo, Dict{Symbol, Any}(:classtext => [[],
+chevieset(:E6, :ClassInfo, Dict{Symbol, Any}(:classtext => [Int[],
   [3, 4, 3, 2, 4, 3, 5, 4, 3, 2, 4, 5], [1, 4],
   [1, 3, 1, 4, 3, 1, 2, 4, 5, 4, 3, 1, 2, 4, 3, 5, 6, 5, 4, 3, 2, 4, 5, 6],
   [1, 3], [1, 3, 5, 6], [3, 4, 3, 2, 4, 5], [1, 4, 3, 6], [1, 4, 3, 2],
@@ -305,7 +305,6 @@ chevieset(:E6, :sparseFakeDegrees, [
    6, 21, 7, 22, 5, 23, 5, 24, 4, 25, 4, 26, 2, 27, 2, 28, 1, 29, 1, 30]])
 
 chevieset(:E6, :ClassParameter, w->
-# if isempty(w) return "" end
   chevieget(:E6, :ClassNames)[findfirst(==(tally(cycletype(prod(
     chevieget(:E6,:generators)[w],init=Perm())))),chevieget(:E6,:cyclestructure))])
 

@@ -153,18 +153,15 @@ chevieset(:H3, :UnipotentCharacters, function ()
     mkcuspidal("H_3",15,E(4);qeig=1//2),
     mkcuspidal("H_3",16,-E(4);qeig=1//2)],
     :families=>[Family("C1", [2]),
-       Family(CHEVIE[:families][:Dihedral](5), [7, 8, 14, 13],
-              Dict{Symbol, Any}(:ennola=>-1)),
-       Family("C1", [4]),
-       Family(CHEVIE[:families][:TQZ](2,-1,[1,-1]), [9, 10, 16, 15],
-              Dict{Symbol, Any}(:cospecial=>2, :ennola=>4)),
-       Family("C1", [3], Dict{Symbol, Any}(:ennola=>-1)),
-       Family(CHEVIE[:families][:Dihedral](5), [5, 6, 12, 11],
-              Dict{Symbol, Any}(:ennola=>1)),
-       Family("C1", [1], Dict{Symbol, Any}(:ennola=>-1))],
+       Family(Family(:Dihedral)(5),[7,8,14,13],ennola=-1),
+       Family("C1",[4]),
+       Family(Family(:TQZ)(2,-1,[1,-1]),[9,10,16,15],cospecial=2,ennola=4),
+       Family("C1",[3],ennola=-1),
+       Family(Family(:Dihedral)(5),[5,6,12,11],ennola=1),
+       Family("C1",[1],ennola=-1)],
     :a=>[15, 0, 5, 2, 6, 6, 1, 1, 3, 3, 6, 6, 1, 1, 3, 3],
     :A=>[15, 0, 13, 10, 14, 14, 9, 9, 12, 12, 14, 14, 9, 9, 12, 12])
-    end)
+end)
 
 chevieset(:H3, :Discriminant, function ()
   function(a,b,c)131835937500*a*b^3*c-100195312500*a^2*b*c^2+395507812500*c^3-

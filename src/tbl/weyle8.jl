@@ -2973,7 +2973,7 @@ chevieset(:E8, :HeckeRepresentation, function (para, rootpara, i)
   -y*WGraphToRepresentation(8,chevieget(:E8,:WGraph)(i),v)
 end)
 
-CHEVIE[:families][:S5]=Family(Dict{Symbol, Any}(
+CHEVIE.families[:S5]=Family(Dict{Symbol, Any}(
   :group => Group(perm"(1,5)", perm"(2,5)", perm"(3,5)", perm"(4,5)"),
   :lusztig => true,
   :charLabels => ["(1,1)", "(1,\\lambda^4)", "(1,\\lambda^3)",

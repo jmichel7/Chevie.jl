@@ -412,7 +412,7 @@ chevieset(:G26, :HeckeRepresentation, function (para, rt, i)
 end)
 
 let j=E(3), j2=E(3,2), r3=root(-3)
-CHEVIE[:families][:X49]=Family(Dict{Symbol,Any}(:name=>"X49",:fourierMat=>
+CHEVIE.families[:X49]=Family(Dict{Symbol,Any}(:name=>"X49",:fourierMat=>
 [-r3//3 r3//3 -3j2 -3j 3 3 3 3-r3 3+r3 -2j-j2 -j-2j2 -2j-j2 -j-2j2 r3//3 -r3//3 2r3//3 -2r3//3 -3+r3 3+r3 2r3 -j-2j2 2j+j2 3j -3j2 3 3j2 3j -3j -3j2 j+2j2 2j+j2 3+r3 3-r3 -3 -3 -j-2j2 2j+j2 3j -3j2 -j-2j2 2j+j2 3j 3j2 2r3//3 r3//3 r3//3 2r3 2r3 2r3;
         r3//3 -r3//3 -3j -3j2 3 3 3 3+r3 3-r3 -j-2j2 -2j-j2 -j-2j2 -2j-j2 -r3//3 r3//3 -2r3//3 2r3//3 -3-r3 3-r3 -2r3 -2j-j2 j+2j2 3j2 -3j 3 3j 3j2 -3j2 -3j 2j+j2 j+2j2 3-r3 3+r3 -3 -3 -2j-j2 j+2j2 3j2 -3j -2j-j2 j+2j2 3j2 3j -2r3//3 -r3//3 -r3//3 -2r3 -2r3 -2r3;
         -3j2 -3j 3 3 -3 -3j -3j2 0 0 -3 -3 3 3 -3 -3 0 0 0 0 0 -3j 3j2 -3j 3j2 3 3 3 3j2 3j 3j2 3j 0 0 -3j -3j2 3j -3j2 3j -3j2 3j2 -3j 3j2 3j 0 3j -3j2 0 0 0; -3j -3j2 3 3 -3 -3j2 -3j 0 0 -3 -3 3 3 -3 -3 0 0 0 0 0 -3j2 3j -3j2 3j 3 3 3 3j 3j2 3j 3j2 0 0 -3j2 -3j 3j2 -3j 3j2 -3j 3j -3j2 3j 3j2 0 3j2 -3j 0 0 0; 3 3 -3 -3 3 3 3 0 0 3 3 -3 -3 3 3 0 0 0 0 0 3 -3 3 -3 -3 -3 -3 -3 -3 -3 -3 0 0 3 3 -3 3 -3 3 -3 3 -3 -3 0 -3 3 0 0 0;

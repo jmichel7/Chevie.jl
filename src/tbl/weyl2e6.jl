@@ -1,14 +1,14 @@
 #  tbl/weyl2e6.jl    CHEVIE library           Frank Luebeck and Jean Michel
 #  Copyright (C) 1994 - 2001  The CHEVIE Team
 
-chevieset(Symbol("2E6"), :NrConjugacyClasses, 25)
+chevieset("2E6", :NrConjugacyClasses, 25)
 
 ## these minimal length representatives were found by
 #  W=coxgroup(:E,6)
 #  short=map(conjugacy_classes(W))do c
 #    word(W,argmin(x->length(W,x),elements(c).*longest(W)))
 #  end
-chevieset(Symbol("2E6"), :ClassInfo, function ()
+chevieset("2E6", :ClassInfo, function ()
   res=Dict{Symbol,Any}(:classtext=>[
     [1,2,3,1,4,2,3,1,4,3,5,4,2,3,1,4,3,5,4,2,6,5,4,2,3,1,4,3,5,4,2,6,5,4,3,1],
     Int[],[3,4,3,5,4,3],[1,2,4,3,1,5,4,3,6,5,4,3],
@@ -27,7 +27,7 @@ chevieset(Symbol("2E6"), :ClassInfo, function ()
   res
 end)
 
-chevieset(Symbol("2E6"), :CharInfo, function ()
+chevieset("2E6", :CharInfo, function ()
   res=copy(chevieget(:E6, :CharInfo)())
   res[:a]=[0,36,7,1,25,7,3,15,3,15,2,20,6,12,3,15,7,7,7,5,11,4,13,6,10]
   res[:A]=[0,36,29,11,35,29,21,33,21,33,16,34,24,30,21,33,29,29,29,25,31,23,
@@ -37,7 +37,7 @@ chevieset(Symbol("2E6"), :CharInfo, function ()
   res
 end)
 
-chevieset(Symbol("2E6"), :cyclestructure, [Pair{Int64, Int64}[], [2 => 36],
+chevieset("2E6", :cyclestructure, [Pair{Int64, Int64}[], [2 => 36],
   [2 => 30], [3 => 24], [3 => 20], [3 => 22], [4 => 18], [2 => 5, 4 => 15],
   [5 => 14], [6 => 12], [2 => 6, 6 => 10], [2 => 3, 6 => 11],
   [2 => 6, 3 => 4, 6 => 8], [9 => 8], [12 => 6], [2 => 21], [2 => 35],
@@ -45,7 +45,7 @@ chevieset(Symbol("2E6"), :cyclestructure, [Pair{Int64, Int64}[], [2 => 36],
   [2 => 3, 3 => 10, 6 => 6], [2 => 2, 6 => 11], [8 => 9],
   [2 => 1, 5 => 6, 10 => 4], [4 => 3, 6 => 2, 12 => 4]])
 
-chevieset(Symbol("2E6"), :generators, [
+chevieset("2E6", :generators, [
   perm"(1,37)(3,7)(9,12)(13,17)(15,18)(19,22)(21,23)(24,26)(25,27)(28,30)(31,33)(39,43)(45,48)(49,53)(51,54)(55,58)(57,59)(60,62)(61,63)(64,66)(67,69)", 
   perm"( 2,38)( 4, 8)( 9,13)(10,14)(12,17)(15,19)(16,20)(18,22)(21,25)(23,27)(35,36)(40,44)(45,49)(46,50)(48,53)(51,55)(52,56)(54,58)(57,61)(59,63)(71,72)", 
   perm"( 1, 7)( 3,39)( 4, 9)( 8,13)(10,15)(14,19)(16,21)(20,25)(26,29)(30,32)(33,34)(37,43)(40,45)(44,49)(46,51)(50,55)(52,57)(56,61)(62,65)(66,68)(69,70)", 
@@ -53,13 +53,13 @@ chevieset(Symbol("2E6"), :generators, [
   perm"( 4,10)( 5,41)( 6,11)( 8,14)( 9,15)(12,18)(13,19)(17,22)(28,31)(30,33)(32,34)(40,46)(42,47)(44,50)(45,51)(48,54)(49,55)(53,58)(64,67)(66,69)(68,70)", 
   perm"( 5,11)( 6,42)(10,16)(14,20)(15,21)(18,23)(19,25)(22,27)(24,28)(26,30)(29,32)(41,47)(46,52)(50,56)(51,57)(54,59)(55,61)(58,63)(60,64)(62,66)(65,68)"])
 
-chevieset(Symbol("2E6"), :phi, perm"(1,42)(2,38)(3,41)(4,40)(5,39)(6,37)(7,47)(8,44)(9,46)(10,45)(11,43)(12,52)(13,50)(14,49)(15,51)(16,48)(17,56)(18,57)(19,55)(20,53)(21,54)(22,61)(23,59)(24,60)(25,58)(26,64)(27,63)(28,62)(29,67)(30,66)(31,65)(32,69)(33,68)(34,70)(35,71)(36,72)")
+chevieset("2E6", :phi, perm"(1,42)(2,38)(3,41)(4,40)(5,39)(6,37)(7,47)(8,44)(9,46)(10,45)(11,43)(12,52)(13,50)(14,49)(15,51)(16,48)(17,56)(18,57)(19,55)(20,53)(21,54)(22,61)(23,59)(24,60)(25,58)(26,64)(27,63)(28,62)(29,67)(30,66)(31,65)(32,69)(33,68)(34,70)(35,71)(36,72)")
 
-chevieset(Symbol("2E6"), :CartanMat, 
+chevieset("2E6", :CartanMat, 
   [2 0 -1 0 0 0;0 2 0 -1 0 0;-1 0 2 -1 0 0;0 -1 -1 2 -1 0;0 0 0 -1 2 -1;
    0 0 0 0 -1 2])
 
-chevieset(Symbol("2E6"), :vpolheckeirreducibles, 
+chevieset("2E6", :vpolheckeirreducibles, 
 Vector{Pol{Int64}}[[Pol([1],72), Pol([1]), Pol([1],12), Pol([1],24), Pol([1],
 32), Pol([1],28), Pol([1],36), Pol([1],4), Pol([1],16), Pol([1],32), Pol([1],
 4), Pol([1],4), Pol([1],4), Pol([1],8), Pol([1],12), Pol([1],30), Pol([1],2),
@@ -214,13 +214,13 @@ Vector{Pol{Int64}}[[Pol([1],72), Pol([1]), Pol([1],12), Pol([1],24), Pol([1],
 4), Pol([-1, 0, 2, 0, -1],2), Pol([-1, 0, 3, 0, -2]), Pol([-1],4), Pol([1],2),
  Pol([2, 0, -3, 0, 1],2)]])
 
-chevieset(Symbol("2E6"), :FakeDegree, function (p, q)
+chevieset("2E6", :FakeDegree, function (p, q)
   sgns=[1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,1]
   sgns[findfirst(==(p),chevieget(:E6, :CharInfo)()[:charparams])]*
     chevieget(:E6,:FakeDegree)(p,-q)
 end)
 
-chevieset(Symbol("2E6"), :ClassParameter, function (w,)
+chevieset("2E6", :ClassParameter, function (w,)
   x=prod(chevieget("2E6",:generators)[w],init=Perm())*chevieget("2E6",:phi)
   chevieget("2E6",:ClassNames)[findfirst(==(tally(classtype(x))),
                                chevieget("2E6",:cyclestructure))]
@@ -254,36 +254,36 @@ end
 end
 
 # We give the values of the *preferred* extensions defined in [CS,17.2 (b)].
-chevieset(Symbol("2E6"), :HeckeCharTable, function (param, rootparam)
+chevieset("2E6", :HeckeCharTable, function (param, rootparam)
   q=-param[1][1]//param[1][2]
   v=ismissing(rootparam[1]) ? root(q) : rootparam[1]
   tbl=Dict{Symbol, Any}(:identifier => "H(^2E6)",
     :text => "origin: Jean Michel, June 1996",
     :parameter=>map(i->[q,-1],1:6),
     :sqrtParameter=>fill(v,6),:size=>51840,
-    :cartan=>chevieget(Symbol("2E6"), :CartanMat),
-    :irreducibles => map(i->map(j->j(v),i),
-      chevieget(Symbol("2E6"),:vpolheckeirreducibles)),
-    :irredinfo=>chevieget(Symbol("2E6"), :IrredInfo))
-  merge!(tbl,chevieget(Symbol("2E6"),:ClassInfo)())
+    :cartan=>chevieget("2E6", :CartanMat),
+    :irreducibles=>map(i->map(j->j(v),i),
+      chevieget("2E6",:vpolheckeirreducibles)),
+    :irredinfo=>chevieget("2E6", :IrredInfo))
+  merge!(tbl,chevieget("2E6",:ClassInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)
 
-chevieset(Symbol("2E6"),:HeckeRepresentation,function(param,sqrtparam,i)
+chevieset("2E6",:HeckeRepresentation,function(param,sqrtparam,i)
   W=coxgroup(:E,6)
   H=hecke(W,-param[1][1]//param[1][2])
   gens=chevieget(:E6, :HeckeRepresentation)(param, sqrtparam, i)
   F=prod(gens[[1,4,6,3,2,5]])^6
-  F*=(-1)^chevieget(Symbol("2E6"),:CharInfo)()[:a][i]
+  F*=(-1)^chevieget("2E6",:CharInfo)()[:a][i]
   F=Matrix(F)
   F*=1//root(central_monomials(H)[i])
   (gens=gens,F=F)
 end)
 
-chevieset(Symbol("2E6"),:PhiFactors, [1, -1, 1, 1, -1, 1])
+chevieset("2E6",:PhiFactors, [1, -1, 1, 1, -1, 1])
 
-chevieset(Symbol("2E6"), :UnipotentCharacters,
+chevieset("2E6", :UnipotentCharacters,
   Dict{Symbol, Any}(:harishChandra=>[
   Dict(:relativeType=>TypeIrred(;series=:F,indices=[2,4,5,6],rank=4),
     :levi=>Int[],:eigenvalue=>1,:parameterExponents=>[1,1,2,2],
@@ -325,9 +325,9 @@ chevieset(Symbol("2E6"), :UnipotentCharacters,
        29, 31, 25, 23, 32, 30, 26, 24, 30, 29, 29, 29])
 )
 
-chevieset(Symbol("2E6"), :Ennola, SPerm())
+chevieset("2E6", :Ennola, SPerm())
 
-chevieset(Symbol("2E6"), :UnipotentClasses, function (p,)
+chevieset("2E6", :UnipotentClasses, function (p,)
   uc=copy(chevieget(:E6, :UnipotentClasses)(p))
   l=[("1", perm"(1,6)(3,5)"), ("A_1", perm"(1,5)(2,4)"), 
      ("A_2", perm"(1,2)(3,4)"), ("D_4", perm"(1,2)"), ("D_5", [-1;;]), 

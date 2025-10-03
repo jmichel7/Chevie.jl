@@ -118,7 +118,7 @@ chevieset(:G2, :SchurData, [
 chevieset(:G2, :SchurElement, function (phi, para, rootpara)
   u=-para[1][1]//para[1][2]
   v=-para[2][1]//para[2][2]
-  p=findfirst(==(phi),chevieget(:G2, :CharInfo)()[:charparams])
+  p=chevieget(:G2,:charindex)(phi)
   if p==1 return (1+u)*(v+1)*(u^2*v^2+u*v+1)
   elseif p==2 return (1+u)*(v+1)*(u^2*v^2+u*v+1)//u^3//v^3
   elseif p==3 return (u^2+v^2+u*v)*(1+u)*(v+1)//u^3

@@ -16,7 +16,7 @@ module Tests
 using Chevie
 export RG
 
-CHEVIE[:CheckIndexChars]=true
+CHEVIE.CheckIndexChars=true
 
 const test=Dict{Symbol,@NamedTuple{applicable::Function,comment::String}}()
 
@@ -47,12 +47,12 @@ spets_ex=vcat(
   crg.([4, 6, 8, 14, 24, 25, 26, 27, 29, 32, 33, 34]),
   [crg(3,1,2), crg(3,3,3), crg(3,3,4), crg(4,4,3)])
 
-twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
-  rootdatum(Symbol("2I2"),5), rootdatum(Symbol("2I2"),8), rootdatum(:psu,4),
-  rootdatum(Symbol("3D4")), rootdatum(:psu,5), rootdatum(Symbol("pso-"),8),
-  rootdatum(:psu,6), rootdatum(Symbol("2F4")), rootdatum(:psu,7),
-  rootdatum(Symbol("pso-"),10), rootdatum(Symbol("2E6")), rootdatum(:psu,8),
-  rootdatum(Symbol("pso-"),12), rootdatum(Symbol("pso-"),14)]
+twisted=[rootdatum(:psu,3), rootdatum("2B2"), rootdatum("2G2"),
+  rootdatum("2I2",5), rootdatum("2I2",8), rootdatum(:psu,4),
+  rootdatum("3D4"), rootdatum(:psu,5), rootdatum("pso-",8),
+  rootdatum(:psu,6), rootdatum("2F4"), rootdatum(:psu,7),
+  rootdatum("pso-",10), rootdatum("2E6"), rootdatum(:psu,8),
+  rootdatum("pso-",12), rootdatum("pso-",14)]
 
 all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)

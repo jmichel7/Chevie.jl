@@ -1,9 +1,9 @@
 #  tbl/cox2i.g         CHEVIE library         Meinolf Geck and Jean Michel
 #  Copyright (C) 1992 - 2001  The CHEVIE Team
 
-chevieset(Symbol("2I"), :NrConjugacyClasses,m->div(m+3,2))
+chevieset("2I", :NrConjugacyClasses,m->div(m+3,2))
 
-chevieset(Symbol("2I"), :WordsClassRepresentatives, function (m)
+chevieset("2I", :WordsClassRepresentatives, function (m)
   r=[Int[]]
   x=[1]
   for i in 1:div(m+1,2)
@@ -13,8 +13,8 @@ chevieset(Symbol("2I"), :WordsClassRepresentatives, function (m)
   r
 end)
 
-chevieset(Symbol("2I"), :ClassInfo, function(m)
-  res=Dict{Symbol,Any}(:classtext=>chevieget(Symbol("2I"),:WordsClassRepresentatives)(m))
+chevieset("2I", :ClassInfo, function(m)
+  res=Dict{Symbol,Any}(:classtext=>chevieget("2I",:WordsClassRepresentatives)(m))
   res[:classnames]=joindigits.(res[:classtext])
   res[:classparams]=res[:classnames]
   res[:classes]=[m]
@@ -25,14 +25,14 @@ chevieset(Symbol("2I"), :ClassInfo, function(m)
   res
 end)
 
-chevieset(Symbol("2I"), :PhiFactors,m->[1,-1])
+chevieset("2I", :PhiFactors,m->[1,-1])
 
-chevieset(Symbol("2I"), :ClassParameter, function (m, w)
+chevieset("2I", :ClassParameter, function (m, w)
   if iseven(length(w)) return "" end
   w[1]==2 ? joindigits(vcat(w[2:end],1)) : joindigits(w)
 end)
 
-chevieset(Symbol("2I"), :CharInfo, function(m)
+chevieset("2I", :CharInfo, function(m)
   res = Dict{Symbol, Any}(:extRefl => [1, 3, 2])
   if m==4
     res[:charparams] = [[[2], []], [[], [1, 1]], [[1], [1]]]
@@ -48,15 +48,15 @@ chevieset(Symbol("2I"), :CharInfo, function(m)
   res
 end)
 
-chevieset(Symbol("2I"), :FakeDegree, function (m, phi, q)
-  i=findfirst(==(phi),chevieget(Symbol("2I"),:CharInfo)(m)[:charparams])
+chevieset("2I", :FakeDegree, function (m, phi, q)
+  i=findfirst(==(phi),chevieget("2I",:CharInfo)(m)[:charparams])
   if i==1 q^0
   elseif i==2 q^m
   else q^(m+2-i)-q^(i-2)
   end
 end)
 
-chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, rootpara)
+chevieset("2I", :HeckeCharTable, function (m, param, rootpara)
   q=-param[1][1]//param[1][2]
   if m==4 ident = "2B"
   elseif m==6 ident = "2G"
@@ -65,7 +65,7 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, rootpara)
   ident=string(ident,"(",m,")")
   if q!=1 ident=string("H(", ident, ")") end
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
-  cl=chevieget(Symbol("2I"),:ClassInfo)(m)
+  cl=chevieget("2I",:ClassInfo)(m)
   cos(i)=E(2m,i)+E(2m,-i)
   ct=map(i->map(j->cos(1)*0*v,cl[:classtext]), cl[:classtext])
   ct[1]=map(i->q^length(i),cl[:classtext])
@@ -75,7 +75,7 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, rootpara)
       ct[i+2][j+1]=-v^(2j-1)*cos(i*(2j-1))
     end
   end
-  ci=chevieget(Symbol("2I"), :CharInfo)(m)
+  ci=chevieget("2I", :CharInfo)(m)
   tbl=Dict{Symbol, Any}(:identifier=>ident,:name=>ident,
     :cartan=>[2 -cos(1);-cos(1) 2], :size => 2m, :parameter => [q, q],
     :sqrtparameter=>[v,v],:irreducibles=>ct*v^0,
@@ -86,13 +86,13 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, rootpara)
   AdjustHeckeCharTable(tbl, param)
 end)
 
-chevieset(Symbol("2I"), :CharTable,m->
-  chevieget(Symbol("2I"), :HeckeCharTable)(m, [[1, -1], [1, -1]], [1, 1]))
+chevieset("2I", :CharTable,m->
+          chevieget("2I", :HeckeCharTable)(m, fill([1, -1],2), [1,1]))
 
-chevieset(Symbol("2I"), :Representation,(m, i)->
-  chevieget(Symbol("2I"),:HeckeRepresentation)(m,[[1,-1],[1,-1]],[1,1],i))
+chevieset("2I", :Representation,(m, i)->
+          chevieget("2I",:HeckeRepresentation)(m,fill([1,-1],2),[1,1],i))
 
-chevieset(Symbol("2I"), :HeckeRepresentation, function (m, param, rootpara, i)
+chevieset("2I", :HeckeRepresentation, function (m, param, rootpara, i)
   q=-param[1][1]//param[1][2]
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   e=E(2m)
@@ -127,7 +127,7 @@ end)
 #               prod(a->(x-z^a)*(x-z^-a),i),symUnp);
 # S*f.unpdeg=f.fakdeg
 # (Diagonal(f.eigenvalues)*transposed(S)*Diagonal(f.sh)^-1*S)^2=S^0
-chevieset(Symbol("2I"), :UnipotentCharacters,function(e)
+chevieset("2I", :UnipotentCharacters,function(e)
   uc=Dict{Symbol, Any}()
   n=div(e-1,2)
   nc=vcat(map(i->map(j->[i,j],i+1:e-i-1),1:n)...)
@@ -232,9 +232,9 @@ chevieset(Symbol("2I"), :UnipotentCharacters,function(e)
   uc
 end)
 
-chevieset(Symbol("2I"), :Ennola, function(e)
+chevieset("2I", :Ennola, function(e)
   if isodd(e) return SPerm() end
-  uc=chevieget(Symbol("2I"),:UnipotentCharacters)(e)
+  uc=chevieget("2I",:UnipotentCharacters)(e)
   l=uc[:charSymbols]
   SPerm(map(1:length(l))do i
     s=ennola(l[i])

@@ -1291,11 +1291,11 @@ function RelativeSeries(s)
   return res
 end
 
-CHEVIE[:relativeSeries]=true
+CHEVIE.relativeSeries=true
 function HeckeAlgebras.hecke(s::Series)
   if haskey(s,:Hecke) return s.Hecke end
   if iscyclic(s) paramcyclic(s)
-  elseif CHEVIE[:relativeSeries]
+  elseif CHEVIE.relativeSeries
     InfoChevie("# Relative: ",s,"\n")
     RelativeSeries(s)
   end

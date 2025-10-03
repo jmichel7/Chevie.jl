@@ -264,7 +264,7 @@ end)
 chevieset(:B,:Invariants,function(n,type_)
   m=fill(1,n);m[1]=2//type_
   m=Diagonal(m)*chevieget(:imp,:simpleroots)(2,1,n)
-  map(f->(arg...)->f(transpose(collect(arg))*m...),CHEVIE[:imp][:Invariants](2,1,n))
+  map(f->(arg...)->f(transpose(collect(arg))*m...),CHEVIE.imp[:Invariants](2,1,n))
 end)
 
 # References:

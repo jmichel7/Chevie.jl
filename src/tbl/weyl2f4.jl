@@ -1,8 +1,8 @@
 # tbl/weyl2f4.jl         CHEVIE library       Meinolf Geck and Jean Michel
 # Copyright (C) 1998-2001  The CHEVIE Team
-chevieset(Symbol("2F4"), :NrConjugacyClasses, 11)
+chevieset("2F4", :NrConjugacyClasses, 11)
 
-chevieset(Symbol("2F4"), :ClassInfo, function ()
+chevieset("2F4", :ClassInfo, function ()
   res=Dict{Symbol,Any}(:classtext=>
     [Int[],[2,3,2],[1],[1,2,1,3,2,1,4,3,2,1],[1,2],[2],[1,2,1,3,2,1,3,2],
      [1,2,3,2],[1,2,1,3,2,1,3,2,4,3,2,1],[1,2,1,3,2,1,3,2,4,3,2,1,3,2,4,3,2,1],
@@ -14,7 +14,7 @@ chevieset(Symbol("2F4"), :ClassInfo, function ()
   return res
 end)
 
-chevieset(Symbol("2F4"), :CharInfo, function ()
+chevieset("2F4", :CharInfo, function ()
   res=Dict{Symbol,Any}(:extRefl=>[1,9,7,10,2],:charparams=>
    [[1,0],[1,24],[4,8],[9,2],[9,10],[6,6,1],[6,6,2],[12,4],[4,1],[4,13],[16,5]],
    :kondo=>["1_1","1_4","4_1","9_1","9_4","6_1","6_2","12","4_2","4_5","16"])
@@ -26,39 +26,39 @@ chevieset(Symbol("2F4"), :CharInfo, function ()
   return res
 end)
 
-chevieset(Symbol("2F4"), :cyclestructure,
+chevieset("2F4", :cyclestructure,
   [[2 => 24], [2 => 4, 8 => 5], [2 => 2, 4 => 11], [24 => 2], [24 => 2],
    [2 => 4, 8 => 5], [8 => 6], [12 => 4], [4 => 12], [8 => 6], [8 => 6]])
 
-chevieset(Symbol("2F4"),:generators,[
+chevieset("2F4",:generators,[
   perm"(1,25)(2,5)(6,9)(7,11)(10,14)(12,15)(16,18)(21,23)(26,29)(30,33)(31,35)(34,38)(36,39)(40,42)(45,47)",
   perm"(1,5)(2,26)(3,7)(8,12)(9,13)(14,17)(18,20)(19,21)(25,29)(27,31)(32,36)(33,37)(38,41)(42,44)(43,45)",
   perm"(2,6)(3,27)(4,8)(5,9)(12,16)(15,18)(17,19)(20,22)(26,30)(28,32)(29,33)(36,40)(39,42)(41,43)(44,46)",
   perm"(3,8)(4,28)(6,10)(7,12)(9,14)(11,15)(13,17)(22,24)(27,32)(30,34)(31,36)(33,38)(35,39)(37,41)(46,48)"])
 
-chevieset(Symbol("2F4"),:phi,perm"(1,4)(2,3)(5,8)(6,7)(9,12)(10,11)(13,16)(14,15)(17,18)(19,20)(21,22)(23,24)(25,28)(26,27)(29,32)(30,31)(33,36)(34,35)(37,40)(38,39)(41,42)(43,44)(45,46)(47,48)")
+chevieset("2F4",:phi,perm"(1,4)(2,3)(5,8)(6,7)(9,12)(10,11)(13,16)(14,15)(17,18)(19,20)(21,22)(23,24)(25,28)(26,27)(29,32)(30,31)(33,36)(34,35)(37,40)(38,39)(41,42)(43,44)(45,46)(47,48)")
 
-chevieset(Symbol("2F4"),:CartanMat,
+chevieset("2F4",:CartanMat,
   [2 -1 0 0;-1 2 -root(2) 0;0 -root(2) 2 -1;0 0 -1 2])
 
-chevieset(Symbol("2F4"),:ClassParameter,function(w)
+chevieset("2F4",:ClassParameter,function(w)
   if length(w)==1
-    params=chevieget(Symbol("2F4"),:ClassInfo)[:classparams]
-    if tally(cycletype(x*chevieget(Symbol("2F4"),:phi)))==[2=>2,4=>11]
+    params=chevieget("2F4",:ClassInfo)[:classparams]
+    if tally(cycletype(x*chevieget("2F4",:phi)))==[2=>2,4=>11]
          return params[3]
     else return params[6]
     end
   else
     params[findfirst(x->length(x)==length(w),
-                     chevieget(Symbol("2F4"),:ClassInfo)[:classtext])]
+                     chevieget("2F4",:ClassInfo)[:classtext])]
   end
 end)
 
-chevieset(Symbol("2F4"), :HeckeCharTable, function (param, rootpara)
+chevieset("2F4", :HeckeCharTable, function (param, rootpara)
   q=-param[1][1]//param[1][2]
   v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(2F4)", :parameter => [q, q, q, q],
-   :sqrtparameter=>[v,v,v,v],:cartan=>chevieget(Symbol("2F4"), :CartanMat),
+   :sqrtparameter=>[v,v,v,v],:cartan=>chevieget("2F4", :CartanMat),
    :size=>1152,:irreducibles=>[
     1 v^6 v^2 v^20 v^4 v^2 v^16 v^8 v^24 v^36 v^12;
     1 -1 -1 1 1 -1 1 1 1 1 1;
@@ -71,15 +71,15 @@ chevieset(Symbol("2F4"), :HeckeCharTable, function (param, rootpara)
     0 -root(2)*v^3 0 -root(2)*v^15 root(2)*v^3 root(2)*v root(2)*(v^13-v^11) 0 0 -2*root(2)*v^27 2*root(2)*v^9;
     0 -root(2)*v^3 0 root(2)*v^5 -root(2)*v root(2)*v root(2)*(v^5-v^3) 0 0 2*root(2)*v^9 -2*root(2)*v^3;
     0 0 0 root(2)*v^10 -root(2)*v^2 0 root(2)*(v^10-2*v^8+v^6) 0 0 -4*root(2)*v^18 4*root(2)*v^6]*v^0,
-   :irredinfo=>chevieget(Symbol("2F4"),:IrredInfo))
-  merge!(tbl, chevieget(Symbol("2F4"), :ClassInfo)())
+   :irredinfo=>chevieget("2F4",:IrredInfo))
+  merge!(tbl, chevieget("2F4", :ClassInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)
 
-chevieset(Symbol("2F4"), :PhiFactors, [1, -1, 1, -1])
+chevieset("2F4", :PhiFactors, [1, -1, 1, -1])
 
-chevieset(Symbol("2F4"), :HeckeRepresentation, function (para, rootpara, i)
+chevieset("2F4", :HeckeRepresentation, function (para, rootpara, i)
   v=ismissing(rootpara[1]) ? rootpara[1]*para[1][2] :
                    root(-para[1][1]//para[1][2])
   F(i)=WGraphToRepresentation(4,chevieget(:F4,:WGraph)(i),v)*v^0*-para[1][2]
@@ -123,17 +123,17 @@ chevieset(Symbol("2F4"), :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE[:families][:X2]=Family(Dict{Symbol, Any}(:name=>"X_2",
+CHEVIE.families[:X2]=Family(Dict{Symbol, Any}(:name=>"X_2",
   :fourierMat=>root(2)//2*[-1 -1;-1 1],:eigenvalues=>[E(8,3),-E(8)],
   :charLabels=>["1", "2"], :special=>1, :sh=>[1,-1]))
 
-chevieset(Symbol("2F4"), :sparseFakeDegrees, 
+chevieset("2F4", :sparseFakeDegrees, 
   [[1,0],[1,24],[1,8,1,16],[1,2,-1,4,1,8,-1,12,1,14],
    [-1,10,1,12,-1,16,1,20,-1,22],[1,6,-1,8,-1,16,1,18],
    [-1,6,1,8,-2,12,1,16,-1,18],[1,4,1,20],[1,1,-1,5,1,7,-1,11],
    [1,13,-1,17,1,19,-1,23],[-1,5,2,9,-1,11,-1,13,2,15,-1,19]])
 
-chevieset(Symbol("2F4"), :UnipotentCharacters,
+chevieset("2F4", :UnipotentCharacters,
   Dict{Symbol, Any}(:harishChandra=>
   [Dict(:relativeType=> 
      TypeIrred(;series=:I,indices=[1,2],bond=8,rank=2),

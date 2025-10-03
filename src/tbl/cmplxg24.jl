@@ -152,7 +152,7 @@ chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE[:families][:X7]=Family(Dict{Symbol, Any}(:name=>"X7",:fourierMat=>
+CHEVIE.families[:X7]=Family(Dict{Symbol, Any}(:name=>"X7",:fourierMat=>
    [-1 1 root(-7) root(-7) -2 -2 -2; 
     1 -1 root(-7) root(-7) 2 2 2; 
     root(-7) root(-7) root(-7) -root(-7) 0 0 0; 

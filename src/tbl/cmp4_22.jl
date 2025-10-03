@@ -26,10 +26,10 @@ const G4_22IndexChars_dict=Dict{Int,Any}()
 
 for i in 4:22 G4_22IndexChars_dict[i]=Dict() end
 
-CHEVIE[:CheckIndexChars]=false
+CHEVIE.CheckIndexChars=false
 
 function G4_22FetchIndexChars(ST, para)
-  if !CHEVIE[:CheckIndexChars]
+  if !CHEVIE.CheckIndexChars
     return chevieget(:G4_22, :CharInfo)(ST)[:indexchars]
   end
   get!(G4_22IndexChars_dict[ST],para)do
@@ -853,8 +853,8 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       if ic!=i
         println("*** WARNING: choice of character restrictions from ", T(ST),
           " for this specialization does not agree with group CharTable")
-        if !CHEVIE[:CheckIndexChars]
-          print("Try again with CHEVIE[:CheckIndexChars]=true\n")
+        if !CHEVIE.CheckIndexChars
+          print("Try again with CHEVIE.CheckIndexChars=true\n")
         end
       end
       return ic
@@ -869,8 +869,8 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       end
       xprintln("*** WARNING: bad choice of char. restrictions from ",T(ST),
                " for H(G$ST,",HeckeAlgebras.simplify_para(res[:parameter]),")")
-      if !CHEVIE[:CheckIndexChars]
-        print("Try again with CHEVIE[:CheckIndexChars]=true\n")
+      if !CHEVIE.CheckIndexChars
+        print("Try again with CHEVIE.CheckIndexChars=true\n")
       end
    #  l=map(x->filter(i->l[i]==x,eachindex(l)), sort(unique(l)))
       l=map(x->findall(==(x),l), unique(sort(l)))
@@ -1258,7 +1258,7 @@ chevieset(:G4_22, :CharInfo, function(ST)
 end)
 
 let r3=root(-3), r6=root(6), r2=root(-2)
-CHEVIE[:families][:G14]=Family(Dict(:fourierMat=>root(-3)//24*
+CHEVIE.families[:G14]=Family(Dict(:fourierMat=>root(-3)//24*
 [4 -4 4 -4 -4 -4 -4 -4 0 0 -4 -4 4 4 0 0 0 0;
 -4 4 4 -4 4 4 4 4 0 0 -4 -4 4 4 0 0 0 0;
 4 4 4 4 -4 -4 4 4 0 0 -4 -4 -4 -4 0 0 0 0;
@@ -1283,7 +1283,7 @@ CHEVIE[:families][:G14]=Family(Dict(:fourierMat=>root(-3)//24*
 :explanation =>"mysteryG14"))
 end
 
-CHEVIE[:families][:X18]=Family(Dict(:name=>"X18",:fourierMat=>[
+CHEVIE.families[:X18]=Family(Dict(:name=>"X18",:fourierMat=>[
 -1 -1 3 -3E(4) 3E(4) 1 3 -3E(4) -3E(4) -3 3 3E(4) 3E(4) 1 -3E(4) -3E(4) 4 4;
 -1 -1 3 3E(4) -3E(4) 1 3 3E(4) 3E(4) -3 3 -3E(4) -3E(4) 1 3E(4) 3E(4) 4 4;
 3 3 3 -3 -3 3 3 3 -3 3 -3 -3 3 3 -3 3 0 0;
@@ -1305,7 +1305,7 @@ CHEVIE[:families][:X18]=Family(Dict(:name=>"X18",:fourierMat=>[
 :eigenvalues=>[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
 :explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6))
 
-CHEVIE[:families][:X8]=Family(Dict(:name=>"X8",:fourierMat=>onmats(
+CHEVIE.families[:X8]=Family(Dict(:name=>"X8",:fourierMat=>onmats(
 [1 1 2 1 1 -root(-2) -root(-2) -root(-2) -root(-2);
 1 1 2 1 1 root(-2) root(-2) root(-2) root(-2);
 2 2 0 -2 -2 0 0 0 0;
@@ -2104,9 +2104,9 @@ chevieset(:G4_22, :Ennola, function(ST)
 end)
 
 #------------------------------- 2G5 ------------------------------------
-chevieset(Symbol("2G5"), :PhiFactors, [1, -1])
-chevieset(Symbol("2G5"), :NrConjugacyClasses, 9)
-chevieset(Symbol("2G5"), :ClassInfo, function()
+chevieset("2G5", :PhiFactors, [1, -1])
+chevieset("2G5", :NrConjugacyClasses, 9)
+chevieset("2G5", :ClassInfo, function()
   res=Dict{Symbol,Any}(:classtext=>[Int[],[1,2,2,1,2,2,1],[1,2,2,1,2,2,1,1],
     [1],[1,1,2,1,1],[1,1,2,2,1,1],[1,2],[1,2,1],[2,1,2,1]],
     :classes=>[12,6,6,6,12,6,6,6,12],:orders=>[2,24,24,24,6,8,24,8,6])
@@ -2114,7 +2114,7 @@ chevieset(Symbol("2G5"), :ClassInfo, function()
   res
 end)
 
-chevieset(Symbol("2G5"), :CharInfo, function()
+chevieset("2G5", :CharInfo, function()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,8,2],[1,16],[2,9],[2,5,2],[2,1],
     [3,2],[3,4],[3,6]],:extRefl=>[1,6,2],:b=>[0,8,16,9,5,1,2,4,12],
     :B=>[0,8,16,15,11,7,14,4,12],:charRestrictions=>[1,5,9,10,14,18,20,19,21],
@@ -2123,7 +2123,7 @@ chevieset(Symbol("2G5"), :CharInfo, function()
   return res
 end)
 
-chevieset(Symbol("2G5"),:CharTable,function()
+chevieset("2G5",:CharTable,function()
   res=Dict{Symbol,Any}(:identifier=>"2G5",:size=>72,
     :centralizers=>[6,12,12,12,6,12,12,12,6],
     :irreducibles=>[

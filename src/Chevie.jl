@@ -3,9 +3,9 @@ The  `Chevie` package  started in  2018 as  a port  to Julia  of the `GAP3`
 package  with the same name. As the package is still in flux, some function
 names or interfaces may change. I welcome pull requests and issues.
 
-I  have also  implemented the  `GAP` functionality  needed to make `Chevie`
-work,  and most of this infrastructure  is already registered, as packages.
-They may have advantages compared to other Julia packages providing similar
+I have also implemented the functionality needed to make `Chevie` work, and
+I  registered  as  packages  most  of  this  infrastructure.  They may have
+advantages   compared   to   other   Julia   packages   providing   similar
 functionality.  You  should  take  a  look  at  them.  They  are loaded and
 re-exported  by  `Chevie`  so  that  their  functionality  is automatically
 available when you use `Chevie`. In other words, `Chevie` is a meta-package
@@ -40,7 +40,7 @@ For permutation groups I have often replaced GAP's sophisticated algorithms
 with  naive  but  easy-to-write  methods  that  are only suitable for small
 groups.  These are sufficient for  the rest of the  package but perhaps not
 for your needs. Otherwise the infrastructure code is often competitive with
-`GAP`'s,  despite using much less code --- often 100 lines of Julia replace
+`GAP3`'s, despite using much less code --- often 100 lines of Julia replace
 1000  lines of `C`; and I am sure  it could be optimised better than I did.
 Comments  on  code  and  design  are  welcome.  For  functions that are too
 inefficient  or  difficult  to  implement  (such  as  character  tables  of

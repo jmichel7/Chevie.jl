@@ -4,31 +4,27 @@ module InitChevie
 using ..Chevie
 export CHEVIE, chevieget, chevieset, InfoChevie
 
-const CHEVIE=Dict{Symbol,Any}(:info=>true,:infoget=>false)
+verbose_chevieget::Bool=true
+@GapObj struct _CHEVIE end
+const CHEVIE=_CHEVIE(Dict{Symbol,Any}(:info=>true))
 
 function InfoChevie(a...)
-  if CHEVIE[:info] xprint(a...) end
+  if CHEVIE.info xprint(a...) end
 end
 
-" chevieget(t,w) returns CHEVIE[Symbol(t)][w] or nothing if absent"
+" chevieget(t,w) returns CHEVIE.t[w] or nothing if absent"
 function chevieget(t::Symbol,w::Symbol)
-# println("chevieget(",t,",",w,")")
   get!(CHEVIE[t],w)do
-    if CHEVIE[:infoget] println("CHEVIE[$t] has no $w") end
+    if verbose_chevieget println("CHEVIE.$t has no $w") end
   end
 end
 
 chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
 
-chevieset(t::Symbol,w::Symbol,o)=get!(CHEVIE,t,Dict{Symbol,Any}())[w]=o
+chevieset(t::Symbol,w::Symbol,o)=get!(CHEVIE.prop,t,Dict{Symbol,Any}())[w]=o
+chevieset(t::String,w::Symbol,o)=chevieset(Symbol(t),w,o)
 
-function chevieset(t::Vector{String},w::Symbol,f::Function)
-# println(join(t,",")," $w")
-  for s in t chevieset(Symbol(s),w,f(s)) end
-end
-
-function chevieset(t::Vector{Symbol},w::Symbol,f::Function)
-# println(join(t,",")," $w")
+function chevieset(t::Vector,w::Symbol,f::Function)
   for s in t chevieset(s,w,f(s)) end
 end
 

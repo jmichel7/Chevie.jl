@@ -738,7 +738,7 @@ chevieset(:H4, :HeckeRepresentation, function (para, rootpara, i)
   -para[1][2]*WGraphToRepresentation(4,chevieget(:H4, :WGraph)(i), v)
 end)
 
-CHEVIE[:families][:HS4]=Family(Dict{Symbol, Any}(:group=>"SL2(5)",:name=>"H4",
+CHEVIE.families[:HS4]=Family(Dict{Symbol, Any}(:group=>"SL2(5)",:name=>"H4",
   :explanation => "DrinfeldDouble(SL_2(5))?ER(5)",
   :charLabels => map((i->begin "?" end), 1:74), :special=>9,
   :eigenvalues=>

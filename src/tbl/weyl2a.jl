@@ -2,7 +2,7 @@
 # Frank Luebeck & Jean Michel (C) 1992--2001
 # Data for the coset W(A_r).F where F induces -w0.
 
-chevieset(Symbol("2A"),:WordsClassRepresentatives,function(n,part=partitions(n+1))
+chevieset("2A",:WordsClassRepresentatives,function(n,part=partitions(n+1))
   function redw(n, w)local l
     l=Int[]
     while true
@@ -33,37 +33,37 @@ chevieset(Symbol("2A"),:WordsClassRepresentatives,function(n,part=partitions(n+1
   map(p->redw(n,guesslongest(p)*w0),part)
 end)
 
-chevieset(Symbol("2A"), :ClassInfo, function (n,)
+chevieset("2A", :ClassInfo, function (n,)
   res=chevieget(:A,:ClassInfo)(n)
-  res[:classtext]=chevieget(Symbol("2A"),:WordsClassRepresentatives)(n,res[:classparams])
+  res[:classtext]=chevieget("2A",:WordsClassRepresentatives)(n,res[:classparams])
   delete!(res, :orders)
   res
 end)
 
-chevieset(Symbol("2A"),:NrConjugacyClasses,n->npartitions(n+1))
+chevieset("2A",:NrConjugacyClasses,n->npartitions(n+1))
 
-chevieset(Symbol("2A"),:CharInfo,n->chevieget(:A,:CharInfo)(n))
+chevieset("2A",:CharInfo,n->chevieget(:A,:CharInfo)(n))
 
-chevieset(Symbol("2A"),:PhiFactors,n->map(x->(-1)^x,2:n+1))
+chevieset("2A",:PhiFactors,n->map(x->(-1)^x,2:n+1))
 
-chevieset(Symbol("2A"),:CharTable,function(r)
+chevieset("2A",:CharTable,function(r)
   tbl=copy(chevieget(:A,:CharTable)(r))
   tbl[:identifier]="W(^2A_$r)"
   A=chevieget(:A,:b).(chevieget(:A,:CharInfo)(r)[:charparams])
   tbl[:irreducibles]=Diagonal((-1).^A)*tbl[:irreducibles]
-  merge!(tbl,chevieget(Symbol("2A"),:ClassInfo)(r))
+  merge!(tbl,chevieget("2A",:ClassInfo)(r))
 end)
 
-chevieset(Symbol("2A"),:FakeDegree,function(n,p,q)
+chevieset("2A",:FakeDegree,function(n,p,q)
   res=chevieget(:A, :FakeDegree)(n, p, Pol())
   (-1)^valuation(res)*res(-q)
 end)
 
-chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
+chevieset("2A",:HeckeCharTable, function(r, param, rootparam)
   q=-param[1][1]//param[1][2]
   v=rootparam[1]; if ismissing(v) v=root(q) end
   tbl=Dict{Symbol,Any}(:identifier=>"H(^2A_$r)")
-  merge!(tbl,chevieget(Symbol("2A"),:ClassInfo)(r))
+  merge!(tbl,chevieget("2A",:ClassInfo)(r))
   W=coxgroup(:A,r)
 # If q_E is the square root which deforms to 1 of the eigenvalue of T_{w_0}
 # on E which deforms to 1, then we have:
@@ -85,7 +85,7 @@ chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   AdjustHeckeCharTable(tbl, param)
 end)
 
-chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)
+chevieset("2A", :HeckeRepresentation, function (n, param, sqrtparam, i)
   W=coxgroup(:A,n)
   H=hecke(W,-param[1][1]//param[1][2])
   p=partitions(n+1)[i]
@@ -94,8 +94,8 @@ chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)
     root(central_monomials(H)[i])*(-1)^chevieget(:A,:b)(p))
 end)
 
-chevieset(Symbol("2A"), :Representation, function(n,i)
-  chevieget(Symbol("2A"),:HeckeRepresentation)(n,map(x->[1,-1],1:n),1:1,i)
+chevieset("2A", :Representation, function(n,i)
+  chevieget("2A",:HeckeRepresentation)(n,map(x->[1,-1],1:n),1:1,i)
 end)
 
 # partition associated to 2-core d and partitions-pair p
@@ -104,13 +104,13 @@ function PartitionTwoCoreQuotient(d,p)
   partβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))
 end
 
-chevieset(Symbol("2A"), :ClassParameter, function (n, w)
+chevieset("2A", :ClassParameter, function (n, w)
   x=prod(i->Perm(i,i+1),w;init=Perm())*prod(i->Perm(i,n+2-i),1:div(n+1,2))
   cycletype(x,1:n+1)
 end)
 
 # [LuB, 4.4, 4.16, 4.19]
-chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
+chevieset("2A", :UnipotentCharacters, function (l,)
   uc=chevieget(:A,:UnipotentCharacters)(l)
   uc[:charSymbols] = map(i->[i],partitions(l+1))
   uc[:almostHarishChandra] = uc[:harishChandra]
@@ -151,7 +151,7 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
   uc
 end)
 
-chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
+chevieset("2A", :UnipotentClasses, function (r, p)
   uc=copy(chevieget(:A, :UnipotentClasses)(r, p))
   uc[:classes]=map(uc[:classes])do c
     t=refltype(c[:red])

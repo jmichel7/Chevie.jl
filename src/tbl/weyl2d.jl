@@ -3,13 +3,11 @@
 # Data for the coset of type 2D which can be seen as the non-trivial
 # coset of W(D_r) inside W(B_r).
 
-chevieset(Symbol("2D"), :ClassParams, function(n)
-  B=chevieget(:B,:ClassParams)(n)
-  filter(a->isodd(length(a[2])), B)
-end)
+chevieset("2D",:ClassParams,
+  n->filter(a->isodd(length(a[2])),chevieget(:B,:ClassParams)(n)))
 
-chevieset(Symbol("2D"),:WordsClassRepresentatives, n->
-  chevieget(Symbol("2D"),:ClassInfo)(n)[:classtext])
+chevieset("2D",:WordsClassRepresentatives,n->
+  chevieget("2D",:ClassInfo)(n)[:classtext])
 
 # We  parametrize the  F-conjugacy classes  by the  classes in  the coset
 # Bn-Dn.  If n is  odd, since F  is inner acting  as w0, it would also be
@@ -20,7 +18,7 @@ chevieset(Symbol("2D"),:WordsClassRepresentatives, n->
 # and let [c,d] be the double partition for w.w0Bn in Bn. Then c contains
 # the  even entries of a and the odd entries of b and d contains the even
 # entries of b and the odd entries of a.
-chevieset(Symbol("2D"), :ClassInfo, function(n)
+chevieset("2D", :ClassInfo, function(n)
   B=chevieget(:B, :ClassInfo)(n)
   l=filter(i->isodd(length(B[:classparams][i][2])),1:length(B[:classtext]))
   Dict{Symbol, Any}(:classnames =>B[:classnames][l],
@@ -42,7 +40,7 @@ chevieset(Symbol("2D"), :ClassInfo, function(n)
                   end)
 end)
 
-chevieset(Symbol("2D"), :NrConjugacyClasses, function(n)
+chevieset("2D", :NrConjugacyClasses, function(n)
   if isodd(n) div(npartition_tuples(n,2),2)
   else div(npartition_tuples(n,2)-npartitions(div(n,2)),2)
   end
@@ -50,13 +48,13 @@ end)
 
 # test if a character of W(B) corresponds to the preferred extension
 # for ^2D, see [CS,17.2] and [Lusztig-book,4.4,4.18]:
-chevieset(Symbol("2D"), :IsPreferred, function(pp)
-  pp=Symbol_partition_tuple(pp,0).S
-  pp[1]>pp[2]
+chevieset("2D", :IsPreferred, function(pp)
+  p1,p2=Symbol_partition_tuple(pp,0).S
+  p1>p2
 end)
 
-chevieset(Symbol("2D"), :CharParams, n->
-  filter(chevieget(Symbol("2D"),:IsPreferred),partition_tuples(n,2)))
+chevieset("2D", :CharParams, n->
+  filter(chevieget("2D",:IsPreferred),partition_tuples(n,2)))
 
 #the map which goes from almost characters to unipotent characters for 2Dn
 function Defect0to2(S::CharSymbol)
@@ -67,8 +65,8 @@ function Defect0to2(S::CharSymbol)
   CharSymbol(length(S1)>length(S2) ? [S1,S2] : [S2,S1])
 end
 
-chevieset(Symbol("2D"), :CharInfo, function (n)
-  res=Dict{Symbol, Any}(:charparams=>chevieget(Symbol("2D"),:CharParams)(n))
+chevieset("2D", :CharInfo, function (n)
+  res=Dict{Symbol, Any}(:charparams=>chevieget("2D",:CharParams)(n))
   res[:extRefl]=map(i->[fill(1,i),[n-i]],0:n-2)
   append!(res[:extRefl],[[[1],fill(1,n-1)],[Int[],fill(1,n)]])
   res[:extRefl]=map(x->findfirst(y->y==x || y==reverse(x),res[:charparams]),
@@ -88,10 +86,10 @@ chevieset(Symbol("2D"), :CharInfo, function (n)
   res
 end)
 
-chevieset(Symbol("2D"),:FakeDegree,(n,c,q)->
+chevieset("2D",:FakeDegree,(n,c,q)->
   fakedegree(Symbol_partition_tuple(c,0),1)(q))
 
-chevieset(Symbol("2D"),:PhiFactors,n->vcat(fill(1,n-1),-1))
+chevieset("2D",:PhiFactors,n->vcat(fill(1,n-1),-1))
 
 # This function returns the part of the character table the Coxeter group
 # of  type B_l on classes  outside a reflection subgroup  of type D_l for
@@ -101,7 +99,7 @@ chevieset(Symbol("2D"),:PhiFactors,n->vcat(fill(1,n-1),-1))
 #
 # Alternatively  you can get the  *good* extension instead of *preferred*
 # extension by defining testchar appropriately.
-chevieset(Symbol("2D"),:HeckeCharTable,
+chevieset("2D",:HeckeCharTable,
 function (l,param,sqrtpara)
   q=-param[1][1]//param[1][2]
   q=vcat([[q^0,-1]],map(i->[q,-1],2:l))
@@ -114,12 +112,12 @@ function (l,param,sqrtpara)
                        :centralizers=>div.(hi[:centralizers][lst],2),
                        :classes=>hi[:classes][lst],
 	   :text=>"extracted from generic character table of HeckeB")
-  merge!(tbl,chevieget(Symbol("2D"),:ClassInfo)(l))
-  para=chevieget(Symbol("2D"),:CharParams)(l)
+  merge!(tbl,chevieget("2D",:ClassInfo)(l))
+  para=chevieget("2D",:CharParams)(l)
   tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
       :charname=>string_partition_tuple(para[i])),eachindex(para))
   para=partition_tuples(l,2)
-  chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
+  chr=filter(i->chevieget("2D",:IsPreferred)(para[i]),chr)
   T=Tbasis(hecke(coxgroup(:B,l),q))
   tbl[:irreducibles]=transpose(toM(map(x->char_values(
     T(1,Replace(x,[1],[1,2,1])...),hi[:irreducibles][chr,:]),
@@ -127,9 +125,9 @@ function (l,param,sqrtpara)
   AdjustHeckeCharTable(tbl,param)
 end)
 
-chevieset(Symbol("2D"),:CharTable,l->chevieget(Symbol("2D"),:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))
+chevieset("2D",:CharTable,l->chevieget("2D",:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))
 
-chevieset(Symbol("2D"), :UnipotentCharacters, function(rank)
+chevieset("2D", :UnipotentCharacters, function(rank)
   uc=Dict{Symbol,Any}(:harishChandra=>[],:charSymbols=>[],
                       :almostHarishChandra=>[])
   for d in (2:4:4div(isqrt(rank)-1,2)+2)
@@ -174,7 +172,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function(rank)
       s[:relativeType]=TypeIrred(;orbit=[s[:relativeType]],twist=perm"(1,2)")
       s[:cuspidalName]= ""
       symbols=map(x->Symbol_partition_tuple(x, 0),
-                  chevieget(Symbol("2D"),:CharParams)(rank))
+                  chevieget("2D",:CharParams)(rank))
     end
     s[:charNumbers]=map(s->findfirst(==(Defect0to2(s)),uc[:charSymbols]),symbols)
     uc[:almostCharSymbols][s[:charNumbers]]=symbols
@@ -227,9 +225,9 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function(rank)
   uc
 end)
 
-chevieset(Symbol("2D"),:Ennola,function(n)
+chevieset("2D",:Ennola,function(n)
   if isodd(n) return SPerm() end
-  uc=chevieget(Symbol("2D"),:UnipotentCharacters)(n)
+  uc=chevieget("2D",:UnipotentCharacters)(n)
   l=uc[:charSymbols]
   SPerm(map(1:length(l))do i
     if !(l[i].repeats>1) return i*(-1)^uc[:A][i] end
@@ -240,7 +238,7 @@ chevieset(Symbol("2D"),:Ennola,function(n)
   end)
 end)
 
-chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
+chevieset("2D", :UnipotentClasses, function (r, p)
   uc=copy(chevieget(:D, :UnipotentClasses)(r, p))
   if p==2 return uc end
   uc[:classes]=map(uc[:classes])do cc
@@ -262,20 +260,20 @@ chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
   uc
 end)
 
-chevieset(Symbol("2D"), :ClassParameter, function (n, w)
+chevieset("2D", :ClassParameter, function (n, w)
   x=prod(i->i==1 ? SPerm(1,-2) : SPerm(i-1,i),w;init=SPerm())
   cycletype(x*SPerm(1,-1),n)
 end)
 
-chevieset(Symbol("2D"), :HeckeRepresentation, function(n,para,sqpara,i)
-   param=chevieget(Symbol("2D"),:CharInfo)(n)[:charparams][i]
-   bno=findfirst(==(param),chevieget(:B,:CharInfo)(n)[:charparams])
+chevieset("2D", :HeckeRepresentation, function(n,para,sqpara,i)
+   phi=chevieget("2D",:CharInfo)(n)[:charparams][i]
+   bno=findfirst(==(phi),chevieget(:B,:CharInfo)(n)[:charparams])
    parab=copy(para);parab[1]=[1,-1]
    r=chevieget(:B,:HeckeRepresentation)(n,parab,[],bno)
    if all(x->x==[1,-1],para) u=r[1] else u=inv(r[1]*1//1) end
    (gens=pushfirst!(r[2:end],r[1]*r[2]*u),F=r[1])
 end)
 
-chevieset(Symbol("2D"), :Representation, function(n,i)
-  return chevieget(Symbol("2D"),:HeckeRepresentation)(n,fill([1,-1],4),[],i)
+chevieset("2D", :Representation, function(n,i)
+  return chevieget("2D",:HeckeRepresentation)(n,fill([1,-1],4),[],i)
 end)

@@ -21,26 +21,16 @@ chevieset([:E7, :E8, :H3, :H4], :Invariants, t->function()
       chevieget(t, :ReflectionDegrees))
 end)
 
-chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
-  :FactorizedSchurElement, t->function(phi,para,arg...)
-               #arg=[] for G24--G34, [rootparam] for E6--H4
-   i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
-   c=chevieget(t,:CycPolSchurElements)[i]
-   q=-para[1][1]//para[1][2]
-   res=HeckeAlgebras.FactSchur(Mvp(c[1]*q^Int(c[2])), 
-                 map(v->(pol=CycPol([1,0,v]),monomial=q),c[3:length(c)]))
-   HeckeAlgebras.simplify(res)
- end
-)
-
-chevieset([:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34,:H3,:H4,Symbol("2E6"),Symbol("2F4"),Symbol("3D4"),:E6,:E7,:E8,:F4,:G2],:IrredInfo,function(t)
+chevieset([:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34,:H3,:H4,"2E6","2F4",
+           "3D4",:E6,:E7,:E8,:F4,:G2],:IrredInfo,function(t)
   ci=chevieget(t,:CharInfo)()
   map((x,y)->(charparam=x,charname=y),ci[:charparams],ci[:charnames])
 end)
 
-chevieset([Symbol("3D4"),:E6,Symbol("2E6"),:E7,:E8,:F4,Symbol("2F4"),:G2,:H3,:H4],:CharTable,t->function()
+chevieset(["3D4",:E6,"2E6",:E7,:E8,:F4,"2F4",:G2,:H3,:H4],:CharTable,
+t->function()
   rank=string(t)[end]-'0'
-  res=chevieget(t,:HeckeCharTable)(map(x->[1,-1],1:rank),map(x->1,1:rank))
+  res=chevieget(t,:HeckeCharTable)(fill([1,-1],rank),fill(1,rank))
   res[:identifier]=string("W(",t,")")
   res
 end
@@ -83,10 +73,14 @@ chevieset([:G2,:F4,:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34],
 
 chevieset([:A,:B,:D],:SemisimpleRank,t->(r->r))
 
+chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34,
+           :H4, :E7, :E8, :G31],:charindex,t->
+  phi->findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams]))
+
 # cycpolfakedegrees is a compact representation of fake degrees
 chevieset([:H4, :E7, :E8, :G31], :FakeDegree,t->
 function(phi, q)
-  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
+  i=chevieget(t,:charindex)(phi)
   f=chevieget(t,:cycpolfakedegrees)[i]
   res=f[1] isa AbstractVector ? evalpoly(q^2,f[1]) : f[1]
   f=copy(f)
@@ -106,9 +100,9 @@ chevieset([:H4, :E7, :E8, :G31], :b,
   t->map(f->f[2],chevieget(t,:cycpolfakedegrees)))
 
 # sparseFakeDegrees is another compact representation of fake degrees
-chevieset([Symbol("3D4"),:G2,:F4,Symbol("2F4"),:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:FakeDegree,t->
-function(phi, q)
-  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
+chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],
+          :FakeDegree,t->function(phi, q)
+  i=chevieget(t,:charindex)(phi)
   f=chevieget(t,:sparseFakeDegrees)[i]
   sum(i->f[i]*q^f[i+1],1:2:length(f)-1)
 end)
@@ -137,13 +131,24 @@ end)
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4],:SchurElement,t->
 function(phi,para,arg...)
-  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
+  i=chevieget(t,:charindex)(phi)
   CycPol(chevieget(t,:CycPolSchurElements)[i])(-para[1][1]//para[1][2])
+end)
+
+chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
+  :FactorizedSchurElement, t->function(phi,para,arg...)
+               #arg=[] for G24--G34, [rootparam] for E6--H4
+  i=chevieget(t,:charindex)(phi)
+  c=chevieget(t,:CycPolSchurElements)[i]
+  q=-para[1][1]//para[1][2]
+  res=HeckeAlgebras.FactSchur(Mvp(c[1]*q^Int(c[2])), 
+                map(v->(pol=CycPol([1,0,v]),monomial=q),c[3:length(c)]))
+  HeckeAlgebras.simplify(res)
 end)
 
 chevieset([:G2,:F4,:G25,:G26,:G32],:FactorizedSchurElement,t->
 function (phi,para,arg...)
-  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
+  i=chevieget(t,:charindex)(phi)
   Y=vcat(para[chevieget(t,:HyperplaneRepresentatives)]...)
   ci=chevieget(t,:SchurData)[i]
   VFactorSchurElement(Y,chevieget(t,:SchurModels)[Symbol(ci[:name])],ci)
@@ -151,13 +156,13 @@ end)
 
 chevieset([:F4,:G25,:G26,:G32],:SchurElement,t->
 function(phi,para,arg...)
-  i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
+  i=chevieget(t,:charindex)(phi)
   Y=vcat(para[chevieget(t, :HyperplaneRepresentatives)]...)
   ci=chevieget(t,:SchurData)[i]
   VcycSchurElement(Y,chevieget(t,:SchurModels)[Symbol(ci[:name])],ci)
 end)
 
-chevieset([:E7,:E8,:F4,Symbol("2F4"),:G2,Symbol("3D4"),:H3,:H4,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:Ennola,t->
+chevieset([:E7,:E8,:F4,"2F4",:G2,"3D4",:H3,:H4,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:Ennola,t->
 function (arg...)
   uc = chevieget(t, :UnipotentCharacters)
   if uc isa Function uc = uc() end

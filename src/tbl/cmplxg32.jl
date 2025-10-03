@@ -3191,7 +3191,7 @@ chevieset(:G32,:Discriminant,function()
 end)
 
 let J=E(3), J2=E(3,2)
-CHEVIE[:families][:X40]=Family(Dict{Symbol,Any}(:fourierMat=>toM([
+CHEVIE.families[:X40]=Family(Dict{Symbol,Any}(:fourierMat=>toM([
 [-1,-1,1,1,5J2,5J,5J2,5J,5J2,5J,5,5,5,-1,-5J,5J2,-5J,5J2,5J,-5J2,5,5,-5J2,-5J,5J,5J2,5J,5J2,-5J,5J2,5J,-5J2,5J,-5J2,1,5,-6,-6,-6,-6],
 [-1,-1,1,1,5J,5J2,5J,5J2,5J,5J2,5,5,5,-1,-5J2,5J,-5J2,5J,5J2,-5J,5,5,-5J,-5J2,5J2,5J,5J2,5J,-5J2,5J,5J2,-5J,5J2,-5J,1,5,-6,-6,-6,-6],
 [1,1,-1,-1,-5J2,-5J,-5J2,-5J,5J2,5J,5,5,5,1,5J,-5J2,5J,-5J2,5J,-5J2,5,5,-5J2,-5J,5J,5J2,-5J,-5J2,-5J,5J2,5J,-5J2,-5J,5J2,-1,5,6,6,6,6],

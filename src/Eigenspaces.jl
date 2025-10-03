@@ -421,7 +421,7 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
 # println("relative_group: W=$W J=$J indices=$indices")
   res = Dict{Symbol, Any}(:callarg => joindigits(J))
   if indices!=false res[:callarg]*=","*joindigits(indices) end
-# res = CHEVIE[:GetCached](W, "RelativeGroups", res, x->x[:callarg])
+# res = CHEVIE.GetCached(W, "RelativeGroups", res, x->x[:callarg])
 # if length(keys(res))>1 return res end
   L=reflection_subgroup(W, J)
   if length(J)==0

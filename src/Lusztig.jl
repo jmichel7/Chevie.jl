@@ -267,7 +267,7 @@ function lusztig_induction_table(LF,WF;check=true)
                      charnames(uW;TeX=true), charnames(uL;TeX=true),
     "Lusztig induction from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"lusztig_induction_table($(repr(LF)),$(repr(WF)))"))
-# res=CHEVIE[:GetCached](uW, "LusztigInductionMaps", res,
+# res=CHEVIE.GetCached(uW, "LusztigInductionMaps", res,
 #       x->[inclusion(Group(x[:u]))[1:ngens(Group(x[:u]))],
 #       x[:u][:phi]*x[:g][:phi]^-1])
 # if haskey(res, :scalar) return res end
@@ -330,7 +330,7 @@ function harish_chandra_induction_table(HF, WF)
     charnames(uw;TeX=true), charnames(uh;TeX=true),
     "Harish-Chandra induction from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"hc_induction_table($(repr(HF)),$(repr(WF)))"))
-# res = CHEVIE[:GetCached](uw, "HCInductionMaps", res, (x->begin
+# res = CHEVIE.GetCached(uw, "HCInductionMaps", res, (x->begin
 #  Group(x[:u])[:rootInclusion][Group(x[:u])[:generatingReflections]] end))
 # if haskey(res, :scalar) return res end
   res.pieces=map(uh.harishChandra)do h

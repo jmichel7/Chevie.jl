@@ -618,7 +618,7 @@ chevieset(:F4, :HeckeRepresentation, function (param, rootpara, i)
   end
 end)
 
-CHEVIE[:families][:S4]=Family(Dict{Symbol, Any}(
+CHEVIE.families[:S4]=Family(Dict{Symbol, Any}(
   :group=>Group(perm"(1,4)", perm"(2,4)", perm"(3,4)"),
   :lusztig=>true,
   :charLabels => ["(1,1)", "(1,\\lambda^{\\wedge3})", "(1,\\sigma)",
