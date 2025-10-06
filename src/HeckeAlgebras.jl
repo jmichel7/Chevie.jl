@@ -558,7 +558,7 @@ The  models  implemented  for  imprimitive  types `G(de,e,n)` for `n>2` and
 G(3,3,4), G(3,3,5)` and `G(4,4,3)`, involve rational fractions.
 
 ```julia-repl
-julia> H=hecke(coxgroup(:D,5),Pol())
+julia> H=hecke(coxgroup(:D,5),Pol(:q))
 hecke(D₅,q)
 
 julia> representation(H,7)
@@ -824,13 +824,13 @@ Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 means  `representation(h.H,r)`. The value of that representation applied to
 `h` is returned. Here `h.H` can be an Hecke algebra or an Hecke coset.
 ```julia-repl
-julia> H=hecke(coxsym(4),Pol(:x));T=Tbasis(H);
+julia> H=hecke(coxsym(4),Pol(:q));T=Tbasis(H);
 
 julia> representation(T(1,2)^2,2)
 3×3 Matrix{Pol{Rational{Int64}}}:
- -x²  -x²   0
- x²   0     0
- -x   -x+1  1
+ -q²  -q²   0
+ q²   0     0
+ -q   -q+1  1
 ```
 """
 function Chars.representation(h::HeckeElt,r)
