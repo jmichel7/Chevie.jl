@@ -432,24 +432,51 @@ julia> schur_functor(m,[2,2])
    1    -2    4   3    -6    9
 ```
 """
-function schur_functor(A::AbstractMatrix,la)
-  n=sum(la)
-  S=coxsym(n)
-  r=representation(S,findfirst(==(la),partitions(n)))
-  rep(x)=isone(x) ? one(r[1]) : prod(r[word(S,x)])
-  f=j->prod(factorial,last.(tally(j)))
+function schur_functor(A::AbstractMatrix,λ)
+  n=sum(λ)
+  Sn=coxsym(n)
+  r=representation(Sn,findfirst(==(λ),partitions(n)))
+  rep(x)=isone(x) ? one(r[1]) : prod(r[word(Sn,x)])
+  f(μ)=prod(factorial,last.(tally(μ)))
   basis=multisets(axes(A,1),n)
   M=sum(x->kron(rep(x),
-  toM(map(function(i)i=invpermute(i,x)
-      return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))
-               ),elements(S))
-# Print(Length(M),"=>");
-  M=M[filter(i->!iszero(@view M[i,:]),axes(M,1)),:]
-  M=M[:,filter(i->!iszero(@view M[:,i]),axes(M,2))]
+    toM(map(basis)do i
+      i=invpermute(i,x)
+      map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i)
+     end)),elements(Sn))
+  print(size(M),"=>")
+  M=M[filter(i->!iszero(@view M[i,:]),axes(M,1)),
+      filter(i->!iszero(@view M[:,i]),axes(M,2))]
   m=sort.(collectby(i->M[:,i],axes(M,2)))
   m=sort(m)
   M=M[:,first.(m)]
   improve_type(toM(map(x->sum(M[x,:],dims=1)[1,:],m)))
+end
+
+function schur2(A,λ)
+  n=sum(λ)
+  basis=multisets(axes(A,1),n)
+  basis=union(map(b->semistandard_tableaux(λ,b),basis)...)
+  function zipcol(b1,b2)
+    res=Tuple{Vector{Int},Vector{Int}}[]
+    for i in eachindex(b1[1]) 
+     a=Int[];b=Int[]
+      for j in eachindex(b1)
+        if length(b1[j])<i break end
+        push!(a,b1[j][i])
+        push!(b,b2[j][i])
+      end
+      push!(res,(a,b))
+    end
+    res
+  end
+  [prod(((c1,c2),)->det_bareiss(A[c1,c2]),zipcol(b1,b2)) 
+   for b1 in basis,b2 in basis]
+end
+
+function dim_schur(n,λ)
+  l(i)=i>length(λ) ? 0 : λ[i]
+  Integer(prod(1+(l(i)-l(j))//(j-i) for i in 2:n for j in 1:i-1))
 end
 
 """
