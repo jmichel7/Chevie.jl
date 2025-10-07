@@ -265,14 +265,14 @@ function Trepresentations(H,l=Int[];check=true)
   for i in l
     InfoChevie("# Representation n⁰$i/$(length(cl))")
     gr=representation(H,i)
-    if gr==false || gr===nothing println("=$gr")
+    if gr===nothing println("=$gr")
     else
       r=gr
       if !isempty(r) print(" dim:",(r isa AbstractVector) ? size(r[1],1) :
                           size(r.gens[1],1),"...") end
       if !isrepresentation(H,r) ChevieErr(i," is not a representation") end
       pos=findrepresentation(H,gr;check)
-      if pos==i println("found")
+      if pos==i println("ok")
       elseif pos!=false 
          ChevieErr("repr. ",i," character found at ",pos,"\n")
       else 
@@ -288,7 +288,7 @@ end
 
 test[:representations]=(
    applicable=function(W)
-     if nconjugacy_classes(W)>=55 return false end
+     if nconjugacy_classes(W)>=103 return false end
      t=refltype(W)
      if isempty(t) return true end
      t=t[1]

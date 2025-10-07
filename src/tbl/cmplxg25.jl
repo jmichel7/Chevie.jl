@@ -273,6 +273,5 @@ chevieset(:G25, :Invariants, [
   2*x1^6*x2^3*x3^3-4*x1^6*x2^6-4*x1^6*x3^6-4*x2^6*x3^6+x1^9*x2^3+x1^9*x3^3+
   x2^9*x3^3])
 
-chevieset(:G25, :Discriminant, function ()
-  (t1, t2, t3)->36*t1*t2^2*t3-t1^2*t3^2-32*t3^3+t1^3*t2^2+108*t2^4
-end)
+chevieset(:G25, :Discriminant, ()->(t1, t2, t3)->
+          36*t1*t2^2*t3-t1^2*t3^2-32*t3^3+t1^3*t2^2+108*t2^4)

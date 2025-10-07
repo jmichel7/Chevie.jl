@@ -159,7 +159,7 @@ chevieset(:G2, :Invariants, [
   (x,y)->-3x*y+3x^2+y^2, 
   (x,y)->x^2*y^4-6x^3*y^3+13x^4*y^2-12x^5*y+4x^6])
 
-chevieset(:G2, :Discriminant,()->function(x,y) return 4*x^3*y-27*y^2 end)
+chevieset(:G2, :Discriminant,()->(x,y)->4*x^3*y-27*y^2)
 
 chevieset(:G2, :UnipotentClasses, function(p,cartantype) # cartantype not used
   if p==0 p=1 end

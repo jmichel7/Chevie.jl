@@ -216,14 +216,10 @@ chevieset(:G24, :Invariants, [function (x, y, z)
   134456*x^12*z^2+92712//7*y^12*z^2+30816//7*y^13*z+1382976*x^14+
   210624//343*y^14+7203//256*z^14 end])
 
-chevieset(:G24, :BasicDerivations,()->function (x, y, z)
-  [[x, 3*y^2, 7z-9*x^2*y], [3y, 1792z, 64*x*y^2+3136*x^4],
-   [7z,64*x*y^3+5376*x^2*z+3136*x^4*y,
-    287//2*x*y*z-35//4*x^3*y^2+21//256*y^4-1568*x^6]]
-end)
+chevieset(:G24, :BasicDerivations,()->(x,y,z)->
+  [x 3*y^2 7z-9*x^2*y;3y 1792z 64*x*y^2+3136*x^4;
+   7z 64*x*y^3+5376*x^2*z+3136*x^4*y 287//2*x*y*z-35//4*x^3*y^2+21//256*y^4-1568*x^6])
 
-chevieset(:G24, :Discriminant, ()->
-  function (x, y, z)
+chevieset(:G24, :Discriminant, ()->(x, y, z)->
     18*x*y^4*z+5632*x^2*y*z^2-1024*z^3-67*x^3*y^5-4352*x^4*y^2*z-5504*x^6*y^3-
-    27//3136*y^7-229376*x^7*z-114688*x^9*y
-end)
+    27//3136*y^7-229376*x^7*z-114688*x^9*y)
