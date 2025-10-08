@@ -12,7 +12,7 @@ function InfoChevie(a...)
   if CHEVIE.info xprint(a...) end
 end
 
-" chevieget(t,w) returns CHEVIE.t[w] or nothing if absent"
+" chevieget(t::Symbol,w::Symbol) returns CHEVIE.t[w] or nothing if absent"
 function chevieget(t::Symbol,w::Symbol)
   get!(CHEVIE[t],w)do
     if verbose_chevieget println("CHEVIE.$t has no $w") end
@@ -81,8 +81,7 @@ debug::Bool=false # time each call
 "`chevieget(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
 function chevieget(t::TypeIrred,f::Symbol,extra...)
   if haskey(t,:field) n,args...=t.field # faster than else!
-  else 
-    n,args...=field(t)
+  else                n,args...=field(t)
   end
 # println("d=$d f=$f extra=$extra")
   o=chevieget(n,f)

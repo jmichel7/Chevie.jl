@@ -3032,7 +3032,8 @@ chevieset(:E7, :UnipotentClasses, function (p,)
         if p==0 p=1 end
         Z(n)=crg(n,1,1)
         class(n)=uc[:classes][findfirst(x->x[:name]==n,uc[:classes])]
-# Picture courtesy of Hyohe Miyachi
+# ASCII picture courtesy of Hyohe Miyachi
+# you can get one by `showpic(Poset(UnipotentClasses(crg(36))))`
         uc=Dict{Symbol, Any}(:orderPicture => join([
 "              E₇",
 "               |",

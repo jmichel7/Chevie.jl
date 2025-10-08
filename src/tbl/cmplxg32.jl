@@ -3177,8 +3177,7 @@ function(a,b,c,d)
 end]);
 
 # the discriminant as a polynomial in the invariants
-chevieset(:G32,:Discriminant,function()
-  function(a,b,c,d)
+chevieset(:G32,:Discriminant,()->(a,b,c,d)->
         6388800*a*b*d^3+2662000000*a*c^2*d^2+45919500000*a*b^2*c^3-
 53240000000*b*c^3*d-95832000*a*b^3*c*d+(1401543/20)*a*b^6+59895000*b^2*c*d^2-
 3690500000*a^2*b*c^2*d-5513970*a^2*b^2*d^2-544500000000*a^2*c^4+
@@ -3186,9 +3185,7 @@ chevieset(:G32,:Discriminant,function()
 2108788*a^3*b^3*d-2662000*d^4+26642000*a^4*b*c*d+22460625*b^4*c^2+
 10139250000*a^4*c^3+(-26003571/80)*a^4*b^4+10648000000000*c^5-71874*b^5*d+
 64570*a^5*d^2-9759475*a^5*b^2*c-62764*a^6*b*d-81614375*a^6*c^2+
-(761263/40)*a^7*b^2+(5723475/22)*a^8*c+(-2706867/9680)*a^10
-  end
-end)
+(761263/40)*a^7*b^2+(5723475/22)*a^8*c+(-2706867/9680)*a^10)
 
 let J=E(3), J2=E(3,2)
 CHEVIE.families[:X40]=Family(Dict{Symbol,Any}(:fourierMat=>toM([

@@ -835,8 +835,7 @@ chevieset(:F4, :Invariants, [
 320*y^8*z^4+200*t^9*x*y*z+200*t^9*y*z^2-200*t^9*x^2*z-200*t^9*y^2*z-
 75*t^9*z^3-40*t^10*x*y-40*t^10*y*z+40*t^10*x^2+40*t^10*y^2+15*t^10*z^2])
 
-chevieset(:F4, :Discriminant,function()
-        function(x1,x2,x3,x4)
+chevieset(:F4, :Discriminant,()->(x1,x2,x3,x4)->
 364500*x1*x2^3*x3^2*x4+54158625*x1*x2^5*x3^2-189324*x1^2*x3*x4^3-
 84457998*x1^2*x2^2*x3*x4^2+702196650*x1^2*x2^2*x3^4+192564*x2^2*x4^3-
 4814100*x2^2*x3^3*x4+4733100*x1^2*x3^4*x4-12556317582*x1^2*x2^4*x3*x4-
@@ -855,15 +854,15 @@ chevieset(:F4, :Discriminant,function()
 535990067941*x1^9*x2^5-196915320*x1^10*x3^2*x4+827101062789*x1^10*x2^2*x3^2-
 407665440*x1^11*x2*x3*x4+499325143276*x1^11*x2^3*x3-210993120*x1^12*x2^2*x4+
 9342537960*x1^12*x3^3+105367602964*x1^12*x2^4+29012190480*x1^13*x2*x3^2+
-30031354080*x1^14*x2^2*x3+10362106560*x1^15*x2^3
-end end)
+30031354080*x1^14*x2^2*x3+10362106560*x1^15*x2^3)
 
 chevieset(:F4, :UnipotentClasses, function(p,type_)
   if p==0 p=1 end
   Z(n)=crg(n,1,1)
   class(n)=uc[:classes][findfirst(x->x[:name]==n,uc[:classes])]
   uc=Dict{Symbol, Any}(:orderPicture=>join([
-# picture courtesy of Hyohe Miyachi
+# ASCII picture courtesy of Hyohe Miyachi
+# you can get one by `showpic(Poset(UnipotentClasses(crg(28))))`
 "     F₄",
 "      |",
 "    F₄(a₁)",

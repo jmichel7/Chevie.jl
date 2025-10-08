@@ -424,12 +424,12 @@ julia> m=cartan(:A,3)
 
 julia> schur_functor(m,[2,2])
 6×6 Matrix{Rational{Int64}}:
-   9    -6    4   3    -2    1
- -12    16  -16  -8     8   -4
-   4    -8   16   4    -8    4
- -3//2  -1    2  7//2  -3   5//2
-  -4     8  -16  -8    16  -12
-   1    -2    4   3    -6    9
+   9   -6    4  3//2   -2    1
+ -12   16  -16  -4      8   -4
+   4   -8   16   2     -8    4
+  12  -16   16  10    -16   12
+  -4    8  -16  -4     16  -12
+   1   -2    4  3//2   -6    9
 ```
 """
 function schur_functor(A::AbstractMatrix,λ)
@@ -437,10 +437,13 @@ function schur_functor(A::AbstractMatrix,λ)
   Sn=coxsym(n)
   p=findfirst(==(λ),partitions(n))
 # r=representation(Sn,p)
+# does not work with the above repr but works with the below one. Fishy!
   r=CHEVIE.imp[:Representation](1,1,n,p)[2:end]
   rep(x)=isone(x) ? one(r[1]) : prod(r[word(Sn,x)])
   f(μ)=prod(factorial,last.(tally(μ)))
   basis=multisets(axes(A,1),n)
+  basis=filter(b->!isempty(semistandard_tableaux(λ,b)),basis)
+  if isempty(basis) return A[1:0,1:0] end
   M=sum(x->kron(rep(x),
     toM(map(basis)do i
       i=invpermute(i,x)
@@ -452,30 +455,13 @@ function schur_functor(A::AbstractMatrix,λ)
   m=sort.(collectby(i->M[:,i],axes(M,2)))
   m=sort(m)
   M=M[:,first.(m)]
-  improve_type(toM(map(x->sum(M[x,:],dims=1)[1,:],m)))
+  M=map(x->sum(M[x,:],dims=1)[1,:],m)
+  M=improve_type(toM(M))
+  #println(size(M))
+  #M
 end
 
-function schur2(A,λ)
-  n=sum(λ)
-  basis=multisets(axes(A,1),n)
-  basis=union(map(b->semistandard_tableaux(λ,b),basis)...)
-  function zipcol(b1,b2)
-    res=Tuple{Vector{Int},Vector{Int}}[]
-    for i in eachindex(b1[1]) 
-     a=Int[];b=Int[]
-      for j in eachindex(b1)
-        if length(b1[j])<i break end
-        push!(a,b1[j][i])
-        push!(b,b2[j][i])
-      end
-      push!(res,(a,b))
-    end
-    res
-  end
-  [prod(((c1,c2),)->det_bareiss(A[c1,c2]),zipcol(b1,b2)) 
-   for b1 in basis,b2 in basis]
-end
-
+"`dim_schur(n,λ)` the dimension of `schur_functor(M,λ)` for `M` of size (n,n)"
 function dim_schur(n,λ)
   l(i)=i>length(λ) ? 0 : λ[i]
   Integer(prod(1+(l(i)-l(j))//(j-i) for i in 2:n for j in 1:i-1))

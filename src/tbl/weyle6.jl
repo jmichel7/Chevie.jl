@@ -3,11 +3,11 @@
 
 chevieset(:E6, :ReflectionDegrees, [2, 5, 6, 8, 9, 12])
 
-# as in Bourbaki
+# as in Bourbaki simpleroots*simpleroots'==cartan(:E,6)
 chevieset(:E6, :simpleroots, 
           [1//2 -1//2 -1//2 -1//2 -1//2 -1//2 -1//2 1//2; 
            1 1 0 0 0 0 0 0; 
-           1 1 0 0 0 0 0 0; 
+           -1 1 0 0 0 0 0 0; 
            0 -1 1 0 0 0 0 0; 
            0 0 -1 1 0 0 0 0; 
            0 0 0 -1 1 0 0 0])
@@ -552,6 +552,8 @@ end)
 chevieset(:E6, :UnipotentClasses, function(p)
   if p==0 p=1 end
   Z(n)=crg(n,1,1)
+# ASCII picture courtesy of Hyohe Miyachi
+# you can get one by `showpic(Poset(UnipotentClasses(crg(35))))`
   uc=Dict{Symbol, Any}(:orderPicture=>join([
 "      E₆",
 "      |",
