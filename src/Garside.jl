@@ -726,8 +726,8 @@ Base.:\(M::LocallyGarsideMonoid,x,y)=\(IntervalStyle(M),M,x,y)
 Base.:\(::Interval,M,x,y)=x\y
 Base.:/(M::LocallyGarsideMonoid,x,y)=/(IntervalStyle(M),M,x,y)
 Base.:/(::Interval,M,x,y)=x/y
-Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
-Base.inv(::Interval,M,x)=inv(x)
+#Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
+#Base.inv(::Interval,M,x)=inv(x)
 CoxGroups.isrightdescent(M::LocallyGarsideMonoid,w,i::Integer)=isrightdescent(IntervalStyle(M),M,w,i)
 CoxGroups.isrightdescent(::Interval,M,w,i)=isleftdescent(M,inv(w),i)
 mul!(M::LocallyGarsideMonoid,x,y)=mul!(IntervalStyle(M),M,x,y)
@@ -1291,6 +1291,9 @@ function Base.reverse(b::GarsideElt)
       res*=δad(b.M.revMonoid,reverse(b.M,s),b.pd)
     end
   else
+    if b.M isa DualBraidMonoid && !all(w->isone(w^2),gens(b.M.W))
+      error("no reversing theory for ",b.M)
+    end
     if isempty(b.elm) return b end
     res=GarsideElt(b.M,empty(b.elm),b.pd;check=false)
     for s in reverse(b.elm)
