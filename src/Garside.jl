@@ -377,22 +377,24 @@ export BraidMonoid, shrink, α, δad, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, right_divisors, Category,
 endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc,
 leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt,
-Brieskorn_normal_form, GarsideMonoid, LocallyGarsideMonoid, hurwitz,
+Brieskorn_normal_form, Monoid, GarsideMonoid, LocallyGarsideMonoid, hurwitz,
 rightascents
+
+abstract type Monoid end
 
 """
 `LocallyGarsideMonoid{T}`  is the abstract type of locally Garside monoids,
 where  `T`  is  the  type  of  simples.  Such a monoid `M` needs, for `a,b`
 simples, to implement the functions
   - `one(M)`
-  - `isleftdescent(M,a,i::Int)`  whether `M.atoms[i]≼ a`
-  - `isrightdescent(M,a,i::Int)` whether `a≽ M.atoms[i]`
-  - `isrightascent(M,a,i::Int)`  whether `a*M.atoms[i]` is simple
-  - `*(M,a,b)`  when `a*b` is simple returns the simple `a*b`
-  - `\\(M,a,b)` when `a≼ b` returns the simple `a\b`
-  - `/(M,a,b)`  when `a≽ b` returns the simple `a/b`
+  - `isleftdescent(M,a::T,i::Integer)`  whether `M.atoms[i]≼ a`
+  - `isrightdescent(M,a::T,i::Integer)` whether `a≽ M.atoms[i]`
+  - `isrightascent(M,a::T,i::Integer)`  whether `a*M.atoms[i]` is simple
+  - `*(M,a::T,b::T)`  when `a*b` is simple returns the simple `a*b`
+  - `\\(M,a::T,b::T)` when `a≼ b` returns the simple `a\b`
+  - `/(M,a::T,b::T)`  when `a≽ b` returns the simple `a/b`
 """
-abstract type LocallyGarsideMonoid{T} end # T=type of simples
+abstract type LocallyGarsideMonoid{T}<:Monoid end # T=type of simples
 # Garside Monoids are scalars for broadcasting
 Base.broadcastable(M::LocallyGarsideMonoid)=Ref(M)
 
@@ -432,7 +434,7 @@ the `sᵢ`.
 
 `leftgcdc` returns `(d,(d⁻¹s₁,…,d⁻¹sₙ))`
 """
-leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=first(leftgcdc(simp...))
+leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=first(leftgcdc(M,simp...))
 
 function rightgcdc(M::LocallyGarsideMonoid{T},simp::Vararg{T,N})where {T,N}
   if N==0 error("rightgcd needs at least one simple as argument") end
@@ -1612,6 +1614,9 @@ end
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
   reflength(M.W,atom(M,i)\w)<reflength(M.W,w)
 end
+
+# next is characteristic of dual monoids
+CoxGroups.isrightdescent(M::DualBraidMonoid,w,i::Int)=isleftdescent(M,w,i)
 
 Base.one(M::DualBraidMonoid)=M.one
 
