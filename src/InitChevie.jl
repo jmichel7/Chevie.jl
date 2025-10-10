@@ -4,7 +4,7 @@ module InitChevie
 using ..Chevie
 export CHEVIE, chevieget, chevieset, InfoChevie
 
-verbose_chevieget::Bool=true
+verbose_chevieget::Bool=false
 @GapObj struct _CHEVIE end
 const CHEVIE=_CHEVIE(Dict{Symbol,Any}(:info=>true))
 
