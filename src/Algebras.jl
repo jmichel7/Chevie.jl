@@ -905,7 +905,7 @@ julia> W.solomon_conjugacy
  [16]
 
 julia> Algebras.injection(A)(X(1,2,3))
-e_+e₄+e₃₄+e₂₃₄+e₁₂₃₄+e₂₁₂₃₄+e₃₂₁₂₃₄+e₄₃₂₁₂₃₄
+e+e₄+e₃₄+e₂₃₄+e₁₂₃₄+e₂₁₂₃₄+e₃₂₁₂₃₄+e₄₃₂₁₂₃₄
 ```
 """
 function SolomonAlgebra(W::FiniteCoxeterGroup,T=Int)

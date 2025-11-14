@@ -2,11 +2,32 @@ module Gt
 using ..Chevie
 export RationalUnipotentClasses, closed_subsystems, ClassTypes
 
-function RationalUnipotentClasses(WF, p=0)
+struct RationalUnipotentClasses
+  WF
+  p::Int
+  l::Vector{@NamedTuple{card::CycPol{Cyc{Rational{Int}}}, 
+                        class::UnipotentClass, 
+                        classno::Int, AuNo::Int}}
+end
+
+function RationalUnipotentClasses(WF,p::Int=0)
   u=UnipotentClasses(WF, p)
   t=XTable(u;classes=true)
-  map(i->(card=CycPol(t.cardClass[i]), class=u.classes[t.classes[i][1]], 
-          classno=t.classes[i][1], AuNo=t.classes[i][2]), eachindex(t.classes))
+  RationalUnipotentClasses(WF,p,
+    map(i->(card=CycPol(t.cardClass[i]), class=u.classes[t.classes[i][1]], 
+    classno=t.classes[i][1], AuNo=t.classes[i][2]), eachindex(t.classes)))
+end
+
+Base.show(io::IO,cl::RationalUnipotentClasses)=
+ print(io,"RationalUnipotentClasses(",cl.WF,",",cl.p,")")
+
+function Base.show(io::IO,::MIME"text/plain",cl::RationalUnipotentClasses)
+  printTeX(io,"Rational unipotent classes of ",cl.WF," in char.",cl.p,"\n")
+  ow=CycPol(generic_order(cl.WF))
+  cards=map(x->xrepr(io,ow/x.card),cl.l)
+  cl=map(x->fromTeX(io,name(x.class)*"_{"*classnames(x.class.Au)[x.AuNo]*"}"),cl.l)
+  showtable(io,reshape(cards,:,1);rows_label="classes",row_labels=cl,
+                                                  col_labels=["centralizer"])
 end
 
 # build the 2N×2N array sumr: sumr[i,j]=k if root(W,i)+root(W,j)=root(W,k)
@@ -248,7 +269,7 @@ function ClassTypes(W,p=0)
   end
   l=vcat(twistings.(Ref(WF),sscentralizer_reps(Group(WF), p))...)
   ClassTypes(p,WF,map(x->ClassType(x,CycPol(generic_order(x,Pol(:q))),
-    RationalUnipotentClasses(x,p),Dict{Symbol,Any}()),l),Dict{Symbol,Any}())
+    RationalUnipotentClasses(x,p).l,Dict{Symbol,Any}()),l),Dict{Symbol,Any}())
 end
 
 bracket_if_needed(v)=occursin(r"[-+*/]",v[nextind(v,0,2):end]) ? "("*v*")" : v
@@ -277,7 +298,7 @@ function Base.show(io::IO,r::ClassTypes)
     push!(col_labels,"|C_G(su)|")
     t=[]
     for x in r.ss
-      u=RationalUnipotentClasses(x.CGs, r.p)
+      u=RationalUnipotentClasses(x.CGs, r.p).l
       for c in u
         v=String[]
         if isone(c.card)
