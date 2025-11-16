@@ -860,21 +860,21 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   N=length(rootdec)
   if isempty(rr) G=PRG(size(rr,2)) # a torus
   else
-  r=Ref(transpose(rr)).*rootdec
-  r=vcat(r,-r)
-  rootdec=vcat(rootdec,-rootdec)
-  mats=reflectionMatrix.(eachrow(rr),eachrow(cr)) # reflrep
-  # permutations of the roots effected by mats
-# gens=map(M->sortPerm(Ref(transpose(M)).*r),mats).\sortPerm(r)
-  gens=map(M->Perm(Vector{Perms.Idef}(indexin(Ref(transpose(M)).*r,r))),mats)
-  coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
-  coroots[axes(cr,1)].=eachrow(cr)
-  G=PRG(gens,one(gens[1]),mats,r,coroots,
-        Dict{Symbol,Any}(:cartan=>C,:refltype=>fincox_refltype(C)))
+    r=Ref(transpose(rr)).*rootdec
+    r=vcat(r,-r)
+    rootdec=vcat(rootdec,-rootdec)
+    mats=reflectionMatrix.(eachrow(rr),eachrow(cr)) # reflrep
+    u=toM(r)
+    # permutations of the roots effected by mats
+    # gens=map(M->sortPerm(eachrow(u*M),mats).\sortPerm(r)
+    gens=map(M->Perm(Vector{Perms.Idef}(indexin(eachrow(u*M),r))),mats)
+    coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
+    coroots[axes(cr,1)].=eachrow(cr)
+    G=PRG(gens,one(gens[1]),mats,r,coroots,
+          Dict{Symbol,Any}(:cartan=>C,:refltype=>fincox_refltype(C)))
   end
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
-
 
 """
 `torus(rank::Integer)`
