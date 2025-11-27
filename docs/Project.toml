@@ -1,0 +1,5 @@
+[deps]
+Chevie = "367f69f0-ca63-11e8-2372-438b29340c1b"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
