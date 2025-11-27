@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Reductive groups, semisimple elements · Chevie.jl documentation</title><meta name="title" content="Reductive groups, semisimple elements · Chevie.jl documentation"/><meta property="og:title" content="Reductive groups, semisimple elements · Chevie.jl documentation"/><meta property="twitter:title" content="Reductive groups, semisimple elements · Chevie.jl documentation"/><meta name="description" content="Documentation for Chevie.jl documentation."/><meta property="og:description" content="Documentation for Chevie.jl documentation."/><meta property="twitter:description" content="Documentation for Chevie.jl documentation."/><meta property="og:url" content="https://juliadocs.github.io/Chevie.jl/semisimple/"/><meta property="twitter:url" content="https://juliadocs.github.io/Chevie.jl/semisimple/"/><link rel="canonical" href="https://juliadocs.github.io/Chevie.jl/semisimple/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">Chevie.jl documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Chevie</a></li><li><span class="tocitem">Infrastructure</span><ul><li><a class="tocitem" href="../format/">formatting facilities</a></li><li><a class="tocitem" href="../symbols/">Symbols</a></li><li><a class="tocitem" href="../nf/">Number fields</a></li></ul></li><li><span class="tocitem">Reflection groups</span><ul><li><a class="tocitem" href="../permroot/">Finite reflection groups</a></li><li><a class="tocitem" href="../coxgroups/">Coxeter groups</a></li><li><a class="tocitem" href="../weyl/">Finite Coxeter groups, Weyl groups, crystallographic root systems</a></li><li><a class="tocitem" href="../chars/">Classes/characters of reflection groups</a></li></ul></li><li><span class="tocitem">Hecke algebras</span><ul><li><a class="tocitem" href="../hecke/">Hecke algebras</a></li><li><a class="tocitem" href="../kl/">Kazhdan-Lusztig polynomials and bases</a></li><li><a class="tocitem" href="../algebras/">Algebras</a></li></ul></li><li><a class="tocitem" href="../garside/">Garside monoids and groups, braids.</a></li><li><span class="tocitem">Reductive groups</span><ul><li class="is-active"><a class="tocitem" href>Reductive groups, semisimple elements</a></li><li><a class="tocitem" href="../cosets/">Reflection cosets and Spets</a></li><li><a class="tocitem" href="../sscoset/">Non-connected reductive groups</a></li><li><a class="tocitem" href="../uch/">Unipotent characters</a></li><li><a class="tocitem" href="../ct/">Classtypes</a></li></ul></li><li><span class="tocitem">Eigenspaces</span><ul><li><a class="tocitem" href="../eigen/">Eigenspaces</a></li><li><a class="tocitem" href="../dseries/">d-Harish-Chandra series</a></li></ul></li><li><span class="tocitem">Unipotent elements</span><ul><li><a class="tocitem" href="../ucl/">Unipotent classes of reductive groups</a></li><li><a class="tocitem" href="../urad/">Unipotent Elements</a></li></ul></li><li><a class="tocitem" href="../gendec/">Decomposition Matrices</a></li><li><a class="tocitem" href="../dict/">Dictionary from GAP3/Chevie</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Reductive groups</a></li><li class="is-active"><a href>Reductive groups, semisimple elements</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Reductive groups, semisimple elements</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl/blob/main/docs/src/semisimple.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Reductive-groups,-semisimple-elements"><a class="docs-heading-anchor" href="#Reductive-groups,-semisimple-elements">Reductive groups, semisimple elements</a><a id="Reductive-groups,-semisimple-elements-1"></a><a class="docs-heading-anchor-permalink" href="#Reductive-groups,-semisimple-elements" title="Permalink"></a></h1><ul><li><a href="#Chevie.Semisimple"><code>Chevie.Semisimple</code></a></li><li><a href="#Chevie.Semisimple.SubTorus"><code>Chevie.Semisimple.SubTorus</code></a></li><li><a href="#Chevie.Semisimple.algebraic_center"><code>Chevie.Semisimple.algebraic_center</code></a></li><li><a href="#Chevie.Semisimple.coweights"><code>Chevie.Semisimple.coweights</code></a></li><li><a href="#Chevie.Semisimple.fundamental_group"><code>Chevie.Semisimple.fundamental_group</code></a></li><li><a href="#Chevie.Semisimple.intermediate_group"><code>Chevie.Semisimple.intermediate_group</code></a></li><li><a href="#Chevie.Semisimple.isisolated"><code>Chevie.Semisimple.isisolated</code></a></li><li><a href="#Chevie.Semisimple.quasi_isolated_reps-Tuple{FiniteCoxeterGroup}"><code>Chevie.Semisimple.quasi_isolated_reps</code></a></li><li><a href="#Chevie.Semisimple.semisimple_centralizer_representatives"><code>Chevie.Semisimple.semisimple_centralizer_representatives</code></a></li><li><a href="#Chevie.Semisimple.structure_rational_points_connected_centre"><code>Chevie.Semisimple.structure_rational_points_connected_centre</code></a></li><li><a href="#Chevie.Semisimple.torsion_subgroup"><code>Chevie.Semisimple.torsion_subgroup</code></a></li><li><a href="#Chevie.Semisimple.weightinfo"><code>Chevie.Semisimple.weightinfo</code></a></li><li><a href="#Chevie.Semisimple.weights"><code>Chevie.Semisimple.weights</code></a></li><li><a href="#PermGroups.Groups.centralizer-Tuple{FiniteCoxeterGroup, SemisimpleElement}"><code>PermGroups.Groups.centralizer</code></a></li></ul><article><details class="docstring" open="true"><summary id="Chevie.Semisimple"><a class="docstring-binding" href="#Chevie.Semisimple"><code>Chevie.Semisimple</code></a> — <span class="docstring-category">Module</span></summary><section><div><p><strong>Algebraic groups and semi-simple elements</strong></p><p>Let  us fix an  algebraically closed field  <code>K</code> and let  <code>𝐆</code> be a connected reductive  algebraic group over <code>K</code>. Let <code>𝐓</code> be a maximal torus of <code>𝐆</code>, let <code>X(𝐓)</code>  be the  character group  of <code>𝐓</code>  (resp. <code>Y(𝐓)</code>  the dual lattice of one-parameter  subgroups  of  <code>𝐓</code>)  and  <code>Φ</code>  (resp  <code>Φ^</code>) the roots (resp. coroots) of <code>𝐆</code> with respect to <code>𝐓</code>.</p><p>Then  <code>𝐆</code> is  determined up  to isomorphism  by the  <em>root datum</em> <code>(X(𝐓),Φ, Y(𝐓),Φ^)</code>.  In algebraic terms, this consists  in giving a free <code>ℤ</code>-lattice <code>X=X(𝐓)</code> of dimension the <em>rank</em> of <code>𝐓</code> (which is also called the <em>rank</em> of <code>𝐆</code>),  and a root system <code>Φ ⊂ X</code>,  and similarly giving the dual roots <code>Φ^⊂ Y=Y(𝐓)</code>.</p><p>This  is obtained  by a  slight generalisation  of our  setup for a Coxeter group <code>W</code>. This time we assume that the canonical basis of the vector space <code>V</code>  on which <code>W</code>  acts is a  <code>ℤ</code>-basis of <code>X</code>,  and <code>Φ</code> is  specified by a matrix  <code>simpleroots(W)</code> whose rows are the  simple roots expressed in this basis  of <code>X</code>. Similarly  <code>Φ^</code> is described  by a matrix <code>simplecoroots(W)</code> whose  rows are the simple  coroots in the basis  of <code>Y</code> dual to the chosen basis of <code>X</code>. The duality pairing between <code>X</code> and <code>Y</code> is the canonical one, that  is  the  pairing  between  vectors  <code>x∈  X</code>  and  <code>y∈  Y</code> is given by <code>transpose(x)*y</code>. Thus, we must have the relation <code>simplecoroots(W)*permutedims(simpleroots(W))=cartan(W)</code>.</p><p>We  get this by using the function <code>rootdatum</code>, whose arguments are the two matrices <code>simpleroots(W)</code> and <code>simplecoroots(W)</code> described above. The roots need not generate <code>V</code>, so the matrices need not be square. For example, the root datum of the linear group of rank 3 can be obtained as:</p><pre><code class="language-julia-repl hljs">julia&gt; W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])
+A₂Φ₁
+
+julia&gt; reflrep(W,W(1))
+3×3 Matrix{Int64}:
+ 0  1  0
+ 1  0  0
+ 0  0  1</code></pre><p>here  the  Weyl  group  is  the  symmetric  group  on  3  letters acting by permutation of the basis of <code>X</code>. The dimension of <code>X</code>, <code>size(simpleroots(W),2)</code>,  is the <em>rank</em> and  the dimension of the subspace generated   by   the   roots,   <code>size(simpleroots(W),1)</code>,   is  called  the <em>semi-simple rank</em>. In the example the rank is 3 and the semisimple rank is</p><ol><li></li></ol><p>The  default form  <code>W=coxgroup(:A,2)</code> defines  the adjoint  algebraic group (the group in its isogeny class with a trivial centre). In this case <code>Φ</code> is a   basis  of  <code>X</code>,   so  <code>simpleroots(W)</code>  is   the  identity  matrix  and <code>simplecoroots(W)</code> is the Cartan matrix <code>cartan(W)</code> of the root system.</p><p>The   form  <code>coxgroup(:A,2,sc=true)</code>   constructs  the   semisimple  simply connected  algebraic  group,  where  <code>simpleroots(W)</code>  is the transposed of <code>cartan(W)</code> and <code>simplecoroots(W)</code> is the identity matrix.</p><p>An  extreme form of root data can  be specified more conveniently: when <code>W</code> is  the trivial <code>coxgroup()</code> (in this case <code>𝐆</code> is a torus), the root datum has  no roots, thus  is entirely determined  by the rank  <code>r</code>. The function <code>torus(r)</code>  constructs  such  a  root  datum  (it could be also obtained by giving two <code>0×r</code> matrices to <code>rootdatum</code>).</p><p>Finally,  the <code>rootdatum</code> function also understands some familiar names for the  algebraic groups for which it gives the results that could be obtained by giving the appropriate <code>simpleroots(W)</code> and <code>simplecoroots(W)</code> matrices:</p><pre><code class="language-julia-repl hljs">julia&gt; rootdatum(:gl,3)   # same as the previous example
+gl₃</code></pre><p>The types of root data which are understood are  <code>:gl, :pgl, :sl, :slmod, :tgl :sp, :csp, :psp, :so, :pso, :cso, :halfspin,    :gpin, :spin, :E6, :E6sc, :CE6, :E7, :E7sc, :CE7, :E8, :F4, :G2</code>.</p><p><strong>Semisimple elements</strong></p><p>We  construct semi-simple elements in two ways. The first way is for finite order  elements of <code>𝐓</code>, which over an algebraically closed field <code>K</code> are in bijection  with elements  of <code>Y⊗  ℚ /ℤ</code>  whose denominator  is prime to the characteristic of <code>K</code>. These are represented as a vector of <code>Rational</code>s <code>r</code> such  that <code>0≤r&lt;1</code>. The function <code>ss</code>  constructs such a semisimple element from a vector of <code>Rational</code>s.</p><p>More generally a torus <code>𝐓</code> over a field <code>K</code> is isomorphic to <code>(Kˣ)^n</code> where <code>n</code>  is the dimension  of <code>𝐓</code>, so  a vector of  elements of <code>Kˣ</code>  is a more general representation which is produced by the function <code>SemisimpleElement</code>;  in  this  setting  the  result  of  <code>ss</code> is naturally interpreted  as a  <code>Vector{Root1}</code>, so  it can  also be obtained by calling <code>SemisimpleElement</code> which such a vector.</p><pre><code class="language-julia-repl hljs">julia&gt; G=rootdatum(:sl,4)
+sl₄
+
+julia&gt; ss(G,[1//3,1//4,3//4,2//3])
+SemisimpleElement{Root1}: &lt;ζ₃,ζ₄,ζ₄³,ζ₃²&gt;
+
+julia&gt; SemisimpleElement(G,[E(3),E(4),E(4,3),E(3,2)])
+SemisimpleElement{Root1}: &lt;ζ₃,ζ₄,ζ₄³,ζ₃²&gt;
+
+julia&gt; L=reflection_subgroup(G,[1,3])
+A₃₍₁₃₎=A₁×A₁Φ₁
+
+julia&gt; C=algebraic_center(L)
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[&lt;1,1,-1&gt;]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[&lt;-1,1,1&gt;, &lt;1,1,-1&gt;]))
+
+julia&gt; T=torsion_subgroup(C.Z0,3)
+Group(SemisimpleElement{Root1}[&lt;ζ₃,ζ₃²,ζ₃&gt;])
+
+julia&gt; e=sort(elements(T))
+3-element Vector{SemisimpleElement{Root1}}:
+ &lt;1,1,1&gt;
+ &lt;ζ₃,ζ₃²,ζ₃&gt;
+ &lt;ζ₃²,ζ₃,ζ₃²&gt;</code></pre><p>In  the above, the Levi subgroup  <code>L</code> of <code>SL₄</code> consisting of block-diagonal matrices  of shape  <code>2×2</code> is  constructed. The  function <code>algebraic_center</code> returns  a named tuple with : the  neutral component <code>Z⁰</code> of the center <code>Z</code> of <code>L</code>, represented by a basis of <code>Y(Z⁰)</code>, a complement subtorus <code>S</code> of <code>𝐓</code> to  <code>Z⁰</code>  represented  similarly  by  a  basis  of  <code>Y(S)</code>, and semi-simple elements  representing the classes of <code>Z</code> modulo  <code>Z⁰</code> , chosen in <code>S</code>. The classes  <code>Z/Z⁰</code> also biject to the fundamental  group as given by the field <code>.descAZ</code>,  see <a href="#Chevie.Semisimple.algebraic_center"><code>algebraic_center</code></a> for  an explanation. Finally the semi-simple elements of order 3 in <code>Z⁰</code> are computed.</p><pre><code class="language-julia-repl hljs">julia&gt; e[3]^G(2)
+SemisimpleElement{Root1}: &lt;ζ₃²,1,ζ₃²&gt;
+
+julia&gt; orbit(G,e[3])
+6-element Vector{SemisimpleElement{Root1}}:
+ &lt;ζ₃²,ζ₃,ζ₃²&gt;
+ &lt;ζ₃²,1,ζ₃²&gt;
+ &lt;ζ₃,1,ζ₃²&gt;
+ &lt;ζ₃²,1,ζ₃&gt;
+ &lt;ζ₃,1,ζ₃&gt;
+ &lt;ζ₃,ζ₃²,ζ₃&gt;</code></pre><p>Here  is the same  computation as above  performed with semisimple elements whose  coefficients are in the  finite field <code>FF(4)</code>, representing elements of <code>sl₄(𝔽₄)</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; G=rootdatum(:sl,4)
+sl₄
+
+julia&gt; s=SemisimpleElement(G,Z(4).^[1,2,1])
+SemisimpleElement{FFE{2}}: &lt;Z₄,Z₄²,Z₄&gt;
+
+julia&gt; s^G(2)
+SemisimpleElement{FFE{2}}: &lt;Z₄,1,Z₄&gt;
+
+julia&gt; orbit(G,s)
+6-element Vector{SemisimpleElement{FFE{2}}}:
+ &lt;Z₄,Z₄²,Z₄&gt;
+ &lt;Z₄,1,Z₄&gt;
+ &lt;Z₄²,1,Z₄&gt;
+ &lt;Z₄,1,Z₄²&gt;
+ &lt;Z₄²,1,Z₄²&gt;
+ &lt;Z₄²,Z₄,Z₄²&gt;</code></pre><p>We can compute the centralizer <span>$C_𝐆 (s)$</span> of a semisimple element in <code>𝐆</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; G=coxgroup(:A,3)
+A₃
+
+julia&gt; s=ss(G,[0,1//2,0])
+SemisimpleElement{Root1}: &lt;1,-1,1&gt;
+
+julia&gt; centralizer(G,s)
+A₃₍₁₃₎=(A₁A₁)Φ₂</code></pre><p>The  result is an  <code>ExtendedReflectionGroup</code>; the reflection  group part is the Weyl group of <span>$C_𝐆 ⁰(s)$</span> and the extended part are representatives of <span>$C_𝐆  (s)$</span>  modulo  <span>$C_𝐆⁰(s)$</span>  taken  as  diagram  automorphisms of the reflection  part.  Here  it  is  printed  as  a  coset  <span>$C_𝐆 ⁰(s)ϕ$</span> which generates <span>$C_𝐆 (s)$</span>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L1-L178">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.SubTorus"><a class="docstring-binding" href="#Chevie.Semisimple.SubTorus"><code>Chevie.Semisimple.SubTorus</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>SubTorus(W,Y::Matrix{&lt;:Integer})</code></p><p>The  function  returns  the  subtorus  𝐒  of  the  maximal torus <code>𝐓</code> of the reductive  group represented by the Weyl group  <code>W</code> such that <code>Y(𝐒)</code> is the (pure)  sublattice of  <code>Y(𝐓)</code> generated  by the  (integral) vectors  <code>Y</code>. A basis  of <code>Y(𝐒)</code> in  Hermite normal form  (for easy memebership testing) is computed  and stored in the field <code>S.gens</code> of the returned SubTorus struct. A  basis of <code>Y(𝐓)</code> adapted to <code>Y(𝐒)</code> is  also computed. This means a set of integral   vectors,  stored  in  <code>S.complement</code>,   is  computed  such  that <code>M=vcat(S.gens,S.complement)</code>   is   a   basis   of   <code>Y(𝐓)</code>  (equivalently <code>M∈GL(Z^{rank(W)})</code>.  An  error  is  raised  if  <code>Y</code> does not define a pure sublattice.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:A,4)
+A₄
+
+julia&gt; SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 1])
+SubTorus(A₄,[1 0 3 -13; 0 1 2 7; 0 0 4 -3])
+
+julia&gt; SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 2])
+ERROR: not a pure sublattice
+Stacktrace:
+ [1] error(::String) at ./error.jl:33
+ [2] Chevie.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Matrix{Int64}) at /home/jmichel/julia/Chevie.jl/src/Weyl.jl:1082
+ [3] top-level scope at REPL[25]:1</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L302-L330">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.fundamental_group"><a class="docstring-binding" href="#Chevie.Semisimple.fundamental_group"><code>Chevie.Semisimple.fundamental_group</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>fundamental_group(W)</code></p><p>This  function returns the fundamental group of the algebraic group defined by  the Coxeter  group struct  <code>W</code>. This  group is  returned as  a group of diagram  automorphisms  of  the  corresponding  affine Weyl group, which is represented  as a group of permutations of the set of simple roots enriched by the lowest root of each irreducible component. The definition we take of the  fundamental group of a (not necessarily semisimple) reductive group is (P∩ Y(𝐓))/Q where P is the coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of the  root  lattice)  and  Q  is  the  coroot  latice. The bijection between elements  of P/Q and  diagram automorphisms is  explained in the context of non-irreducible groups for example in <a href="../biblio.htm#Bon05">§3.B Bonnafé2005</a>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:A,3) # the adjoint group
+A₃
+
+julia&gt; fundamental_group(W) # the 12th root is the lowest one
+Group((1,2,3,12))
+
+julia&gt; W=rootdatum(:sl,4) # the semisimple simply connected group
+sl₄
+
+julia&gt; fundamental_group(W)
+Group(Perm{Int16}[])</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L636-L663">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.intermediate_group"><a class="docstring-binding" href="#Chevie.Semisimple.intermediate_group"><code>Chevie.Semisimple.intermediate_group</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>intermediate_group(W, indices)</code></p><p>returns a <code>rootdatum</code> which represents a semisimple algebraic group between the   adjoint  group,  obtained  by  a  call  like  <code>rootdatum(:pgl,4)</code>  or <code>coxgroup(:A,3)</code>, and the simply connected semi-simple group, obtained by a call  like  <code>rootdatum(:sl,4)</code>  or  <code>coxgroup(:A,3;sc=true)</code>. This group is specified  by a subset of the <em>minuscule weights</em>, the weights whose scalar product  with each  coroot is  in <code>-1,0,1</code>  (a weight  is an element of the <em>weight  lattice</em>  <code>P</code>,  the  lattice  dual  to  the  coroot  lattice). The non-trivial  characters of the  (algebraic) center of  a semi-simple simply connected  algebraic group are in bijection with the minuscule weights, and also  in bijection  with <code>P/Q</code>  where <code>Q</code>  is the  root lattice.  If <code>W</code> is irreducible,  the minuscule  weights are  part of  the basis  of the weight lattice  given by the <em>fundamental weights</em>, which is the dual basis of the simple  coroots. They can therefore be specified  by an index in the Dynkin diagram.  The  <code>indices</code>  of  minuscule  weights  in the dynkin diagram are indices  where the coefficient of  the highest root on  the simple roots is <code>1</code>. The constructed intermediate group has lattice <code>X(𝐓)</code> generated by the root  lattice and the given minuscule weights. If <code>W</code> is not irreducible, a minuscule  weight is a sum of minuscule weights in different components; an element of <code>indices</code> is thus itself a list, interpreted as representing the sum of the corresponding weights.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:A,3)
+A₃
+
+julia&gt; fundamental_group(intermediate_group(W,Int[])) # adjoint
+Group((1,2,3,12))
+
+julia&gt; fundamental_group(intermediate_group(W,Int[2])) # intermediate
+Group((1,3)(2,12))</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L1002-L1036">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.quasi_isolated_reps-Tuple{FiniteCoxeterGroup}"><a class="docstring-binding" href="#Chevie.Semisimple.quasi_isolated_reps-Tuple{FiniteCoxeterGroup}"><code>Chevie.Semisimple.quasi_isolated_reps</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>quasi_isolated_reps(W,p=0)</code></p><p><code>W</code>  should be a Weyl  group corresponding to an  algebraic group 𝐆 over an algebraically  closed field  of characteristic  0. This  function returns a list  of  semisimple  elements  for  𝐆,  which  are  representatives of the 𝐆-orbits  of quasi-isolated  semisimple elements.  It follows the algorithm given  in  <a href="../biblio.htm#Bon05">Bonnafe2005</a>.  If  a  second  argument <code>p</code> is given,  it  gives  representatives  of  those quasi-isolated elements which exist in characteristic <code>p</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:E,6);l=quasi_isolated_reps(W)
+5-element Vector{SemisimpleElement{Root1}}:
+ &lt;1,1,1,1,1,1&gt;
+ &lt;1,-1,1,1,1,1&gt;
+ &lt;1,1,1,ζ₃,1,1&gt;
+ &lt;ζ₃,1,1,1,1,ζ₃&gt;
+ &lt;1,ζ₆,ζ₆,1,ζ₆,1&gt;
+
+julia&gt; map(s-&gt;isisolated(W,s),l)
+5-element Vector{Bool}:
+ 1
+ 1
+ 1
+ 0
+ 0
+
+julia&gt; W=rootdatum(:E6sc);l=quasi_isolated_reps(W)
+7-element Vector{SemisimpleElement{Root1}}:
+ &lt;1,1,1,1,1,1&gt;
+ &lt;-1,1,1,-1,1,-1&gt;
+ &lt;ζ₃,1,ζ₃²,1,ζ₃,ζ₃²&gt;
+ &lt;ζ₃²,1,ζ₃,1,ζ₃,ζ₃²&gt;
+ &lt;ζ₃²,1,ζ₃,1,ζ₃²,ζ₃&gt;
+ &lt;ζ₆⁵,1,ζ₃²,1,ζ₃,ζ₃²&gt;
+ &lt;ζ₃²,1,ζ₃,1,ζ₃²,ζ₆⁵&gt;
+
+julia&gt; map(s-&gt;isisolated(W,s),l)
+7-element Vector{Bool}:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+
+julia&gt; Semisimple.quasi_isolated_reps(W,3)
+2-element Vector{SemisimpleElement{Root1}}:
+ &lt;1,1,1,1,1,1&gt;
+ &lt;-1,1,1,-1,1,-1&gt;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L850-L903">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.isisolated"><a class="docstring-binding" href="#Chevie.Semisimple.isisolated"><code>Chevie.Semisimple.isisolated</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>isisolated(WF::Spets,t::SemisimpleElement{Root1})</code></p><p><code>WF</code>  should be  a Coxeter  coset representing  an algebraic  coset <code>𝐆 ⋅σ</code>, where  <code>𝐆</code> is a connected  reductive group (represented by <code>W=Group(WF)</code>), and  <code>σ</code>  is  a  quasi-central  automorphism  of  <code>𝐆</code> defined by <code>WF</code>. The element  <code>t</code> should be a semisimple element of <code>𝐆</code>. The function returns a boolean describing whether <code>tσ</code> is isolated, that is whether the Weyl group of <code>C_𝐆 (tσ)⁰</code> is not in any proper parabolic subgroup of <code>W^σ</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; WF=rootdatum(:u,6)
+u₆
+
+julia&gt; l=quasi_isolated_reps(WF)
+4-element Vector{SemisimpleElement{Root1}}:
+ &lt;1,1,1,1,1,1&gt;
+ &lt;ζ₄,ζ₄,ζ₄,ζ₄³,ζ₄³,ζ₄³&gt;
+ &lt;ζ₄,ζ₄,1,1,ζ₄³,ζ₄³&gt;
+ &lt;ζ₄,1,1,1,1,ζ₄³&gt;
+
+julia&gt; isisolated.(Ref(WF),l)
+4-element BitVector:
+ 1
+ 1
+ 1
+ 0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Sscoset.jl#L245-L273">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.torsion_subgroup"><a class="docstring-binding" href="#Chevie.Semisimple.torsion_subgroup"><code>Chevie.Semisimple.torsion_subgroup</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>torsion_subgroup(S::SubTorus,n)</code></p><p>This  function  returns  the  subgroup  of  semi-simple  elements  of order dividing <code>n</code> in the subtorus <code>S</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; G=rootdatum(:sl,4)
+sl₄
+
+julia&gt; L=reflection_subgroup(G,[1,3])
+A₃₍₁₃₎=A₁×A₁Φ₁
+
+julia&gt; C=algebraic_center(L)
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[&lt;1,1,-1&gt;]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[&lt;-1,1,1&gt;, &lt;1,1,-1&gt;]))
+
+julia&gt; T=torsion_subgroup(C.Z0,3)
+Group(SemisimpleElement{Root1}[&lt;ζ₃,ζ₃²,ζ₃&gt;])
+
+julia&gt; sort(elements(T))
+3-element Vector{SemisimpleElement{Root1}}:
+ &lt;1,1,1&gt;
+ &lt;ζ₃,ζ₃²,ζ₃&gt;
+ &lt;ζ₃²,ζ₃,ζ₃²&gt;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L346-L371">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.algebraic_center"><a class="docstring-binding" href="#Chevie.Semisimple.algebraic_center"><code>Chevie.Semisimple.algebraic_center</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>algebraic_center(W)</code></p><p><code>W</code>  should  be  a  Weyl  group,  or  an extended Weyl group. This function returns  a description  of the  center <code>Z</code> of  the algebraic  group <code>𝐆</code> defined by <code>W</code> as a named tuple with the following fields:</p><p><code>Z0</code>: the neutral component <code>Z⁰</code> of <code>Z</code> as a subtorus of <code>𝐓</code>.</p><p><code>AZ</code>: representatives in <code>Z</code> of <code>A(Z):=Z/Z⁰</code> given as a group of semisimple elements.</p><p><code>ZD</code>:  center of the derived subgroup of <code>𝐆</code> given as a group of semisimple elements.</p><p><code>descAZ</code>:  if <code>W</code>  is not  an extended  Weyl group,  describes <code>A(Z)</code>  as a quotient  of the center  <code>pi</code> of the  simply connected covering  of <code>𝐆</code> (an incarnation of the fundamental group). It contains a list of elements given as  words  in  the  generators  of  <code>pi</code>  which  generate the kernel of the quotient map.</p><pre><code class="language-julia_repl hljs">julia&gt; G=rootdatum(:sl,4)
+sl₄
+
+julia&gt; L=reflection_subgroup(G,[1,3])
+A₃₍₁₃₎=A₁×A₁
+
+ulia&gt; C=algebraic_center(L)
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[&lt;1,1,-1&gt;]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[&lt;-1,1,1&gt;, &lt;1,1,-1&gt;]))
+
+julia&gt; G=coxgroup(:A,3)
+A₃
+
+julia&gt; s=ss(G,[0,1//2,0])
+SemisimpleElement{Root1}: &lt;1,-1,1&gt;
+
+julia&gt; C=centralizer(G,s)
+A₃₍₁₃₎=(A₁A₁)Φ₂
+
+julia&gt; algebraic_center(C)
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,Matrix{Int64}(undef, 0, 3)), AZ = Group(SemisimpleElement{Root1}[&lt;1,-1,1&gt;]))</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L395-L437">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.weightinfo"><a class="docstring-binding" href="#Chevie.Semisimple.weightinfo"><code>Chevie.Semisimple.weightinfo</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>weightinfo(W)</code></p><p><code>W</code>  is a  Coxeter group  record describing  an algebraic  group <code>𝐆</code>, or a <code>IypeIrred</code>. The function is independent of the isogeny type of <code>𝐆</code>(so just depends  on <code>refltype(W)</code>, that is  on the root system).  It returns a dict with the following keys:</p><ul><li><p><code>:minusculeWeights</code> the minuscule weights, described as their position  in  the  list  of  fundamental  weights.  For non-irreducible groups, a weight  is the sum of at most one weight in each irreducible component. It  is represented as  the list of  its components. For consistency, in the  case  of  an  irreducible  system,  a  weight  is represented as a one-element list.</p></li><li><p><code>:minusculeCoweights</code> the minuscule coweights, represented in the same manner as the minuscule weights</p></li><li><p><code>:decompositions</code> for each coweight, its decomposition in terms of the generators  of the adjoint fundamental group  (given by the list of the exponents  of the generators). Together with  the next field it enables to work out the group structure of the adjoint fundamental group.</p></li><li><p><code>:moduli</code> the list of orders of the generators of the fundamental group.</p></li><li><p><code>:AdjointFundamentalGroup</code> the list of generators of the adjoint fundamental group, given as permutations of the extended root basis.</p></li><li><p><code>:CenterSimplyConnected</code> A list of semisimple elements generating the center of the universal covering of  𝐆</p></li><li><p><code>:chosenAdaptedBasis</code> A basis  of the  weight lattice  adapted to the root lattice. In the basis of the fundamental weights, the root lattice is  given  by  <code>C=transpose(cartan(W))</code>.  The  property  specifying the <code>:chosenAdaptedBasis</code> is that the Hermite normal form of <code>C*chosenAdaptedBasis</code>  is almost in Smith  normal form (it is diagonal but  the diagonal entries may be  permuted compared to the Smith normal form; the non-trivial entries are in the positions corresponding to the generators of the fundamental group as indicated by <code>:decompositions</code>).</p></li></ul><pre><code class="language-julia-repl hljs">julia&gt; weightinfo(coxgroup(:A,2)*coxgroup(:B,2))
+Dict{Symbol, Array} with 8 entries:
+  :moduli                  =&gt; [3, 2]
+  :minusculeWeights        =&gt; [[1, 3], [1], [2, 3], [2], [3]]
+  :decompositions          =&gt; [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]
+  :highestroot             =&gt; [5, 7]
+  :chosenAdaptedBasis      =&gt; [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
+  :minusculeCoweights      =&gt; [[1, 4], [1], [2, 4], [2], [4]]
+  :CenterSimplyConnected   =&gt; Vector{Rational{Int64}}[[1//3, 2//3, 0, 0], [0, 0…
+  :AdjointFundamentalGroup =&gt; [(1,12,2), (4,14)]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L508-L560">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.weights"><a class="docstring-binding" href="#Chevie.Semisimple.weights"><code>Chevie.Semisimple.weights</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>weights(W)</code> simple weights in the basis of X(T)</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L630">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.coweights"><a class="docstring-binding" href="#Chevie.Semisimple.coweights"><code>Chevie.Semisimple.coweights</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>coweights(W)</code> simple coweights in the basis of Y(T)</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L633">source</a></section></details></article><article><details class="docstring" open="true"><summary id="PermGroups.Groups.centralizer-Tuple{FiniteCoxeterGroup, SemisimpleElement}"><a class="docstring-binding" href="#PermGroups.Groups.centralizer-Tuple{FiniteCoxeterGroup, SemisimpleElement}"><code>PermGroups.Groups.centralizer</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>centralizer(W,s::SemisimpleElement)</code></p><p><code>W</code>  should  be  a  Weyl  group  or  an extended reflection group and <code>s</code> a semisimple  element of the  algebraic group <code>G</code>  corresponding to <code>W</code>. This function  returns the  Weyl group  of <span>$C_G(s)$</span>,  which describes  it. The stabilizer  is an extended reflection group, with the reflection group part equal to the Weyl group of <span>$C_{G⁰}(s)$</span>, and the diagram automorphism part being those induced by <span>$C_G(s)$</span>.</p><pre><code class="language-julia-repl hljs">julia&gt; G=coxgroup(:A,3)
+A₃
+julia&gt; s=ss(G,[0,1//2,0])
+SemisimpleElement{Root1}: &lt;1,-1,1&gt;
+julia&gt; centralizer(G,s)
+A₃₍₁₃₎=(A₁A₁)Φ₂</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L812-L830">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.semisimple_centralizer_representatives"><a class="docstring-binding" href="#Chevie.Semisimple.semisimple_centralizer_representatives"><code>Chevie.Semisimple.semisimple_centralizer_representatives</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>semisimple_centralizer_representatives(W [,p])</code> or <code>sscentralizer_reps</code></p><p><code>W</code>  should be a Weyl group corresponding  to an algebraic group <code>𝐆</code>. This function  returns a list describing representatives  <code>𝐇</code> of <code>𝐆</code>-orbits of reductive  subgroups  of  <code>𝐆</code>  which  are  the  identity component of the centralizer of a semisimple element. Each group <code>𝐇</code> is specified by a list <code>h</code>   of  reflection  indices  in  <code>W</code>   such  that  <code>𝐇</code>  corresponds  to <code>reflection_subgroup(W,h)</code>.  If a  second argument  <code>p</code> is  given, only the list of the centralizers which occur in characteristic <code>p</code> is returned.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; sscentralizer_reps(W)
+6-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [2]
+ [1, 2]
+ [1, 5]
+ [2, 6]
+
+julia&gt; reflection_subgroup.(Ref(W),sscentralizer_reps(W))
+6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:
+ G₂₍₎=Φ₁²
+ G₂₍₁₎=A₁Φ₁
+ G₂₍₂₎=Ã₁Φ₁
+ G₂
+ G₂₍₁₅₎=A₂
+ G₂₍₂₆₎=Ã₁×A₁
+
+julia&gt; sscentralizer_reps(W,2)
+5-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [2]
+ [1, 2]
+ [1, 5]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L1051-L1092">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Semisimple.structure_rational_points_connected_centre"><a class="docstring-binding" href="#Chevie.Semisimple.structure_rational_points_connected_centre"><code>Chevie.Semisimple.structure_rational_points_connected_centre</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>structure_rational_points_connected_centre(W,q)</code></p><p><code>W</code>  should be  a Coxeter  group or  a Coxeter  coset representing a finite reductive  group <span>$𝐆 ^F$</span>, and <code>q</code> should  be the prime power associated to the  isogeny <code>F</code>. The function returns the abelian invariants of the finite abelian group <span>$Z⁰𝐆 ^F$</span> where <code>Z⁰𝐆</code> is the connected center of <code>𝐆</code>.</p><p>In  the following example one determines the structure of <code>𝐓(𝔽₃)</code> where <code>𝐓</code> runs over all the maximal tori of <code>SL</code>₄.</p><pre><code class="language-julia-repl hljs">julia&gt; l=twistings(rootdatum(:sl,4),Int[])
+5-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+ A₃₍₎=Φ₁³
+ A₃₍₎=Φ₁²Φ₂
+ A₃₍₎=Φ₁Φ₂²
+ A₃₍₎=Φ₁Φ₃
+ A₃₍₎=Φ₂Φ₄
+
+julia&gt; structure_rational_points_connected_centre.(l,3)
+5-element Vector{Vector{Int64}}:
+ [2, 2, 2]
+ [2, 8]
+ [4, 8]
+ [26]
+ [40]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/0493f49ac30edc6c4c0666ccbd373a0aa9a109bc/src/Semisimple.jl#L960-L988">source</a></section></details></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../garside/">« Garside monoids and groups, braids.</a><a class="docs-footer-nextpage" href="../cosets/">Reflection cosets and Spets »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Thursday 27 November 2025 17:33">Thursday 27 November 2025</span>. Using Julia version 1.12.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
