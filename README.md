@@ -1,6 +1,8 @@
 # Chevie.jl
 
-* [The documentation](https://jmichel7.github.io/Chevie.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jmichel7.github.io/Chevie.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jmichel7.github.io/Chevie.jl/dev/)
+[![Build Status](https://github.com/jmichel7/Chevie.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jmichel7/Chevie.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
 This is my attempt to port the Chevie package from GAP3 to Julia. I started
 this  project at the end of  2018 and it is still  in flux so some function
