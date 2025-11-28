@@ -11,6 +11,7 @@ string_partition_tuple
 CharSymbol
 rank(::CharSymbol)
 defect(::CharSymbol)
+Malledefect
 Symbol_partition_tuple
 fakedegree(::CharSymbol)
 degree_feg
