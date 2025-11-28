@@ -69,8 +69,8 @@ subsystems  of the root system of `W`. Each closed subsystem is represented
 by  the list of indices of its simple roots.  If `W` is the Weyl group of a
 reductive  group  `𝐆  `,  then  closed  subsystem  correspond  to reductive
 subgroups of maximal rank. And all such groups are obtained this way, apart
-from  some  exceptions  in  characteristics  2  and 3 (see [Malle-Testerman
-2011](biblio.htm#MT11) Proposition 13.4).
+from  some exceptions  in characteristics  2 and  3, see [mt11; Proposition
+13.4](@cite).
 
 ```julia-repl
 julia> W=coxgroup(:G,2)

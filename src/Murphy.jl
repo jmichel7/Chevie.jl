@@ -7,10 +7,9 @@ This module `Murphy.jl` has been ported in december 2020 from
 It allows computations with the Murphy basis of an Hecke algebra of type A.
 
 Multiplication  of Murphy basis elements is  done using the Garnir tableaux
-as  described in Murphy's paper [Mur1995](biblio.htm#Mur95). This also lets
-us convert from the T-basis to the Murphy basis since
-    `T_w = M([[1],…,[n]], [[1],…,[n]]) * T_w`.
-(We use "M" for the Murphy basis).
+as  described in [mur95](@cite). This also lets us convert from the T-basis
+to the Murphy basis since `T_w = M([[1],…,[n]], [[1],…,[n]]) * T_w`; we use
+"M" for the Murphy basis.
 
 As with the T-basis, Murphy basis elements are implemented by `ModuleElts`.
 Here the keys are standard tableaux pairs. These are represented by a tuple

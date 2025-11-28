@@ -73,8 +73,8 @@ Certain invariants of the irreducible characters of the one-parameter Hecke
 algebra  play a special role in the representation theory of the underlying
 finite  Coxeter  groups,  namely  the  `a`-  and  `A`-invariants. For basic
 properties   of  Iwahori-Hecke   algebras  and   their  relevance   to  the
-representation theory of finite groups of Lie type, see for example [Curtis
-and Reiner 1987](biblio.htm#CR87) Sections~67 and 68.
+representation  theory of finite groups of Lie type, see for example [cr87;
+Sections 67 and 68](@cite).
 
 In  the  following  example,  we  compute  the multiplication table for the
 `0`-Iwahori--Hecke algebra associated with the Coxeter group of type `A_2`.
@@ -132,14 +132,13 @@ specializing some of the parameters.
 The  generic Hecke algebras are explicitely  described by a presentation of
 the  braid group. The braid group can be presented by homogeneous relations
 in   the  braid   reflections,  called   *braid  relations*,  described  in
-[Broué-Malle-Rouquier     1998](biblio.htm#BMR98)     and    [Bessis-Michel
-2003](biblio.htm#BM03)  (some  of  which  were  obtained  using the VKCURVE
-GAP3-package,  also ported to Julia).  Furthermore, these presentations are
-such  that the  reflection group  is presented  by the same relations, plus
-relations  describing the order  of the generating  reflections, called the
-*order  relations*. Thus  the Hecke  algebra has  a presentation similar to
-that of `W`, with the same braid relations but the order relations replaced
-by a deformed version.
+[bmr98](@cite)  and [bm03](@cite)  (some of  which were  obtained using the
+VKCURVE   GAP3-package,   also   ported   to   Julia).  Furthermore,  these
+presentations  are such that the reflection  group is presented by the same
+relations,   plus  relations   describing  the   order  of  the  generating
+reflections,  called the  *order relations*.  Thus the  Hecke algebra has a
+presentation  similar to that of `W`, with the same braid relations but the
+order relations replaced by a deformed version.
 
 If  `S⊂ W`  is the  set of  distinguished reflections  of `W` which lift to
 generating  braid reflections in the braid  group, for each conjugacy class
@@ -152,16 +151,15 @@ Ariki and Koike have described models of representations for these algebras
 corresponding  to imprimitive complex  reflection groups, and Halverson-Ram
 and  some other  authors have  computed the  character tables in this case.
 Malle has given representation models and the character table for the other
-2-dimensional  reflection  groups,  see [Broué-Malle 1993](biblio.htm#BM93)
-and   [Malle   1996](biblio.htm#Mal96);   our   data   has  models  of  all
-representations,  and  character  tables,  for  real  reflection groups; it
-contains  the  same  for  imprimitive  groups  and  for primitive groups of
-dimension  2  and  3  (these  last  representations  have  been computed in
-[Malle-Michel   2010](biblio.htm#MM10))   and   contains   also  models  of
-representations  and  character  tables  computed  by  Michel for `G₂₉` and
-`G₃₃`;  it  contains  also  partial  lists  of  representations and partial
-character  tables for the remaining groups `G₃₁,G₃₂` and `G₃₄`, computed by
-Malle and Michel for `G₃₂` and by Michel for the other two algebras.
+2-dimensional  reflection groups, see [bm93](@cite) and [mal96](@cite); our
+data  has models  of all  representations, and  character tables,  for real
+reflection  groups; it  contains the  same for  imprimitive groups  and for
+primitive groups of dimension 2 and 3 (these last representations have been
+computed  in [mm10](@cite)) and contains also models of representations and
+character  tables computed by Michel for  `G₂₉` and `G₃₃`; it contains also
+partial  lists  of  representations  and  partial  character tables for the
+remaining  groups `G₃₁,G₃₂`  and `G₃₄`,  computed by  Malle and  Michel for
+`G₃₂` and by Michel for the other two algebras.
 
 The quotient of the Hecke algebra obtained by the specialisation ``u_{𝐬,i}↦
 ζₑⁱ``  is isomorphic to the group algebra of `W`. It was conjectured for 20
@@ -178,16 +176,15 @@ form a basis of the Hecke algebra.
 It  is  conjectured  that  such  a  basis  `T_w`  can  be  chosen such that
 additionnaly  the  linear  form  `t`  defined  by  `t(T_w)=0` if `w≠ 1` and
 `t(1)=1` is a symmetrizing form for the symmetric algebra `H`. This is well
-known  for all real reflection groups  and has been proved in [Malle-Mathas
-1998](biblio.htm#MM98)   for   imprimitive   reflection   groups   and   in
-[Malle-Michel 2010](biblio.htm#MM10) for some primitive groups of dimension
-2  and  3.  Chlouveraki  and  Chavli  have handled some other 2-dimensional
-cases.  For  each  irreducible  character  `φ`  of `H` we define the *Schur
-element*  `Sᵩ` associated to `φ` by the  condition that for any element `T`
-of  `H` we have `t(T)=∑ᵩ φ(T)/Sᵩ`. It  can be shown that the Schur elements
-are  Laurent polynomials, and they  do not depend on  the choice of a basis
-having  the  above  property.  Malle  has  computed  these  Schur elements,
-assuming the above conjecture; they are in the Chevie data.
+known  for all real reflection groups  and has been proved in [mm98](@cite)
+for  imprimitive reflection groups and  in [mm10](@cite) for some primitive
+groups of dimension 2 and 3. Chlouveraki and Chavli have handled some other
+2-dimensional  cases. For each  irreducible character `φ`  of `H` we define
+the  *Schur element* `Sᵩ` associated  to `φ` by the  condition that for any
+element  `T` of  `H` we  have `t(T)=∑ᵩ  φ(T)/Sᵩ`. It  can be shown that the
+Schur  elements  are  Laurent  polynomials,  and  they do not depend on the
+choice of a basis having the above property. Malle has computed these Schur
+elements, assuming the above conjecture; they are in the Chevie data.
 
 See the function `hecke` for various ways of specifying the parameters of a
 Hecke   algebra.  Look  also  at   the  docstrings  of  `central_monomials,
@@ -1060,7 +1057,7 @@ julia> p=class_polynomials(h)
  q³-2q²+q
  q³-q²+q-1
 ```
-The class polynomials were introduced in [Geck-Pfeiffer1993](biblio.htm#GP93).
+The class polynomials were introduced in [gp93](@cite).
 """
 function class_polynomials(h::HeckeElt)
   H=h.H

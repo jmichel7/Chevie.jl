@@ -216,7 +216,7 @@ The  last two lines ask for the degree  of `v`, then for the scalar product
 of `v` with itself.
 
 Finally  we mention  that Chevie  can also  provide unipotent characters of
-Spetses, as defined in [BroueMalleMichel2014](biblio.htm#BMM14). An example:
+Spetses, as defined in [bmm14](@cite). An example:
 
 ```julia-repl
 julia> UnipotentCharacters(complex_reflection_group(4))
@@ -1164,20 +1164,19 @@ const almostchar=almost_character
 
 Here `h` is an element of a Hecke algebra associated to a Coxeter group `W`
 or  Coxeter coset `Wϕ` which itself is  associated to an algebraic group `𝐆
-`.  By [DigneMichel1985](biblio.htm#DM85),  for ``g∈  𝐆^F``, the  number of
-fixed  points  of  `Fᵐ`  on  the  Deligne-Lusztig variety associated to the
-element `wϕ∈Wϕ`, have for `m` divisible by a sufficently large integer `d`,
-the  form ``∑_φ φ_{(qᵐ)}(T_wϕ)R_φ(g)`` where  `φ` runs over the irreducible
-characters  of ``Wϕ``, where ``R_φ`` is the corresponding almost character,
-and   where  ``φ_{(qᵐ)}``  is  a  character  value  of  the  Hecke  algebra
-``H(Wϕ,qᵐ)``  of ``Wϕ`` with parameter `qᵐ`.  This expression is called the
-*Lefschetz  character* of the Deligne-Lusztig  variety. If we consider `qᵐ`
-as  an indeterminate `x`, it  can be seen as  a sum of unipotent characters
-with   coefficients  character   values  of   the  generic   Hecke  algebra
-``H(Wϕ,x)``.  A  more  complicated  formula  involving  the  eigenvalues of
-Frobenius  attached to  unipotent characters  applies for  `m` not prime to
-`d`.  The function  returns this  formula when  a second parameter `m≠0` is
-given.
+`.  By [dm85](@cite), for ``g∈ 𝐆^F``, the number of fixed points of `Fᵐ` on
+the Deligne-Lusztig variety associated to the element `wϕ∈Wϕ`, have for `m`
+divisible   by   a   sufficently   large   integer   `d`,  the  form  ``∑_φ
+φ_{(qᵐ)}(T_wϕ)R_φ(g)``  where `φ`  runs over  the irreducible characters of
+``Wϕ``,  where  ``R_φ``  is  the  corresponding almost character, and where
+``φ_{(qᵐ)}``  is a  character value  of the  Hecke algebra  ``H(Wϕ,qᵐ)`` of
+``Wϕ``  with  parameter  `qᵐ`.  This  expression  is  called the *Lefschetz
+character*  of  the  Deligne-Lusztig  variety.  If  we  consider `qᵐ` as an
+indeterminate  `x`, it can  be seen as  a sum of  unipotent characters with
+coefficients  character values of the  generic Hecke algebra ``H(Wϕ,x)``. A
+more complicated formula involving the eigenvalues of Frobenius attached to
+unipotent characters applies for `m` not prime to `d`. The function returns
+this formula when a second parameter `m≠0` is given.
 
 The  function 'dllefschetz' takes  as argument a  Hecke element and returns
 the  corresponding Lefschetz character. This is defined on the whole of the

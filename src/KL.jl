@@ -24,9 +24,8 @@ square  root  `wₛ`,  we  can  scale  the  basis  `Tₛ`  to  get  a new basis
 `tₛ=-Tₛ/wₛ`    with   quadratic    relations   `(tₛ-vₛ)(tₛ+vₛ⁻¹)=0`   where
 `vₛ=wₛ/uₛ₁`.   The  most  general  case   when  Kazhdan-Lusztig  bases  and
 polynomials  can be defined is when the parameters `vₛ` belong to a totally
-ordered abelian group `Γ` for multiplication, see
-[Lusztig1983](biblio.htm#Lus83).  We set  `Γ⁺= {γ∈  Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈
-Γ⁺}={γ∈ Γ∣γ<0}`.
+ordered  abelian group `Γ`  for multiplication, see  [lus83](@cite). We set
+`Γ⁺= {γ∈ Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈ Γ⁺}={γ∈ Γ∣γ<0}`.
 
 Thus  we assume `ℋ ` defined over the ring `ℤ[Γ]`, the group algebra of `Γ`
 over  `ℤ`, and the quadratic  relations of `ℋ `  associate to each `s∈ S` a
@@ -152,8 +151,8 @@ export KLPol, Cpbasis, Cbasis, LeftCell, left_cells, character, Lusztigaw,
 using ..Chevie
 
 """
- `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w
-(see [Alvis1987](biblio.htm#Alv87)).
+ `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w,
+see [alv87](@cite).
 
 Let  `ℒ` (resp.  `ℛ `)  be the  left (resp.  right) descent  set. A pair of
 elements y≤w of W is called critical if `ℒ(y)⊃ ℒ(w)` and `ℛ (y)⊃ ℛ (w)`. If
@@ -227,13 +226,12 @@ end
 
 To  compute Kazhdan-Lusztig polynomials in  the one-parameter case it still
 seems   best  to   use  the   recursion  formula   in  the  original  paper
-[KL79](biblio.htm#KL79).  We first perform  a series of  checks on the pair
-`(y,w)`  to see if  the computation of  the corresponding polynomial can be
-reduced  to  a  similar  calculation  for  elements  of  smaller length. In
-particular, we reduce to the case of critical pairs (see
-[`KL.critical_pair`](@ref)),  and whenever the  polynomial corresponding to
-such  a pair is computed, the value is  stored in a `Dict` `W.klpol` in the
-underlying Coxeter group.
+[kl79](@cite).  We first perform a series of  checks on the pair `(y,w)` to
+see  if the computation of the corresponding polynomial can be reduced to a
+similar  calculation  for  elements  of  smaller  length. In particular, we
+reduce  to the case of critical pairs (see [`KL.critical_pair`](@ref)), and
+whenever the polynomial corresponding to such a pair is computed, the value
+is stored in a `Dict` `W.klpol` in the underlying Coxeter group.
 
 ```julia-repl
 julia> W=coxgroup(:B,3)
@@ -300,12 +298,12 @@ HeckeAlgebras.basisname(h::HeckeCElt)="C"
 `Cpbasis(H)`
     
 returns  a function which gives the `C'`-basis of the Iwahori-Hecke algebra
-`H`  (see [(5.1)Lusztig1985](biblio.htm#Lus85)).  This basis  is defined by
-``C'_x= ∑_{y≤x}P_{y,x}q_x^{-1/2} T_y`` for `x ∈ W`. We have
-``C'_x=(-1)^{l(x)}alt(C_x)`` for all `x ∈ W` (see `alt`). 
-The  returned function can take as argument a list of integers (as a vector
-or  as a list of arguments), representing a Coxeter word, an element of the
-Coxeter group, or a Hecke element (converted then to the `C'` basis).
+`H`,   see  [lus85; (5.1)](@cite).   This  basis   is  defined   by  ``C'_x=
+∑_{y≤x}P_{y,x}q_x^{-1/2} T_y`` for `x ∈ W`. We have
+``C'_x=(-1)^{l(x)}alt(C_x)``  for  all  `x  ∈  W` (see `alt`). The returned
+function  can take as argument a list of integers (as a vector or as a list
+of  arguments),  representing  a  Coxeter  word,  an element of the Coxeter
+group, or a Hecke element (converted then to the `C'` basis).
 
 ```julia-repl
 julia> W=coxgroup(:B,2);@Pol v;H=hecke(W,[v^4,v^2])
@@ -332,16 +330,15 @@ Cpbasis(H::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
 
 returns  a function which gives the  `C`-basis of the Iwahori-Hecke algebra
 `H`.  The algebra `H` should have all entries of `H.rootpara` defined after
-calling   `rootpara(H)`.  This  basis  is  defined  as  follows  (see  e.g.
-[(5.1)Lusztig1985](biblio.htm#Lus85)).  Let `W`  be the  underlying Coxeter
-group.  For `x,y ∈ W` let ``P_{x,y}`` be the corresponding Kazhdan--Lusztig
-polynomial.  If  ``\\{T_w  ∣  w∈  W\\}``  denotes  the  usual T-basis, then
-``C_x=\\sum_{y\\le x}(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1} T_y``
-for  `x ∈ W`. For example, we have `Cₛ=qₛ⁻½Tₛ-qₛ½T₁` for `s ∈ S`. Thus, the
-transformation  matrix  between  the  `T`-basis  and the `C`-basis is lower
-unitriangular,   with  monomials  in  `qₛ`   along  the  diagonal.  In  the
-one-parameter  case (all `qₛ`  are equal to  `v²`) the multiplication rules
-for the `C` basis are given by:
+calling   `rootpara(H)`.  This  basis  is  defined  as  follows, see  e.g.
+[lus85; (5.1)](@cite).  Let `W` be the underlying Coxeter group. For `x,y ∈
+W`  let ``P_{x,y}``  be the  corresponding Kazhdan--Lusztig  polynomial. If
+``\\{T_w  ∣ w∈  W\\}`` denotes  the usual  T-basis, then ``C_x=\\sum_{y\\le
+x}(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1}  T_y`` for `x  ∈ W`. For
+example,  we have `Cₛ=qₛ⁻½Tₛ-qₛ½T₁`  for `s ∈  S`. Thus, the transformation
+matrix between the `T`-basis and the `C`-basis is lower unitriangular, with
+monomials  in `qₛ` along the diagonal.  In the one-parameter case (all `qₛ`
+are equal to `v²`) the multiplication rules for the `C` basis are given by:
 
 `Cₛ⋅Cₓ =-(v+v⁻¹)Cₓ`, if `sx<x`, and `Cₛₓ+∑ₜ μ(t,x)Cₜ` if `sx>x`.
 
@@ -484,8 +481,7 @@ julia> C=Cpbasis(H); Tbasis(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 
-For general Hecke algebras, we follow formula 2.2 in 
-[Lusztig1983](biblio.htm#Lus83)
+For general Hecke algebras, we follow [lus83; formula 2.2](@cite)
 
 `` \\overline{P_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
 
@@ -796,12 +792,12 @@ end
 `left_cells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
 for the 1-parameter Hecke algebra `hecke(W,q)`
 
-The  program uses precomputed  data(see [Geck-Halls 2014](biblio.htm#GH14))
-for  exceptional types and for type `:A`,  so is quite fast for these types
-(it  takes 13 seconds to compute the  101796 left cells for type `E₈`). For
-other  types, left cells are computed from first principles, thus computing
-many  Kazhdan-Lusztig polynomials. It takes 30  seconds to compute the left
-cells of `D₆`, for example.
+The program uses precomputed data (see [gh14](@cite)) for exceptional types
+and for type `:A`, so is quite fast for these types (it takes 13 seconds to
+compute  the 101796 left cells for type  `E₈`). For other types, left cells
+are  computed from  first principles,  thus computing  many Kazhdan-Lusztig
+polynomials.  It takes 30  seconds to compute  the left cells  of `D₆`, for
+example.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -965,8 +961,8 @@ end
 
 For  `w` an element  of the Coxeter  groups `W`, this  function returns the
 coefficients  on the irreducible characters of the virtual Character `ca_w`
-defined  in [5.10.2 Lusztig1985](biblio.htm#Lus85).  This character has the
-property that the corresponding almost character is integral and positive.
+defined in [lus85; 5.10.2](@cite). This character has the property that the
+corresponding almost character is integral and positive.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -992,12 +988,12 @@ function Lusztigaw(W,w)
 end
 
 """
-`LusztigAw( <W>, <w>)`
+`LusztigAw(W,w)`
 
-For  <w> an element  of the Coxeter  groups <W>, this  function returns the
-coefficients  on the irreducible  characters of the  virtual Character cA_w
-defined  in [5.11.6 Lusztig1985](biblio.htm#Lus85).  This character has the
-property that the corresponding almost character is integral and positive.
+For  `w` an  element of  the Coxeter  group `W`,  this function returns the
+coefficients on the irreducible characters of the virtual character ``A_w``
+defined  in [lus85; 5.11.6](@cite). This character has the property that the
+corresponding almost character is integral and positive.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)

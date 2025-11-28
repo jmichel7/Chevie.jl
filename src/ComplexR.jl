@@ -27,10 +27,9 @@ end
 
 `complex_reflection_group(p,q,r)` or `crg(p,q,r)`
 
-The  first form of `complex_reflection_group`  returns the complex reflection
-group which has Shephard-Todd number `STnumber`, see
-[Shephard-Todd1954](biblio.htm#ST54).   The   second   form   returns   the
-imprimitive complex reflection group `G(p,q,r)`.
+The first form of `complex_reflection_group` returns the complex reflection
+group  which has  Shephard-Todd number  `STnumber`, see  [st54](@cite). The
+second form returns the imprimitive complex reflection group `G(p,q,r)`.
 
 ```julia-repl
 julia> G=complex_reflection_group(4)

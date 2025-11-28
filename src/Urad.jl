@@ -11,9 +11,9 @@ gives a canonical form to display elements and to compare them.
 
 The  computations use the Steinberg relations between root subgroups, which
 come from the choice of a Chevalley basis of the Lie algebra. The reference
-we  follow is [Carter1972,  chapters 4 to  6](biblio.htm#Car72b), but it is
-possible  to use another  choice of Chevalley  basis, see the documentation
-for `UnipotentGroup`.
+we  follow is [car72b; chapters  4 to 6](@cite), but  it is possible to use
+another   choice   of   Chevalley   basis,   see   the   documentation  for
+`UnipotentGroup`.
 
 We  start with  a root  datum specified  by a  Weyl group  `W` and  build a
 `struct  UnipotentGroup`  which  contains  information  about  the  maximal
@@ -161,22 +161,21 @@ end
 A  `struct UnipotentGroup` represents  the unipotent  radical `𝐔` of a
 Borel subgroup of a reductive group `G`.
 
-See   [Carter1972,  section  4.2](biblio.htm#Car72b)  for  details  on  the
-following.  A Chevalley basis  of the Lie  algebra of `𝐔`  is a basis `eᵣ`,
-where   each  `eᵣ`  is  in  the  corresponding  root  subspace,  such  that
-`[eᵣ,eₛ]=Nᵣₛ e_{r+s}` for some integer constants `Nᵣₛ`. The constants `Nᵣₛ`
-for general roots are computed from the case where `r` and `s` are positive
-roots whose sum is a root; such a pair `(r,s)` is called *special*.
+See  [car72b; section 4.2](@cite) for details on the following. A Chevalley
+basis  of the Lie algebra of `𝐔` is a basis `eᵣ`, where each `eᵣ` is in the
+corresponding  root  subspace,  such  that  `[eᵣ,eₛ]=Nᵣₛ  e_{r+s}` for some
+integer constants `Nᵣₛ`. The constants `Nᵣₛ` for general roots are computed
+from  the case where  `r` and `s`  are positive roots  whose sum is a root;
+such a pair `(r,s)` is called *special*.
 
-Constants  `Cᵣₛᵢⱼ` are defined, see [Carter1972, 5.2.3](biblio.htm#Car72b),
-by
+Constants  `Cᵣₛᵢⱼ` are defined, see [car72b; 5.2.3](@cite), by
 
 ``u_s(u)u_r(t)=u_r(t)u_s(u)\\prod_{i,j>0}u_{ir+js}(C_{rsij}(-t)^iu^j)``
 
 Where  `ir+js` runs over the positive  integral combinations of `r` and `s`
 which  are roots,  taken in  lexicographic order  on `(i,j)`. The constants
-`Cᵣₛᵢⱼ`  are computed from the constants  `Nᵣₛ`, see [Carter1972, bottom of
-page 61 and top of page 76](biblio.htm#Car72b).
+`Cᵣₛᵢⱼ`  are computed from the constants `Nᵣₛ`, see [car72b; bottom of page
+61 and top of page 76](@cite).
 
 The fields of `struct Unipotent Group` are:
 
@@ -292,8 +291,7 @@ function check_root_order(W)
   if !isone(i) error("Need ", i, " to sort the roots of ", W, "\n") end
 end
 
-# Compute N_{a,b} for non-necessarily positive roots [Carter1972b, 4.2.1
-# (ii)](biblio.htm#Car72b] 
+# Compute N_{a,b} for non-necessarily positive roots [car72b; 4.2.1 (ii)](@cite)
 # Here a negative root α is represented by -(index of -α)
 N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)=
    N(U.W,U.special,U.special,a,b;scaled)
@@ -321,11 +319,10 @@ function N(W,special,Nc,a::Integer,b::Integer;scaled=false)
 end
 
 function Ncarter(W,special)
-# the order on the positive roots must be compatible with an order
-# on the ambient vector space. 1:nref(W) is such an order (see
-# check_root_order)
-# Compute Nᵣₛ for each special pair, using arbitraryness for extraspecial
-# pairs. See formula in proof of [Carter1972b, 4.2.2](biblio.htm#Car72b)
+# the  order on the positive roots must  be compatible with an order on the
+# ambient  vector space. 1:nref(W) is such an order (see check_root_order).
+# Compute  Nᵣₛ for each special  pair, using arbitraryness for extraspecial
+# pairs. See formula in proof of [car72b; 4.2.2](@cite).
   r=s=rs=0
   ns=div(length(special),2)
   Nc=fill((N=0,),2*ns)
@@ -354,11 +351,11 @@ If  the keyword `order` is given it is  a total order on the positive roots
 used to normalize unipotent elements.
 
 By  default the structure constants `Nᵣₛ`  are computed using the method of
-[Carter1972](biblio.htm#Car72b)  from  extraspecial  pairs.  Another set of
-structure  constants can be specified by giving for the keyword `chevalley`
-a `Dict` associating to a pair `(r,s)` of root indices some object `p` such
-that `first(p)` is the corresponding `N_{r,s}`. Here is an example of using
-different constants from the package `ChevLie` of Meinolf Geck.
+[car72b](@cite) from extraspecial pairs. Another set of structure constants
+can be specified by giving for the keyword `chevalley` a `Dict` associating
+to  a pair `(r,s)` of root indices  some object `p` such that `first(p)` is
+the  corresponding  `N_{r,s}`.  Here  is  an  example  of  using  different
+constants from the package `ChevLie` of Meinolf Geck.
 ```julia-rep1
 julia> W=coxgroup(:G,2)
 G₂

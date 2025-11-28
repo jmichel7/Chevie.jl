@@ -1,6 +1,11 @@
-using Documenter, Chevie
+using Documenter, Chevie, DocumenterCitations
 
 DocMeta.setdocmeta!(Chevie, :DocTestSetup, :(using Chevie); recursive=true)
+
+bib = CitationBibliography(
+    joinpath(@__DIR__, "src", "refs.bib");
+    style=:authoryear
+)
 
 makedocs(sitename="Chevie.jl documentation",
    modules=[Chevie],
@@ -39,7 +44,9 @@ makedocs(sitename="Chevie.jl documentation",
     "ucl.md",
     "urad.md"],
     "gendec.md",
+    "references.md",
     "dict.md" ],
+  plugins=[bib],
   warnonly=:missing_docs,
 )
 

@@ -2,11 +2,10 @@
 Let  `R` be a  root system in  the real vector  space `V`. We say that `F₀∈
 GL(V)`  is an  *automorphism of  `R`* if  it permutes  `R` and is of finite
 order  (finite  order  is  automatic  if  `R` generates `V`). It follows by
-[chap.  VI,  §1.1,  lemme  1  Bourbaki1968](biblio.htm#Bou68) that the dual
-`F₀*∈  GL(V*)`  permutes  the  coroots  `R*⊂  V*`; thus `F₀` normalizes the
-reflection  group  `W`  associated  to  `R`,  that  is  `w↦  F₀wF₀⁻¹` is an
-automorphism  of `W`. Thus we get a reflection coset `WF₀`, which we call a
-*Coxeter coset*.
+[bou68;  chap.  VI,  §1.1,  lemme  1](@cite)  that  the  dual `F₀*∈ GL(V*)`
+permutes  the coroots `R*⊂  V*`; thus `F₀`  normalizes the reflection group
+`W` associated to `R`, that is `w↦ F₀wF₀⁻¹` is an automorphism of `W`. Thus
+we get a reflection coset `WF₀`, which we call a *Coxeter coset*.
 
 The  motivation for introducing Coxeter  cosets comes from automorphisms of
 algebraic  reductive groups, giving rise to non-split reductive groups over
@@ -38,12 +37,12 @@ It  turns out that  many interesting objects  attached to this datum depend
 only on `(V,W, F₀)`: the order of the maximal tori, the *fake degrees*, the
 order  of `𝐆^F`, symbols representing unipotent characters, Deligne-Lusztig
 induction  in  terms  of  *almost  characters*, the Fourier matrix relating
-characters and almost characters, etc… (see, e.g.,
-[Broue-Malle-Michel1993](biblio.htm#BMM93)).  It is thus possible to extend
-their  construction to non-crystallographic groups (or even to more general
-complex  reflection groups,  see [`spets`](@ref));  this is  why we did not
-include  a root  system in  the definition  of a reflection coset. However,
-unipotent conjugacy classes for instance depend on the root system.
+characters  and almost  characters, etc…  see, e.g.,  [bmm93](@cite). It is
+thus  possible to extend their  construction to non-crystallographic groups
+(or  even to more general  complex reflection groups, see [`spets`](@ref));
+this  is  why  we  did  not  include  a  root system in the definition of a
+reflection  coset. However, unipotent conjugacy classes for instance depend
+on the root system.
 
 We assume now that `𝐓` is contained in an `F`-stable Borel subgroup of `𝐆`.
 This  defines an order  on the roots,  and there is  a unique element `ϕ∈ W
@@ -53,12 +52,11 @@ automorphism  of the Coxeter system `(W,S)`.  This element is stored in the
 component  `.phi` of the coset record. It may be defined without mentioning
 the  roots,  as  follows:  `(W,F₀(S))`  is  another  Coxeter  system,  thus
 conjugate to `S` by a unique element of `W`, thus there is a unique element
-`ϕ∈  WF₀` which stabilizes `S` (a proof  follows from [Theoreme 1, chap. V,
-§3  Bourbaki1968](biblio.htm#Bou68)). We  consider thus  cosets of the form
-`Wϕ` where `ϕ` stabilizes `S`. The coset `W ϕ` is completely defined by the
-permutation  `.phi`  when  `𝐆`  is  semi-simple  ---  equivalently when `Φ`
-generates  `V`; in this  case we just  need to specify  `phi` to define the
-coset.
+`ϕ∈  WF₀` which  stabilizes `S`;  a proof  follows from [bou68; Theoreme 1,
+chap.  V, §3](@cite). We  consider thus cosets  of the form  `Wϕ` where `ϕ`
+stabilizes  `S`. The coset  `W ϕ` is  completely defined by the permutation
+`.phi`  when `𝐆` is semi-simple --- equivalently when `Φ` generates `V`; in
+this case we just need to specify `phi` to define the coset.
 
 There is a slight generalisation of the above setup, covering in particular
 the  case of the Ree  and Suzuki groups. We  consider `𝐆^F` where `F` not a
@@ -84,18 +82,18 @@ We  now extend the above notions  to general complex reflection groups. Let
 be  an element  of `GL(V)`  which normalizes  `W`. Then  the coset  `Wϕ` is
 called a reflection coset.
 
-A reference for these cosets is [Broue-Malle-Michel 1999](biblio.htm#BMM99).
-When `W` is a so-called *Spetsial* group, they are the basic object for the
-construction  of  a  *Spetses*,  which  is  an object attached to a complex
-reflection  group from which one can derive combinatorially some attributes
-shared with finite reductive groups, like unipotent degrees, etc….
+A  reference for  these cosets  is [bmm99](@cite).  When `W` is a so-called
+*Spetsial*  group,  they  are  the  basic  object for the construction of a
+*Spetses*,  which is an object attached  to a complex reflection group from
+which  one can  derive combinatorially  some attributes  shared with finite
+reductive groups, like unipotent degrees, etc….
 
 We  say that  a reflection  coset is  irreducible if  `W` is irreducible. A
 general  coset is a direct  product of *descents of  scalars*, which is the
 case  where `ϕ`  is transitive  on the  irreducible components  of `W`. The
-irreducible    cosets   have   been   classified   in   [Broue-Malle-Michel
-1999](biblio.htm#BMM99):  up to multiplication of `ϕ` by a scalar, there is
-usually only one or two possible cosets for a given irreducible group.
+irreducible   cosets  have   been  classified   in  [bmm99](@cite):  up  to
+multiplication  of  `ϕ`  by  a  scalar,  there  is  usually only one or two
+possible cosets for a given irreducible group.
 
 We  deal only  with *finite  order* cosets,  that is,  we assume there is a
 (minimal) integer `δ` such that `(Wϕ)^δ=W`. Then the group generated by `W`
@@ -135,7 +133,7 @@ an element `w` of `W` such that `wϕ` normalizes `L`.
 We  then have a natural notion of  *restriction* of class functions on `Wϕ`
 to  class  functions  on  `Lwϕ`  as  well  as  of  *induction* in the other
 direction.  These  maps  are  adjoint  with  respect  to the scalar product
-defined above (see [Broue-Malle-Michel 1999](biblio.htm#BMM99)).
+defined above, see [bmm99](@cite).
 
 In  this package the most general construction  of a reflection coset is by
 starting  from a reflection datum, and giving in addition the matrix `F` of

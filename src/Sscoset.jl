@@ -8,14 +8,13 @@ algebraic automorphism of `𝐆 `; more specifically to represent the coset `�
 `σ`  preserves a pair `𝐓 ⊂ 𝐁` of a maximal torus and a Borel subgroup of `𝐆
 `,  and further  *quasi-central*, which  means that  the Weyl group of `C_𝐆
 (σ)`  is `W^σ`. Then  `σ` defines an  automorphism `F_0` of  the root datum
-`(X(𝐓 ), Φ, Y(𝐓 ), Φ^∨)`, thus a Coxeter coset. We refer to
-[Digne-Michel2018](biblio.htm#ss) for details.
+`(X(𝐓 ), Φ, Y(𝐓 ), Φ^∨)`, thus a Coxeter coset. We refer to [ss](@cite) for
+details.
 
 We  have  extended  the  functions  for  semi-simple  elements to work with
-quasi-semisimple elements `tσ∈ 𝐓 ⋅σ`. Here, as in
-[Digne-Michel2018](biblio.htm#ss),  `σ`  is  a  quasi-central  automorphism
-uniquely   defined  by  a  diagram  automorphism  of  `(W,S)`,  taking  `σ`
-symplectic in type `A₂ₙ`.
+quasi-semisimple  elements `tσ∈  𝐓 ⋅σ`.  Here, as  in [ss](@cite), `σ` is a
+quasi-central  automorphism uniquely  defined by  a diagram automorphism of
+`(W,S)`, taking `σ` symplectic in type `A₂ₙ`.
 
 Here are some examples:
 
@@ -88,7 +87,7 @@ end
 
 # rootdatum R(σ)
 # Computes X_σ X^σ, Y_σ, Y^σ, R(σ) of ss
-# see 1.1 to 1.7 of [Digne-Michel2018](biblio.htm#ss)
+# see [ss; 1.1 to 1.7](@cite)
 function RelativeDatum(WF)
   get!(WF,:Rs)do
     W=Group(WF)

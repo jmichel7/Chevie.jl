@@ -645,7 +645,7 @@ the  fundamental group of a (not necessarily semisimple) reductive group is
 (P∩ Y(𝐓))/Q where P is the coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of
 the  root  lattice)  and  Q  is  the  coroot  latice. The bijection between
 elements  of P/Q and  diagram automorphisms is  explained in the context of
-non-irreducible groups for example in [§3.B Bonnafé2005](biblio.htm#Bon05).
+non-irreducible groups for example in [bon05; §3.B](@cite).
 
 ```julia-repl
 julia> W=coxgroup(:A,3) # the adjoint group
@@ -854,9 +854,9 @@ end
 algebraically  closed field  of characteristic  0. This  function returns a
 list  of  semisimple  elements  for  𝐆,  which  are  representatives of the
 𝐆-orbits  of quasi-isolated  semisimple elements.  It follows the algorithm
-given  in  [Bonnafe2005](biblio.htm#Bon05).  If  a  second  argument `p` is
-given,  it  gives  representatives  of  those quasi-isolated elements which
-exist in characteristic `p`.
+given  in  [bon05](@cite).  If  a  second  argument  `p` is given, it gives
+representatives   of   those   quasi-isolated   elements   which  exist  in
+characteristic `p`.
 
 ```julia-repl
 julia> W=coxgroup(:E,6);l=quasi_isolated_reps(W)
