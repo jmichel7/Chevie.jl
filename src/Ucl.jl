@@ -1694,8 +1694,12 @@ The special pieces form a partition of the unipotent variety of a reductive
 group  `𝐆` which  was first  defined in  [spalt82; chap. III](@cite) as the
 fibres of `d^2`, where `d` is a "duality map". Another definition is as the
 set  of classes in  the Zariski closure  of a special  class and not in the
-Zariski  closure of any smaller special class, where a special class is the
-support of the image of a special character by the Springer correspondence.
+Zariski  closure of any smaller  special class, where a  special class is a
+class  such that the  trivial local system  on it corresponds  to a special
+character by the Springer correspondence.
+
+Since   each  Lusztig  family  of  characters  contains  a  unique  speical
+character, special pieces are in bijection with lusztig families.
 
 Each  piece is a union of unipotent  conjugacy classes so is represented in
 Chevie  as a  list of  class numbers.  Thus the  list of  special pieces is
@@ -1719,9 +1723,8 @@ julia> special_pieces(UnipotentClasses(W,3))
  [4, 3, 2, 6]
  [5]
 ```
-
-The   example  above  shows  that  the  special  pieces  are  different  in
-characteristic 3.
+The  example above shows  that the special  pieces may be  different in bad
+characteristic.
 """
 function special_pieces(uc)
   W=uc.spets
