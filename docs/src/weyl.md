@@ -12,12 +12,6 @@ coxeter_group(t::Symbol,r::Int=0,b::Int=0)
 coxeter_group()
 rootlengths
 highest_short_root
-rootdatum(::AbstractMatrix)
-rootdatum(::AbstractMatrix,::AbstractMatrix)
-torus(::Integer)
-istorus
-radical
-derived_datum
 describe_involution
 badprimes
 standard_parabolic(::Weyl.FC,::AbstractVector{<:Integer})
@@ -25,4 +19,10 @@ inversions
 with_inversions
 relative_group
 affine
+rootdatum(::AbstractMatrix)
+rootdatum(::AbstractMatrix,::AbstractMatrix)
+torus(::Integer)
+istorus
+radical
+derived_datum
 ```

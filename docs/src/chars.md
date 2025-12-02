@@ -10,7 +10,7 @@ charinfo
 charnames(io::IO, W::Union{Coset, Group})
 classnames
 classinfo
-fakedegree
+fakedegree(::Any,::Any,::Any)
 fakedegrees
 representation(::Union{Chars.Hastype,FiniteCoxeterGroup},::Integer)
 representations(::Union{Spets, FiniteCoxeterGroup, PermRootGroup})
