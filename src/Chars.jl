@@ -1,38 +1,36 @@
 """
 Characters and conjugacy classes of complex reflection groups.
 
-The  `CharTable` of a finite complex reflection group `W` is computed using
-the  decomposition of `W` in irreducible  groups (see `refltype`). For each
-irreducible  group the character  table is either  computed using recursive
-formulas  for the infinite series,  or read into the  system from a library
-file  for the  exceptional types.  Thus, character  tables can  be obtained
-quickly  even for very large groups  (e.g., E₈). Similar remarks apply for
-conjugacy classes.
+The  [`CharTable`](@ref)  of  a  finite  complex  reflection  group  `W` is
+computed  using  the  decomposition  of  `W`  in  irreducible  groups  (see
+[`refltype`](@ref)).  For  each  irreducible  group  the character table is
+either  computed using recursive formulas for  the infinite series, or read
+into  the  system  from  a  library  file  for the exceptional types. Thus,
+character  tables can be obtained quickly even for very large groups (e.g.,
+E₈). Similar remarks apply for conjugacy classes.
 
 The  conjugacy  classes  and  irreducible  characters of irreducible finite
-complex reflection groups have canonical labelings by certain combinatorial
-objects;  these labelings are used in the  tables we give. For the classes,
-these  are partitions or partition tuples  for the infinite series, or, for
-exceptional  Coxeter groups,  Carter's admissible  diagrams [car72](@cite);
-for  other primitive  complex reflection  groups we  just use  words in the
-generators  to specify  the classes.  For the  characters, these  are again
-partitions  or partition tuples for the infinite series, and for the others
-they  are pairs  of two  integers `(d,e)`  where `d`  is the  degree of the
-character  and  `e`  is  the  smallest  symmetric  power  of the reflection
-representation  containing  the  given  character  as  a  constituent  (the
-`b`-invariant of the character). This information is given by the functions
-`classinfo`  and  `charinfo`.  When  you  display  the character table, the
-canonical labelings for classes and characters are displayed.
+complex  reflection groups  are labelled  by certain combinatorial objects;
+these  labelings are used in the tables we give. For the classes, these are
+partitions or partition tuples for the infinite series, or, for exceptional
+Coxeter  groups,  Carter's  admissible  diagrams  [car72](@cite); for other
+primitive  complex reflection groups we just use words in the generators to
+specify  the classes. For  the characters, these  combinatorial objects are
+again  partitions or partition tuples for  the infinite series, and for the
+exceptional  groups they are pairs of two integers `(d,b)` where `d` is the
+degree  of the  character and  `b` is  the smallest  symmetric power of the
+reflection  representation containing the given  character as a constituent
+(the  valuation of the fake degree); further a  `'` or `''` may be added to
+disambiguate   characters.   This   data   is   shown   by   the  functions
+[`classinfo`](@ref)  and [`charinfo`](@ref). Displaying the character table
+shows the labelings for classes and characters.
 
 A  typical example  is `coxgroup(:A,n)`,  the symmetric  group `𝔖ₙ₊₁` where
-classes  and characters are  parameterized by partitions  of `n+1` (this is
-also the case for `coxsym(n+1)`).
+classes and characters are parameterized by partitions of `n+1` (it is also
+the case for `coxsym(n+1)`).
 
 ```julia-repl
-julia> W=coxgroup(:A,3)
-A₃
-
-julia> CharTable(W)
+julia> CharTable(coxgroup(:A,3))
 CharTable(A₃)
 ┌────┬─────────────────┐
 │    │1111 211 22 31  4│
@@ -44,10 +42,7 @@ CharTable(A₃)
 │4   │   1   1  1  1  1│
 └────┴─────────────────┘
 
-julia> W=coxgroup(:G,2)
-G₂
-
-julia> ct=CharTable(W)
+julia> ct=CharTable(coxgroup(:G,2))
 CharTable(G₂)
 ┌─────┬────────────────────┐
 │     │A₀ Ã₁ A₁ G₂ A₂ A₁+Ã₁│
@@ -79,12 +74,12 @@ julia> ct.classnames
  "A_1+\\tilde A_1"
 ```
 
-Reflection  groups  have  fake  degrees  (see [`fakedegrees`](@ref)), whose
-valuation and degree give two integers `b,B` for each irreducible character
-of  `W`. For  spetsial groups  (which include  finite Coxeter  groups), the
-valuation  and degree of the generic degrees  of the Hecke algebra give two
-more  integers `a,A`  (for Coxeter  groups see  [car85; chap.11](@cite) for
-more  details). These integers are also used in the operations of truncated
+Reflection  groups  have  `fakedegrees`](@ref),  whose valuation and degree
+give  two  invariants  `b,B`  for  each  irreducible  character of `W`. For
+spetsial  groups (which include  finite Coxeter groups),  the valuation and
+degree  of the generic degrees of the  spetsial Hecke algebra give two more
+invariants  `a,A` (for Coxeter groups  see [car85; chap.11](@cite) for more
+details).  These  integers  are  also  used  in the operations of truncated
 induction, see [`j_induction_table`](@ref) and [`J_induction_table`](@ref).
 
 Iwahori-Hecke  algebras and  cyclotomic Hecke  algebras also have character
@@ -93,11 +88,12 @@ tables, see the corresponding chapters.
 We  now describe for each type our conventions for labeling the classes and
 characters.
 
-Type  `Aₙ`  (`n≥0`).  In  this  case  we  have  `W ≅ 𝔖ₙ₊₁`. The classes and
-characters  are labelled by partitions of  `n+1`. The partition labelling a
-class  is the cycle type of the  elements in that class; the representative
-in  `.classtext` is  the concatenation  of the  words corresponding to each
-part,  where the word for a part  `i` is  the  product of `i-1` consecutive
+-  Type  `Aₙ`  (`n≥0`).  
+We  have  `W(Aₙ)≅  𝔖ₙ₊₁`;  its  classes  and  characters  are  labelled  by
+partitions  of `n+1`. The partition labelling a  class is the cycle type of
+the  elements in that  class; the representative  word in the generators in
+`.classtext`  is the concatenation of the words corresponding to each part,
+where  the  word  for  a  part  `i`  is  the  product  of `i-1` consecutive
 generators  (starting  one  higher  than  the  last  generator used for the
 previous  parts). The partition labelling a character describes the type of
 the  Young  subgroup  such  that  the  trivial  character induced from this
@@ -107,47 +103,48 @@ Thus,  the sign  character is  labelled by  the partition  `(1ⁿ⁺¹)` and the
 trivial character by the partition `(n+1)`. The character of the reflection
 representation of `W` is labelled by `(n,1)`.
 
-Type  `Bₙ`  (`n≥2`).  In  this  case  `W=W(Bₙ)` is isomorphic to the wreath
-product  of the cyclic  group of order  `2` with the  symmetric group `𝔖ₙ`.
-Hence  the classes and characters are  parameterized by pairs of partitions
-such  that the total sum of their  parts equals `n`. The pair corresponding
-to  a class describes the signed cycle type for the elements in that class,
-as  in [car72](@cite). We use the convention that if `(λ,μ)` is such a pair
-then  `λ` corresponds to the positive and `μ` to the negative cycles. Thus,
-`(1ⁿ,-)` and `(-,1ⁿ)` label respectively the trivial class and the class of
-the longest element.
+-  Type  `Bₙ`  (`n≥2`).  
+The group `W=W(Bₙ)` is isomorphic to the wreath product of the cyclic group
+of  order  `2`  with  the  symmetric  group  `𝔖ₙ`.  Hence  the  classes and
+characters are parameterized by pairs of partitions such that the total sum
+of  their parts equals `n`. The pair corresponding to a class describes the
+signed  cycle type for the elements in that class, as in [car72](@cite). We
+use  the convention that if `(λ,μ)` is  such a pair then `λ` corresponds to
+the  positive and `μ`  to the negative  cycles. Thus, `(1ⁿ,-)` and `(-,1ⁿ)`
+label respectively the trivial class and the class of the longest element.
 
 The  pair  corresponding  to  an  irreducible  character  is determined via
-Clifford  theory, as  follows. We  have a  semidirect product decomposition
-`W(Bₙ)=N  ⋊  𝔖ₙ`  where  `N`  is  the standard `n`-dimensional `𝔽₂ⁿ`-vector
-space.  For `a,b ≥ 0` such that  `n=a+b` let ``η_{a,b}`` be the irreducible
-character  of `N`  which takes  value `1`  on the  first `a` standard basis
-vectors  and value `-1` on the last `b` standard basis vectors of `N`. Then
-the  inertia subgroup of ``η_{a,b}`` has the form ``T_{a,b}=N.(𝔖_a × 𝔖_b)``
-and  we  can  extend  ``η_{a,b}``  trivially  to  an  irreducible character
-``η̃_{a,b}``  of ``T_{a,b}``. Let `α` and `β` be partitions of `a` and `b`,
-respectively.  We take the tensor  product of the corresponding irreducible
-characters  of `𝔖_a` and `𝔖_b` and  regard this as an irreducible character
-of  ``T_{a,b}``. Multiplying this character  with ``η̃_{a,b}`` and inducing
-to  `W(Bₙ)` yields  an irreducible  character ``χ=  χ_{(α,β)}`` of `W(Bₙ)`.
-This defines the correspondence between irreducible characters and pairs of
-partitions as above.
+Clifford  theory using the semidirect  product decomposition `W(Bₙ)=N ⋊ 𝔖ₙ`
+where `N` is the standard `n`-dimensional `𝔽₂ⁿ`-vector space. For `a,b ≥ 0`
+such that `n=a+b` let ``η_{a,b}`` be the irreducible character of `N` which
+takes  value `1` on the first `a`  standard basis vectors and value `-1` on
+the  last `b` standard basis  vectors of `N`. Then  the inertia subgroup of
+``η_{a,b}``  has  the  form  ``T_{a,b}=N.(𝔖_a  ×  𝔖_b)``  and we can extend
+``η_{a,b}``   trivially  to   an  irreducible   character  ``η̃_{a,b}``  of
+``T_{a,b}``. Let `α` and `β` be partitions of `a` and `b`, respectively. We
+take  the  tensor  product  of  the corresponding irreducible characters of
+`𝔖_a` and `𝔖_b` and regard this as an irreducible character of ``T_{a,b}``.
+Multiplying this character with ``η̃_{a,b}`` and inducing to `W(Bₙ)` yields
+an  irreducible  character  ``χ=  χ_{(α,β)}``  of `W(Bₙ)`. This defines the
+correspondence  between irreducible  characters and  pairs of partitions as
+above.
 
 For example, the pair `((n),-)` labels the trivial character and `(-,(1ⁿ))`
 labels  the  sign  character.  The  character  of  the  natural  reflection
 representation is labeled by `((n-1),(1))`.
 
-Type  `Dₙ` (`n≥4`). In this case `W=W(Dₙ)` can be embedded as a subgroup of
-index  `2` into the Coxeter  group `W(Bₙ)`. The intersection  of a class of
-`W(Bₙ)` with `W(Dₙ)` is either empty or a single class in `W(Dₙ)` or splits
-up  into two classes in  `W(Dₙ)`. This also leads  to a parameterization of
-the  classes of `W(Dₙ)` by pairs of  partitions `(λ,μ)` as before but where
-the  number of parts of `μ` is even and where there are two classes of this
-type  if `μ` is empty and all parts of  `λ` are even. In the latter case we
-denote  the two classes in `W(Dₙ)` by `(λ,+)` and `(λ,-)`, where we use the
-convention  that  the  class  labeled  by `(λ,+)` contains a representative
-which  can be written  as a word  in `{s₁,s₃,…,sₙ}` and  `(λ,-)` contains a
-representative which can be written as a word in `{s₂,s₃, …,sₙ}`.
+-  Type  `Dₙ` (`n≥4`). 
+The  group `W(Dₙ)`  can be  embedded as  a subgroup  of index  `2` into the
+Coxeter  group `W(Bₙ)`. The intersection of a class of `W(Bₙ)` with `W(Dₙ)`
+is  either empty or a single class in `W(Dₙ)` or splits up into two classes
+in `W(Dₙ)`. This also leads to a parameterization of the classes of `W(Dₙ)`
+by  pairs of partitions `(λ,μ)` as before  but where the number of parts of
+`μ`  is even and where there  are two classes of this  type if `μ` is empty
+and all parts of `λ` are even. In the latter case we denote the two classes
+in  `W(Dₙ)` by `(λ,+)`  and `(λ,-)`, where  we use the  convention that the
+class  labeled by `(λ,+)` contains a representative which can be written as
+a word in `{s₁,s₃,…,sₙ}` and `(λ,-)` contains a representative which can be
+written as a word in `{s₂,s₃, …,sₙ}`.
 
 By  Clifford theory the restriction of  an irreducible character of `W(Bₙ)`
 to  `W(Dₙ)`  is  either  irreducible  or  splits  up  into  two irreducible
@@ -171,9 +168,9 @@ The  labels for the trivial, the  sign and the natural reflection character
 are the same as for `W(Bₙ)`, since these characters are restrictions of the
 corresponding characters of `W(Bₙ)`.
 
-### The groups `G(d,1,n)`.
-They  are isomorphic to the wreath product of the cyclic group of order `d`
-with  the  symmetric  group  `𝔖ₙ`.  Hence  the  classes  and characters are
+-  The groups `G(d,1,n)`.
+They are isomorphic to the wreath product ``μ_d≀𝔖ₙ`` of the cyclic group of
+order  `d` with the  symmetric group. Hence  the classes and characters are
 parameterized  by `d`-tuples of partitions such that the total sum of their
 parts  equals `n`. The words chosen  as representatives of the classes are,
 when `d>2`, computed in a slightly different way than for `Bₙ`, in order to
@@ -190,7 +187,7 @@ ones  empty. The character of the  reflection representations has the first
 two  partitions with one part  equal respectively to `n-1`  and to `1`, and
 the other partitions empty.
 
-### The groups `G(de,e,n)`.
+-  The groups `G(de,e,n)`.
 They  are normal  subgroups of  index `e`  in `G(de,1,n)`.  The quotient is
 cyclic,  generated by the image `g`  of the first generator of `G(de,1,n)`.
 The  classes are parameterized as the  classes of `G(de,e,n)` with an extra
@@ -200,9 +197,9 @@ According  to [hu85](@cite), a class `C`  of `G(de,1,n)` parameterized by a
 `de`-partition  ``(S₀,…,S_{de-1})`` is in `G(de,e,n)` if `e` divides ``∑ᵢ i
 ∑_{p∈ Sᵢ}p``. It splits in `d` classes for the largest `d` dividing `e` and
 all  parts of all `Sᵢ` and  such that `Sᵢ` is empty  if `d` does not divide
-`i`.  If `w` is in `C` then `gⁱ w g⁻ⁱ` for `i in 0:d-1` are representatives
-of  the  classes  of  `G(de,e,n)`  which  meet  `C`.  They are described by
-appending the integer `i` to the label for `C`.
+`i`.  If `w∈C` then `[gⁱ w g⁻ⁱ for i in 0:d-1]` are representatives of the
+classes  of `G(de,e,n)` which meet `C`.  They are labelled by appending the
+integer `i` to the label for `C`.
 
 The  characters are described by Clifford theory. We make `g` act on labels
 for  characters of `G(de,1,n)`  . The action  of `g` permutes circularly by
@@ -216,8 +213,13 @@ we  represent the  character by  one of  these motives,  to which we append
 `E(k)ⁱ` for `i in 0:k-1` to describe which component of the restriction we
 choose.
 
-Types `G₂` and `F₄`. The matrices of character values and the orderings and
-labelings  of the irreducible characters are exactly the same as in [car85;
+-  Types `G₂` and `F₄`. 
+A character is labeled by a pair `(d,b)` where `d` denotes the degree and `b`
+the  corresponding `b`-invariant. If there  are several characters with the
+same pair `(d,b)` we attach a prime to them, as in [car85](@cite).
+
+The  matrices of  character values  and the  orderings and labelings of the
+irreducible characters are exactly the same as in [car85;
 p.412--413](@cite):  in type `G₂` the character  `φ₁,₃'` takes the value -1
 on  the reflection associated  to the long  simple root; in  type `F₄`, the
 characters  `φ₁,₁₂'`, `φ₂,₄'`,  `φ₄,₇'`, `φ₈,₉'`  and `φ₉,₆'`  occur in the
@@ -228,20 +230,18 @@ reflection  representation. Note, however, that we put the long root at the
 left  of the Dynkin  diagrams to be  in accordance with  the conventions in
 [lus85; (4.8) and (4.10)](@cite).
 
-The  classes are labeled by  Carter's admissible diagrams [car72](@cite). A
-character is labeled by a pair `(d,b)` where `d` denotes the degree and `b`
-the  corresponding `b`-invariant. If there  are several characters with the
-same pair `(d,b)` we attach a prime to them, as in [car85](@cite).
+The  classes are labeled by  Carter's admissible diagrams [car72](@cite).
 
-Types  `E₆,E₇,E₈`. The character  tables are obtained  by specialization of
-those  of the Hecke algebra. The classes are labeled by Carter's admissible
-diagrams  [car72](@cite). A character is labeled  by the pair `(d,b)` where
-`d`  denotes the  degree and  `b` is  the corresponding  `b`-invariant. For
-these types, this gives a unique labeling of the characters.
+-  Types  `E₆,E₇,E₈`. 
+The  character tables are obtained by  specialization of those of the Hecke
+algebra.   The  classes   are  labeled   by  Carter's  admissible  diagrams
+[car72](@cite).  A  character  is  labeled  by  the  pair `(d,b)` where `d`
+denotes  the degree and  `b` is the  corresponding `b`-invariant. For these
+types, this gives a unique labeling of the characters.
 
-Non-crystallographic  types `I₂(m)`, `H₃`, `H₄`. In these cases we do not
-have  canonical  labelings  for  the  classes.  We  label  them  by reduced
-expressions.
+- Non-crystallographic  types `I₂(m)`, `H₃`, `H₄`. 
+In these cases we do not have canonical labelings for the classes. We label
+them by reduced expressions.
 
 Each  character for  type `H₃`  is uniquely  determined by the pair `(d,b)`
 where  `d` is the degree and  `b` the corresponding `b`-invariant. For type
@@ -262,7 +262,7 @@ where  `1 ≤ j ≤  ⌊(m-1)/2⌋`. The reflection representation
 is  `ρ₁`. The  characters in  the table  are ordered by listing
 first the characters of degree 1 and then `ρ₁,ρ₂,…`.
 
-### Primitive complex reflection groups `G₄` to `G₃₄`.
+## Primitive complex reflection groups `G₄` to `G₃₄`.
 The  groups `G₂₃=H₃`, `G₂₈=F₄`, `G₃₀=H₄` are exceptional Coxeter groups and
 have  been  explained  above.  Similarly  for  the  other groups labels for
 characters  consist primarily  of the  pair `(d,b)`  where `d`  denotes the
@@ -383,12 +383,13 @@ and  `G₃₄`, groups  which admit  outer automorphisms  preserving the set of
 reflections,  so choices  of a  particular value  on a particular generator
 must be made for characters which are not invariant by these automorphisms.
 
-Labels  for the classes. For the exceptional complex reflection groups, the
-labels  for the classes represent the  decomposition of a representative of
-the  class as a product of generators, with the additional conventions that
-`z`  represents the generator  of the center  and for well-generated groups
-`c`  represents a Coxeter element  (a product of the  generators which is a
-regular element for the highest reflection degree).
+-  Labels  for the classes. 
+For  the exceptional complex reflection groups,  the labels for the classes
+represent  the decomposition of a representative  of the class as a product
+of  generators,  with  the  additional  conventions that `z` represents the
+generator  of the  center and  for well-generated  groups `c`  represents a
+Coxeter element (a product of the generators which is a regular element for
+the highest reflection degree).
 """
 module Chars
 
@@ -466,8 +467,8 @@ end
 `fakedegree(W, φ, q=Pol())`
 
 returns the fake degree (see [`fakedegrees`](@ref) for a definition) of the
-character  of parameter φ (see  `charinfo(W).charparams`) of the reflection
-group `W`, evaluated at `q` .
+character  of parameter  φ (see  [`charinfo`](@ref)`(W).charparams`) of the
+reflection group `W`, evaluated at `q` .
 
 ```julia-repl
 julia> fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
@@ -600,10 +601,10 @@ describing  properties of  the irreducible  characters of  `W`. This object
 prints  at the  Repl or  in Pluto  or Jupyter  as a table synthesizing most
 information.
 
-A  field not in the table is  `.charparams`: it contains parameters for the
+A  field  not  printed  is  `.charparams`:  it  contains parameters for the
 irreducible  characters.  A  parameter  is  a  list  with one item for each
 irreducible  component of `W` (as given  by `refltype`). For an irreducible
-`W` see the helpstring for `Chars` for what are the parameters.
+`W` see the explanation in [`Chars`](@ref) for what are the parameters.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2)).charparams
@@ -656,14 +657,19 @@ Hecke algebra `hecke(W,Pol())` for `W`).
 For  irreducible  groups,  the  table  shows  sometimes additional columns,
 corresponding to a field of the same name.
 
-for  `F₄`, the column `kondo` gives the labeling of the characters given by
-Kondo, also used in [lus85; (4.10)](@cite).
+for  `F₄`,  the  column  `kondo`  gives  the  labeling of the characters in
+[kon65](@cite). The columns `spaltenstein` and `lusztig` show variants used
+in [spalt85](@cite) and [lus85; (4.10)](@cite).
 
-for  `E₆, E₇, E₈` the  column `frame` gives the  labeling of the characters
-given by Frame, also used in [lus85; (4.11), (4.12), and (4.13)](@cite).
+for `E₆, E₇, E₈` the column `frame` gives the labeling of the characters in
+[frame51,frame70](@cite), also used in [lus85; (4.11) to (4.13)](@cite).
 
 for  `G₂` the  column `spaltenstein`  gives the  labeling of the characters
-given by Spaltenstein.
+used  by [spalt85](@cite) and the column  `lusztig` shows a variant used in
+[lus85](@cite).
+
+for  `H₃` and `H₄` the  column `gp`  gives the  labeling of the characters
+used  in [gp2000](@cite).
 
 for `G(de,e,2)` even `e` and `d>1`, the column `malle` gives the parameters
 for the characters used in [mal96](@cite).
@@ -673,7 +679,7 @@ If  `W`  is  irreducible  spetsial  and  imprimitive,  the  column `symbol`
 the corresponding unipotent caracter.
 
 If  `W  isa  Spets`,  the  column  `restr.`  (corresponding  to  the  field
-`.charRestrictions`)  gives the  number of  the corresponding  character of
+`.charRestrictions`)  gives  the  index  of  the corresponding character of
 `Group(W)`.
 
 Finally,  the  field  `.hgal`  contains  the  permutation of the characters
@@ -788,7 +794,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   else ext[ci.positionId]="Id";ext[ci.positionDet]="det"
   end
   t=hcat(t,ext); push!(cl,"ext")
-  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle,:lusztig, :carter]
+  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle,:lusztig,:gp]
     if haskey(ci,key) && ci[key]!=false
       t=hcat(t,fromTeX.(Ref(io),string.(ci[key])))
       push!(cl,string(key))
@@ -1558,7 +1564,7 @@ end
 
 function charnames(io::IO,c::CharInfo)
   cn=c.charnames
-  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig, :carter]
+  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
     if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
   end
   fromTeX.(Ref(io),cn)
@@ -1572,8 +1578,8 @@ charnames(io::IO,W::Weyl.FC)=charnames(io,W.G)
 
 returns  the list of character names for the reflection group or Spets `W`.
 The  options may imply  alternative names in  certain cases, or a different
-formatting of names in general. They can be specified by `IO` attributes if
-giving an `IO` as argument.
+formatting of names in general. They are be specified by `IO` attributes if
+giving an `IO` as first argument.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -1615,9 +1621,9 @@ julia> charnames(W;spaltenstein=true,TeX=true)
  "\\theta'"
  "\\theta''"
 ```
-
-The  last two  commands show  the character  names used by Spaltenstein and
-Lusztig when describing the Springer correspondence.
+The  last two commands  show the character  names used in [spalt85](@cite).
+Other  keywords  available  are  `frame,  kondo,  malle,  gp, lusztig`, see
+[`charinfo`](@ref) for a description.
 """
 function charnames(io::IO,W::Union{Group,Coset})
   if applicable(refltype,W) charnames(io,charinfo(W))
@@ -1632,7 +1638,7 @@ charnames(t::TypeIrred;opt...)=charnames(IOContext(stdout,opt...),t)
 function charnames(io::IO,t::TypeIrred)
   ci=chevieget(t,:CharInfo)
   cn=ci[:charnames]
-  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig, :carter]
+  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
     if get(io,k,false) && haskey(ci,k) cn=string.(ci[k]) end
   end
   fromTeX.(Ref(io),cn)
