@@ -57,6 +57,14 @@ julia> diagram(crg(33))
 ② ——② ——② ——② 
 1   2   4   5     423423=342342
 ```
+The  nodes of the diagram represent  the generating reflections of `W`. For
+complex  reflection groups, the nodes circle an integer noting the order of
+the corresponding reflection.
+
+The  edges of the diagram represent braid  relations in the same way as for
+Dynkin  diagrams  (see  [`Weyl`](@ref)). Nodes  not  adjacent  by  an  edge
+represent  commuting  generators.  Braid  relations  using  more  than  two
+generators are listed separately.
 """
 diagram(W)=Diagram.(refltype(W))
 
@@ -294,7 +302,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G7})
     println(io,cd(2),hbar^2,cd(3))
     print(io,ind[1]," "^3,ind[3])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G8})
@@ -335,7 +343,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G11})
     println(io,cd(2),hbar^2,cd(4))
     print(io,ind[1]," "^3,ind[3])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G12})
@@ -350,7 +358,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G12})
     println(io," /4\\");println(io,cd(2),hbar^2,cd(2))
     print(io,ind[1]," "^3,ind[3])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G13})
@@ -370,7 +378,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G13})
     println(io,cd(2),hbar^2,cd(2))
     print(io,ind[2]," "^3,ind[3])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G14})
@@ -398,7 +406,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G15})
     println(io," /5");println(io,cd(2),ind[3]);
     println(io," \\");print(io,"  ",cd(3),ind[2])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G16})
@@ -439,7 +447,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G19})
     println(io,cd(2),hbar^2,cd(5))
     print(io,ind[1]," "^3,ind[3])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G20})
@@ -476,7 +484,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G22})
     println(io,cd(2),hbar^2,cd(2))
     print(io,ind[1]," "^3,ind[3])
   end
-  showrel(io,d,1,2)
+  print(io," relations only");showrel(io,d,1,2)
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G24})
@@ -568,8 +576,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G31})
     println(io," "^2,cd(2),hbar^2,cd(2))
     print(io," "^2,ind[1]," "^(4-l[1]),ind[3])
   end
-  print(io,"  i.e. ",fromTeX(io,"\$A_5\$ on "))
-  print(io,joindigits(d.t.indices[[1,4,2,5,3]])," plus")
+  print(io," relations between ",joindigits(d.t.indices[1:3])," only"); 
   showrel(io,d,5,6)
 end
 

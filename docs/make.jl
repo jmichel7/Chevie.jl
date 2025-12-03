@@ -32,6 +32,7 @@ makedocs(sitename="Chevie.jl documentation",
     "algebras.md"],
     "garside.md",
     "Reductive groups"=>[
+    "rootdata.md",
     "semisimple.md",
     "cosets.md",
     "sscoset.md",

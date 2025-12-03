@@ -4,13 +4,17 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jmichel7.github.io/Chevie.jl/dev/)
 [![Build Status](https://github.com/jmichel7/Chevie.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jmichel7/Chevie.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-This is my attempt to port the Chevie package from GAP3 to Julia. I started
-this  project at the end of  2018 and it is still  in flux so some function
-names or interfaces may still change. Pull requests and issues are welcome.
+This  is the current version of the `Chevie` package. It started in 2018 as
+a  port to Julia of the `GAP3` package with the same name. New developments
+are now done in this version.
 
-I  have implemented the  GAP functionality (infrastructure)  needed to make
-Chevie  work.  I  have  already  registered  most of this infrastructure as
-separate  packages; the  following packages  are loaded  and re-exported so
+The  package has  no yet  reached version  1, thus  some function  names or
+interfaces may yet change. Pull requests and issues are welcomed.
+
+The  infrastructure needed to make `Chevie` work has also been implemented,
+most  of it  as independent  registered packages.  They may have advantages
+compared  to  other  Julia  packages  providing  similar functionality. You
+should  take a look at them. They are loaded and re-exported by `Chevie` so
 that  their functionality is automatically available when you use `Chevie`.
 In other words, `Chevie` is a meta-package for the following packages:
 
@@ -32,11 +36,11 @@ In other words, `Chevie` is a meta-package for the following packages:
 Have  a look at the  documentation of the above  packages to see how to use
 their   features.  
 
-I  have implemented  some other  infrastructure which  currently resides in
-`Chevie` but may eventually become separate packages:
-  * factorizing polynomials over finite fields (module [`FFfac`](@ref))
-  * factorizing polynomials over the rationals (module [`Fact`](@ref))
-  * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
+Some  other implemented infrastructure which  currently resides in `Chevie`
+but may eventually become separate packages:
+  * factorizing polynomials over finite fields (module `FFfac`)
+  * factorizing polynomials over the rationals (module `Fact`)
+  * Number fields which are subfields of the Cyclotomics (module `Nf`)
 
 For permutation groups I have often replaced GAP's sophisticated algorithms
 with  naive  but  easy-to-write  methods  suitable  only  for  small groups

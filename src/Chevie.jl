@@ -1,15 +1,17 @@
 """
-The  `Chevie` package  started in  2018 as  a port  to Julia  of the `GAP3`
-package  with the same name. As the package is still in flux, some function
-names or interfaces may change. I welcome pull requests and issues.
+This  is the current version of the `Chevie` package. It started in 2018 as
+a  port to Julia of the `GAP3` package with the same name. New developments
+are now done in this version.
 
-I have also implemented the functionality needed to make `Chevie` work, and
-I  registered  as  packages  most  of  this  infrastructure.  They may have
-advantages   compared   to   other   Julia   packages   providing   similar
-functionality.  You  should  take  a  look  at  them.  They  are loaded and
-re-exported  by  `Chevie`  so  that  their  functionality  is automatically
-available when you use `Chevie`. In other words, `Chevie` is a meta-package
-for the following packages:
+The  package has  no yet  reached version  1, thus  some function  names or
+interfaces may yet change. Pull requests and issues are welcomed.
+
+The  infrastructure needed to make `Chevie` work has also been implemented,
+most  of it  as independent  registered packages.  They may have advantages
+compared  to  other  Julia  packages  providing  similar functionality. You
+should  take a look at them. They are loaded and re-exported by `Chevie` so
+that  their functionality is automatically available when you use `Chevie`.
+In other words, `Chevie` is a meta-package for the following packages:
 
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions when there are no fractional exponents)
@@ -29,8 +31,8 @@ for the following packages:
 Take  a  look  at  the  documentation  for  the  above packages to see what
 features they provide and how to use them.
 
-Some other  infrastructure I have implemented which  currently resides in
-`Chevie` but may eventually become separate packages:
+Some  other implemented infrastructure which  currently resides in `Chevie`
+but may eventually become separate packages:
 
   * factorizing polynomials over finite fields (module `FFfac`)
   * factorizing polynomials over the rationals (module `Fact`)
@@ -131,8 +133,8 @@ include("PermRoot.jl");@reexport using .PermRoot
 include("Diagrams.jl");@reexport using .Diagrams
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
+include("Rootdata.jl");@reexport using .Rootdata
 include("Cosets.jl");@reexport using .Cosets
-include("ComplexR.jl");@reexport using .ComplexR
 include("Chars.jl");@reexport using .Chars
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras

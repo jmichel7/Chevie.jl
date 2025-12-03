@@ -21,8 +21,4 @@ relative_group
 affine
 rootdatum(::AbstractMatrix)
 rootdatum(::AbstractMatrix,::AbstractMatrix)
-torus(::Integer)
-istorus
-radical
-derived_datum
 ```

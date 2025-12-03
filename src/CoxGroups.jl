@@ -18,7 +18,7 @@ is  the  *Coxeter  rank*  of  W),  where  each  element  of  `S`  acts as a
 reflection;  the faithfulness of this representation (a theorem of Tits) is
 the main argument to prove that the order of `st` is exactly `m(s,t)`. This
 representation  is defined as follows on a  space `V` with basis `{eₛ}` for
-`s∈  S`. The *cartan  matrix* associated to  the Coxeter matrix `m(s,t)` is
+`s∈  S`. The *Cartan  matrix* associated to  the Coxeter matrix `m(s,t)` is
 the matrix `C` with entries `C(s,t)=-2cos(π/m(s,t))`; we set `C(s,t)=-2` if
 `m(s,t)=∞`. Then the action of `s∈ S` on `V` is given by
 `s(eₜ)=eₜ-C(s,t)eₛ`.

@@ -45,8 +45,8 @@ YMatrix
 PermX
 PermY
 reflection_eigenvalues
-degrees(::ComplexReflectionGroup)
-codegrees
+degrees(::PermRootGroup)
+codegrees(::PermRootGroup)
 invariants
 discriminant
 invariant_form
