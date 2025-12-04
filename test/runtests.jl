@@ -662,8 +662,9 @@ end
 @test mytest("Rootdata.jl","W=rootdatum(:sl,4)","sl₄")
 @test mytest("Rootdata.jl","fundamental_group(W)","Group(Perm{Int16}[])")
 @test mytest("Rootdata.jl","W=coxgroup(:A,3)","A₃")
-@test mytest("Rootdata.jl","fundamental_group(intermediate_group(W,Int[]))","Group((1,2,3,12))")
-@test mytest("Rootdata.jl","fundamental_group(intermediate_group(W,Int[2]))","Group((1,3)(2,12))")
+@test mytest("Rootdata.jl","fundamental_group(intermediate_group(W))","Group(Perm{Int16}[])")
+@test mytest("Rootdata.jl","fundamental_group(intermediate_group(W,2))","Group((1,3)(2,12))")
+@test mytest("Rootdata.jl","fundamental_group(intermediate_group(W,1))","Group((1,2,3,12))")
 end
 @testset "Semisimple.jl" begin
 @test mytest("Semisimple.jl","G=rootdatum(:sl,4)","sl₄")
@@ -687,8 +688,6 @@ end
 @test mytest("Semisimple.jl","C=algebraic_center(L)","(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[<1,1,-1>]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[<-1,1,1>, <1,1,-1>]))")
 @test mytest("Semisimple.jl","T=torsion_subgroup(C.Z0,3)","Group(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])")
 @test mytest("Semisimple.jl","sort(elements(T))","3-element Vector{SemisimpleElement{Root1}}:\n <1,1,1>\n <ζ₃,ζ₃²,ζ₃>\n <ζ₃²,ζ₃,ζ₃²>")
-@test mytest("Semisimple.jl","W=affine(coxgroup(:A,4))","Ã₄")
-@test mytest("Semisimple.jl","diagram(W)","————5————\n      /         \\\nÃ₄   1———2———3———4")
 @test mytest("Semisimple.jl","G=coxgroup(:A,3)","A₃")
 @test mytest("Semisimple.jl","s=ss(G,[0,1//2,0])","SemisimpleElement{Root1}: <1,-1,1>")
 @test mytest("Semisimple.jl","centralizer(G,s)","A₃₍₁₃₎=(A₁A₁)Φ₂")
@@ -957,12 +956,14 @@ end
 @test mytest("Weyl.jl","elH=word.(Ref(H),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [1, 2]")
 @test mytest("Weyl.jl","elW=word.(Ref(W),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [2]\n [1, 2, 1, 2, 1]\n [1, 2, 1, 2, 1, 2]")
 @test mytest("Weyl.jl","splat(H).(elH)==splat(W).(elW)","true")
+@test mytest("Weyl.jl","W=affine(coxgroup(:A,4))","Ã₄")
+@test mytest("Weyl.jl","diagram(W)","————5————\n      /         \\\nÃ₄   1———2———3———4")
 end
 @testset "complexr.jl" begin
 @test mytest("complexr.jl","G=complex_reflection_group(4)","G₄")
 @test mytest("complexr.jl","degrees(G)","2-element Vector{Int64}:\n 4\n 6")
 @test mytest("complexr.jl","length(G)","24")
-@test mytest("complexr.jl","W*coxgroup(:A,2)","G₄×A₂")
+@test mytest("complexr.jl","G*coxgroup(:A,2)","G₄×A₂")
 @test mytest("complexr.jl","complex_reflection_group(1,1,3)","gl₃")
 @test mytest("complexr.jl","crg(4)","G₄")
 end

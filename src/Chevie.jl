@@ -135,6 +135,7 @@ include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Rootdata.jl");@reexport using .Rootdata
 include("Cosets.jl");@reexport using .Cosets
+include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
@@ -144,7 +145,6 @@ include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Garside.jl");@reexport using .Garside
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
-include("Semisimple.jl");@reexport using .Semisimple
 include("Urad.jl");@reexport using .Urad
 include("Ucl.jl");@reexport using .Ucl
 include("Gt.jl");@reexport using .Gt

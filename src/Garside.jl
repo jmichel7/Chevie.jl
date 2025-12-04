@@ -779,6 +779,8 @@ end
 rightgcd(M::BraidMonoid{T},simp::Vararg{T,N}) where{T,N}=
   inv(leftgcd(M,inv.(simp)...))
 
+BraidMonoid(W::Weyl.Affine)=BraidMonoid(W.G)
+
 #-----------------------ArtinMonoid-----------------------------------
 # Artin monoid for arbitrary (e.g. infinite) finitely generated Coxeter groups
 @GapObj struct ArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}

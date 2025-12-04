@@ -13,21 +13,19 @@ Y(𝐓),Φ^)`.  In algebraic terms, this consists  in giving a free `ℤ`-lattic
 `𝐆`),  and a root system `Φ ⊂ X`,  and similarly giving the dual roots `Φ^⊂
 Y=Y(𝐓)`.
 
-This  is obtained  by a  slight generalisation  of our  setup for a Coxeter
-group `W`. This time we assume that the canonical basis of the vector space
-`V`  on which `W`  acts is a  `ℤ`-basis of `X`,  and `Φ` is specified by an
-integral  matrix `simpleroots(W)` whose rows are the simple roots expressed
-in  this basis of  `X`. Similarly `Φ^`  is described by  an integral matrix
-`simplecoroots(W)`  whose rows are  the simple coroots  in the basis of `Y`
-dual to the chosen basis of `X`. The duality pairing between `X` and `Y` is
-the canonical one, that is the pairing between vectors `x∈ X` and `y∈ Y` is
-given by `transpose(x)*y`. Thus, we must have the relation
+This  can be  constructed by  giving integral  matrices as arguments to our
+function  [`rootdatum`](@ref). We  assume that  the canonical  basis of the
+vector  space `V` on which `W` acts is  a `ℤ`-basis of `X`, and the rows of
+the first argument [`simpleroots`](@ref)`(W)` of `rootdatum` are the simple
+roots  `Π` expressed in this basis of `X`. Similarly the rows of the second
+argument  [`simplecoroots`](@ref)`(W)` describes the  simple coroots in the
+basis  of `Y` dual to the chosen  basis of `X`. The duality pairing between
+`X`  and `Y` is the canonical one,  that is the pairing between vectors `x∈
+X` and `y∈ Y` is given by `transpose(x)*y`. Thus, we must have the relation
 `simplecoroots(W)*permutedims(simpleroots(W))=cartan(W)`.
 
-We  get this by using the function `rootdatum`, whose arguments are the two
-matrices `simpleroots(W)` and `simplecoroots(W)` described above. The roots
-need not generate `V`, so the matrices need not be square. For example, the
-root datum of the linear group of rank 3 can be obtained as:
+The  roots need not generate  `V`, so the matrices  need not be square. For
+example, the root datum of the linear group of rank 3 can be obtained as:
 
 ```julia-repl
 julia> W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])
@@ -41,9 +39,10 @@ julia> reflrep(W,W(1))
 ```
 here  the  Weyl  group  is  the  symmetric  group  on  3  letters acting by
 permutation of the basis of `X`. The dimension of `X`,
-`size(simpleroots(W),2)`,  is the *rank* and  the dimension of the subspace
-generated   by   the   roots,   `size(simpleroots(W),1)`,   is  called  the
-*semi-simple rank*. In the example the rank is 3 and the semisimple rank is 2.
+`size(simpleroots(W),2)`,  is the [`rank`](@ref)`(W)`] and the dimension of
+the  subspace  generated  by  the  roots,  `size(simpleroots(W),1)`, is the
+[`semisimplerank`](@ref)`(W)`.  In  the  example  the  rank  is  3  and the
+semisimple rank is 2.
 
 The  default representation  obtained as  `W=coxgroup(:A,2)` corresponds to
 the  adjoint algebraic group (the group in its isogeny class with a trivial
@@ -58,8 +57,8 @@ connected  algebraic  group,  where  `simpleroots(W)`  is the transposed of
 An  extreme form of root data can  be specified more conveniently: when `W`
 is  the trivial `coxgroup()` (in this case `𝐆 ` is a torus), the root datum
 has  no roots, thus  is entirely determined  by the rank  `r`. The function
-`torus(r)`  constructs  such  a  root  datum  (it could be also obtained by
-giving two `0×r` matrices to `rootdatum`).
+[`torus`](@ref)`(r)`  constructs  such  a  root  datum  (it  could  be also
+obtained by giving two `0×r` matrices to `rootdatum`).
 
 Finally,  the `rootdatum` function also understands some familiar names for
 the  algebraic groups for which it gives the results that could be obtained
@@ -71,6 +70,39 @@ gl₃
 The types of root data which are understood are
  `:gl, :pgl, :sl, :slmod, :tgl :sp, :csp, :psp, :so, :pso, :cso, :halfspin, 
   :gpin, :spin, :E6, :E6sc, :CE6, :E7, :E7sc, :CE7, :E8, :F4, :G2`.
+
+The  group `𝐆` is *semisimple* if the rank is equal to the semisimple rank.
+In  this case, things  are constrained: the  lattice `X` having an integral
+pairing  withe the coroots,  is in the  dual lattice of  the lattice of the
+coroots.  This dual lattice is called  the *weight lattice*. The dual basis
+to  the simple  coroots is  called the  *fundamental weights*. Similarly we
+have the *coweight lattice* and the *fundamental coweights*. In general the
+lattice  `X` is  an intermediate  lattice between  the root  and the weight
+lattices.
+
+It  follows  that  the  finite  abelian  group  obtained by quotienting the
+coweight  lattice by the  coroot lattice describes  all possibilities. This
+group   is  called  the  *fundamental  group*   of  the  root  system;  the
+*fundamental  group* of `𝐆` is  the quotient of `Y`  by the coroot lattice.
+The  fundamental  group  of  the  root  system  is also called the *adjoint
+fundamental  group* since for an adjoint group `Y` is the coweight lattice.
+The  fundamental  group  of  `𝐆`  is  a subgroup of the adjoint fundamental
+group.   It  turns  out  that  the  non-trivial  elements  of  the  adjoint
+fundamental  group are in bijection with the *minuscule coweights*, that is
+the  coweights whose pairing with every root is in `-1,0,1` (this bijection
+is  compatible  with  the  group  structure,  taking  coweights  modulo the
+coroots).  The  function  [`intermediate_group`](@ref)  can  construct  any
+semisimple group using this.
+
+The fundamental group has another incarnation which can be more convenient.
+
+  - The *extended simple roots* is `Π̃=Π∪{-α₀}` where `α₀` is the highest root.
+
+Via  the theory  of the  affine Weyl  group (see `affine`), the fundamental
+group  is  isomorphic  to  the  subgroup  of  `W` which stabilizes `Π̃`. We
+represent  `Π̃` by the  indices of the  roots it contains  and the function
+[`fundamental_group`](@ref)  returns it as a group of permutations of these
+indices.
 """
 module Rootdata
 using ..Chevie
@@ -302,26 +334,28 @@ function weightinfo(W)
   end
 end
 
-" `weights(W)` simple weights in the basis of X(T)"
+" `weights(W)` fundamental weights in the basis of X(T)"
 weights(W)=permutedims(inv(Rational.(cartan(W))))*simpleroots(W)
 
-" `coweights(W)` simple coweights in the basis of Y(T)"
+" `coweights(W)` fundamental coweights in the basis of Y(T)"
 coweights(W)=inv(Rational.(cartan(W)))*simplecoroots(W)
 
 """
-`fundamental_group(W)`
+`fundamental_group(W;full=false)`
 
 This  function returns the fundamental group of the algebraic group defined
-by  the Coxeter  group struct  `W`. This  group is  returned as  a group of
-diagram  automorphisms  of  the  corresponding  affine Weyl group, which is
-represented  as a group of permutations of the set of simple roots enriched
-by the lowest root of each irreducible component. The definition we take of
-the  fundamental group of a (not necessarily semisimple) reductive group is
-(P∩ Y(𝐓))/Q where P is the coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of
-the  root  lattice)  and  Q  is  the  coroot  latice. The bijection between
-elements  of P/Q and  diagram automorphisms is  explained in the context of
-non-irreducible groups for example in [bon05; §3.B](@cite).
+by  the root datum  `W`, that is  the subgroup of  `W` which stabilises the
+extended root basis (the set of simple roots enriched by the lowest root of
+each  irreducible component). Unless the keyword `full=true` is given, this
+is  returned as a group of permutations of  the indices of the roots in the
+extended root basis.
 
+The  definition  we  take  of  the  fundamental group of a (not necessarily
+semisimple)  reductive group is (P∩ Y(𝐓))/Q where P is the coweight lattice
+(the  dual lattice  in Y(𝐓)⊗  ℚ of  the root  lattice) and  Q is the coroot
+latice.  The  bijection  between  elements  of  P/Q and permutations of the
+extended  root basis is explained in  the context of non-irreducible groups
+for example in [bon05; §3.B](@cite).
 ```julia-repl
 julia> W=coxgroup(:A,3) # the adjoint group
 A₃
@@ -346,43 +380,46 @@ function fundamental_group(W;full=false)
 end
 
 """
-`intermediate_group(W, indices)`
+`intermediate_group(W, indices...)`
 
 returns a `rootdatum` which represents a semisimple algebraic group between
 the   adjoint  group,  obtained  by  a  call  like  `rootdatum(:pgl,4)`  or
 `coxgroup(:A,3)`, and the simply connected semi-simple group, obtained by a
 call  like  `rootdatum(:sl,4)`  or  `coxgroup(:A,3;sc=true)`. This group is
-specified  by a subset of the *minuscule weights*, the weights whose scalar
-product  with each  coroot is  in `-1,0,1`  (a weight  is an element of the
-*weight  lattice*  `P`,  the  lattice  dual  to  the  coroot  lattice). The
+specified  by a  subset of  the *minuscule  coweights*, the coweights whose
+scalar  product with each root is in  `-1,0,1` (a coweight is an element of
+the  *coweight lattice*  `Pᵛ`, the  lattice dual  to the root lattice). The
 non-trivial  characters of the  (algebraic) center of  a semi-simple simply
-connected  algebraic group are in bijection with the minuscule weights, and
-also  in bijection  with `P/Q`  where `Q`  is the  root lattice.  If `W` is
-irreducible,  the minuscule  weights are  part of  the basis  of the weight
-lattice  given by the *fundamental weights*, which is the dual basis of the
-simple  coroots. They can therefore be specified  by an index in the Dynkin
-diagram.  The  `indices`  of  minuscule  weights  in the dynkin diagram are
-indices  where the coefficient of  the highest root on  the simple roots is
-`1`. The constructed intermediate group has lattice `X(𝐓)` generated by the
-root  lattice and the given minuscule weights. If `W` is not irreducible, a
-minuscule  weight is a sum of minuscule weights in different components; an
-element of `indices` is thus itself a list, interpreted as representing the
-sum of the corresponding weights.
+connected  algebraic group are  in bijection with  the minuscule coweights,
+and also in bijection with `Pᵛ/Qᵛ` where `Qᵛ` is the coroot lattice. If `W`
+is  irreducible,  the  minuscule  coweights  are  part  of the basis of the
+coweight  lattice given by  the *fundamental coweights*,  which is the dual
+basis  of the simple roots. They can  therefore be specified by an index in
+the  Dynkin diagram.  The `indices`  of minuscule  coweights in  the dynkin
+diagram are indices where the coefficient of the highest root on the simple
+roots  is  `1`.  The  constructed  intermediate  group  has  lattice `Y(𝐓)`
+generated  by the root lattice and the given minuscule coweights. If `W` is
+not  irreducible, a minuscule  coweight is a  sum of minuscule coweights in
+different  components;  an  element  of  `indices`  is  thus itself a list,
+interpreted as representing the sum of the corresponding coweights.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
 A₃
 
-julia> fundamental_group(intermediate_group(W,Int[])) # adjoint
-Group((1,2,3,12))
+julia> fundamental_group(intermediate_group(W)) # simply connected
+Group(Perm{Int16}[])
 
-julia> fundamental_group(intermediate_group(W,Int[2])) # intermediate
+julia> fundamental_group(intermediate_group(W,2)) # intermediate
 Group((1,3)(2,12))
+
+julia> fundamental_group(intermediate_group(W,1)) # adjoint
+Group((1,2,3,12))
 ```
 """
-function intermediate_group(W,I)
+function intermediate_group(W,I...)
   C=cartan(W)
-  w=transpose(inv(Rational.(C))); # w = weights in terms of roots
+  w=inv(Rational.(C)); # w = coweights in terms of coroots
   R=one(w)
   for v in I
     if v isa Integer R=vcat(R,w[[v],:])
@@ -391,33 +428,17 @@ function intermediate_group(W,I)
   end
   d=lcm(denominator.(R))
   R=baseInt(Integer.(d*R))//d
-  rootdatum(Integer.(R^-1),Integer.(C*transpose(R)))
+  rootdatum(Integer.(transpose(R*C)),Integer.(R^-1))
 end
 
-function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
-  if !limit && !TeX context=(:TeX=>true,:limit=>false)
-  else context=(:TeX=>TeX,:limit=>limit)
-  end
-  t=repr(t;context)
-  if !limit && !TeX
-    t=Format.TeXstrip(t)
-    t=replace(t,"^"=>"")
-  end
-  t
-end
+isomorphism_type(t::TypeIrred)=repr(t;context=(:TeX=>true))
 
 function isomorphism_type(W;torus=false,TeX=false,limit=false)
-  if !limit && !TeX context=(:TeX=>true,:limit=>false)
-  else context=(:TeX=>TeX,:limit=>limit)
-  end
-  t=reverse(tally(map(x->isomorphism_type(x;TeX,limit),refltype(W))))
-  t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
+  t=reverse(tally(map(x->fromTeX(isomorphism_type(x);TeX,limit),refltype(W))))
+  l=map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t)
   d=rank(W)-semisimplerank(W)
-  if d>0 && torus
-    if t!="" t*="+" end
-    t*="T"*string(d)
-  end
-  t
+  if d>0 && torus push!(l,fromTeX("T_{$d}";TeX,limit)) end
+  join(l,"+")
 end
 
 end

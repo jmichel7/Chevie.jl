@@ -1870,7 +1870,7 @@ PRG(a::Matrix,b::Matrix;k...)=PRG(toL(a),toL(b);k...)
 PRG(i::Integer;T1=Perms.Idef)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],
           Vector{Int}[],Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
 """
-`radical(G::ComplexReflectionGroup)`
+`radical(W)`
 
 A torus of dimension `rank(W)-semisimplerank(W))`.
 

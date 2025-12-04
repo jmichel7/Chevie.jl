@@ -277,6 +277,8 @@ function KLPol(W::CoxeterGroup{T},y,w)::Pol{Int}where T
   end
 end
 
+KLPol(W::Weyl.Affine,x...)=KLPol(W.G,x...)
+
 HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
 struct HeckeCpElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,P,C}

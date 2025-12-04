@@ -1,6 +1,6 @@
 # Reductive algebraic groups and root data
 ```@index
-Pages=["rootdatum.md"]
+Pages=["rootdata.md"]
 ```
 ```@docs
 Rootdata
