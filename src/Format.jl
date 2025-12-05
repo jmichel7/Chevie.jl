@@ -1,10 +1,10 @@
-"""
+"""  
 Chevie   contains  some   extended  formatting   facilities  for  printing,
 displaying,  formatting  objects  in  various  ways. For that `Chevie` uses
-extensively  `IO` properties.  We have  sevral convenience  functions which
-make using `IO` properties easier.
+extensively  `IO` properties.  We have  several convenience functions which
+make using `IO` properties easier to use.
 
-`rio(;d...)`   makes  an  `IO`   stream  which  always   has  the  property
+[`rio`](@ref)`(;d...)`  makes an `IO` stream  which always has the property
 `:limit=>true`,  to mimic the REPL default printing, and has also the extra
 properties given by the `d...` keywords. Using this, for instance
 
@@ -12,11 +12,13 @@ properties given by the `d...` keywords. Using this, for instance
 
 We have versions of display functions which use implicitely `rio`:
 
-`xprint(x...;p...)` is the same as `print(rio(;p...),x...)`. Similarly for
-`println`, `display` we have `xprintln`, `xdisplay`.
+[`xprint`](@ref)`(x...;p...)`  is  the  same  as  `print(rio(;p...),x...)`.
+Similarly    for   `println`,   `display`   we   have   [`xprintln`](@ref),
+[`xdisplay`](@ref).
 
-`xrepr(x;p...)` is the same as `repr(x;context=IOContext(stdout,p...))`.
-`xrepr(io,x)` is the same as `repr(x;context=io)`.
+[`xrepr`](@ref)`(x;p...)` is the same as
+`repr(x;context=IOContext(stdout,p...))`.  `xrepr(io,x)`  is  the  same  as
+`repr(x;context=io)`.
 
 ```julia-rep1
 julia> @Pol q;p=(q^5+1)^2
@@ -48,10 +50,10 @@ write  a nice  display using  `TeX` output.  This can  be used  directly in
 `IJulia` and `Pluto`. For other environments, we can compute from the `TeX`
 representation a suitable one using the following function:
 
-`fromTeX(io::IO,s)`  takes  a  `TeX`  source  and  tries  to  give the best
-possible  rendering on  a given  `IO`. This  uses unicode characters at the
-REPL  (if `get(io,:limit,false)==true`).  In the  worse case (`stdout`) all
-`TeX` special characters are stripped.
+[`fromTeX`](@ref)`(io::IO,s)`  takes a `TeX` source  and tries to give the
+best  possible rendering on  a given `IO`.  This uses unicode characters at
+the  REPL (if  `get(io,:limit,false)==true`). In  the worse case (`stdout`)
+all `TeX` special characters are stripped.
 
 ```julia-repl
 julia> s="E_6[\\zeta_3]:\\phi_{1,6}"
@@ -65,8 +67,11 @@ julia> fromTeX(stdout,s)
 ```
 `printTeX(io,s)` is the same as `print(io,fromTeX(io,s))`.
 
-Other functions to ease formatting are described below: see `showtable`,
-`joindigits`, `ordinal`, `cut`.
+Other functions to ease formatting are described below: see 
+[`showtable`](@ref),
+[`joindigits`](@ref), 
+[`ordinal`](@ref), 
+[`cut`](@ref).
 """
 module Format
 using LaurentPolynomials: stringexp
@@ -166,7 +171,23 @@ function TeXstrip(n::AbstractString)
   String(filter!(x->!(x in "_{}\$"),collect(n)))#replace(n,r"[_{}$]"=>"") slower
 end
 
-"fromTeX to document"
+"""
+`fromTeX(io::IO,s)`  takes  a  `TeX`  source  and  tries  to  give the best
+possible  rendering on  a given  `IO`. This  uses unicode characters at the
+REPL  (if `get(io,:limit,false)==true`).  In the  worse case (`stdout`) all
+`TeX` special characters are stripped.
+
+```julia-repl
+julia> s="E_6[\\zeta_3]:\\phi_{1,6}"
+"E_6[\\zeta_3]:\\phi_{1,6}"
+
+julia> fromTeX(rio(),s)
+"E₆[ζ₃]:φ₁‚₆"
+
+julia> fromTeX(stdout,s)
+"E6[E3]:phi1,6"
+```
+"""
 function fromTeX(io::IO,n::AbstractString)
   if     get(io,:TeX,false) n 
   elseif get(io,:limit,false) unicodeTeX(n) 

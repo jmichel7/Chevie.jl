@@ -1,16 +1,17 @@
 """
 A  suitable  reference  for  the  general  theory of Coxeter groups is, for
-example, Bourbaki "Lie Groups and Lie Algebras" chapter 4.
+example, [bou68; chapter 4].
 
 A *Coxeter group* is a group which has the presentation
 ``W=⟨S|(st)^{m(s,t)}=1\\text{  for  }s,t∈  S⟩``  for some symmetric integer
-matrix `m(s,t)` called the *Coxeter matrix*, where `m(s,t)>1` for `s≠t` and
-`m(s,s)=1`;  `m(s,t)=∞` is allowed meaning there is no relation between `s`
-and `t`. It is true (but a non-trivial theorem) that in a Coxeter group the
-order  of `st` is exactly  `m(s,t)`, thus a Coxeter  group is the same as a
-*Coxeter  system*, that is a pair `(W,S)` of a group `W` and a set `S⊂W` of
-involutions,  such  that  the  group  is  presented  by  generators `S` and
-relations describing the order of the product of two elements of `S`.
+matrix  `m(s,t)` called the  [`coxeter_matrix`](@ref), where `m(s,t)>1` for
+`s≠t`  and `m(s,s)=1`; `m(s,t)=∞`  is allowed meaning  there is no relation
+between  `s` and  `t`. It  is true  (but a  non-trivial theorem)  that in a
+Coxeter  group the order of `st` is  exactly `m(s,t)`, thus a Coxeter group
+is  the same as a *Coxeter  system*, that is a pair  `(W,S)` of a group `W`
+and  a  set  `S⊂W`  of  involutions,  such  that  the group is presented by
+generators  `S` and  relations describing  the order  of the product of two
+elements of `S`.
 
 A   Coxeter   group   has   a   natural   representation,  its  *reflection
 representation*, on a real vector space `V` of dimension `length(S)` (which
@@ -20,8 +21,7 @@ the main argument to prove that the order of `st` is exactly `m(s,t)`. This
 representation  is defined as follows on a  space `V` with basis `{eₛ}` for
 `s∈  S`. The *Cartan  matrix* associated to  the Coxeter matrix `m(s,t)` is
 the matrix `C` with entries `C(s,t)=-2cos(π/m(s,t))`; we set `C(s,t)=-2` if
-`m(s,t)=∞`. Then the action of `s∈ S` on `V` is given by
-`s(eₜ)=eₜ-C(s,t)eₛ`.
+`m(s,t)=∞`. Then the action of `s∈ S` on `V` is given by `s(eₜ)=eₜ-C(s,t)eₛ`.
 
 Thus, Coxeter groups are  real reflection groups.  The converse need not be
 true  if the set of reflecting  hyperplanes has bad topological properties,
@@ -131,11 +131,12 @@ Coxeter  group which is a permutation  group, using the low level functions
 for   permutations  is   usually  much   faster  than   manipulating  lists
 representing reduced expressions.
 
-The only Coxeter group constructors implemented in this module are `coxsym`
-and  `coxgroup`; the last constructor takes  a Cartan matrix and builds the
-corresponding  Coxeter group as  a matrix group.  The module [`Weyl`](@ref)
-defines  other methods for `coxgroup` building  a finite Coxeter group as a
-permutation group, given its type.
+The  only  Coxeter  group  constructors  implemented  in  this  module  are
+[`coxeter_symmetric_group`](@ref)  and  [`coxeter_group`](@ref);  the  last
+constructor  takes  a  Cartan  matrix  and builds the corresponding Coxeter
+group  as a matrix  group. The module  [`Weyl`](@ref) defines other methods
+for  `coxgroup` building  a finite  Coxeter group  as a  permutation group,
+given its type.
 """
 module CoxGroups
 

@@ -442,6 +442,22 @@ ChevieDict::Dict{String,String}=Dict(
 "Zip(a1,..,an,f)"=>"map(f,a1,...,an)"
 )
 
+"""
+`gap(s::String)`
+
+If you are a user of `GAP3/Chevie`, the `gap` function can help  you to find
+the equivalent  functionality in `Chevie.jl` for a `GAP3` function:  it takes
+a string  and provides  Julia translations of matching `GAP3` functions
+(the match is case-insensitive).
+
+```julia-rep1
+julia> gap("words")
+CharRepresentationWords  =>  traces_words_mats
+CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l]))
+GarsideWords             =>  elements
+```
+You can then access online help for the functions you have found.
+"""
 function gap(s)
   if !(s isa Regex) s=Regex(s,"i") end
   kk=filter(x->occursin(s,x),keys(ChevieDict))
@@ -459,8 +475,8 @@ function fixdoc()
   sort!(u,by=lowercase)
   open("dict.md","w")do f
     write(f,"""
-# Dictionary from GAP3/Chevie
-The dictionary from GAP3/Chevie is as follows:
+## Dictionary from GAP3/Chevie
+on the left a Chevie/Gap3 expression and on the right the Chevie/Julia translation
 ```
 """)
     write(f,join(u))

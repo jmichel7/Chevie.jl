@@ -1,12 +1,18 @@
 """
-This is a port of the GAP3 package Algebras by Cédric Bonnafé.
+This  is a port of the GAP3 package Algebras by Cédric Bonnafé. 
+
+Some of the implemented algebras are the
+`PolynomialQuotientAlgebra` of a polynomial, the `GrothendieckRing`
+and the `GroupAlgebra` of a group, and the ZeroHecke` and `SolomonAlgebra`s
+of a Coxeter group.
+
 """
 module Algebras
 using ..Chevie
 export FiniteDimAlgebra, coefftype, AlgebraElt, basis, idempotents,
        involution, isassociative, SubAlgebra, TwoSidedIdeal, 
        loewylength, radicalpower, centralidempotents,
-       PolynomialQuotientAlgebra, 
+       PolynomialQuotientAlgebra, GrothendieckRing, GroupAlgebra,
        Quaternions, 
        SolomonAlgebra, 
        ZeroHecke
@@ -23,6 +29,13 @@ InfoAlgebra=print
 Given  an element `g` of  a group and an  integer `p` we can uniquely write
 `g=g₁g₂` where the order of `g₂` is prime to `p` and the order of `g₁` is a
 product of primes which divide `p`. this function returns `g₁`.
+```julia-repl
+julia> Algebras.ppart(Perm(1,2,3,4,5,6),2)
+(1,4)(2,5)(3,6)
+
+julia> Algebras.ppart(Perm(1,2,3,4,5,6),3)
+(1,5,3)(2,6,4)
+```
 """
 function ppart(g,k)
   n=order(g)
@@ -40,19 +53,19 @@ for `x` in `classreps(G)[i],classreps(G)[j]` are in the same class.
 julia> G=symmetric_group(5)
 Group((1,2),(2,3),(3,4),(4,5))
 
-julia> Algebras.pprimesections(G,2)
-3-element Vector{Vector{Int64}}:
- [1, 2, 4, 5]
- [3, 6]
- [7]
+julia> map(x->classreps(G)[x],Algebras.pprimesections(G,2))
+3-element Vector{Vector{Perm{Int16}}}:
+ [(), (4,5), (2,3)(4,5), (2,3,4,5)]
+ [(3,4,5), (1,2)(3,4,5)]
+ [(1,2,3,4,5)]
 
-julia> Algebras.pprimesections(G,3)
-5-element Vector{Vector{Int64}}:
- [1, 3]
- [2, 6]
- [4]
- [5]
- [7]
+julia> map(x->classreps(G)[x],Algebras.pprimesections(G,3))
+5-element Vector{Vector{Perm{Int16}}}:
+ [(), (3,4,5)]
+ [(4,5), (1,2)(3,4,5)]
+ [(2,3)(4,5)]
+ [(2,3,4,5)]
+ [(1,2,3,4,5)]
 ```
 """
 function pprimesections(G::Group,k::Integer)
@@ -475,6 +488,22 @@ Groups.gens(A::PolynomialQuotientAlgebra)=basis(A,2)
 Base.show(io::IO,A::PolynomialQuotientAlgebra)=
     print(io,eltype(A.p.c),"[",A.var,"]/",A.p)
 
+"""
+`PolynomialQuotientAlgebra(p::Pol)`
+
+The quotient of the polynomial algebra with coefficients of type `eltype(p)`
+by the polynomial `p`.
+
+```julia-repl
+julia> A=PolynomialQuotientAlgebra(Pol()^2+1)
+Int64[x]/x²+1
+
+julia> basis(A)
+2-element Vector{AlgebraElt{PolynomialQuotientAlgebra{Int64}, Int64}}:
+ ⋅1
+ x
+```
+"""
 function PolynomialQuotientAlgebra(p::Pol{T})where T
 #  A.string:=r->string("Class(",sum(i->i[1]*q^(i[2]-1),r.coefficients),")");
   d=degree(p)
@@ -587,6 +616,22 @@ end
 
 Base.one(A::GrothendieckRing)=basis(A,A.positionid)
 
+"""
+`GrothendieckRing(G::Group,T=Int)`
+
+constructs the Grothendieck ring of the group `G`. The only condition is
+to be able to compute the character table of `G`.
+```julia-repl
+julia> A=Algebras.GrothendieckRing(coxsym(3))
+GrothendieckRing(𝔖 ₃,Int64)
+
+julia> basis(A).*permutedims(basis(A))
+3×3 Matrix{AlgebraElt{Chevie.Algebras.GrothendieckRing{Int64}, Int64}}:
+ [3]    [21]            [111]
+ [21]   [111]+[21]+[3]  [21]
+ [111]  [21]            [3]
+```
+"""
 function GrothendieckRing(G::Group,T=Int)
   ct=CharTable(G)
   d=size(ct.irr,1)
@@ -672,6 +717,18 @@ embedding(A::GroupAlgebra{T,E},g::E) where{T,E}=findfirst(==(g),A.elts)
 
 """
 `GroupAlgebra(G,T=Int)` group algebra of `G` with coefficients `T`
+```julia-repl
+julia> W=Group(Perm(1,2))
+Group((1,2))
+
+julia> A=Algebras.GroupAlgebra(W)
+Algebra(Group((1,2)),Int64)
+
+julia> basis(A)
+2-element Vector{AlgebraElt{Chevie.Algebras.GroupAlgebra{Int64, Perm{Int16}, PermGroups.PG{Int16}}, Int64}}:
+ e
+ e₁
+```
 """
 function GroupAlgebra(G,T=Int)
   A=GroupAlgebra(G,elements(G),1=>T(1),Dict{Symbol,Any}())
@@ -814,7 +871,7 @@ Weyl.dim(A::SolomonAlgebra)=2^ngens(A.W)
 
 const LIM=10000
 """
-'SolomonAlgebra(W,K)'
+`SolomonAlgebra(W,K)`
 
 Let  `(W,S)` be a  finite Coxeter group.  If `w` is  an element of `W`, let
 `R(w)={s  ∈ S | l(ws) >  l(w)}`. If `I` is a  subset of `S`, we set
@@ -833,31 +890,31 @@ homomorphism of algebras. We call it the *Solomon homomorphism*.
 returns  the Solomon  descent algebra  of the  finite Coxeter group `(W,S)`
 over  `K`.  If  `S=[s₁,…,sᵣ]`,  the  element `x_I` corresponding to the
 subset   `I=[s₁,s₂,s₄]`  of  `S`  is  printed  as  |X(124)|.  Note  that
-'A:=SolomonAlgebra(W,K)' is endowed with the following fields:
+`A:=SolomonAlgebra(W,K)` is endowed with the following fields:
 
-'A.W': the group `W`
+`A.W`: the group `W`
 
-'A.basis': the basis `(x_I)_{I ⊂ S}`.
+`A.basis`: the basis `(x_I)_{I ⊂ S}`.
 
-'A.xbasis':  the function sending the subset `I` (written as a number: for
+`A.xbasis`:  the function sending the subset `I` (written as a number: for
 instance `124` for `[s_1,s_2,s_4]`) to `x_I`.
 
-'A.ybasis': the function sending the subset `I` to `y_I`.
+`A.ybasis`: the function sending the subset `I` to `y_I`.
 
-'A.injection':  the injection of `A` in the group algebra of `W`, obtained
-by calling 'SolomonAlgebraOps.injection(A)'.
+`A.injection`:  the injection of `A` in the group algebra of `W`, obtained
+by calling `SolomonAlgebraOps.injection(A)`.
 
-Note that 'SolomonAlgebra(W,K)' endows `W` with the field `W.solomon` which
+Note that `SolomonAlgebra(W,K)` endows `W` with the field `W.solomon` which
 is a record containing the following fields:
 
-'W.solomon_subsets': the set of subsets of `S`
+`W.solomon_subsets`: the set of subsets of `S`
 
-'W.solomon_conjugacy':  conjugacy classes  of parabolic  subgroups of `W` (a
+`W.solomon_conjugacy`:  conjugacy classes  of parabolic  subgroups of `W` (a
 conjugacy   class  is  represented  by  the   list  of  the  positions,  in
-'W.solomon.subsets', of the subsets `I` of `S` such that `W_I` lies in this
+`W.solomon.subsets`, of the subsets `I` of `S` such that `W_I` lies in this
 conjugacy class).
 
-'W.solomon_mackey':  essentially  the  structure  constants  of  the Solomon
+`W.solomon_mackey`:  essentially  the  structure  constants  of  the Solomon
 algebra over the rationals.
 
 ```julia-repl

@@ -1,5 +1,5 @@
-# Dictionary from GAP3/Chevie
-The dictionary from GAP3/Chevie is as follows:
+## Dictionary from GAP3/Chevie
+on the left a Chevie/Gap3 expression and on the right the Chevie/Julia translation
 ```
 AbelianGenerators                           abelian_gens
 AbelianInvariants                           abelian_invariants
@@ -60,10 +60,11 @@ ComplexConjugate                            conj
 ComplexReflectionGroup                      complex_reflection_group or crg
 Compositions                                compositions
 Concatenation(s::Vector)                    vcat(s...)
-ConcatenationString(s...)                   prod([s...])
+ConcatenationString(s...)                   prod(s)
 ConjugacyClasses                            conjugacy_classes
 ConjugacySet(b[,F][,type])                  conjcat(b[,F],ss=type).obj
 ConjugatePartition                          conjugate_partition
+Copy                                        deepcopy
 CoxeterCoset                                spets
 CoxeterElements(W[,l])                      elements(W[,l])
 CoxeterGroup("A",5)                         coxeter_group(:A,5) or coxgroup
@@ -81,12 +82,13 @@ CoxeterWords(W[,l])                         word.(Ref(W),elements(W[,l]))
 CuspidalPairs                               cuspidal_data
 CuspidalUnipotentCharacters(W[,d])          cuspidal(UnipotentCharacters(W)[,d])
 Cycle                                       orbit
+CyclePermInt                                orbit
 Cycles                                      orbits
 CyclotomicModP(c,p)                         FFE{p}(c)
 CyclotomicPolynomial(R,i)                   cyclotomic_polynomial(i)
 CycPol                                      CycPol
-CycPolFakeDegreeSymbol                      fegsymbol
-CycPolGenericDegreeSymbol                   gendeg_symbol
+CycPolFakeDegreeSymbol                      fakedegree
+CycPolGenericDegreeSymbol                   gendeg
 CycPolUnipotentDegrees(W)                   CycPoldegrees(UnipotentCharacters(W))
 DecomposedMat                               diagblocks
 DefectSymbol                                defectsymbol
@@ -117,18 +119,20 @@ ER                                          root
 ExteriorPower                               exterior_power
 FactorizedSchurElement                      FactorizedSchurElement
 FactorizedSchurElements                     FactorizedSchurElements
+Factors                                     factor
 FakeDegree                                  fakedegree
 FakeDegrees                                 fakedegrees
 FamiliesClassical                           FamiliesClassical
 Family                                      Family
 FamilyImprimitive                           family_imprimitive
 Filtered(l,f)                               filter(f,l)
-FiniteCoxeterTypeFromCartanMat(m)           type_cartan(m)
+FiniteCoxeterTypeFromCartanMat(m)           fincox_refltype(m)
 FirstLeftDescending(W,w)                    firstleftdescent(W,w)
 ForAll(l::list,f::function)                 all(f,l)
 ForAny(l::list,f::function)                 any(f,l)
 ForEachCoxeterWord(W,f)                     for w in W f(word(W,w)) end
 ForEachElement(W,f)                         for w in W f(w) end
+FormatGAP                                   repr
 FormatTable                                 showtable
 Frobenius                                   Frobenius
 FullSymbol                                  fullsymbol
@@ -153,13 +157,14 @@ HeckeReflectionRepresentation               reflection_representation or reflrep
 HermiteNormalFormIntegerMat                 hermite
 HermiteNormalFormIntegerMatTransforms(m)    hermite_transforms(m)
 HighestPowerFakeDegrees(W)                  charinfo(W).B
-HighestPowerFakeDegreeSymbol                degree_fegsymbol
+HighestPowerFakeDegreeSymbol                degree_feg
 HighestPowerGenericDegrees(W)               charinfo(W).A
-HighestPowerGenericDegreeSymbol             degree_gendeg_symbol
+HighestPowerGenericDegreeSymbol             degree_gendeg
 HighestShortRoot                            highest_short_root
 HyperplaneOrbits                            hyperplane_orbits
 ICCTable                                    ICCTable
 Idempotents                                 idempotents
+IdentityMat(nn)                             Matrix(1I,n,n)
 Incidence                                   incidence
 IndependentLines                            independent_rows
 IndependentRoots                            independent_roots
@@ -205,7 +210,6 @@ LeftLcm                                     leftlcm
 Length(W.generators)                        ngens(W) or number_of_generators(W)
 LinearExtension                             linear_extension
 List(ConjugacyClasses(G),Representative)    classreps(G) or class_representatives(G)
-List(l,f)                                   map(f,l)
 List(l::list,f::function)                   map(f,l)
 ListBlist(a,b)                              a[b]
 ListPerm(p)                                 perm(p)
@@ -214,9 +218,9 @@ LogFFE                                      log
 LongestCoxeterElement(W)                    longest(W)
 LongestCoxeterWord(W)                       word(W,longest(W))
 LowestPowerFakeDegrees(W)                   charinfo(W).b
-LowestPowerFakeDegreeSymbol                 valuation_fegsymbol
+LowestPowerFakeDegreeSymbol                 valuation_feg
 LowestPowerGenericDegrees(W)                charinfo(W).a
-LowestPowerGenericDegreeSymbol              valuation_gendeg_symbol
+LowestPowerGenericDegreeSymbol              valuation_gendeg
 Lusztigaw                                   Lusztigaw
 LusztigAw                                   LusztigAw
 LusztigInduction                            lusztig_induce
@@ -288,6 +292,7 @@ PositionsProperty(l,f)                      findall(f,l)
 PowerRoot(x,y)                              (Root1(;r=x)^y).r
 Presentation                                Presentation
 PrintDiagram(W)                             diagram(W)
+PrintToString(s,...)                        s*=string(...)
 Product                                     prod
 ProportionalityCoefficient(v,w)             ratio(v,w)
 QuasiIsolatedRepresentatives                quasi_isolated_reps
@@ -295,7 +300,7 @@ QuoInt                                      div
 Radical                                     radical
 RadicalPower                                radicalpower
 Rank                                        rank
-RankSymbol                                  ranksymbol
+RankSymbol                                  rank
 RecFields                                   propertynames
 ReducedCoxeterWord(W,w)                     word(W,W(w...))
 ReducedExpressions(W,w)                     words(W,w)
@@ -309,7 +314,7 @@ ReflectionDegrees(W)                        degrees(W)
 ReflectionEigenvalues                       refleigen
 ReflectionGroup                             reflection_group
 ReflectionLength(W,w)                       reflength(W,w)
-ReflectionName(W)                           repr(W;context=:limit=>true)
+ReflectionName(W)                           xrepr(W;limit=true)
 Reflections                                 Perm.(reflections(W)[1:nhyp(W)])
 ReflectionSubgroup                          reflection_subgroup
 ReflectionType                              refltype
@@ -342,6 +347,7 @@ SemisimpleCentralizerRepresentatives        semisimple_centralizer_representativ
 SemisimpleElement                           ss
 SemisimpleRank                              semisimplerank
 SemisimpleSubgroup                          torsion_subgroup
+ShallowCopy                                 copy
 ShiftBeta                                   shiftβ
 ShrinkGarsideGeneratingSet                  shrink
 SignedMatStab                               sstab_onmats
@@ -366,6 +372,9 @@ Sprint                                      string
 Stabilizer                                  stabilizer
 StandardParabolic                           standard_parabolic
 StandardParabolicClass                      standard_parabolic_class
+String                                      string
+String(s,-10)                               rpad(s,10)
+String(s,10)                                lpad(s,10)
 StructureRationalPointsConnectedCentre      structure_rational_points_connected_centre
 SubSpets                                    subspets
 SubTorus                                    SubTorus

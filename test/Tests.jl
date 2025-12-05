@@ -539,7 +539,7 @@ function Tunipotentcentralizers(W,p=0)
   sum=0
   u=UnipotentClasses(W,p)
   g=CycPol(generic_order(W,q))
-  for c in t
+  for c in t.l
     cl=u.classes[c[:classno]]
     cc=q^cl.dimunip
     if nconjugacy_classes(cl.Au)>1

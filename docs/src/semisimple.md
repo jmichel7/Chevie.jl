@@ -11,4 +11,5 @@ algebraic_center
 centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
 semisimple_centralizer_representatives
 structure_rational_points_connected_centre
+fixed_points
 ```

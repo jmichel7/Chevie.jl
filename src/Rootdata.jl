@@ -4,11 +4,11 @@
 Let  us fix an  algebraically closed field  `K` and let  `𝐆` be a connected
 reductive  algebraic group over `K`. Let `𝐓` be a maximal torus of `𝐆`, let
 `X(𝐓)`  be the  character group  of `𝐓`  (resp. `Y(𝐓)`  the dual lattice of
-one-parameter  subgroups  of  `𝐓`)  and  `Φ`  (resp  `Φ^`) the roots (resp.
+one-parameter  subgroups  of  `𝐓`)  and  `Φ`  (resp  `Φᵛ`) the roots (resp.
 coroots) of `𝐆` with respect to `𝐓`.
 
 Then  `𝐆` is  determined up  to isomorphism  by the  *root datum* `(X(𝐓),Φ,
-Y(𝐓),Φ^)`.  In algebraic terms, this consists  in giving a free `ℤ`-lattice
+Y(𝐓),Φᵛ)`.  In algebraic terms, this consists  in giving a free `ℤ`-lattice
 `X=X(𝐓)` of dimension the *rank* of `𝐓` (which is also called the *rank* of
 `𝐆`),  and a root system `Φ ⊂ X`,  and similarly giving the dual roots `Φ^⊂
 Y=Y(𝐓)`.
@@ -197,19 +197,17 @@ Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
 Chevie.rank(T::SubTorus)=size(T.gens,1)
 
 #----------------------- Fundamental group --------------------------
-function WeightToAdjointFundamentalGroupElement(W,l::Vector;full=false)
+function coweight_to_W(W,l::Vector;full=false)
   if isempty(l) return Perm();end
-  prod(x->WeightToAdjointFundamentalGroupElement(W,x;full),l)
+  prod(x->coweight_to_W(W,x;full),l)
 end
 
-function WeightToAdjointFundamentalGroupElement(W,i;full=false)
+function coweight_to_W(W,i;full=false)
   t=refltype(W)[findfirst(t->i in t.indices,refltype(W))]
   l=copy(t.indices)
   b=longest(W,l)*longest(W,setdiff(l,[i]))
-  push!(l,maximum(findall(
-    i->all(j->j in t.indices || W.rootdec[i][j]==0,1:semisimplerank(W)),
-  eachindex(W.rootdec))))
-  full ? b : restricted(b,inclusion.(Ref(W),l))
+  push!(l,findmin(x->sum(x[t.indices]),W.rootdec)[2]) # lowest root
+  full ? b : restricted(b,inclusion(W,l))
 end
 
 """
@@ -298,8 +296,7 @@ function weightinfo(W)
       r[:ww]=eltype(W)[]
     else g=filter(i->sum(r[:decompositions][i])==1,
           eachindex(r[:minusculeCoweights])) # generators of fundamental group
-      r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
-               t.indices[r[:minusculeCoweights][g]])
+      r[:ww]=map(x->coweight_to_W(W,x),t.indices[r[:minusculeCoweights][g]])
     end
     r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
     if !isempty(r[:moduli])
@@ -373,9 +370,10 @@ Group(Perm{Int16}[])
 function fundamental_group(W;full=false)
   if istorus(W) return Group(Perm()) end
   e=weightinfo(W)[:minusculeCoweights]
-  e=filter(x->all(isinteger,sum(coweights(W)[x,:];dims=1)),e) # minusc. coweights in Y
+  cw=coweights(W)
+  e=filter(x->all(isinteger,sum(cw[x,:];dims=1)),e) # minusc. coweights in Y
   if isempty(e) return Group(Perm()) end
-  e=map(x->WeightToAdjointFundamentalGroupElement(W,x;full),e)
+  e=map(x->coweight_to_W(W,x;full),e)
   Group(abelian_gens(e))
 end
 
@@ -434,8 +432,8 @@ end
 isomorphism_type(t::TypeIrred)=repr(t;context=(:TeX=>true))
 
 function isomorphism_type(W;torus=false,TeX=false,limit=false)
-  t=reverse(tally(map(x->fromTeX(isomorphism_type(x);TeX,limit),refltype(W))))
-  l=map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t)
+  tt=map(t->fromTeX(isomorphism_type(t);TeX,limit),refltype(W))
+  l=map(x->x[2]==1 ? x[1] : string(x[2],x[1]),reverse(tally(tt)))
   d=rank(W)-semisimplerank(W)
   if d>0 && torus push!(l,fromTeX("T_{$d}";TeX,limit)) end
   join(l,"+")

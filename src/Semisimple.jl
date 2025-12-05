@@ -1,12 +1,13 @@
 """
 ## Semisimple elements
 
-We  construct semi-simple elements in two ways. The first way is for finite
-order  elements of `𝐓`, which over an algebraically closed field `K` are in
-bijection  with elements  of `Y⊗  ℚ /ℤ`  whose denominator  is prime to the
-characteristic of `K`. These are represented as a vector of `Rational`s `r`
-such  that `0≤r<1`. The function `ss`  constructs such a semisimple element
-from a vector of `Rational`s.
+Let `𝐆` a reductive group and `𝐓` a maximal torus. We construct semi-simple
+elements  in two ways. The  first way is for  finite order elements of `𝐓`,
+which over an algebraically closed field `K` are in bijection with elements
+of  `Y(𝐓)⊗ ℚ /ℤ` whose  denominator is prime to  the characteristic of `K`.
+These  are represented  as a  vector of  `Rational`s `r`  such that `0≤r<1`
+expressing  such  an  element  in  the  basis  of `Y(𝐓)`. The function `ss`
+constructs such a semisimple element from a vector of `Rational`s.
 
 More generally a torus `𝐓` over a field `K` is isomorphic to `(Kˣ)^n` where
 `n`  is the dimension  of `𝐓`, so  a vector of  elements of `Kˣ`  is a more
@@ -63,7 +64,6 @@ julia> orbit(G,e[3])
  <ζ₃,1,ζ₃>
  <ζ₃,ζ₃²,ζ₃>
 ```
-
 Here  is the same  computation as above  performed with semisimple elements
 whose  coefficients are in the  finite field `FF(4)`, representing elements
 of `sl₄(𝔽₄)`.
@@ -107,7 +107,7 @@ module Semisimple
 using ..Chevie
 export algebraic_center, isisolated, SemisimpleElement, ss, torsion_subgroup,
      quasi_isolated_reps, structure_rational_points_connected_centre, 
-     semisimple_centralizer_representatives, sscentralizer_reps
+     semisimple_centralizer_representatives, sscentralizer_reps, fixed_points
 export ExtendedCox, ExtendedReflectionGroup
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T,TW<:FiniteCoxeterGroup{T}}<:Group{T}
@@ -163,7 +163,6 @@ function ExtendedReflectionGroup(W,mats::Vector{Any})
 end
 
 #----------------------------------------------------------------------------
-
 struct SemisimpleElement{T}
   W::FiniteCoxeterGroup
   v::Vector{T}
@@ -250,12 +249,17 @@ julia> sort(elements(T))
 """
 torsion_subgroup(T::SubTorus,n)=Group(map(x->ss(T.group,x//n),eachrow(T.gens)))
 
-# returns (Tso,s-stable representatives of T/Tso) for automorphism s of T
-# here m is the matrix of s on Y(T)
-# use ss 1.2(1): Ker(1+m+m^2+...)/Im(m-Id)
-function FixedPoints(T::SubTorus,m)
-# @show T,m
-  n=map(z->solutionmat(T.gens,transpose(m)*z),eachrow(T.gens)) #action on subtorus
+"""
+`fixed_points(T::SubTorus,m)`
+
+Let `σ` be an automorphism of `T` represented as a matrix `m∈ GL(X(T))`.
+The function returns `(T^{σ0},σ-stable representatives of T/T^{σ0})`
+
+It uses the formula in  [ss; 1.2(1)](@cite)  for `T/T^{σ0}` which is
+`Ker(1+σ+σ^2+...)/Im(σ-Id)`.
+"""
+function fixed_points(T::SubTorus,m)
+  n=map(z->solutionmat(T.gens,transpose(m)*z),eachrow(T.gens)) #action of m on T
   if nothing in n || !all(isinteger,toM(n))
     error(m," does not stabilize ",T)
   end
@@ -265,7 +269,7 @@ function FixedPoints(T::SubTorus,m)
   Y1=lnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where
   # T=T1.Tso almost direct product, thus spaces Y.(1-s) and Y1.(1-s) coincide
   n=baseInt(n-n^0) # basis of Im(1-s)
-  m=map(v->solutionmat(n,v),eachrow(Y1)) # basis of Im[(1-s)^{-1} restricted to Y1]
+  m=map(v->solutionmat(n,v),eachrow(Y1)) #basis of Im[inv(1-s) restricted to Y1]
   # generates elements y of Y1⊗ ℚ such that (1-s)y\in Y1
   (SubTorus(T.group,fix*T.gens),
    abelian_gens(map(v->ss(T.group,transpose(Y1*T.gens)*v),m)))
@@ -337,7 +341,7 @@ function algebraic_center(W)
   if extended # compute fixed space of F0s in Y(T)
     for m in F0s
       AZ=filter(s->s/ss(W,m*map(x->x.r,s.v)) in Z0,AZ)
-      if rank(Z0)>0 Z0=FixedPoints(Z0,transpose(m))
+      if rank(Z0)>0 Z0=fixed_points(Z0,transpose(m))
         append!(AZ,Z0[2])
         Z0=Z0[1]
       end
@@ -402,23 +406,22 @@ end
 
 `W`  should  be  a  Weyl  group  or  an extended reflection group and `s` a
 semisimple  element of the  algebraic group `G`  corresponding to `W`. This
-function  returns the  Weyl group  of ``C_G(s)``,  which describes  it. The
-stabilizer  is an extended reflection group, with the reflection group part
-equal to the Weyl group of ``C_{G⁰}(s)``, and the diagram automorphism part
-being those induced by ``C_G(s)``.
+function  returns the Weyl group of ``C_G(s)``, which describes it. This is
+an  extended reflection group, with the  reflection group part equal to the
+Weyl  group of ``C_G(s)⁰``,  and the diagram  automorphism part being those
+induced   by   ``C_G(s)``.   The   algorithm  follows  [bon05;  proposition
+3.14](@cite).
 
 ```julia-repl
 julia> G=coxgroup(:A,3)
 A₃
 julia> s=ss(G,[0,1//2,0])
 SemisimpleElement{Root1}: <1,-1,1>
-julia> centralizer(G,s)
+julia> centralizer(G,s) # the brackets around the A₁ means they are permuted
 A₃₍₁₃₎=(A₁A₁)Φ₂
 ```
 """
 function Groups.centralizer(W::Group,s::SemisimpleElement)
-  # for the computation of A_G(s) see Bonnafé, "Quasi-isolated elements in
-  # reductive groups", comm. in algebra 33 (2005) proposition 3.14
   if W isa ExtendedCox
     totalW=Group(vcat(gens(fundamental_group(W.group;full=true)),W.phis))
     W=W.group
@@ -442,8 +445,8 @@ end
 algebraically  closed field  of characteristic  0. This  function returns a
 list  of  semisimple  elements  for  𝐆,  which  are  representatives of the
 𝐆-orbits  of quasi-isolated  semisimple elements.  It follows the algorithm
-given  in  [bon05](@cite).  If  a  second  argument  `p` is given, it gives
-representatives   of   those   quasi-isolated   elements   which  exist  in
+given in [bon05; Theorem 4.6](@cite). If a second argument `p` is given, it
+gives  representatives  of  those  quasi-isolated  elements  which exist in
 characteristic `p`.
 
 ```julia-repl
@@ -490,13 +493,11 @@ julia> Semisimple.quasi_isolated_reps(W,3)
 ```
 """
 function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
-##  This function follows Theorem 4.6 in
-##  C.Bonnafe, ``Quasi-Isolated Elements in Reductive Groups''
-##  Comm. in Algebra 33 (2005), 2315--2337
-##  after one fixes the following bug: at the beginning of section 4.B
-##  ``the stabilizer of `Ω ∩ Δ̃ᵢ` in `𝓐 _G` acts transitively on `Ω ∩ Δ̃ᵢ`''
-##  should be
-##  ``the stabilizer of `Ω` in `𝓐 _G` acts transitively on `Ω ∩ Δ̃ᵢ`''
+#  we follows [bon05; Theorem 4.6](@cite) after fixing the following bug: 
+#  at the beginning of section 4.B
+#  ``the stabilizer of `Ω ∩ Δ̃ᵢ` in `𝓐 _G` acts transitively on `Ω ∩ Δ̃ᵢ`''
+#  should be
+#  ``the stabilizer of `Ω` in `𝓐 _G` acts transitively on `Ω ∩ Δ̃ᵢ`''
   if istorus(W) return [ss(W,fill(0//1,rank(W)))] end
   H=fundamental_group(W)
   w=Vector{Vector{Rational{Int}}}[]
@@ -504,8 +505,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
   iso=coweights(W)
   l=map(refltype(W))do t
     n=t.indices; # n is Δₜ
-    # next line  uses that negative roots are listed by decreasing height!
-    r=findlast(rr->sum(rr[n])!=0,W.rootdec)
+    r=findmin(r->sum(r[n]),W.rootdec)[2]
     d=inclusion(W,vcat(n,[r])) # d is Δ̃ₜ
     push!(ind,d)
     push!(w,toL(vcat(iso[n,:].//(-W.rootdec[r][n]),0*iso[1:1,:])))

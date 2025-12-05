@@ -4,12 +4,11 @@
 We also use Coxeter cosets to represented non-connected reductive groups of
 the  form `𝐆 ⋊ σ` where  `𝐆 ` is a connected  reductive group and `σ` is an
 algebraic automorphism of `𝐆 `; more specifically to represent the coset `𝐆
-.σ`.  We may always  choose `σ∈ 𝐆  ⋅σ` *quasi-semisimple*, which means that
-`σ`  preserves a pair `𝐓 ⊂ 𝐁` of a maximal torus and a Borel subgroup of `𝐆
-`,  and further  *quasi-central*, which  means that  the Weyl group of `C_𝐆
-(σ)`  is `W^σ`. Then  `σ` defines an  automorphism `F_0` of  the root datum
-`(X(𝐓 ), Φ, Y(𝐓 ), Φ^∨)`, thus a Coxeter coset. We refer to [ss](@cite) for
-details.
+.σ`.  We may always choose `σ∈𝐆⋅σ` *quasi-semisimple*, which means that `σ`
+preserves  a pair `𝐓 ⊂ 𝐁` of a maximal  torus and a Borel subgroup of `𝐆 `,
+and  further *quasi-central*, which means that the Weyl group of ``C_𝐆(σ)``
+is ``W^σ``. Then `σ` defines an automorphism `F₀` of the root datum `(X(𝐓),
+Φ, Y(𝐓), Φᵛ)`, thus a Coxeter coset. We refer to [ss](@cite) for details.
 
 We  have  extended  the  functions  for  semi-simple  elements to work with
 quasi-semisimple  elements `tσ∈  𝐓 ⋅σ`.  Here, as  in [ss](@cite), `σ` is a
@@ -36,7 +35,7 @@ julia> l=quasi_isolated_reps(WF)
 ```
 
 we  define an element `tσ∈ 𝐓 ⋅σ` to  be quasi-isolated if the Weyl group of
-`C_𝐆  (tσ)`  is  not  in  any  proper  parabolic  subgroup  of  `W^σ`. This
+`C_𝐆  (tσ)`  is  not  in  any  proper  parabolic  subgroup of ``W^σ``. This
 generalizes  the  definition  for  connected  groups.  The  above shows the
 elements  `t`  where  `tσ`  runs  over  representatives  of  quasi-isolated
 quasi-semisimple  classes of  `𝐆 ⋅σ`.  The given  representatives have been
@@ -50,12 +49,12 @@ julia> centralizer.(Ref(WF),l)
  (A₁A₁)₍₁₃₎×A₁₍₂₎
  B₂Φ₁
 ```
-in  the above example, the groups `C_𝐆  (tσ)` are computed and displayed as
+in  the above example,  the groups `C_𝐆(tσ)`  are computed and displayed as
 extended  Coxeter groups (following the same convention as for centralisers
 in connected reductive groups).
 
-We  define an element `tσ∈ 𝐓  ⋅σ` to be isolated if  the Weyl group of `C_𝐆
-(tσ)⁰`  is not in any proper  parabolic subgroup of `W^σ`. This generalizes
+We  define an element  `tσ∈ 𝐓⋅σ` to  be isolated if  the Weyl group of `C_𝐆
+(tσ)⁰` is not in any proper parabolic subgroup of ``W^σ``. This generalizes
 the definition for connected groups.
 
 ```julia-repl
@@ -71,9 +70,11 @@ module Sscoset
 
 using ..Chevie
 
-# IsSpecial(WF,c) c is an orbit of WF.phi on roots(Group(WF))
-# return true iff c is special in the sense of Digne-Michel
-function IsSpecial(WF::Spets,c)
+"""
+`isspecial(WF,c)` where `c` is an orbit of `WF.phi` on `roots(Group(WF))`
+return true iff `c` is special in the sense of [ss](@cite]
+"""
+function isspecial(WF::Spets,c)
   if mod(length(c),2)!=0 return false end
   W=Group(WF)
   roots(W,c[1])+roots(W,c[1+div(length(c),2)]) in roots(W)
@@ -85,10 +86,12 @@ function Chevie.order(m::Matrix)
   o
 end
 
-# rootdatum R(σ)
-# Computes X_σ X^σ, Y_σ, Y^σ, R(σ) of ss
-# see [ss; 1.1 to 1.7](@cite)
-function RelativeDatum(WF)
+"""
+`relativedatum(WF)`
+
+computes `X_σ, X^σ, Y_σ, Y^σ, R(σ)` see [ss; 1.1 to 1.7](@cite)
+"""
+function relativedatum(WF)
   get!(WF,:Rs)do
     W=Group(WF)
     n=order(WF.F) # matrix of sigma on X
@@ -100,7 +103,7 @@ function RelativeDatum(WF)
     cc=restriction.(Ref(W),orbits(WF.phi, inclusiongens(W)))
     Phis=map(cc)do c
       res=sum(roots(W,c))
-      if IsSpecial(WF,c) res=2res end
+      if isspecial(WF,c) res=2res end
       res
     end
     cPhis=map(c->sum(coroots(W,c))//length(c), cc)
@@ -114,7 +117,8 @@ function RelativeDatum(WF)
   end
 end
 
-function Cso(WF)# compute constants C_σ,α
+"`Cso(WF)` computes the constants ``C_{σ,𝒪}`` of [ss; page 1305](@cite)"
+function Cso(WF)
   get!(WF,:Cso)do
     W=Group(WF)
     res=fill(1,nref(W))
@@ -141,13 +145,13 @@ end
 """
 `centralizer(WF::Spets,t::SemisimpleElement{Root1})`  
 
-`WF`  should be  a Coxeter  coset representing  an algebraic coset `𝐆 ⋅σ`,
-where `𝐆 ` is a connected reductive group (represented by 'W:=Group(WF)'),
-and  `σ`  is  a  quasi-central  automorphism  of `𝐆 ` defined by `WF`. The
-element  `t` should be a semisimple  element of `𝐆 `. The function returns
-an  extended reflection  group describing  `C_𝐆 (tσ)`, with the reflection
-group  part representing  `C_𝐆 ⁰(tσ)`, and  the diagram  automorphism part
-being those induced by `C_𝐆 (tσ)/C_𝐆 (tσ)⁰` on `C_𝐆 (tσ)⁰`.
+`WF`  should be  a Coxeter  coset representing  an algebraic  coset `𝐆 ⋅σ`,
+where  `𝐆 ` is a connected reductive group (represented by `W:=Group(WF)`),
+and  `σ`  is  a  quasi-central  automorphism  of  `𝐆 ` defined by `WF`. The
+element `t` should be a semisimple element of `𝐆 `. The function returns an
+extended reflection group describing ``C_𝐆(tσ)``, with the reflection group
+part  representing ``C_𝐆(tσ)⁰``,  and the  diagram automorphism  part being
+those induced by ``C_𝐆(tσ)/C_𝐆(tσ)⁰`` on ``C_𝐆(tσ)⁰``.
 
 ```julia-repl
 julia> WF=rootdatum(:u,6)
@@ -165,11 +169,11 @@ C₃₍₃₂₁₎
 """
 function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   W=Group(WF)
-  Rs=RelativeDatum(WF)
+  Rs=relativedatum(WF)
   refC=centralizer(Rs,ss(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v))))
   Rs=map(restriction.(Ref(W),orbits(WF.phi,inclusion(W,1:nref(W)))))do c
     res=(c,sum(roots(W,c))//length(c),sum(coroots(W,c)))
-    if IsSpecial(WF,c) res[3]=2res[3] end
+    if isspecial(WF,c) res[3]=2res[3] end
     res
   end
   labels=joindigits.(orbits(WF.phi, inclusion(W,1:nref(W))))
@@ -238,7 +242,7 @@ julia> quasi_isolated_reps(WF,3)
 """
 function Semisimple.quasi_isolated_reps(WF::Spets,p=0)
   map(x->ss(Group(WF),transpose(WF.Y_s)*map(x->x.r,x.v)), 
-      quasi_isolated_reps(RelativeDatum(WF), p))
+      quasi_isolated_reps(relativedatum(WF), p))
 end
 
 """
@@ -271,7 +275,7 @@ julia> isisolated.(Ref(WF),l)
 ```
 """
 function Semisimple.isisolated(WF::Spets,t::SemisimpleElement{Root1})
-  Rs=RelativeDatum(WF)
+  Rs=relativedatum(WF)
   t=ss(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v)))
   isisolated(Rs, t)
 end
