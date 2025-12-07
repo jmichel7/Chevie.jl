@@ -5,7 +5,14 @@ Pages=["algebras.md"]
 
 ```@docs
 Algebras
+coefftype
+gens
 isabelian(::FiniteDimAlgebra)
-Algebras.GroupAlgebra
+isassociative
+PolynomialQuotientAlgebra
+GrothendieckRing
+GroupAlgebra
+Quaternions
 SolomonAlgebra
+ZeroHecke
 ```

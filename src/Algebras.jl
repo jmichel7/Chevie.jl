@@ -1,11 +1,45 @@
 """
 This  is a port of the GAP3 package Algebras by Cédric Bonnafé. 
 
-Some of the implemented algebras are the
-`PolynomialQuotientAlgebra` of a polynomial, the `GrothendieckRing`
-and the `GroupAlgebra` of a group, and the ZeroHecke` and `SolomonAlgebra`s
-of a Coxeter group.
+Finite  dimensional algebras are of the abstract type `FiniteDimAlgebra{C}`
+where the parameter `C` is the type of the coefficients.
 
+There  are few generic methods for such an  algebra `A `. By default, it is
+assumed  there is  a method  `dim` (which  can also be spelled `dimension`)
+giving  the  dimension,  and  that  `A`  has  some canonical basis index by
+`1:dim(A)`.  Elements of  `A`, of  type `AlgebraElt{TA}`  where `TA` is the
+type  of `A`, are internally `ModuleElt`s containing pairs `i=>c` where `i`
+is  the integer index in `1:dim(A)` specifiying  an element of the basis of
+`A`  and  `c`  is  the  coefficient  of  that  basis  element. The function
+`basis(A,i)` returns the `AlgebraElt` with only non-zero coefficient on `i`
+and  equal to `1`. It is assumed  that `basis(A,1)` is the identity of `A`.
+The function `basis(A)` returns `basis.(A,1:dim(A))`. Addition, subtraction
+and  multiplication by scalars (anything of type `<:Number` or of type `C`)
+of `AlgebraElt`s works.
+
+If  `A` has  a method  `basismult(A,i,j)` returning `basis(A,i)*basis(A,j)`
+then  the multiplication of elements is implemented using this function. If
+`A`  has  a  field  `.multable`  containing  a  matrix  `dim(A)×dim(A)`  of
+`AlgebraElt`s,  then `basismult` by  default uses this  table understood as
+giving the multiplication table of `basis(A)`.
+
+Another  view of algebra elements is as the vector of their coefficients on
+each  basis  element.  If  `a`  is an `AlgebraElt` then `v=coefficients(a)`
+returns  this  vector  and  `AlgebraElt(A,v)`  recovers  `a`.  The function
+`Matrix(a)`  will  transform  `a`  to  a  matrix  whose  `i`-th  row is the
+coefficients  of `a` times the `i`-th basis  element (such a matrix acts on
+the left on the vector space underlying `A`).
+
+Generic  functions  are  `left_ideal`  and  `twosided_ideal`  which take as
+argument `A` and a list of `AlgebraElt` and return the generated ideal.
+
+`radical`   is  not  defined  generically,  but,  if  defined,  it  defines
+automatically `radicalpower` and `loewylength`.
+
+Some of the implemented algebras in this module are 
+the [`PolynomialQuotientAlgebra`](@ref) of a polynomial, 
+the [`GrothendieckRing`](@ref)  and the [`GroupAlgebra`](@ref)  of a group, 
+and the [`ZeroHecke`](@ref) and [`SolomonAlgebra`](@ref) of a Coxeter group.
 """
 module Algebras
 using ..Chevie
@@ -13,13 +47,16 @@ export FiniteDimAlgebra, coefftype, AlgebraElt, basis, idempotents,
        involution, isassociative, SubAlgebra, TwoSidedIdeal, 
        loewylength, radicalpower, centralidempotents,
        PolynomialQuotientAlgebra, GrothendieckRing, GroupAlgebra,
-       Quaternions, 
-       SolomonAlgebra, 
-       ZeroHecke
+       Quaternions, SolomonAlgebra, ZeroHecke
 # finite dimensional algebra over ring whose elements have type C
 abstract type FiniteDimAlgebra{C} end
 
+"""
+`coefftype(A::FiniteDimAlgebra{C}) where C=C`
+returns the type of the coefficients of the algebra `A`.
+"""
 coefftype(A::FiniteDimAlgebra{C}) where C=C
+coefftype(T::Type{<:FiniteDimAlgebra{C}}) where C=C
 
 InfoAlgebra=print
 
@@ -73,14 +110,12 @@ function pprimesections(G::Group,k::Integer)
   collectby(i->position_class(G,pp[i]),eachindex(pp))
 end
 
-# properties of Algebras: have .multable, dim
-
 # Algebra element of algebra A over ring elements of type T
 # d coefficients on basis indexed by number
 # basis[1] should be identity element
-struct AlgebraElt{TA<:FiniteDimAlgebra,T}
+struct AlgebraElt{TA<:FiniteDimAlgebra,C}
   A::TA
-  d::ModuleElt{Int,T}
+  d::ModuleElt{Int,C}
 end
 
 Base.broadcastable(h::AlgebraElt)=Ref(h)
@@ -100,7 +135,12 @@ end
 
 (H::AlgebraHom)(h::AlgebraElt)=sum(H.images[k]*c for (k,c) in h.d)
 
-# fallback method
+"""
+`gens(A::FiniteDimAlgebra)`
+
+The generators of the algebra `A`. By default `basis(A)` but should
+be specialized when a more efficient answer is known.
+"""
 Groups.gens(A::FiniteDimAlgebra)=basis(A)
 
 "`isabelian(A::FiniteDimAlgebra)` whether `A` is commutative"
@@ -110,6 +150,7 @@ function Groups.isabelian(A::FiniteDimAlgebra)
   end::Bool
 end
 
+"`isassociative(A::FiniteDimAlgebra)` whether `A` is associative"
 function isassociative(A::FiniteDimAlgebra)
   get!(A, :isassociative)do
     l=basis(A)
@@ -119,6 +160,7 @@ end
 
 function basis(A::FiniteDimAlgebra{T};force=false)where T
   get!(A,:basis)do
+    if !applicable(dim,A) error(A," has no dim method") end
     if !force && dim(A)>10000
       error(A," is of dimension ",dim(A),"\nif you really want to do that ",
             "call basis(A;force=true)")
@@ -133,14 +175,12 @@ basis(A::FiniteDimAlgebra{T},i::Integer) where T =
 Base.one(A::FiniteDimAlgebra)=basis(A,1)
 
 function Base.show(io::IO, h::AlgebraElt)
-  if !get(io,:limit,false) && !get(io,:TeX,false)
+  if !hasdecor(io)
     print(io,"AlgebraElt(",h.A,",",h.d,")")
     return 
   end
   if haskey(h.A,:showbasis) showbasis=h.A.showbasis
-  else showbasis=function(io::IO,e)
-      fromTeX(io,"B"*"_{"*string(e)*"}")
-     end
+  else showbasis(io::IO,e)=fromTeX(io,"B"*"_{"*string(e)*"}")
   end
   show(IOContext(io,:showbasis=>showbasis),h.d)
 end
@@ -151,7 +191,7 @@ Base.:-(a::AlgebraElt)=AlgebraElt(a.A,-a.d)
 Base.:-(a::AlgebraElt, b::AlgebraElt)=a+(-b)
 Base.:*(a::AlgebraElt, b::Vector)=a.*b #for tbl
 Base.:*(a::AlgebraElt, b)=AlgebraElt(a.A,a.d*b)
-Base.:*(b,a::AlgebraElt)=AlgebraElt(a.A,a.d*b)
+Base.:*(b,a::AlgebraElt)=AlgebraElt(a.A,b*a.d)
 Base.://(a::AlgebraElt, b)=AlgebraElt(a.A,a.d//b)
 Base.zero(a::AlgebraElt)=AlgebraElt(a.A,zero(a.d))
 Base.:^(a::AlgebraElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
@@ -161,8 +201,8 @@ Base.:(==)(a::AlgebraElt,b::AlgebraElt)=a.d==b.d
 Base.hash(a::AlgebraElt,k::UInt)=hash(a.d,k)
 Base.one(a::AlgebraElt)=one(a.A)
 
-function LaurentPolynomials.coefficients(a::AlgebraElt{A,T})where {A,T}
-  v=fill(T(0),dim(a.A))
+function LaurentPolynomials.coefficients(a::AlgebraElt)
+  v=fill(zero(coefftype(a.A)),dim(a.A))
   for (i,c) in a.d v[i]=c end
   v
 end
@@ -186,10 +226,11 @@ function minpoly(a::AlgebraElt)
   exactdiv(p,gcd(p,derivative(p)//1))
 end
 
+# generic fallback
 basismult(A::FiniteDimAlgebra,i::Integer,j::Integer)=A.multable[i,j]
 
-function Base.:*(a::AlgebraElt{A,T1}, b::AlgebraElt{A,T2})where {A<:FiniteDimAlgebra,T1,T2}
-  res=Pair{Int,promote_type(T1,T2)}[]
+function Base.:*(a::AlgebraElt, b::AlgebraElt)
+  res=Pair{Int,promote_type(coefftype(a.A),coefftype(b.A))}[]
   for (i,c) in a.d, (i1,c1) in b.d
     append!(res,[k=>c*c1*c2 for (k,c2) in basismult(a.A,i,i1)])
   end
@@ -281,8 +322,9 @@ Weyl.dim(I::TwoSidedIdeal)=length(basis(I))
 function radicalpower(A::FiniteDimAlgebra,n)
   if n==0 return A
   elseif n==1 return radical(A)
-  elseif haskey(A,:radicalpowers) && length(A.radicalpowers)>=n
-    return A.radicalpowers[n]
+  elseif haskey(A,:radicalpowers) 
+   if length(A.radicalpowers)>=n return A.radicalpowers[n] end
+  else A.radicalpowers=[radical(A)]
   end
   res=vcat(map(b->b.*basis(radicalpower(A,n-1)),basis(radical(A)))...)
   ideal=TwoSidedIdeal(A,rowspace(res),Dict{Symbol,Any}())
@@ -387,6 +429,24 @@ end
   multable::Matrix{Vector{Pair{Int,T}}}
 end
 
+"""
+`Quaternions()` The quaternion algebra.
+```julia-repl
+julia> b=basis(Quaternions())
+4-element Vector{AlgebraElt{Quaternions{Int64}, Int64}}:
+ 1
+ i
+ j
+ k
+
+julia> b*permutedims(b)
+4×4 Matrix{AlgebraElt{Quaternions{Int64}, Int64}}:
+ 1  i   j   k
+ i  -1  k   -j
+ j  -k  -1  i
+ k  j   -i  -1
+```
+"""
 function Quaternions(a::T=-1,b::T=-1)where T
   multable=[[1=>1] [2=>1]  [3=>1] [4=>1];
             [2=>1] [1=>a]  [4=>1] [3=>-1];
@@ -439,7 +499,17 @@ end
 
 Groups.gens(A::ZeroHecke)=basis.(Ref(A),2:ngens(A.W)+1)
 
-# 0-Hecke algebra of W with parameters 0,1
+"""
+`ZeroHecke(W::CoxeterGroup,T=Int)` create the Hecke algebra of `W` with
+parameters 0 and 1.
+```julia-repl
+julia> A=ZeroHecke(coxsym(3))
+0-Hecke(𝔖 ₃)
+
+julia> radical(A)
+TwoSidedIdeal(0-Hecke(𝔖 ₃),[(1//1)T₁₂+(-1//1)T₁₂₁,(1//1)T₂₁+(-1//1)T₁₂₁])
+```
+"""
 function ZeroHecke(W::CoxeterGroup,T=Int)
   e=elements(W);# we use they are stored by increasing CoxeterLength
   A=ZeroHecke(W,e,one(T),Dict{Symbol,Any}())
@@ -476,14 +546,13 @@ end
 ## An element of A is printed as "Class(polynomial)"
 @GapObj struct PolynomialQuotientAlgebra{T}<:FiniteDimAlgebra{T}
   p::Pol{T}
-  fp::Vector{Pair{Pol{T},Int}}
   var::Symbol
   multable::Matrix{Vector{Pair{Int,T}}}
 end
 
 Weyl.dim(A::PolynomialQuotientAlgebra)=degree(A.p)
 
-Groups.gens(A::PolynomialQuotientAlgebra)=basis(A,2)
+Groups.gens(A::PolynomialQuotientAlgebra)=[basis(A,2)]
 
 Base.show(io::IO,A::PolynomialQuotientAlgebra)=
     print(io,eltype(A.p.c),"[",A.var,"]/",A.p)
@@ -513,13 +582,16 @@ function PolynomialQuotientAlgebra(p::Pol{T})where T
     filter(x->x[2]!=0,map(Pair,1:degree(r)+1,r[0:end]))
   end
   basismult(i,j)=class(Pol([1],i+j-2))
-  A=PolynomialQuotientAlgebra(p,sort(collect(factor(p)),by=x->degree(x[1])),
-                                     LaurentPolynomials.varname,
+  A=PolynomialQuotientAlgebra(p,LaurentPolynomials.varname,
            [basismult(i,j) for i in 1:d, j in 1:d],Dict{Symbol,Any}())
   A.showbasis=(io::IO,i)->fromTeX(io,i==1 ? "⋅1" :
                            string(A.var)*(i==2 ? "" : string("^{",i-1,"}")))
   A.isAbelian=true
   A.class=class
+  A.fp=sort(collect(factor(p)),by=x->degree(x[1]))
+  if T<:FFE A.char=char(T)
+  else A.char=0
+  end
   A
 end
 
@@ -552,20 +624,20 @@ function Chars.CharTable(A::PolynomialQuotientAlgebra)
 end
 
 function PermRoot.radical(A::PolynomialQuotientAlgebra)
-  res=prod(first.(filter(i->i[2]>1,A.fp)),init=Pol([1],0))
-  A.radical=TwoSidedIdeal(A,[AlgebraElt(A,ModuleElt(A.class(res)))])
-  A.radicalpowers=[A.radical]
-  A.radical
+  get!(A,:radical) do
+    if A.char==0
+      der=derivative(A.p)
+      res=gcd(A.p//gcd(der,A.p),der)
+      A.radical=twosided_ideal(A,[AlgebraElt(A,ModuleElt(A.class(res)))])
+      A.radicalpowers=[A.radical]
+      return A.radical
+    end
+    res=prod(first.(filter(i->i[2]>1,A.fp)),init=Pol([1],0))
+    A.radical=twosided_ideal(A,[AlgebraElt(A,ModuleElt(A.class(res)))])
+    A.radicalpowers=[A.radical]
+    A.radical
+  end
 end
-
-######################################################################
-## GrothendieckRing(G,Q) renvoie l'anneau de Grothendieck A=Q Irr(G) 
-##(si Q est omis, on prend pour Q le corps des rationnels)
-##
-##   A.basisname  = "χ" (par defaut)
-## 
-## La fonction Degre envoie un element de l'anneau de 
-## Grothendieck sur son degre (virtuel a  priori bien sur)
 
 @GapObj struct GrothendieckRing{T}<:FiniteDimAlgebra{T}
   G::Group
@@ -591,19 +663,21 @@ Base.show(io::IO,A::GrothendieckRing{T}) where T=
   print(io,"GrothendieckRing(",A.G,",",T,")")
 
 function PermRoot.radical(A::GrothendieckRing{T})where T
-  if char(T)==0 || length(A.G)%char(T)!=0
-    b=empty(basis(A))
-  else
-    p=char(T); while p<dim(A) p*=char(T) end
-    mat=toM(coefficients.(basis(A).^p))
-    mat=rowspace(lnullspace(mat))
-    b=map(x->AlgebraElt(A,x),eachrow(mat))
+  get!(A,:radical)do
+    if char(T)==0 || length(A.G)%char(T)!=0
+      b=empty(basis(A))
+    else
+      p=char(T); while p<dim(A) p*=char(T) end
+      mat=toM(coefficients.(basis(A).^p))
+      mat=rowspace(lnullspace(mat))
+      b=map(x->AlgebraElt(A,x),eachrow(mat))
+    end
+    twosided_ideal(A,b)
   end
-  radical=TwoSidedIdeal(A,b)
-  A.radicalpowers=[radical]
-  radical
 end
 
+## La fonction Degre envoie un element de l'anneau de 
+## Grothendieck sur son degre (virtuel a  priori bien sur)
 function LaurentPolynomials.degree(h::AlgebraElt)
   sum(c*Int(h.A.ct.irr[k,1]) for (k,c) in h.d)
 end
@@ -619,10 +693,11 @@ Base.one(A::GrothendieckRing)=basis(A,A.positionid)
 """
 `GrothendieckRing(G::Group,T=Int)`
 
-constructs the Grothendieck ring of the group `G`. The only condition is
-to be able to compute the character table of `G`.
+constructs the Grothendieck ring of the group `G` with coefficients of type
+`T`.  The only condition  is to be  able to compute  the character table of
+`G`.
 ```julia-repl
-julia> A=Algebras.GrothendieckRing(coxsym(3))
+julia> A=GrothendieckRing(coxsym(3))
 GrothendieckRing(𝔖 ₃,Int64)
 
 julia> basis(A).*permutedims(basis(A))
@@ -630,6 +705,12 @@ julia> basis(A).*permutedims(basis(A))
  [3]    [21]            [111]
  [21]   [111]+[21]+[3]  [21]
  [111]  [21]            [3]
+
+julia> A=GrothendieckRing(W,FFE{2})
+GrothendieckRing(𝔖 ₃,FFE{2})
+
+julia> radical(A)
+TwoSidedIdeal(GrothendieckRing(𝔖 ₃,FFE{2}),[[111]+[3]])
 ```
 """
 function GrothendieckRing(G::Group,T=Int)
@@ -694,17 +775,16 @@ end
 #  fi;
 #  return A.characterdegrees;
 #end;
-#
-#GroupAlgebraOps.CharTable:=function(A)local conj;
-#  if A.field.char>0 then 
-#    Error("Cannot compute CharTable in positive characteristic");
-#  fi;
-#  A.charTable:=CharTable(A.group);
+
+function Chars.CharTable(A::GroupAlgebra)
+  if coefftype(A)<:FFE
+    error("Cannot compute CharTable in positive characteristic")
+  end
+  A.charTable=CharTable(A.group)
 #  conj:=List(Elements(A.group),i->position_class(A.group,i));
-#  A.charTable.basistraces:=List(A.charTable.irreducibles,chi->chi{conj});
-#  A.charTable.Print:=function(table)Display(table);end;
-#  return A.charTable; 
-#end;
+#  A.charTable.basistraces:=List(A.charTable.irr,chi->chi{conj});
+  return A.charTable
+end
 
 function PermRoot.radical(A::GroupAlgebra{T})where T
   if char(T)!=0 error("not implemented in positive characteristic") end
@@ -721,7 +801,7 @@ embedding(A::GroupAlgebra{T,E},g::E) where{T,E}=findfirst(==(g),A.elts)
 julia> W=Group(Perm(1,2))
 Group((1,2))
 
-julia> A=Algebras.GroupAlgebra(W)
+julia> A=GroupAlgebra(W)
 Algebra(Group((1,2)),Int64)
 
 julia> basis(A)
@@ -737,10 +817,13 @@ function GroupAlgebra(G,T=Int)
   A.showbasis=function(io::IO,e)
     fromTeX(io,"e"*"_{"*joindigits(word(A.group,A.elts[e]))*"}")
   end
-#  if Q.char=0 then 
-#    A.radical:=TwoSidedIdeal(A,[]);
-#    A.radicalpowers:=[A.radical];
-#  fi;
+  if T<:FFE
+    A.char=char(T)
+  else
+    A.char=0
+    A.radical=TwoSidedIdeal(A,AlgebraElt[],Dict{Symbol,Any}())
+    A.radicalpowers=[A.radical];
+  end
   A
 end
 
@@ -832,10 +915,9 @@ end
 function Chars.CharTable(A::SolomonAlgebra)
   W=A.W
   conj=first.(W.solomon_conjugacy)
-  orb=map(i->reflection_subgroup(W,W.solomon_subsets[i]),conj)
-  cox=map(g->prod(gens(g);init=one(g)),orb)
+  orb=map(i->W.solomon_subsets[i],conj)
   irr=[W.solomon_mackey[j,i][i] for i in conj, j in conj]
-  SolomonCharTable(A,irr,map(w->word(W,w),cox),Dict{Symbol,Any}())
+  SolomonCharTable(A,irr,orb,Dict{Symbol,Any}())
 #  res.columns[Length(res.columns)]:=["0"];
 #  res.basistraces:=List([1..Length(res.irreducibles)],function(ii)local r;
 #    r:=vcat(List([1..Length(W.solomon.conjugacy)],
@@ -873,31 +955,34 @@ const LIM=10000
 """
 `SolomonAlgebra(W,K)`
 
-Let  `(W,S)` be a  finite Coxeter group.  If `w` is  an element of `W`, let
-`R(w)={s  ∈ S | l(ws) >  l(w)}`. If `I` is a  subset of `S`, we set
-`Y_I={w ∈ W | R(w)=I}`, `X_I={w ∈ W | R(w) ⊃ I}`.
+Let  `(W,S)`  be  a  finite  Coxeter  group.  For  `w∈W`,  let `R(w)={s∈S |
+l(ws)>l(w)}`.  If `I` is a subset  of `S`, we set ``Y_I=\\{w∈W|R(w)=I\\}``,
+``X_I=\\{w∈W|R(w)⊃ I\\}``.
 
-Note  that `X_I` is the set of minimal length left coset representatives of
-`W/W_I`. Now, let `y_I=∑_{w ∈ Y_I} w`, `x_I=∑_{w ∈ X_I} w`.
+Note  that ``X_I`` is the set  of minimal length left coset representatives
+of ``W/W_I``. 
 
-They  are elements  of the  group algebra  `ℤ W`  of `W` over `Z`. Now, let
-``Σ(W)  = ⊕_{I ⊂ S} ℤ y_I = ⊕_{I ⊂ S} ℤ x_I``. This is a sub-`ℤ`-module of
-`ℤW`.  In fact, Solomon proved  that it is a  sub-algebra of `ℤW`. Now, let
-`K(W)`  be the Grothendieck ring  of `W` and let  `θ:Σ(W)→ K(W)` be the map
-defined  by  `θ(x_I)  =  Ind_{W_I}^W  1`.  Solomon  proved  that this is an
-homomorphism of algebras. We call it the *Solomon homomorphism*.
+Let  ``y_I=∑_{w∈Y_I}w``, ``x_I=∑_{w∈X_I}w``. They are elements of the group
+algebra `ℤW` of `W` over `ℤ`.
 
-returns  the Solomon  descent algebra  of the  finite Coxeter group `(W,S)`
-over  `K`.  If  `S=[s₁,…,sᵣ]`,  the  element `x_I` corresponding to the
-subset   `I=[s₁,s₂,s₄]`  of  `S`  is  printed  as  |X(124)|.  Note  that
+Now,  let  ``Σ(W)  =  ⊕_{I  ⊂  S}  ℤ  y_I  =  ⊕_{I  ⊂ S} ℤ x_I``. This is a
+sub-`ℤ`-module of `ℤW`. In fact, Solomon proved that it is a sub-algebra of
+`ℤW`  called  the  *Solomon  descent  algebra*.  Now,  let  `K(W)`  be  the
+Grothendieck  ring of  `W` and  let `θ:Σ(W)→  K(W)` be  the map  defined by
+``θ(x_I)  = Ind_{W_I}^W 1``. Solomon proved that this is an homomorphism of
+algebras. We call it the *Solomon homomorphism*.
+
+`SolomonAlgebra`  returns the Solomon descent algebra of the finite Coxeter
+group `(W,S)` over `K`. If `S=[s₁,…,sᵣ]`, the element ``x_I`` corresponding
+to  the  subset  `I=[s₁,s₂,s₄]`  of  `S`  is  printed  as `X₁₂₄`. Note that
 `A:=SolomonAlgebra(W,K)` is endowed with the following fields:
 
 `A.W`: the group `W`
 
 `A.basis`: the basis `(x_I)_{I ⊂ S}`.
 
-`A.xbasis`:  the function sending the subset `I` (written as a number: for
-instance `124` for `[s_1,s_2,s_4]`) to `x_I`.
+`A.xbasis`: the  function   sending   `I`   to   ``x_I``  (for  instance
+                     `A.xbasis(1,2,4)=X₁₂₄`)
 
 `A.ybasis`: the function sending the subset `I` to `y_I`.
 
@@ -976,14 +1061,17 @@ function SolomonAlgebra(W::FiniteCoxeterGroup,T=Int)
     Idict=Dict(p=>i for (i,p) in enumerate(I))
     subsets=map(x->map(j->Idict[j],combinations(x)),I)
     mackey=[Pair{Int,Int}[] for i in 1:d,j in 1:d]
-    for w in W
+    for w in elements(W)
       leftascents=Idict[setdiff(1:r,leftdescents(W,w))]
       rightascents=Idict[setdiff(1:r,leftdescents(W,inv(w)))]
-      l=map(i->action(W,i,w),1:r)
+ #    l1=map(i->action(W,i,w),1:r)
+      l=map(i->(a=findfirst(==(W(i)^w),gens(W));
+                (isnothing(a) || isleftdescent(W,w,i)) ? 0 : a),1:r)
+ #    if filter(<=(r),l1)!=filter(!iszero,l) error(l1,l2) end
       for i in subsets[leftascents] 
         II=sort!(l[I[i]])
  	for j in subsets[rightascents]
-          push!(mackey[i,j],Idict[Combinat.intersect_sorted(II,I[j])]=>1)
+          push!(mackey[i,j],Idict[intersect_sorted(II,I[j])]=>1)
         end
       end
       if c%LIM==0 InfoAlgebra(c,".") end; c-=1

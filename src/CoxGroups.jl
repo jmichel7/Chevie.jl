@@ -1051,7 +1051,7 @@ PermRoot.action(W::CoxHyp,i,p)=abs(i^p)
 
 PermRoot.refltype(W::CoxHyp)=[TypeIrred(series=:B,indices=collect(1:W.n))]
 
-CoxGroups.nref(W::CoxHyp)=length(W.roots)
+CoxGroups.nref(W::CoxHyp)=div(length(W.roots),2)
 
 # use that "roots" correspond to roots of so_{2n+1}. 
 # If eᵢ are the basis vectors (i,-i) <-> eᵢ, (i,j) <-> eⱼ-eᵢ, (i,-j) <-> eᵢ+eⱼ

@@ -773,7 +773,7 @@ function central_monomials(H::HeckeAlgebra,i)
 end
 
 #--------------------------------------------------------------------------
-# TH= typeof Algebra P=typeof(keys) [Perms] C typeof(coeffs)
+# TH=typeof Algebra P=typeof(keys) [Perms] C=typeof(coeffs)
 abstract type HeckeElt{TH, C, P} end 
 
 Base.zero(h::HeckeElt)=clone(h,zero(h.d))
