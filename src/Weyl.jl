@@ -732,7 +732,12 @@ julia> badprimes(W)
 """
 function badprimes(W::FC)
   if isempty(W.rootdec) return Int[] end
-  collect(setdiff(vcat(collect.(keys.(factor.(Int.(W.rootdec[nref(W)]))))...),[0,-1]))
+  longestroot=W.rootdec[nref(W)]
+  if all(isinteger,longestroot) # not very twisted
+    collect(setdiff(vcat(collect.(keys.(factor.(Int.(W.rootdec[nref(W)]))))...),[0,-1]))
+   elseif root(2) in longestroot return [2]
+   elseif root(3) in longestroot return [3]
+   end
 end
 
 """

@@ -83,8 +83,8 @@ chevieset("2F4", :HeckeRepresentation, function (para, rootpara, i)
   v=ismissing(rootpara[1]) ? rootpara[1]*para[1][2] :
                    root(-para[1][1]//para[1][2])
   F(i)=WGraphToRepresentation(4,chevieget(:F4,:WGraph)(i),v)*v^0*-para[1][2]
-  if i==1     (gens=F(1),F=[1;;]) 
-  elseif i==2 (gens=F(4),F=[1;;]) 
+  if i==1     (gens=F(1),F=[1;;])
+  elseif i==2 (gens=F(4),F=[1;;])
   elseif i==3 (gens=F(9),F=Matrix(perm"(1,4)"))
   elseif i==4 (gens=F(10),F=Matrix(perm"(1,9)(2,6)(4,8)(5,7)"))
   elseif i==5 (gens=F(13),F=-Matrix(perm"(1,9)(2,6)(4,8)(5,7)"))
@@ -104,21 +104,21 @@ chevieset("2F4", :HeckeRepresentation, function (para, rootpara, i)
                              0 0 2 0;
                              0 1 0 0;
                              1 0 0 0] // root(2))
-  elseif i==11 (gens=F(25),F=-[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1; 
-                              0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0; 
-                              0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0; 
-                              0 0 0 0 0 0 0 0 0 0 0 -1 1 0 0 0; 
-                              0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0; 
-                              0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0; 
-                              0 0 0 0 0 0 -1 1 0 0 0 0 0 0 0 0; 
-                              0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0; 
-                              0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0; 
-                              0 0 0 0 0 0 0 0 0 -1 1 0 0 0 0 0; 
-                              0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0; 
-                              0 0 0 -1 1 0 0 0 0 0 0 0 0 0 0 0; 
-                              0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0; 
-                              0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0; 
-                              0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0; 
+  elseif i==11 (gens=F(25),F=-[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1;
+                              0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0;
+                              0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0;
+                              0 0 0 0 0 0 0 0 0 0 0 -1 1 0 0 0;
+                              0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0;
+                              0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+                              0 0 0 0 0 0 -1 1 0 0 0 0 0 0 0 0;
+                              0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0;
+                              0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0;
+                              0 0 0 0 0 0 0 0 0 -1 1 0 0 0 0 0;
+                              0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0;
+                              0 0 0 -1 1 0 0 0 0 0 0 0 0 0 0 0;
+                              0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0;
+                              0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0;
+                              0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0;
                               2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]//root(2))
   end
 end)
@@ -127,7 +127,7 @@ CHEVIE.families[:X2]=Family(Dict{Symbol, Any}(:name=>"X_2",
   :fourierMat=>root(2)//2*[-1 -1;-1 1],:eigenvalues=>[E(8,3),-E(8)],
   :charLabels=>["1", "2"], :special=>1, :sh=>[1,-1]))
 
-chevieset("2F4", :sparseFakeDegrees, 
+chevieset("2F4", :sparseFakeDegrees,
   [[1,0],[1,24],[1,8,1,16],[1,2,-1,4,1,8,-1,12,1,14],
    [-1,10,1,12,-1,16,1,20,-1,22],[1,6,-1,8,-1,16,1,18],
    [-1,6,1,8,-2,12,1,16,-1,18],[1,4,1,20],[1,1,-1,5,1,7,-1,11],
@@ -135,16 +135,16 @@ chevieset("2F4", :sparseFakeDegrees,
 
 chevieset("2F4", :UnipotentCharacters,
   Dict{Symbol, Any}(:harishChandra=>
-  [Dict(:relativeType=> 
+  [Dict(:relativeType=>
      TypeIrred(;series=:I,indices=[1,2],bond=8,rank=2),
-     :parameterExponents=>[2, 4], :levi=>[], :eigenvalue=>1, 
-     :cuspidalName=>"", :charNumbers=>[1, 5, 4, 2, 3, 20, 19]), 
+     :parameterExponents=>[2, 4], :levi=>[], :eigenvalue=>1,
+     :cuspidalName=>"", :charNumbers=>[1, 5, 4, 2, 3, 20, 19]),
    Dict(:relativeType=>TypeIrred(;series=:A,indices=[1],rank=1),
-     :parameterExponents=>[12], :levi=>[2, 3], :eigenvalue=>E(8,3), 
-     :cuspidalName=>"{}^2B_2[1,3]", :charNumbers=>[10, 9]), 
+     :parameterExponents=>[12], :levi=>[2, 3], :eigenvalue=>E(8,3),
+     :cuspidalName=>"{}^2B_2[1,3]", :charNumbers=>[10, 9]),
    Dict(:relativeType=>TypeIrred(;series=:A,indices=[1],rank=1),
-     :parameterExponents=>[12], :levi=>[2, 3], :eigenvalue=>-E(8), 
-     :cuspidalName=>"{}^2B_2[1,5]", :charNumbers=>[13, 12]), 
+     :parameterExponents=>[12], :levi=>[2, 3], :eigenvalue=>-E(8),
+     :cuspidalName=>"{}^2B_2[1,5]", :charNumbers=>[13, 12]),
    mkcuspidal("{}^2F_4",6,-E(3)),
    mkcuspidal("{}^2F_4",7,-1),
    mkcuspidal("{}^2F_4",8,-1,no=2),
@@ -156,26 +156,26 @@ chevieset("2F4", :UnipotentCharacters,
    mkcuspidal("{}^2F_4",18,-E(3,2);no=2),
    mkcuspidal("{}^2F_4",21,-1;no=4)],
   :families => [Family("C1", [1]), Family("C1", [2]), Family("C1", [4]),
-   Family(Dict{Symbol, Any}(:name => "C''_1", :group => "C1", 
+   Family(Dict{Symbol, Any}(:name => "C''_1", :group => "C1",
        :charLabels => [""], :fourierMat => [-1;;], :eigenvalues => [1],
        :sh => [1]), [5]),
    Family("X2", [9, 12]), Family("X2", [10, 13]),
    Family(Dict{Symbol, Any}(:name => "sub D(\\tilde S_4)",
      :fourierMat=>invpermute(transpose([
-     3 0 -6 3 root(2)*3 root(2)*3 root(2)*3 root(2)*3 3 -3 0 0 0; 
-     3 0 -6 3 -root(2)*3 -root(2)*3 -root(2)*3 -root(2)*3 3 -3 0 0 0; 
-     6 0 0 6 0 0 0 0 -6 6 0 0 0; 
-     -6 -4 -4 2 0 0 0 0 -6 -2 -4 -4 0; 
-     -3 4 -2 1 -root(2)*3 root(2)*3 root(2)*3 -root(2)*3 -3 -1 4 4 0; 
-     -3 4 -2 1 root(2)*3 -root(2)*3 -root(2)*3 root(2)*3 -3 -1 4 4 0; 
-     -3 0 0 3 root(2)*3 -root(2)*3 root(2)*3 -root(2)*3 3 3 0 0 6; 
-     -3 0 0 3 root(2)*3 root(2)*3 -root(2)*3 -root(2)*3 3 3 0 0 -6; 
-     -3 0 0 3 -root(2)*3 -root(2)*3 root(2)*3 root(2)*3 3 3 0 0 -6; 
-     -3 0 0 3 -root(2)*3 root(2)*3 -root(2)*3 root(2)*3 3 3 0 0 6; 
-     0 4 4 4 0 0 0 0 0 -4 4 -8 0; 
-     0 4 4 4 0 0 0 0 0 -4 -8 4 0; 
+     3 0 -6 3 root(2)*3 root(2)*3 root(2)*3 root(2)*3 3 -3 0 0 0;
+     3 0 -6 3 -root(2)*3 -root(2)*3 -root(2)*3 -root(2)*3 3 -3 0 0 0;
+     6 0 0 6 0 0 0 0 -6 6 0 0 0;
+     -6 -4 -4 2 0 0 0 0 -6 -2 -4 -4 0;
+     -3 4 -2 1 -root(2)*3 root(2)*3 root(2)*3 -root(2)*3 -3 -1 4 4 0;
+     -3 4 -2 1 root(2)*3 -root(2)*3 -root(2)*3 root(2)*3 -3 -1 4 4 0;
+     -3 0 0 3 root(2)*3 -root(2)*3 root(2)*3 -root(2)*3 3 3 0 0 6;
+     -3 0 0 3 root(2)*3 root(2)*3 -root(2)*3 -root(2)*3 3 3 0 0 -6;
+     -3 0 0 3 -root(2)*3 -root(2)*3 root(2)*3 root(2)*3 3 3 0 0 -6;
+     -3 0 0 3 -root(2)*3 root(2)*3 -root(2)*3 root(2)*3 3 3 0 0 6;
+     0 4 4 4 0 0 0 0 0 -4 4 -8 0;
+     0 4 4 4 0 0 0 0 0 -4 -8 4 0;
      0 -8 4 4 0 0 0 0 0 -4 4 4 0]//12), perm"(8,13)"),
-     :special=>4, 
+     :special=>4,
      :charLabels=>["z,\\chi_3", "t_1t_2,1", "z,\\chi_2", "1,1", "zt_1t_2t_3,1",
        "t_1t_2t_3,\\zeta_8^6", "t_1t_2t_3,\\zeta_8^2", "t_1t_3,\\zeta_8^6",
        "z,\\chi'_3", "z,\\varepsilon", "t_1t_2,\\zeta_6^4", "t_1t_2,\\zeta_6^2",
@@ -193,11 +193,11 @@ chevieset("2F4", :UnipotentCharacters,
      Dict(:relativeType =>TypeIrred(;orbit=[TypeIrred(;series=:F,
       cartanType=root(2),indices=1:4,rank=4)],twist=perm"(1,4)(2,3)"),
       :levi=>Int[],:eigenvalue=>1,:cuspidalName=>"",
-      :charNumbers=>[1, 2, 3, 4, 5, 19, 20, 7, 9, 10, 8]), 
+      :charNumbers=>[1, 2, 3, 4, 5, 19, 20, 7, 9, 10, 8]),
      Dict(:relativeType =>TypeIrred(;orbit=[TypeIrred(;series=:B,
       indices=[1,4],cartanType=root(2),rank=2)],twist=perm"(1,2)"),
       :levi => [2, 3], :eigenvalue => -1, :cuspidalName => "B_2",
-      :charNumbers => [12, 13, 15]), 
+      :charNumbers => [12, 13, 15]),
      mkcuspidal("F_4",21,-1),
      mkcuspidal("F_4",14,-E(4)),
      mkcuspidal("F_4",11,E(4)),
@@ -207,3 +207,8 @@ chevieset("2F4", :UnipotentCharacters,
      mkcuspidal("F_4",17,1;no=2)],
   :a=>[0,24,4,2,10,4,4,4,1,13,4,1,13,4,4,4,4,4,4,4,4],
   :A=>[0,24,20,14,22,20,20,20,11,23,20,11,23,20,20,20,20,20,20,20,20]))
+
+chevieset("2F4", :UnipotentClasses, function(char,ctype)
+  if char!=2 error("characteristic should be 2") end
+  chevieget(:F4,:UnipotentClasses)(char,ctype)
+end)

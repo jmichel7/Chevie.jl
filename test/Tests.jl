@@ -493,7 +493,7 @@ function Tunipotentclasses(W,p=nothing)
       end
     end
   end
-  bc=Ucl.BalaCarterLabels(W)
+  bc=Ucl.BalaCarter_labels(W)
   if all(cl->haskey(cl,:dynkin),uc.classes)
     for cl in uc.classes
       j=findfirst(x->x[1]==cl.dynkin,bc)

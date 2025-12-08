@@ -2,8 +2,8 @@
 #  Copyright (C) 1994 - 2012  The CHEVIE Team
 #
 #  This file contains the irreducible representations of the Hecke algebra
-#  H of F_4 (in terms of W-graphs). They have been determined by H. Naruse 
-#  in the equal parameter case (private communication, January 1998), 
+#  H of F_4 (in terms of W-graphs). They have been determined by H. Naruse
+#  in the equal parameter case (private communication, January 1998),
 #  and by M. Geck in  the 2-parameter case (August 1997).
 
 chevieset(:F4, :CartanMat,function(cartantype=1)
@@ -109,7 +109,7 @@ chevieset(:F4,:orbits,[ [ 1, 25, 5, 29, 2, 11, 26, 35,
   [ 3, 6, 27, 7, 8, 10, 30, 31, 4, 12, 13, 32, 34, 28, 15, 36, 37, 17, 39,
   19, 41, 21, 43, 45 ] ] )
 
-chevieset(:F4, :PowerMaps, [nothing, 
+chevieset(:F4, :PowerMaps, [nothing,
   [1,1,1,4,4,2,7,7,9,9,10,1,1,7,7,3,1,1,4,4,3,1,3,3,6],
   [1,2,3,1,2,6,1,2,1,2,6,12,13,12,13,16,17,18,17,18,21,22,23,24,25],
   nothing,1:25,nothing,1:25,nothing,nothing,nothing,1:25])
@@ -260,10 +260,10 @@ chevieset(:F4, :SchurData, [
   Dict(:name=>"f4_1",:order=>[2,1,3,4]), Dict(:name=>"f4_1",:order=>[2,1,4,3]),
   Dict(:name=>"f8_3s",:order=>[1,2,3,4]),Dict(:name=>"f8_3s",:order=>[2,1,3,4]),
   Dict(:name=>"f8_3s",:order=>[3,4,1,2]),Dict(:name=>"f8_3s",:order=>[4,3,1,2]),
-  Dict(:name=>"f16_5",:order=>[1,2,3,4])]); 
+  Dict(:name=>"f16_5",:order=>[1,2,3,4])]);
 
 # They are F-equivariant for 2F4 for F-invariant representations.
-chevieset(:F4, :WGraphs, 
+chevieset(:F4, :WGraphs,
 [[[[]],[]],[[[3,4]],[]],2,1,[[[3],[4]],[[1,[[1,2]]]]],5,
 [[[1],[2]],[[1,[[1,2]]]]],7,[[[1,3],[1,4],[2,3],[2,4]],[[1,[[1,2,3],[2,4],[3,
 4]]]]],[[[1],[1,3],[1,4],[2],1,[2,4],[3],1,[4]],[[1,[[1,2,5],[2,3,4,8],[3,6],
@@ -283,7 +283,7 @@ chevieset(:F4, :WGraphs,
 4],[1,3],2,[1,3,4],[1,4],1,[2],[2,3],1,[2,4],2,[3],[3,4]],[[[1,2],[[13,16]]],
 [1,[[1,2,4,5,9],[2,3,7,8,14],[3,9,15],[4,7,10],[5,8,11],[6,14,16],[7,12],[8,
 13],[9,10,11],[10,12],[11,13,15],[14,15],[15,16]]],[2,[[3,6],[6,8],[9,14]]]]]])
- 
+
 chevieset(:F4, :WGraph, function (i)
   gr=chevieget(:F4, :WGraphs)
   if gr[i] isa Integer DualWGraph(4, gr[gr[i]])
@@ -627,7 +627,7 @@ CHEVIE.families[:S4]=Family(Dict{Symbol, Any}(
      "(g'_2,1)", "(g'_2,\\varepsilon)", "(g'_2,\\varepsilon')",
      "(g'_2,\\varepsilon'')", "(g'_2,r)", "(g_3,1)", "(g_3,\\zeta_3)",
      "(g_3,\\zeta_3^2)", "(g_4,1)", "(g_4,-1)", "(g_4,i)", "(g_4,-i)"],
-  :size=>21, 
+  :size=>21,
   :eigenvalues=>[1,1,1,1,1,1,-1,1,-1,1,1,1,1,-1,1,E(3),E(3,2),1,-1,E(4),-E(4)],
   :name => "D(S_4)", :explanation => "Lusztig'sDrinfeldDouble(S_4)",
   :mellin=>cat(
@@ -636,28 +636,28 @@ CHEVIE.families[:S4]=Family(Dict{Symbol, Any}(
     [1 1 1 1 2;1 -1 -1 1 0;1 1 1 1 -2;1 -1 1 -1 0;1 1 -1 -1 0],
     [1 1 1;1 E(3) E(3,2);1 E(3,2) E(3)],
     [1 1 1 1;1 -1 E(4) -E(4);1 1 -1 -1;1 -1 -E(4) E(4)],dims=(1,2)),
-  :mellinLabels => ["(1,1)", "(1,g_2)", "(1,g'_2)", "(1,g_3)", "(1,g_4)", "(g_2,1)", "(g_2,g_2)", "(g_2,g'_2)", "(g_2,2c)", "(g'_2,1)", "(g'_2,g_2)", "(g'_2,g'_2)", "(g'_2,2c)", "(g'_2,g_4)", "(g_3,1)", "(g_3,g_3)", "(g_3,g_3^2)", "(g_4,1)", "(g_4,g_4)", "(g_4,g_2)", "(g_4,g_4^{-1})"], 
+  :mellinLabels => ["(1,1)", "(1,g_2)", "(1,g'_2)", "(1,g_3)", "(1,g_4)", "(g_2,1)", "(g_2,g_2)", "(g_2,g'_2)", "(g_2,2c)", "(g'_2,1)", "(g'_2,g_2)", "(g'_2,g'_2)", "(g'_2,2c)", "(g'_2,g_4)", "(g_3,1)", "(g_3,g_3)", "(g_3,g_3^2)", "(g_4,1)", "(g_4,g_4)", "(g_4,g_2)", "(g_4,g_4^{-1})"],
   :fourierMat=>[
-   1 1 2 3 3 6 6 6 6 3 3 3 3 6 8 8 8 6 6 6 6; 
+   1 1 2 3 3 6 6 6 6 3 3 3 3 6 8 8 8 6 6 6 6;
    1 1 2 3 3 -6 -6 -6 -6 3 3 3 3 6 8 8 8 -6 -6 -6 -6;
    2 2 4 6 6 0 0 0 0 6 6 6 6 12 -8 -8 -8 0 0 0 0;
    3 3 6 9 9 -6 -6 -6 -6 -3 -3 -3 -3 -6 0 0 0 6 6 6 6;
    3 3 6 9 9 6 6 6 6 -3 -3 -3 -3 -6 0 0 0 -6 -6 -6 -6;
-   6 -6 0 -6 6 12 0 0 -12 6 -6 -6 6 0 0 0 0 0 0 0 0; 
-   6 -6 0 -6 6 0 12 -12 0 -6 6 6 -6 0 0 0 0 0 0 0 0; 
-   6 -6 0 -6 6 0 -12 12 0 -6 6 6 -6 0 0 0 0 0 0 0 0; 
-   6 -6 0 -6 6 -12 0 0 12 6 -6 -6 6 0 0 0 0 0 0 0 0; 
-   3 3 6 -3 -3 6 -6 -6 6 9 -3 9 -3 -6 0 0 0 6 6 -6 -6; 
-   3 3 6 -3 -3 -6 6 6 -6 -3 9 -3 9 -6 0 0 0 6 6 -6 -6; 
-   3 3 6 -3 -3 -6 6 6 -6 9 -3 9 -3 -6 0 0 0 -6 -6 6 6; 
-   3 3 6 -3 -3 6 -6 -6 6 -3 9 -3 9 -6 0 0 0 -6 -6 6 6; 
-   6 6 12 -6 -6 0 0 0 0 -6 -6 -6 -6 12 0 0 0 0 0 0 0; 
-   8 8 -8 0 0 0 0 0 0 0 0 0 0 0 16 -8 -8 0 0 0 0; 
-   8 8 -8 0 0 0 0 0 0 0 0 0 0 0 -8 16 -8 0 0 0 0; 
-   8 8 -8 0 0 0 0 0 0 0 0 0 0 0 -8 -8 16 0 0 0 0; 
-   6 -6 0 6 -6 0 0 0 0 6 6 -6 -6 0 0 0 0 12 -12 0 0; 
-   6 -6 0 6 -6 0 0 0 0 6 6 -6 -6 0 0 0 0 -12 12 0 0; 
-   6 -6 0 6 -6 0 0 0 0 -6 -6 6 6 0 0 0 0 0 0 12 -12; 
+   6 -6 0 -6 6 12 0 0 -12 6 -6 -6 6 0 0 0 0 0 0 0 0;
+   6 -6 0 -6 6 0 12 -12 0 -6 6 6 -6 0 0 0 0 0 0 0 0;
+   6 -6 0 -6 6 0 -12 12 0 -6 6 6 -6 0 0 0 0 0 0 0 0;
+   6 -6 0 -6 6 -12 0 0 12 6 -6 -6 6 0 0 0 0 0 0 0 0;
+   3 3 6 -3 -3 6 -6 -6 6 9 -3 9 -3 -6 0 0 0 6 6 -6 -6;
+   3 3 6 -3 -3 -6 6 6 -6 -3 9 -3 9 -6 0 0 0 6 6 -6 -6;
+   3 3 6 -3 -3 -6 6 6 -6 9 -3 9 -3 -6 0 0 0 -6 -6 6 6;
+   3 3 6 -3 -3 6 -6 -6 6 -3 9 -3 9 -6 0 0 0 -6 -6 6 6;
+   6 6 12 -6 -6 0 0 0 0 -6 -6 -6 -6 12 0 0 0 0 0 0 0;
+   8 8 -8 0 0 0 0 0 0 0 0 0 0 0 16 -8 -8 0 0 0 0;
+   8 8 -8 0 0 0 0 0 0 0 0 0 0 0 -8 16 -8 0 0 0 0;
+   8 8 -8 0 0 0 0 0 0 0 0 0 0 0 -8 -8 16 0 0 0 0;
+   6 -6 0 6 -6 0 0 0 0 6 6 -6 -6 0 0 0 0 12 -12 0 0;
+   6 -6 0 6 -6 0 0 0 0 6 6 -6 -6 0 0 0 0 -12 12 0 0;
+   6 -6 0 6 -6 0 0 0 0 -6 -6 6 6 0 0 0 0 0 0 12 -12;
    6 -6 0 6 -6 0 0 0 0 -6 -6 6 6 0 0 0 0 0 0 -12 12]//24,
   :perm => perm"(16,17)(20,21)",
   :x => [Perm(), Perm(), Perm(), Perm(), Perm(), perm"(1,2)", perm"(1,2)",
@@ -856,7 +856,7 @@ chevieset(:F4, :Discriminant,()->(x1,x2,x3,x4)->
 9342537960*x1^12*x3^3+105367602964*x1^12*x2^4+29012190480*x1^13*x2*x3^2+
 30031354080*x1^14*x2^2*x3+10362106560*x1^15*x2^3)
 
-chevieset(:F4, :UnipotentClasses, function(p,type_)
+chevieset(:F4, :UnipotentClasses, function(p,ctype)# ctype not used
   if p==0 p=1 end
   Z(n)=crg(n,1,1)
   class(n)=uc[:classes][findfirst(x->x[:name]==n,uc[:classes])]
@@ -888,7 +888,6 @@ chevieset(:F4, :UnipotentClasses, function(p,type_)
 "      A₁",
 "      |",
 "      1"],"\n"),
-                                                              
   :classes=>[
   Dict(:name=>"1",:succ=>["A1"],:dynkin=>[0,0,0,0],:balacarter=>[],
        :red=>coxgroup(:F,4),:rep=>[]),
@@ -937,7 +936,7 @@ chevieset(:F4, :UnipotentClasses, function(p,type_)
   if p==2
     append!(uc[:classes],[
       Dict{Symbol,Any}(:name=>"(\\tilde A_1)_2",:succ=>["~A1"],
-                       :red=>coxgroup(:B,3),:dimBu=>16,:rep=>[3,9]), 
+                       :red=>coxgroup(:B,3),:dimBu=>16,:rep=>[3,9]),
       Dict{Symbol,Any}(:name=>"(B_2)_2",:succ=>["B2","C3(a1)2"],
                        :red=>coxgroup(:B,2),:dimBu=>8,:Au=>Z(2),:rep=>[2,3,11]),
       Dict{Symbol,Any}(:name=>"(\\tilde A_2{+}A_1)_2",
@@ -968,7 +967,7 @@ chevieset(:F4, :UnipotentClasses, function(p,type_)
       Dict(:relgroup=>Z(1),:levi=>1:4,:Z=>[],:locsys=>[[14,3]],:hc=>8)])
   elseif p==3
     append!(uc[:springerSeries], [
-      Dict(:relgroup=>Z(1),:levi=>1:4,:Z=>[],:locsys=>[[16,2]],:hc=>6), 
+      Dict(:relgroup=>Z(1),:levi=>1:4,:Z=>[],:locsys=>[[16,2]],:hc=>6),
       Dict(:relgroup=>Z(1),:levi=>1:4,:Z=>[],:locsys=>[[16,3]],:hc=>7)])
   end
   uc[:orderClasses]=map(c->map(n->findfirst(c->Ucl.nameclass(c)==n,

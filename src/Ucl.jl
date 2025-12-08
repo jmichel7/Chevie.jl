@@ -64,7 +64,7 @@ constant  ``𝐆``-equivariant  sheaves  on  a  unipotent  class ``C``, called
 *local  systems*, are  parameterised by  irreducible characters of ``A(u)``
 for  `u∈ C`. The *ordinary* Springer  correspondence is a bijection between
 irreducible  characters of the Weyl  group and a large  subset of the local
-systems  containing all trivial  local systems (those  parameterised by the
+systems,  containing all trivial local  systems (those parameterised by the
 trivial  character  of  ``A(u)``  for  each  ``u``).  More  generally,  the
 *generalised*  Springer correspondence  associates to  each local  system a
 (unique  up to ``𝐆``-conjugacy) *cuspidal datum*,  a Levi subgroup ``𝐋`` of
@@ -491,20 +491,24 @@ julia> distinguished_parabolics(W)
 ```
 """
 function distinguished_parabolics(W)
-  filter(combinations(eachindex(gens(W)))) do J
-    p=fill(1,ngens(W))
-    p[J].=0
-    p=dot.(view(W.rootdec,1:nref(W)),Ref(p))
-    2*count(iszero,p)+ngens(W)==count(isone,p)
+  l=filter(combinations(eachindex(gens(W)))) do CJ  # runs over complements
+    c0=c1=0
+    for i in 1:nref(W)
+      s=sum(j->W.rootdec[i][j],CJ;init=0)
+      if s==0 c0+=1 elseif s==1 c1+=1 end
+    end
+    2*c0+ngens(W)==c1
   end
+  reverse(map(CJ->deleteat!(collect(1:ngens(W)),CJ),l)) # take complements
 end
 
-function BalaCarterLabels(W)
+# returns list of (Richardson,BalaCarter) for W
+function BalaCarter_labels(W)
   vcat(map(parabolic_reps(W)) do J
     L=reflection_subgroup(W,J)
     map(distinguished_parabolics(L))do D
       w=fill(2,length(J));w[D].=0
-      u=copy(J);u[D]=-u[D]
+      u=copy(J);u[D].=-u[D]
       [induced_linear_form(W,L,w),u]
     end
   end...)
@@ -747,20 +751,21 @@ julia> uc.classes
  UnipotentClass(4)
 ```
 The  `show`  function  for  unipotent  classes  accepts  all the options of
-`showtable`  and  of  `charnames`.  Giving  the  option  `mizuno`  (resp.
-`shoji`)  uses  the  names  given  by  Mizuno  (resp.  Shoji) for unipotent
-classes.  Moreover,  there  is  also  an  option  `fourier` which gives the
-Springer  correspondence tensored with the  sign character of each relative
-Weyl  group,  which  is  the  correspondence obtained via a Fourier-Deligne
-transform  (here  we  assume  that  `p`  is  very  good, so that there is a
-nondegenerate  invariant bilinear form on the Lie algebra, and also one can
-identify nilpotent orbits with unipotent classes).
+`showtable`  and of `charnames`. Giving the option `mizuno` (resp. `shoji`)
+uses  the names given by  [miz77,miz80](@cite) (resp. [shoji82](@cite)) for
+unipotent  classes. Moreover, there is also an option `fourier` which gives
+the  Springer  correspondence  tensored  with  the  sign  character of each
+relative   Weyl  group,  which   is  the  correspondence   obtained  via  a
+Fourier-Deligne  transform (here we  assume that `p`  is very good, so that
+there  is a nondegenerate  invariant bilinear form  on the Lie algebra, and
+also one can identify nilpotent orbits with unipotent classes).
 
 Here is how to display the non-cuspidal part of the Springer correspondence
-of  the unipotent  classes of  `E₆` using  the notations  of Mizuno for the
-classes  and those  of Frame  for the  characters of  the Weyl group and of
-Spaltenstein  for the characters  of `G₂` (this  is convenient for checking
-our data with the original paper of Spaltenstein):
+of  the unipotent classes of `E₆` using the notations of [miz77](@cite) for
+the  classes and those  of [frame51](@cite) for  the characters of the Weyl
+group  and  of  [spalt85](@cite)  for  the  characters  of  `G₂`  (this  is
+convenient for checking our data with [spalt85](@cite) which used that same
+conventions):
 
 ```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:E6sc));
@@ -860,7 +865,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
     end
   end
   if !(p in badprimes(W)) && !haskey(classes[1],:balacarter)
-    bc=BalaCarterLabels(W)
+    bc=BalaCarter_labels(W)
 #   println("W=$W bc=$bc")
 #   println(map(u->u.dynkin,classes))
     for u in classes
@@ -1260,7 +1265,7 @@ end
 
 This  function presents  in a  different way  the information obtained from
 `ICCTable`. Let ``X̃_{u,ϕ}=q^{1/2(codim C-dim Z(𝐋 ))}X_{u,ϕ}`` where `C` is
-the  class of `u` and `Z(𝐋 )` is the center of Levi subgroup on which lives
+the  class of `u` and `Z(𝐋)` is the  center of Levi subgroup on which lives
 the cuspidal local system attached to the local system `(u,ϕ)`.
 
 Then  `XTable(uc)` gives the decomposition of the functions ``X̃_{u,ϕ}`` on
@@ -1418,16 +1423,15 @@ end
 """
 `GreenTable(uc;classes=false)`
 
-Keeping the same notations as in the description of 'XTable', this function
+Keeping the same notations as in the description of `XTable`, this function
 returns a table of the functions ``Q_{wF}``, attached to elements ``wF∈ W_𝐆
 (𝐋)⋅F`` where ``W_𝐆 (𝐋)`` are the relative weyl groups attached to cuspidal
 local  systems.  These  functions  are  defined  by ``Q_{wF}=∑_{u,ϕ} ϕ̃(wF)
-X̃_{u,ϕ}``. An point to note is that in the principal Springer series, when
-`𝐓`  is  a  maximal  torus,  the  function  ``Q_{wF}``  coincides  with the
-Deligne-Lusztig  character ``R^𝐆  _{𝐓_W}(1)``. As  for 'XTable', by default
-the  table  gives  the  values  of  the  functions  on  local  systems.  If
-`classes=true`  is  given,  then  it  gives  the  values  of  the functions
-``Q_{wF}`` on conjugacy classes.
+X̃_{u,ϕ}``.  Note that for  the principal Springer  series, when `𝐋=𝐓` is a
+maximal  torus, the function ``Q_{wF}`` coincides with the unipotent values
+of  the  Deligne-Lusztig  character  ``R^𝐆_{𝐓_W}(1)``.  As for `XTable`, by
+default  values are given  in terms of  local systems. If `classes=true` is
+given, then the values of the ``Q_{wF}`` on conjugacy classes are given.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)

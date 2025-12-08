@@ -278,10 +278,10 @@ end)
 # [S]   N.Spaltenstein,  Classes  unipotentes  et  sous-groupes  de  Borel,
 # Springer LNM 946 (1982)
 #
-#  The function is called with type=1 for type C and type=2 for type B
+#  The function is called with ctype=1 for type C and ctype=2 for type B
 #
 chevieset(:B,:UnipotentClasses,function(r,char,ctype)
-  function part2dynkin(part)
+  function part2dynkin(part) # partition -> Dynkin-Richardson diagram
     p=sort(reduce(vcat,map(d->1-d:2:d-1, part)))
     p=p[div(3+length(p),2):end]
     res= ctype==1 ? [2*p[1]] : [p[1]]

@@ -232,6 +232,16 @@ chevieset("2I", :UnipotentCharacters,function(e)
   uc
 end)
 
+chevieset("2I", :UnipotentClasses, function(e,char,ctype)
+  if e==4 
+    if char!=2 error("characteristic should be 2") end
+    chevieget(:B,:UnipotentClasses)(2,char,ctype)
+   elseif e==6 
+    if char!=3 error("characteristic should be 3") end
+    chevieget(:G2,:UnipotentClasses)(char,ctype)
+  end
+end)
+  
 chevieset("2I", :Ennola, function(e)
   if isodd(e) return SPerm() end
   uc=chevieget("2I",:UnipotentCharacters)(e)
