@@ -5,6 +5,7 @@ Pages=["chars.md"]
 ```@docs
 Chars
 CharTable
+decompose(::CharTable,::AbstractVector)
 on_chars
 charinfo
 charnames(io::IO, W::Union{Coset, Group})
