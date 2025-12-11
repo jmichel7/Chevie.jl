@@ -28,6 +28,9 @@ PermGroups.elements(::Garside.LocallyGarsideMonoid,::Integer)
 image
 conjugating_elt
 centralizer_gens
+Garside.cycle
+Garside.decycle
+preferred_prefix
 Category
 Category(::Function,::Any)
 conjcat

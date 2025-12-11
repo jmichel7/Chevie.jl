@@ -255,7 +255,7 @@ NF(15,[4₁₅])
 
 A number field can also be entered by specifying the conductor and the list
 of  generators of the stabilizer in the Galois groups. These generators can
-be entered as `M̀od` or as integers:
+be entered as `Mod` or as integers:
 ```julia-repl
 julia> NF(15,[Mod(4,15)])
 NF(15,[4₁₅])

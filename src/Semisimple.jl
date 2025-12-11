@@ -6,15 +6,16 @@ elements  in two ways. The  first way is for  finite order elements of `𝐓`,
 which over an algebraically closed field `K` are in bijection with elements
 of  `Y(𝐓)⊗ ℚ /ℤ` whose  denominator is prime to  the characteristic of `K`.
 These  are represented  as a  vector of  `Rational`s `r`  such that `0≤r<1`
-expressing  such  an  element  in  the  basis  of `Y(𝐓)`. The function `ss`
-constructs such a semisimple element from a vector of `Rational`s.
+expressing   such  an  element  in  the   basis  of  `Y(𝐓)`.  The  function
+[`ss`](@ref)  constructs  such  a  semisimple  element  from  a  vector  of
+`Rational`s.
 
 More generally a torus `𝐓` over a field `K` is isomorphic to `(Kˣ)^n` where
 `n`  is the dimension  of `𝐓`, so  a vector of  elements of `Kˣ`  is a more
 general representation which is produced by the function
-`SemisimpleElement`;  in  this  setting  the  result  of  `ss` is naturally
-interpreted  as a  `Vector{Root1}`, so  it can  also be obtained by calling
-`SemisimpleElement` which such a vector.
+[`SemisimpleElement`](@ref);   in  this  setting  the  result  of  `ss`  is
+naturally  interpreted as a `Vector{Root1}`, so  it can also be obtained by
+calling `SemisimpleElement` which such a vector.
 
 ```julia-repl
 julia> G=rootdatum(:sl,4)
@@ -97,11 +98,11 @@ SemisimpleElement{Root1}: <1,-1,1>
 julia> centralizer(G,s)
 A₃₍₁₃₎=(A₁A₁)Φ₂
 ```
-The  result is an  `ExtendedReflectionGroup`; the reflection  group part is
-the Weyl group of ``C_𝐆 ⁰(s)`` and the extended part are representatives of
-``C_𝐆  (s)``  modulo  ``C_𝐆⁰(s)``  taken  as  diagram  automorphisms of the
-reflection  part.  Here  it  is  printed  as  a  coset  ``C_𝐆 ⁰(s)ϕ`` which
-generates ``C_𝐆 (s)``.
+The  result is  an [`ExtendedReflectionGroup`](@ref);  the reflection group
+part   is  the  Weyl  group  of  ``C_𝐆⁰(s)``  and  the  extended  part  are
+representatives   of  ``C_𝐆(s)``   modulo  ``C_𝐆⁰(s)``   taken  as  diagram
+automorphisms  of the reflection part. Here it  is printed as a coset ``C_𝐆
+⁰(s)ϕ`` which generates ``C_𝐆(s)``.
 """
 module Semisimple
 using ..Chevie
@@ -148,6 +149,20 @@ function Base.show(io::IO,W::ExtendedCox)
   end
 end
 
+"""
+`ExtendedReflectionGroup(W,mats)`
+
+`ExtendedReflectionGroup(W,perms)`
+
+An  extended reflection  group is  the semi-direct  product of a reflection
+group `W` on the space `V` by a group of diagram automorphisms (elements of
+`GL(V)`  which  normalize  `W`).  It  is  represented  as  a  collection of
+reflection cosets which generate it.
+
+In  the  first  form,  `mats`  are  the  automorphisms given as elements of
+`GL(V)`.  In  the  second  form,  the  automorphisms  are  specified by the
+permutations they induce on the roots of `W`.
+"""
 ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractMatrix{<:Integer}})=ExtendedCox(W,mats)
 ExtendedReflectionGroup(W,mats::AbstractMatrix{<:Integer})=ExtendedCox(W,[mats])
 ExtendedReflectionGroup(W)=ExtendedReflectionGroup(W,AbstractMatrix{<:Integer}[])
@@ -163,6 +178,12 @@ function ExtendedReflectionGroup(W,mats::Vector{Any})
 end
 
 #----------------------------------------------------------------------------
+"""
+`SemisimpleElement(W,v)`
+
+constructs  a semisimple element  of the reductive  group associated to the
+Weyl group `W` whose coefficients on `Y(𝐓)` are specified by `v`.
+"""
 struct SemisimpleElement{T}
   W::FiniteCoxeterGroup
   v::Vector{T}
@@ -178,6 +199,18 @@ Base.isone(a::SemisimpleElement)=all(isone,a.v)
 Base.cmp(a::SemisimpleElement,b::SemisimpleElement)=cmp(a.v,b.v)
 Base.isless(a::SemisimpleElement,b::SemisimpleElement)=cmp(a,b)==-1
 
+"""
+`ss(W,v)`
+
+constructs  a semisimple  element of  finite order  of the  reductive group
+associated  to  the  Weyl  group  `W`.  This  is specified by an element of
+`Y(𝐓)⊗ℚ/ℤ` specified by a vector of rational `v` (which are taken `modZ`).
+The elements of `v` are displayed as `Root1`.
+```julia-repl
+julia> ss(rootdatum(:sl,4),[1//3,1//4,3//4,2//3])
+SemisimpleElement{Root1}: <ζ₃,ζ₄,ζ₄³,ζ₃²>
+```
+"""
 ss(W::FiniteCoxeterGroup,v::AbstractVector{<:Number})=
                       SemisimpleElement(W,map(x->Root1(;r=x),v))
 
@@ -253,9 +286,9 @@ torsion_subgroup(T::SubTorus,n)=Group(map(x->ss(T.group,x//n),eachrow(T.gens)))
 `fixed_points(T::SubTorus,m)`
 
 Let `σ` be an automorphism of `T` represented as a matrix `m∈ GL(X(T))`.
-The function returns `(T^{σ0},σ-stable representatives of T/T^{σ0})`
+The function returns ``(T^{σ0},σ``-stable representatives of ``T/T^{σ0})``
 
-It uses the formula in  [ss; 1.2(1)](@cite)  for `T/T^{σ0}` which is
+It uses the formula in  [ss; 1.2(1)](@cite)  for ``T/T^{σ0}`` which is
 `Ker(1+σ+σ^2+...)/Im(σ-Id)`.
 """
 function fixed_points(T::SubTorus,m)

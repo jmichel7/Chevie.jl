@@ -4,6 +4,8 @@ Pages=["semisimple.md"]
 ```
 ```@docs
 Semisimple
+SemisimpleElement
+ss
 quasi_isolated_reps(::FiniteCoxeterGroup)
 isisolated
 torsion_subgroup
@@ -12,4 +14,5 @@ centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
 semisimple_centralizer_representatives
 structure_rational_points_connected_centre
 fixed_points
+ExtendedReflectionGroup
 ```

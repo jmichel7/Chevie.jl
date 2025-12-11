@@ -4,17 +4,17 @@ are  the braid and dual braid monoids. They have groups of fractions, which
 in  both above examples is the braid  group. We implement braid groups as a
 special case of a general implementation of Garside monoids and groups.
 
-To  define  Garside  monoids,  we  first  introduce  some  vocabulary about
-divisibility  in monoids. A *left-divisor* of `x`  is a `d` such that there
-exists  `y` with `x=dy` (and then we say  that `x` is a *right multiple* of
-`d`,  and write `d≼ x`). We say that a monoid `M` is left cancellable if an
-equality  `dx=dy`  implies  `x=y`.  We define symmetrically right-divisors,
-left multiples, right cancellability and the symbol `≽`. We say that `x` is
-an  *atom* if `1` and `x` are its only left or right divisors. A *left gcd*
-of  `x` and `y` is a  common left divisor `d` of  `x` and `y` such that any
-other common left-divisor is a left-divisor of `d`. Similarly a *right lcm*
-of  `x` and `y` is  a common multiple which  is a left-divisor of any other
-common multiple.
+Let  us first  introduce some  vocabulary about  divisibility in monoids. A
+*left-divisor*  of `x` is a `d` such that there exists `y` with `x=dy` (and
+then  we say that `x` is  a *right multiple* of `d`,  and write `d≼ x`). We
+say  that a monoid `M`  is left cancellable if  an equality `dx=dy` implies
+`x=y`.  We  define  symmetrically  right-divisors,  left  multiples,  right
+cancellability  and the symbol `≽`. We say that `x` is an *atom* if `1` and
+`x`  are its only left or right divisors. A  *left gcd* of `x` and `y` is a
+common  left  divisor  `d`  of  `x`  and  `y`  such  that  any other common
+left-divisor  is a left-divisor of `d`. Similarly  a *right lcm* of `x` and
+`y`  is  a  common  multiple  which  is  a left-divisor of any other common
+multiple.
 
 We  call *Garside* a monoid `M` which:
   * is left and right cancellable.
@@ -27,35 +27,35 @@ Garside  elements are not  unique, but there  is a unique  minimal one (for
 divisibility);  we assume that  a Garside element  `Δ` has been chosen. The
 divisors  of `Δ` are called  the *simples* of `M`.  A Garside monoid embeds
 into  its group of fractions, which is called a *Garside group*; the monoid
-defines  a *Garside structure* for the group of fractions. A group can have
+defines  a *Garside structure* for the group of fractions. A group may have
 several  different Garside structures, for  instance braid groups of finite
 Coxeter groups have an ordinary and a dual braid monoid.
 
-We  implement more generally *locally Garside* monoids, which have the same
-axioms, excepted lcms do not always exist, but exist if any common multiple
-exists. In general they do not have Garside elements; the set of simples is
-not  defined by a Garside  element, but by the  condition that they contain
-the   atoms  and   are  closed   under  lcms   and  taking   divisors, see
-[bdm01](@cite);  each  element  is  still divisible by finitely
-many  simples, but the set simples can be infinite. The main example is the
-Artin  monoid of an infinite Coxeter group. It is not known whether locally
+We  implement more generally *locally* Garside monoids, which have the same
+axioms,  excepted the  existence of  Garside elements  and that lcms do not
+always  exist, but exist if any common  multiple exists. The set of simples
+is not defined by a Garside element, but by the condition that they contain
+the   atoms  and   are  closed   under  lcms   and  taking   divisors,  see
+[bdm01](@cite);  each element is still  divisible by finitely many simples,
+but  the set  of simples  may be  infinite. The  main example  is the Artin
+monoid  of  an  infinite  Coxeter  group.  It  is not known whether locally
 Garside  monoids embed in their group  of fractions, although this has been
-proved  for  Artin  monoids  of  Coxeter  groups  by [paris01](@cite). Thus
-computing  in the monoid does not help for computing in the group; only the
-monoid is implemented here.
+proved  for Artin  monoids of  Coxeter groups  by [paris01](@cite). In this
+case  computing in the monoid does not  help for computing in the group; we
+implement for these cases only the monoid.
 
 There  is another  generalization, *quasi-Garside  monoids*, where we relax
 the  axiom  that  an  element  has  finititely  many divisors (there may me
-infinitely  atoms).  We  do  not  implement  this but the package `AffineA`
-implements,  following the work of François Digne, the dual braid monoid of
-the affine Coxeter group `W(Ãₙ)` which is quasi-Garside.
+infinitely atoms). We do not implement this in this module, but the package
+`AffineA`  implements, following the work of François Digne, the dual braid
+monoid of the affine Coxeter group `W(Ãₙ)` which is quasi-Garside.
 
 What allows computing with Garside and locally Garside monoids, and Garside
 groups, is the fact that their elements admit normal forms --- these normal
 forms were exhibited for braid monoids of Coxeter groups by [del72](@cite),
 who extended earlier work of [bs72](@cite) and [gar69](@cite):
 
-  1. Let `M` be a locally Garside monoid. Then for any `b∈ M` there is a unique  maximal (for divisibility) simple left-divisor `α(b)` of `b`. In a Garside monoid it is the `leftgcd(b,Δ)`.
+  1. Let `M` be a locally Garside monoid. Then for any `b∈ M` there is a unique  maximal (for divisibility) simple left-divisor `α(b)` of `b`. In a Garside monoid it is the [`leftgcd`](@ref)`(b,Δ)`.
 
   2. Let `M` be a Garside monoid with Garside element `Δ` and group of fractions `G`. Then for any `x∈  G`, for large enough `i` we have `Δⁱx∈ M`.
 
@@ -65,10 +65,10 @@ define   `ω(x)`  by   `x=α(x)ω(x)`,  then   the  normal   form  of  `x`  is
 `α(x)α(ω(x))α(ω^2(x))…`.  For locally Garside monoids  we use this sequence
 of  simples to represent elements of `M`. When  `M` is Garside we use 2. to
 represent  any element of `G`:  given `x∈ G` we  compute the smallest power
-`i`  such that `Δⁱ x∈  M`, and we represent  `x` by the pair `(-i,Δⁱx)`. We
-are  thus reduced to the case where `x∈  M`, not divisible by `Δ`, where we
-represent `x` by the sequence of simples that make up its normal form (this
-sequence thus does not contain the identity or `Delta`). 
+`i`  such that `Δⁱx∈ M`,  and we represent `x`  by the pair `(-i,Δⁱx)`. The
+second  term is an element of `M`,  not divisible by `Δ`, that we represent
+by the sequence of simples that make up its normal form (this sequence thus
+does not contain the identity or `Delta`).
 
 In  our implementation a  Garside monoid is  a parametrized type whose most
 general  instance is the abstract  type `LocallyGarsideMonoid{T}` where `T`
@@ -115,10 +115,9 @@ julia> w=B(1,2,3,4) # represents 𝐬₁𝐬₂𝐬₃𝐬₄
 1234
 ```
 The  operations `*`  and `^`  (exponentiation) are  implemented for locally
-Garside  elements (and also multiplication of a Garside element by a simple)
-and  in addition  the operations  `\\` and  '/' (left and
-right  division),  `inv`  and  `^`  (inverse  and  conjugation) for Garside
-elements (and conjugation of a Garside element by a simple).
+Garside  elements (and also multiplication of an element by a simple), and,
+in the Garside case, `\\` and `/` (left and right division), `inv` and `^`,
+and conjugation of an element by a simple.
 ```julia-repl
 julia> w*w
 1213243.4
@@ -167,11 +166,12 @@ julia> B(-4,-3,-2,-1) # another way of entering the same element
 ```
 How  an  element  of  a  Garside  group  is  printed  is  controlled by the
 `IOcontext`  attribute  ':greedy'.  By  default,  elements  are  printed as
-fractions `a⁻¹b` where `a` and `b` have no left common divisor. Each of `a`
-and  `b` is printed  using its left-greedy  normal form, that  is a maximal
-power of the Garside element followed by the rest. One can print the entire
-element   in  the  left-greedy  normal  from  by  setting  the  `IOContext`
-`:greedy=>true`; with the same `w` as above we have:
+fractions `a⁻¹b` where `a` and `b` have no left common divisor, and `a` and
+`b`  are printed using the left-greedy normal form, that is a maximal power
+of  the Garside element followed by the  rest. One can print the element in
+the  left-greedy  normal  from  without  writing  it as a fraction first by
+setting  the `IOContext`  `:greedy=>true`; with  the same  `w` as  above we
+have:
 
 ```julia-repl
 julia> xrepr(w^-1,greedy=true,limit=true)
@@ -193,8 +193,8 @@ julia> repr(w^-1)
 In  general elements  of a  Garside monoid  are displayed  as a list of the
 indices of their constituting atoms.
 
-We  will  now  describe  the  dual  braid  monoid. First we define interval
-monoids.  Given a group `W` and a set `S` of generators of `W` as a monoid,
+We  now describe the  dual braid monoid.  First we define interval monoids.
+Given a group `W` and a set `S` of generators of `W` as a monoid, for `w∈W`
 we  define the  length `l_S(w)`  as the  minimum number  of elements of `S`
 needed  to write `w`.  We then define  left-divisors of `x`  as those `d∈W`
 such  that there exists `y` with  `x=dy` and `l_S(d)+l_S(y)=l_S(x)`. We say
@@ -202,53 +202,52 @@ that  `w∈ W` is balanced if its set of left and right divisors coincide; in
 this  case we denote  this set by  `[1,w]`, an *interval*  for the poset of
 `S`-divisibility.  We say that `w`  is Garside for `l_S`  if it is balanced
 and  `[1,w]` is a lattice (where upper and lower bounds are lcms and gcds),
-which generates `W`. Then we have the theorem:
+and generates `W`. Then we have the theorem:
 
-Suppose  `w` is Garside for the `l_S`.  Then the monoid `M` with generators
-`[1,w]`   and   relations   `xy=z`   whenever   `xy=z`  holds  in  `W`  and
-`l_S(x)+l_S(y)=l_S(z)`, is a Garside monoid, with simples `[1,w]` and atoms
-`S`.  It is called  the interval monoid  defined by `l_S`  and the interval
-`[1,w]`.
+If `w` is Garside for the `l_S`, the monoid `M` with generators `[1,w]` and
+relations  `xy=z` whenever `xy=z` holds  in `W` and `l_S(x)+l_S(y)=l_S(z)`,
+is  a Garside monoid, with simples `[1,w]`  and atoms `S`. It is called the
+interval monoid defined by `l_S` and the interval `[1,w]`.
 
 The  Artin-Tits braid monoid  is an interval  monoid by taking  for `S` the
 Coxeter  generators, in which case `l_S`  is the Coxeter length, and taking
 for `w` the longest element of `W`. The dual monoid, constructed by Birman,
 Ko  and  Lee  for  type  `A`  and  by Bessis for all well-generated complex
 reflection  groups, is obtained in  a similar way, by  taking this time for
-`w`  a Coxeter element,  for `l_S` the  reflection length (see `reflength`)
-and  for `S_S` the  reflections which divide  `w` for the reflection length
-(for  Coxeter groups all  reflections divide a  Coxeter element but this is
-not  the case for well-generated complex reflection groups); the simples of
-the  dual monoid  are of  cardinality the  generalized Catalan numbers (see
-[`catalan`](@ref)).  An interval  monoid has  naturally an inverse morphism
-from `M` to `W`, called 'image' which is the quotient map from the interval
-monoid to `W` which sends back simple braids to `[1,w]`.
+`w` a Coxeter element, for `l_S` the reflection length (see
+[`reflection_length`](@ref))  and for atoms  the reflections which  divide `w` for
+the  reflection length (for Coxeter groups all reflections divide a Coxeter
+element  but this  is not  the case  for well-generated  complex reflection
+groups);  the simples of the dual monoid are of cardinality the generalized
+Catalan numbers (see [`catalan`](@ref)). An interval monoid has naturally a
+morphism  [`image`](@ref) `M→W`, which is the quotient map which sends back
+simple braids to `[1,w]`.
 
 A last pertinent notion is *reversible* monoids. Since we store left normal
 forms,  it is easy to compute left lcms and gcds, but hard to compute right
 lcms  and gcds. But this becomes easy to  do if the monoid has an operation
 'reverse',  which has the property that 'a' is a left-divisor of 'b' if and
-only  if 'reverse(a)'  is a  right-divisor  of 'reverse(b)'. This holds for
+only  if 'reverse(a)'  is a  right-divisor of  'reverse(b)'. This holds for
 Artin-Tits  and dual braid monoids of groups generated by true reflections;
 Artin-Tits monoids have a `reverse` operation which consists of reversing a
-word,  written as  a list  of atoms.  The dual  monoid also has a `reverse`
-operation  defined in the  same way, but  this operation changes monoid: it
-goes  from the dual monoid  for the Coxeter element  `w` to the dual monoid
-for  the Coxeter element  `w⁻¹`. The operations  'rightlcm' and 'rightgcd',
-and  some other algorithms, have faster implementations if the monoid has a
+word,  written  as  a  list  of  atoms.  The above dual monoids also have a
+`reverse`  operation defined  in the  same way,  but this operation changes
+monoid:  it goes from  the dual monoid  for the Coxeter  element `w` to the
+dual  monoid for the  Coxeter element `w⁻¹`.  The operations 'rightlcm' and
+'rightgcd' for non-simple elements are only implemented if the monoid has a
 `reverse` operation.
 
 A  finite Coxeter group is also a  reflection group in a real vector space,
 thus  in its complexified `V`, and `B` also has a topological definition as
 the  fundamental group of  the space `Vʳᵉᵍ/W`,  where `Vʳᵉᵍ` is  the set of
-elements  of `V` which  are not fixed  by any non-identity  element of `S`.
-This  definition of  a braid  group can  be extended  to any finite complex
+elements  of  `V`  which  are  not  fixed by any non-identity element. This
+definition  of  a  braid  group  can  be  extended  to  any  finite complex
 reflection  group, and following  the work of  Bessis we also implement the
 dual braid monoid of well-generated complex reflection groups.
 
 This  module implements also  functions to solve  the conjugacy problem and
-compute  centralizers  in  Garside  groups,  following  the work of Franco,
-Gebhardt and Gonzalez-Meneses.
+compute   centralizers   in   Garside   groups,   following   the  work  of
+[fg03](@cite) and [gg10](@cite).
 
 Two  elements `w` and `w'` of a monoid  `M` are *conjugate* in `M` if there
 exists  `x∈ M` such that `wx=xw'`; if  `M` satisfies the Öre conditions, it
@@ -263,23 +262,22 @@ in  the group  of fractions  `G` then  they are  conjugate in `M`, since if
 `wx=xw'`  then there is a  power `Δⁱ` which is  central and such that `xΔⁱ∈
 M`. Then `wxΔⁱ=xΔⁱ w'` is a conjugation in `M`.
 
-The crucial observation for solving the conjugacy problem in Garside groups
-is  to introduce `inf(w):=sup{i such that Δ⁻ⁱw∈ M}` and `sup(w):=inf{i such
-that  w⁻¹Δⁱ∈ M}`, and to  notice that the number  of conjugates of `w` with
-same  `inf` and  `sup` as  `w` is  finite (since  our monoids have a finite
-number  of simples).  Further, a  theorem of  Birman shows that the maximum
-`inf` and minimum `sup` in a conjugacy class can be achieved simultaneously
-(by iterated cycling and decycling. See `Garside.cycle` and
-`Garside.decycle`); the elements achieving this are called the super summit
-set  of `w`, denoted `SS(w)`.  Thus a way to  determine if `w` and `w'` are
-conjugate  is to find  representatives `w₁∈SS(w)`, `w'₁∈SS(w')`  of them in
-their  super summit set, and then enumerate  `SS(w)` and see if it contains
-`w'₁`.  This can also be used to  compute the centralizer of an element: if
-we  consider  the  super  summit  set  as  a category whose objects are its
-elements  and  morphisms  are  the  conjugations  by  simple  elements, the
-centralizer  of `w₁` is given by the  endomorphisms of that object. For the
-implementation   of  finite  categories  we  use,  see  the  docstrings  of
-`Category` and `endomorphisms`.
+The crucial notions for solving the conjugacy problem in Garside groups are
+`inf(w):=sup{i such that Δ⁻ⁱw∈ M}` and `sup(w):=inf{i such that w⁻¹Δⁱ∈ M}`:
+the  number of conjugates of `w` with same `inf` and `sup` as `w` is finite
+(since  our monoids have a finite number of simples). Further, a theorem of
+Birman  shows that the maximum `inf` and minimum `sup` in a conjugacy class
+can  be  achieved  simultaneously  (by  iterated cycling and decycling. See
+[`Garside.cycle`](@ref)   and   [`Garside.decycle`](@ref));   the  elements
+achieving  this are  called the  super summit  set of `w`, denoted `SS(w)`.
+Thus  a  way  to  determine  if  `w`  and  `w'`  are  conjugate  is to find
+representatives  `w₁∈SS(w)`, `w'₁∈SS(w')`,  and then  enumerate `SS(w)` and
+see  if it contains `w'₁`. This can also be used to compute the centralizer
+of  an element:  if we  consider the  super summit  set as a category whose
+objects  are  its  elements  and  morphisms  are the conjugations by simple
+elements,  the centralizer  of `w₁`  is given  by the endomorphisms of that
+object.   For  the  implementation   of  finite  categories   we  use,  see
+[`Category`](@ref) and [`endomorphisms`](@ref).
 
 We illustrate this on an example:
 ```julia-repl
@@ -318,15 +316,15 @@ julia> C.obj # the elements of SS(b). Notice it contains c
  14.143
 ```
 
-There   is  a   faster  solution   to  the   conjugacy  problem   given  in
-[gebgon10](@cite):   for  each  `b∈M`,  they  define  a  particular  simple
-left-divisor  of `b`, its *preferred prefix*  such that the operation slide
-which  cyclically  conjugates  `b`  by  its preferred prefix, is eventually
-periodic,  and the period is  contained in the super  summit set of `x`. We
-say  that `x` is  in its sliding  circuit if some  iterated slide of `x` is
-equal  to `x`. The  set of sliding  circuits in a  given conjugacy class is
-smaller  than  the  super  summit  set,  thus allows to solve the conjugacy
-problem faster. Continuing from the above example,
+There is a faster solution to the conjugacy problem given in [gg10](@cite):
+for  each `b∈M`, they  define a particular  simple left-divisor of `b`, its
+[`preferred_prefix`](@ref)  such that the  operation slide which cyclically
+conjugates  `b` by  its preferred  prefix, is  eventually periodic, and the
+period  is contained in the super summit set  of `x`. We say that `x` is in
+its  sliding circuit if some iterated slide of `x` is equal to `x`. The set
+of  sliding circuits in a  given conjugacy class is  smaller than the super
+summit  set, thus allows to solve  the conjugacy problem faster. Continuing
+from the above example,
 
 ```julia-repl
 julia> word(W,preferred_prefix(b))
@@ -346,8 +344,8 @@ julia> C.obj # the elements of the sliding circuits
  1343.1
 ```
 
-Finally,  we have implemented  Hao Zheng's algorithm  to extract roots in a
-Garside monoid:
+Finally, we have implemented the algorithm of [zheng2006](@cite) to extract
+roots in a Garside monoid:
 
 ```julia-repl
 julia> W=coxgroup(:A,3)

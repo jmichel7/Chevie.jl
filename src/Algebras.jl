@@ -202,7 +202,7 @@ Base.hash(a::AlgebraElt,k::UInt)=hash(a.d,k)
 Base.one(a::AlgebraElt)=one(a.A)
 
 function LaurentPolynomials.coefficients(a::AlgebraElt)
-  v=fill(zero(coefftype(a.A)),dim(a.A))
+  v=fill(zero(valtype(a.d)),dim(a.A))
   for (i,c) in a.d v[i]=c end
   v
 end
@@ -230,7 +230,7 @@ end
 basismult(A::FiniteDimAlgebra,i::Integer,j::Integer)=A.multable[i,j]
 
 function Base.:*(a::AlgebraElt, b::AlgebraElt)
-  res=Pair{Int,promote_type(coefftype(a.A),coefftype(b.A))}[]
+  res=Pair{Int,promote_type(valtype(a.d),valtype(b.d))}[]
   for (i,c) in a.d, (i1,c1) in b.d
     append!(res,[k=>c*c1*c2 for (k,c2) in basismult(a.A,i,i1)])
   end

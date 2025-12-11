@@ -60,7 +60,7 @@ rank  `n`  and  odd  defect  parametrize  unipotent characters of `Sp₂ₙ` or
 `SO₂ₙ₊₁`.
 
 To parametrize unipotent characters of spetses we need another statistic on
-symbols, the *Malle-defect* defined by Malle as
+symbols, the *Malle-defect* defined in [mal95](@cite) as
 `mod(binomial(e,2)*div(sum(length.(S)),e)-dot(O:e-1,length.(S)),e)`.  It is
 invariant  under  shift;  it  is  invariant  under circular permutation for
 symbols  of content `O` but not for  symbols of content `1`; for these only
@@ -68,7 +68,7 @@ one circular permutation has Malle-defect `0`.
 
 `e`-symbols  of rank `n` and  content `1` parameterize unipotent characters
 of the spets `G(e,1,n)`. The principal series (in bijection with characters
-of  the reflection group) is parametrized  by symbols such that tje reduced
+of  the reflection group) is parametrized  by symbols such that the reduced
 ones have shape `[1,0,…,0]`.
 
 Unipotent   characters  of   the  spets   `G(e,e,n)`  are  parametrized  by
@@ -753,10 +753,10 @@ end
 returns  the union of the  [lusp85](@cite) ``X̃^{ρ-s,s}_{n,d}`` for all `d`
 even  when `even=true`,  all `d`  odd otherwise;  these symbols parametrize
 local  systems  on  unipotent  conjugacy  classes  for classical groups. In
-[lus04;  13.2] the notation is ``{}^ρ X^s_{n,d}``.  The result is a list of
-lists,  each one corresponding to a similarity class (which correspond to a
-given  conjugacy class for  the support). If  `s==0`, only positive defects
-are considered.
+[lus04;  13.2](@cite) the notation  is ``{}^ρ X^s_{n,d}``.  The result is a
+list  of  lists,  each  one  corresponding  to  a  similarity  class (which
+correspond  to a  given conjugacy  class for  the support). If `s==0`, only
+positive defects are considered.
 
   - `XSP(2,1,n)` gives L-S symbols for Sp₂ₙ
   - `XSP(4,2,n)` gives L-S symbols for Sp₂ₙ in char.2

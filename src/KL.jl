@@ -18,28 +18,28 @@
 This  module defines Kazhdan-Lusztig polynomials and bases, and computes
 W-graphs and asymptotic algebras.
 
-Let  `ℋ ` be  the Iwahori-Hecke algebra  of a Coxeter  system `(W,S)`, with
+Let  `H` be  the Iwahori-Hecke algebra  of a Coxeter  system `(W,S)`, with
 quadratic  relations `(Tₛ-uₛ₀)(Tₛ-uₛ₁)=0`  for `s∈  S`. If  `-uₛ₀uₛ₁` has a
 square  root  `wₛ`,  we  can  scale  the  basis  `Tₛ`  to  get  a new basis
 `tₛ=-Tₛ/wₛ`    with   quadratic    relations   `(tₛ-vₛ)(tₛ+vₛ⁻¹)=0`   where
 `vₛ=wₛ/uₛ₁`.   The  most  general  case   when  Kazhdan-Lusztig  bases  and
 polynomials  can be defined is when the parameters `vₛ` belong to a totally
 ordered  abelian group `Γ`  for multiplication, see  [lus83](@cite). We set
-`Γ⁺= {γ∈ Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈ Γ⁺}={γ∈ Γ∣γ<0}`.
+`Γ⁺= {γ∈ Γ∣γ>1}` and `Γ⁻={γ⁻¹∣γ∈ Γ⁺}={γ∈ Γ∣γ<1}`.
 
-Thus  we assume `ℋ ` defined over the ring `ℤ[Γ]`, the group algebra of `Γ`
-over  `ℤ`, and the quadratic  relations of `ℋ `  associate to each `s∈ S` a
+Thus  we assume `H` defined over the ring `ℤ[Γ]`, the group algebra of `Γ`
+over  `ℤ`, and the quadratic  relations of `H `  associate to each `s∈ S` a
 `vₛ∈  Γ⁺` such that  `(tₛ-vₛ)(tₛ+vₛ⁻¹)=0`. We also  set `qₛ=vₛ²` and define
 the  basis `Tₛ=vₛtₛ` with quadratic relations `(Tₛ-qₛ)(Tₛ+1)=0`; for `w∈ W`
 with reduced expression `w=s₁…sₙ` we define ``q_w∈ Γ⁺`` by
 ``q_w^½=v_{s₁}…v_{sₙ}`` and let ``q_w=(q_w^½)²``; we have ``T_w=q_w^½t_w``.
 
-We  define the bar involution on `ℋ `  by linearity: on `ℤ[Γ]` we define it
-by  ``\\overline{∑_{γ∈ Γ}a_γγ}= ∑_{γ∈ Γ} a_γ γ⁻¹`` and we extend it to `ℋ `
+We  define the bar involution on `H`  by linearity: on `ℤ[Γ]` we define it
+by  ``\\overline{∑_{γ∈ Γ}a_γγ}= ∑_{γ∈ Γ} a_γ γ⁻¹`` and we extend it to `H`
 by  ``\\overline T_s=T_s^{-1}`` (equivalently ``\\overline t_s=t_s^{-1}``).
 Then the Kazhdan-Lusztig basis ``C^′_w`` is defined as the only basis of `ℋ
 `  stable by  the bar  involution and  congruent to  ``t_w`` modulo ``∑_{w∈
-W}Γ⁻.t_w``.
+W}Γ⁻⋅t_w``.
 
 The  basis  ``C^′_w``  can  be  computed  as  follows.  We  define  elements
 ``R_{x,y}``  of `ℤ[Γ]` by  ``T_y⁻¹=∑_x \\overline{R_{x,y⁻¹}} q_x⁻¹T_x``. We
@@ -59,16 +59,15 @@ for  the case of unequal parameters was  written around 1999 by F.Digne and
 J.Michel.  The Kazhdan-Lusztig  bases are  computed starting  from the `C′`
 basis.
 
-When  the `ℤ[Γ]` is a  Laurent polynomial ring the  bar operation is taking
-the  inverse of  the variables,  and truncation  is keeping terms of degree
-smaller or equal to that of `ν`. It is possible to use arbitrary groups `Γ`
-as   long   as   methods   `bar`:``∑_{γ∈   Γ}   a_γγ↦  ∑_{γ∈  Γ}  a_γγ⁻¹``,
-`positive_part`  : ``∑_{γ∈  Γ} a_γγ↦  ∑_{γ≥ 1}  a_γγ`` and `negative_part`:
-``∑_{γ∈  Γ}  a_γγ  ↦  ∑_{γ≤  1}  a_γγ``  have been defined on `ℤ[Γ]`. These
-operations   will   be   used   internally   by  the  programs  to  compute
-Kazhdan-Lusztig bases.
+When  `ℤ[Γ]` is a Laurent  polynomial ring the bar  operation is taking the
+inverse of the variables, and truncation is keeping terms of degree smaller
+or equal to that of `ν`. It is possible to use arbitrary groups `Γ` as long
+as  methods  `bar`:``∑_{γ∈  Γ}  a_γγ↦  ∑_{γ∈ Γ} a_γγ⁻¹``, `positive_part` :
+``∑_{γ∈  Γ} a_γγ↦  ∑_{γ≥ 1}  a_γγ`` and  `negative_part`: ``∑_{γ∈ Γ} a_γγ ↦
+∑_{γ≤  1} a_γγ``  have been  defined on  `ℤ[Γ]`. These  operations are used
+internally by the programs which compute Kazhdan-Lusztig bases.
 
-We provide also functionality to study the Kazhdan-Lusztig left cells
+We provide also functionality to compute the Kazhdan-Lusztig left cells
 (for the equal-parameter Hecke algebra).
 
 ```julia-repl
@@ -794,8 +793,8 @@ end
 `left_cells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
 for the 1-parameter Hecke algebra `hecke(W,q)`
 
-The program uses precomputed data (see [gh14](@cite)) for exceptional types
-and for type `:A`, so is quite fast for these types (it takes 13 seconds to
+The  program uses precomputed data  [gh14](@cite) for exceptional types and
+for  type `:A`, so  is quite fast  for these types  (it takes 13 seconds to
 compute  the 101796 left cells for type  `E₈`). For other types, left cells
 are  computed from  first principles,  thus computing  many Kazhdan-Lusztig
 polynomials.  It takes 30  seconds to compute  the left cells  of `D₆`, for
