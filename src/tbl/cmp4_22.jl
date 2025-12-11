@@ -1478,25 +1478,44 @@ chevieset(:G4_22, :ParamSpecialization, function (ST, para)
     p=root.(p)
     vcat(p, -p)
   end
-  if     ST==4  [[1,-1], E.(3,0:2), para[1]]
-  elseif ST==5  [[1,-1], para[1], para[2]]
-  elseif ST==6  [para[1], E.(3,0:2), para[2]]
-  elseif ST==7  para
-  elseif ST==8  [[1,-1], E.(3,0:2), para[1]]
-  elseif ST==9  [para[1], E.(3,0:2), para[2]]
-  elseif ST==10 [[1,-1], para[1], para[2]]
-  elseif ST==11 para
-  elseif ST==12 [para[1], E.(3,0:2), E.(4,0:3)]
-  elseif ST==13 [para[2], E.(3,0:2), f(para[1])]
-  elseif ST==14 [para[1], para[2], E.(4,0:3)]
-  elseif ST==15 [para[1], para[2], f(para[3])]
-  elseif ST==16 [[1,-1], E.(3,0:2), para[1]]
-  elseif ST==17 [para[1], E.(3,0:2), para[2]]
-  elseif ST==18 [[1,-1], para[1], para[2]]
-  elseif ST==19 para
-  elseif ST==20 [[1,-1], para[1],E.(5,0:4)]
-  elseif ST==21 [para[1], para[2],E.(5,0:4)]
-  elseif ST==22 [para[1],E.(3,0:2),E.(5,0:4)]
+  if     ST==4  
+    [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==5  
+    [[1,-1], para[1], para[2]]
+  elseif ST==6  
+    [para[1], E.(3,0:2), para[2]]
+  elseif ST==7  
+    para
+  elseif ST==8  
+    [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==9  
+    [para[1], E.(3,0:2), para[2]]
+  elseif ST==10 
+    [[1,-1], para[1], para[2]]
+  elseif ST==11 
+    para
+  elseif ST==12 
+    [para[1], E.(3,0:2), E.(4,0:3)]
+  elseif ST==13 
+    [para[2], E.(3,0:2), f(para[1])]
+  elseif ST==14 
+    [para[1], para[2], E.(4,0:3)]
+  elseif ST==15 
+    [para[1], para[2], f(para[3])]
+  elseif ST==16 
+    [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==17 
+    [para[1], E.(3,0:2), para[2]]
+  elseif ST==18 
+    [[1,-1], para[1], para[2]]
+  elseif ST==19 
+    para
+  elseif ST==20 
+    [[1,-1], para[1],E.(5,0:4)]
+  elseif ST==21 
+    [para[1], para[2],E.(5,0:4)]
+  elseif ST==22 
+    [para[1],E.(3,0:2),E.(5,0:4)]
   end
 end)
 
