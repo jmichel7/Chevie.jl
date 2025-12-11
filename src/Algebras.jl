@@ -701,12 +701,12 @@ julia> A=GrothendieckRing(coxsym(3))
 GrothendieckRing(𝔖 ₃,Int64)
 
 julia> basis(A).*permutedims(basis(A))
-3×3 Matrix{AlgebraElt{Chevie.Algebras.GrothendieckRing{Int64}, Int64}}:
+3×3 Matrix{AlgebraElt{GrothendieckRing{Int64}, Int64}}:
  [3]    [21]            [111]
  [21]   [111]+[21]+[3]  [21]
  [111]  [21]            [3]
 
-julia> A=GrothendieckRing(W,FFE{2})
+julia> A=GrothendieckRing(coxsym(3),FFE{2})
 GrothendieckRing(𝔖 ₃,FFE{2})
 
 julia> radical(A)
@@ -805,7 +805,7 @@ julia> A=GroupAlgebra(W)
 Algebra(Group((1,2)),Int64)
 
 julia> basis(A)
-2-element Vector{AlgebraElt{Chevie.Algebras.GroupAlgebra{Int64, Perm{Int16}, PermGroups.PG{Int16}}, Int64}}:
+2-element Vector{AlgebraElt{GroupAlgebra{Int64, Perm{Int16}, PermGroups.PG{Int16}}, Int64}}:
  e
  e₁
 ```

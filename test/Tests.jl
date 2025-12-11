@@ -1823,7 +1823,7 @@ test[:hecke3d4]=(applicable=function(W)
 function TG4_22index(W)
   t=refltype(W)[1]
   O=crg(Chevie.G4_22Generic(t.ST))
-  e=Chevie.Embed4_22[t.ST-3]
+  e=Chevie.Data4_22.Embed[t.ST-3]
   c=map(c->vcat(map(x->e[x],c)...),word.(conjugacy_classes(W)))
   c=map(x->position_class(O,O(x...)),c)
   l=map(x->findfirst(i->refls(O,i)==O(x...),eachindex(roots(O))),e)

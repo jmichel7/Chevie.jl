@@ -1,9 +1,8 @@
-JULIA=1.12.2
 test: *.jl
-	~/julia-$(JULIA)/bin/julia ../tools/gentest.jl *.jl
+	julia ../tools/gentest.jl *.jl
 	mv runtests.jl ../test
-	~/julia-$(JULIA)/bin/julia ../test/runtests.jl
+	julia ../test/runtests.jl
 some: $(FILES)
-	~/julia-$(JULIA)/bin/julia ../tools/gentest.jl $(FILES)
-	~/julia-$(JULIA)/bin/julia runtests.jl
+	julia ../tools/gentest.jl $(FILES)
+	julia runtests.jl
 	rm runtests.jl
