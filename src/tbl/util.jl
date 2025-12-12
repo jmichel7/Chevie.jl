@@ -15,6 +15,7 @@ function FixRelativeType(t)
       if haskey(t,:parameterExponents) reverse!(t[:parameterExponents]) end
     end
   end
+  InitChevie.field(d)
 end
 
 function expandrep(r,d,l)
@@ -69,7 +70,7 @@ function mkcuspidal(name,charnum,eigen;no=0,qeig=0,eig=true)
     else cn*="["*xrepr(eigen,TeX=true)*"]"
     end
   end
-  res=Dict(:relativeType=>TypeIrred(series=:A,indices=Int[],rank=0),
+  res=Dict(:relativeType=>TypeIrred(;series=:A,indices=Int[],rank=0),
     :parameterExponents=>Int[],:charNumbers=>[charnum],
     :eigenvalue=>eigen,:cuspidalName=>cn)
   res[:levi]=1:Dict{String,Int}( "G_4"=>2, "G_6"=>2, "G_8"=>2, "G_{14}"=>2,

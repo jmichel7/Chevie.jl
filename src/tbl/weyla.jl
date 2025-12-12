@@ -1,14 +1,11 @@
-# Hand-translated from chevie/tbl/weyla.g
-# Jean Michel & Goetz Pfeiffer (C) 1994--2001
+# Mostly translated from weyla.g Jean Michel & Goetz Pfeiffer (C) 1994--2001
 # Data for W(A_n)
 
 chevieset(:A, :CartanMat, n->Weyl.cartanmats[:A](n))
 
 chevieset(:A, :ReflectionDegrees, n->2:n+1)
 
-chevieset(:A, :AuName, function(r)
-  ["Z_2", "S_3", "S_4", "S_5"][r]
-end)
+chevieset(:A, :AuName, r->["Z_2", "S_3", "S_4", "S_5"][r])
 
 # roots for GL_n
 chevieset(:A, :simpleroots, function(n)
@@ -164,7 +161,7 @@ chevieset(:A, :UnipotentCharacters,function(n)
   ci=chevieget(:A,:CharInfo)(n)
   pp=ci[:charparams]
   Dict{Symbol,Any}(:harishChandra =>[Dict{Symbol, Any}(:levi=>Int[],
-    :relativeType=>TypeIrred(series=:A,indices=1:n,rank=n), 
+    :relativeType=>TypeIrred(;series=:A,indices=1:n,rank=n), 
     :parameterExponents=>fill(1,n),:cuspidalName=>"",:eigenvalue=>1,
     :charNumbers=>1:length(pp))],
   :families=>map(i->Family("C1",[i]), 1:length(pp)), 

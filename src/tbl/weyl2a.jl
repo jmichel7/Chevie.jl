@@ -127,7 +127,9 @@ chevieset("2A", :UnipotentCharacters, function (l,)
         TypeIrred(;series=:B,indices=r:-1:1,rank=r),
         :eigenvalue=>(-1)^div(prod(d.+(-1:2)),8))
       # for the eigenvalue see Lusztig CBMS proof of 3.34 (ii)
-      if d==0 s[:relativeType].cartanType=1 end
+      if d==0 
+       s[:relativeType]=TypeIrred(;series=:B,indices=r:-1:1,rank=r,cartanType=1)
+      end
       if r!=0 s[:parameterExponents]=vcat(2d+1,fill(2,r-1))
       else s[:parameterExponents]=[]
       end

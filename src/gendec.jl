@@ -73,7 +73,7 @@ function generic_decomposition_matrix(W::Union{ComplexReflectionGroup,Spets},d::
 end
 
 function generic_decomposition_matrix(t::TypeIrred,d::Integer)
-  field=string(InitChevie.field(t)...)
+  field=string(t.cheviefile,t.extra...)
   if haskey(t,:orbit)
     if length(t.orbit)>2 
       error("orbits of F should not be of size ",length(t.orbit))

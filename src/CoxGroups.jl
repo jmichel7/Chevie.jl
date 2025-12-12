@@ -930,7 +930,7 @@ end
 PermRoot.action(W::CoxSym,i,p)=i^p
 
 PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
-  [TypeIrred(series=:A,indices=collect(1:length(W.d)-1))]
+  [TypeIrred(;series=:A,indices=collect(1:length(W.d)-1))]
 end
 
 PermRoot.inclusiongens(W::CoxSym)=W.d[1:end-1]
@@ -1049,7 +1049,7 @@ Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(W.n))")
 
 PermRoot.action(W::CoxHyp,i,p)=abs(i^p)
 
-PermRoot.refltype(W::CoxHyp)=[TypeIrred(series=:B,indices=collect(1:W.n))]
+PermRoot.refltype(W::CoxHyp)=[TypeIrred(;series=:B,indices=collect(1:W.n))]
 
 CoxGroups.nref(W::CoxHyp)=div(length(W.roots),2)
 

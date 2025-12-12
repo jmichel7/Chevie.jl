@@ -39,7 +39,7 @@ function complex_reflection_group(i::Integer,cartanType=1)
   elseif i==36 coxgroup(:E,7)
   elseif i==37 coxgroup(:E,8)
   elseif cartanType==1
-    t=TypeIrred(series=:ST,ST=Int(i))
+    t=TypeIrred(;series=:ST,ST=Int(i))
     PRG(simpleroots(t),simplecoroots(t))
   else
     if i in (4,8,12,16,20,22) error("G",i," has no cartanType") end

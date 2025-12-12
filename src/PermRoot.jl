@@ -208,7 +208,7 @@ module PermRoot
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   simple_conjugating, refls, unique_refls, asreflection, reflectionMatrix,
   refltype, reflection_type, cartan, independent_roots, inclusion, 
-  inclusiongens, restriction, coroot, TypeIrred, degrees, codegrees,
+  inclusiongens, restriction, coroot, degrees, codegrees,
   refleigen, reflection_eigenvalues,
   reflchar, reflection_character,
   bipartite_decomposition, torus_order, PermX, coroots, baseX,
@@ -218,8 +218,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   reflrep, reflection_representation,
   nhyp, number_of_hyperplanes,
   nref, number_of_reflections,
-  coxnum, coxeter_number, hyperplane_orbits,
-  indices
+  coxnum, coxeter_number, hyperplane_orbits
 using ..Chevie
 
 """
@@ -341,159 +340,6 @@ function asreflection(m::AbstractMatrix)
   rr=I-m
   r=findfirst(!iszero,eachrow(rr))
   if !isnothing(r) asreflection(m,rr[r,:]) end
-end
-#------------------------------------------------------------------------
-@GapObj mutable struct TypeIrred end
-@doc """
-a  `TypeIrred` object  classifies an  irreducible finite complex reflection
-group,  or an  irreducible coset  (the latter  means that  the group  has a
-single orbit of irreducible components under `.phi`).
-
-For an irreducible group a `TypeIrred` has the properties:
-  - `.rank`  the semisimplerank of the group
-  - `.series` which takes one of the values `:A,:B,:D,:E,:F,:G,:H,:I` for an 
-      irreducible Coxeter group, and is `:ST` for non-real groups.
-  - `.ST` for a primitive non-real group holding the Shepard-Todd number
-  - `.p` and `.q` for an imprimitive non-real group, holding `.p=de` and `.q=e`
-    for `G(de,e,r)`.
-
-a  `TypeIrred` may  also contain  information specifying  a specific Cartan
-matrix  for  the  given  type.  When  there  are  two  conjugacy classes of
-generators,  `.cartanType`  (assumed  to  be  `1`  if  this  key is absent)
-contains  the ratio  of the  root lengths  compared to  the standard cartan
-matrix  for  that  type;  that  is,  the  Cartan matrix is conjugate to the
-standard  Cartan matrix by `Diagonal([1,…,1,c,…,c])` where `c=.cartanType`.
-This  this  how  type  `B`  (with  `.cartanType==2`)  and  type  `C`  (with
-`.cartanType==1`), which have both `.series==:B`,  are distinguished.
-
-For an irreducible coset a `TypeIrred` has the properties
-  - `.orbit` a `Vector{TypeIrred}` holding the types of the groups in the
-    orbit under `.phi`, such that `.phi` send each item to the next.
-  - `.phi` if `k` is the length of `.orbit`, contains the permutation
-    effected by `.phi^k` on the simple roots of the first item of the orbit.
-
-In addition, a `TypeIrred` `t` for a group `W` or a `t` appearing in a
-`.orbit` for a coset of a group `W` contains a property
-   - `.indices` giving the indices in `gens(W)` represented by the generators
-     of the irreducible component described by `t`.
-
-The `.indices` of a `TypeIrred` are always in a canonical order for a given component, such that the associated Cartan matrix is the "canonical" one. For
-instance, in type `C`, the longest root is always the first one, etc…
-""" TypeIrred
-
-TypeIrred(;kw...)=TypeIrred(Dict(kw...))
-
-Base.copy(t::TypeIrred)=TypeIrred(copy(t.prop))
-
-function indices(t::TypeIrred)::Vector{Int}
-  if haskey(t,:indices) t.indices
-  elseif haskey(t,:orbit) 
-    o=t.orbit::Vector{TypeIrred}
-    if isempty(o)  Int[] 
-    elseif length(o)==1 o[1].indices
-    else vcat(indices.(o)...)
-    end
-  elseif haskey(t,:rank) 1:t.rank
-  end
-end
-
-indices(t::Vector{TypeIrred})=isempty(t) ? Int[] : length(t)==1 ? indices(t[1]) : vcat(indices.(t)...)
-
-function Symbols.rank(t::TypeIrred)::Int
-  if haskey(t,:rank) return t.rank end
-  i=indices(t)
-  if i!==nothing return length(i) end
-end
-
-function Base.show(io::IO, t::TypeIrred)
-  function sub(p,n)
-    s=string(n)
-    string(p)*(length(s)==1 ? "_"*s : "_{"*s*"}")
-  end
-  if haskey(t,:series)
-    s=t.series
-    if s==:ST
-      if hasdecor(io)
-        n="G"
-        if haskey(t,:cartanType)
-          n*="("*xrepr(io,t.cartanType)*")"
-        end
-      else n="crg"
-      end
-      if hasdecor(io)
-        if haskey(t,:ST) n=sub(n,t.ST)
-        else n*="_{$(t.p),$(t.q),$(t.rank)}"
-        end
-      else
-        if haskey(t,:ST) n*="($(t.ST)"
-        else n*="($(t.p),$(t.q),$(t.rank)"
-        end
-        if haskey(t,:cartanType) n*=","*xrepr(io,t.cartanType)*")"
-        else n*=")"
-        end
-      end
-    else
-      r=rank(t)
-      ct=1
-      if haskey(t,:cartanType)
-        if s==:B
-          if t.cartanType==1 s=:C
-          elseif t.cartanType==2 s=:B
-          elseif t.cartanType==root(2) s=:Bsym
-          else ct=t.cartanType
-          end
-        elseif s==:F
-          if t.cartanType==1 s=:F
-          elseif t.cartanType==root(2) s=:Fsym
-          else ct=t.cartanType
-          end
-        elseif s==:G
-          if t.cartanType==1 s=:G
-          elseif t.cartanType==root(3) s=:Gsym
-          else ct=t.cartanType
-          end
-        elseif s==:I
-          if t.cartanType==1 s=:I
-          elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym
-          else ct=t.cartanType
-          end
-        end
-      end
-      if hasdecor(io)
-        if ct!=1 s=Symbol(s,"(",xrepr(io,t.cartanType),")") end
-        if haskey(t,:bond) n=sub(s,r)*"($(t.bond))"
-        elseif haskey(t,:short) n="\\tilde "*sub(s,r)
-        else n=sub(s,r)
-        end
-      else
-        if haskey(t,:bond) n="coxgroup(:$s,$r,$(t.bond)"
-        else n="coxgroup(:$s,$r"
-        end
-        if ct!=1 n*=","*xrepr(io,t.cartanType)*")"
-        else n*=")"
-        end
-      end
-    end
-    if hasdecor(io) printTeX(io,n) else print(io,n) end
-  else
-    o=order(t.twist)
-    if hasdecor(io)
-      if o!=1 printTeX(io,"{}^{$o}") end
-      if length(t.orbit)==1 print(io,t.orbit[1])
-      else print(io,"(")
-        for t1 in t.orbit print(io,t1) end
-        print(io,")")
-      end
-    else
-      print(io,"spets(",t.orbit)
-      p=prod(Perm.(map(x->x.indices,t.orbit)...))*t.twist
-      if !isone(p) print(io,",",p) end
-      print(io,")")
-    end
-    if haskey(t,:scalar) && !all(isone,t.scalar)
-      print(io,"[");join(io,t.scalar,",");print(io,"]")
-    end
-  end
 end
 
 # roots for the adjoint group
@@ -831,7 +677,7 @@ the tuples (which are resolved by `h`):
 (G₂₁, G₁₂₀‚₄₀‚₂)
 ```
 """
-function TypeIrred(W::PermRootGroup)
+function InitChevie.TypeIrred(W::PermRootGroup)
 prim=[
   (r=2, s=12, o=3, h=6),
   (r=2, s=36, o=3, h=12),
@@ -870,8 +716,8 @@ prim=[
 
   r=semisimplerank(W)
   s=div(length(W),factorial(r))
-  if s==r+1 return TypeIrred(series=:A,rank=r)
-  elseif r==1 return TypeIrred(series=:ST,p=s,q=1,rank=1)
+  if s==r+1 return TypeIrred(;series=:A,rank=r)
+  elseif r==1 return TypeIrred(;series=:ST,p=s,q=1,rank=1)
   else l=([p.^(a+m-a*r,a*r-m) for a in div(m+r-1,r):div(m,r-1)]
                        for (p,m) in eachfactor(s))
     de=vec((x->(d=prod(first.(x)),e=prod(last.(x)))).(Iterators.product(l...)))
@@ -880,7 +726,7 @@ prim=[
   de=filter(x->o==max(2,x.d),de) #  after this length(de)<=2
   ST=findall(p->r==p.r && s==p.s && o==p.o,prim).+3
 # if isempty(de) && length(ST)==1 # shortcut
-#   return TypeIrred(series=:ST, ST=only(ST), rank=r)
+#   return TypeIrred(;series=:ST, ST=only(ST), rank=r)
 # end
   h=div(sum(order,refls(W,unique_refls(W))),r) # Coxeter number
 # println("de=$de, o=$o, h=$h")
@@ -888,30 +734,30 @@ prim=[
     sort!(de)
     if h==de[1].e de=[de[1]]
     elseif h==2*de[2].e+2 de=[de[2]]
-    else return TypeIrred(series=:ST,ST=only(ST),rank=r)
+    else return TypeIrred(;series=:ST,ST=only(ST),rank=r)
     end
   end
   if length(de)>0 && length(ST)>0
     ST=filter(i->prim[i-3].h==h,ST)
-    if !isempty(ST) return TypeIrred(series=:ST,ST=only(ST),rank=r) end
+    if !isempty(ST) return TypeIrred(;series=:ST,ST=only(ST),rank=r) end
   end
   if length(de)==0
-    if only(ST) in [23,30] return TypeIrred(series=:H,rank=r)
-    elseif only(ST)==28 return TypeIrred(series=:F,rank=r)
-    elseif only(ST) in 35:37 return TypeIrred(series=:E,rank=r)
-    else return TypeIrred(series=:ST,ST=only(ST),rank=r)
+    if only(ST) in [23,30] return TypeIrred(;series=:H,rank=r)
+    elseif only(ST)==28 return TypeIrred(;series=:F,rank=r)
+    elseif only(ST) in 35:37 return TypeIrred(;series=:E,rank=r)
+    else return TypeIrred(;series=:ST,ST=only(ST),rank=r)
     end
   end
   d=only(de)
-  if d.d==2 && d.e==1 return TypeIrred(series=:B,rank=r) end
-  if d.d==1 && d.e==2 return TypeIrred(series=:D,rank=r) end
+  if d.d==2 && d.e==1 return TypeIrred(;series=:B,rank=r) end
+  if d.d==1 && d.e==2 return TypeIrred(;series=:D,rank=r) end
   if d.d==1 && r==2
-    if d.e==4 return TypeIrred(series=:B, rank=2)
-    elseif d.e==6 return TypeIrred(series=:G, rank=2)
-    else return TypeIrred(series=:I, rank=2, bond=d.e)
+    if d.e==4 return TypeIrred(;series=:B, rank=2)
+    elseif d.e==6 return TypeIrred(;series=:G, rank=2)
+    else return TypeIrred(;series=:I, rank=2, bond=d.e)
     end
   end
-  TypeIrred(series=:ST,p=d.d*d.e,q=d.e,rank=r)
+  TypeIrred(;series=:ST,p=d.d*d.e,q=d.e,rank=r)
 end
 
 """

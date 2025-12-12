@@ -129,6 +129,7 @@ include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
 include("Symbols.jl");@reexport using .Symbols
+include("InitChevie.jl");@reexport using .InitChevie
 include("PermRoot.jl");@reexport using .PermRoot
 include("Diagrams.jl");@reexport using .Diagrams
 include("CoxGroups.jl");@reexport using .CoxGroups
@@ -139,7 +140,6 @@ include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
-include("InitChevie.jl");@reexport using .InitChevie
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Garside.jl");@reexport using .Garside

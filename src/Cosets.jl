@@ -1124,7 +1124,7 @@ function PermRoot.refltype(WF::PRC)
   get!(WF,:refltype)do
     W=Group(WF)
     if isone(WF.phi)
-     return map(x->TypeIrred(orbit=[x],twist=Perm()),refltype(W))
+     return map(x->TypeIrred(;orbit=[x],twist=Perm()),refltype(W))
     end
     t=deepcopy(refltype(W))
     subgens=map(x->refls(W,x.indices),t)
@@ -1159,7 +1159,7 @@ function PermRoot.refltype(WF::PRC)
       ratio.(prr[inclusion(W,rr).^WF.phi],prr[inclusion(W,img)])
     end
     typ=map(c) do orb
-      to=TypeIrred(orbit=copy.(t[orb]))
+      to=Dict{Symbol,Any}(:orbit=>copy.(t[orb]))
       scalar=Cyc{Rational{Int}}[]
       for i in eachindex(orb)
         next=i==length(orb) ? 1 : i+1
@@ -1168,7 +1168,7 @@ function PermRoot.refltype(WF::PRC)
         ti=t[orb[i]]
         if i!=length(orb)  tn.indices=invpermute(tn.indices,u)
           scal=scals(ti.indices,tn.indices)
-        else to.twist=u
+        else to[:twist]=u
           scal=scals(ti.indices,invpermute(tn.indices,inv(u)))
         end
         if any(isnothing,scal) || !allequal(scal)
@@ -1209,7 +1209,7 @@ function PermRoot.refltype(WF::PRC)
             tn.indices^=u
             subgens[orb[next]]=refls(W,tn.indices)
             scal=scals(ti.indices,tn.indices)
-          else to.twist=u
+          else to[:twist]=u
             scal=scals(ti.indices,invpermute(tn.indices,inv(u)))
           end
           #println(" scal after:$scal")
@@ -1220,8 +1220,8 @@ function PermRoot.refltype(WF::PRC)
         end
         push!(scalar,Cyc(scal))
       end
-      to.scalar=scalar
-      to
+      to[:scalar]=scalar
+      TypeIrred(;to...)
     end
   # some adjustment such that in type ^2D_4 the first two simple
   # roots are permuted by res.twist, and in type ^3D_4 the permutation 

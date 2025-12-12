@@ -424,60 +424,61 @@ two_tree=function(m::AbstractMatrix)
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
 
-" TypeIrred or nothing for an irreducible Cartan matrix"
+" TypeIrred or nothing for an indecomposable Cartan matrix"
 function fincoxTypeIrred(m::AbstractMatrix)
   rank=size(m,1)
   if !all(==(2),diag(m)) return nothing end
   s=two_tree(m)
   if isnothing(s) return nothing end
-  t=TypeIrred(;rank)
+  t=Dict{Symbol,Any}(:rank=>rank)
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
-    if length(b2)==1 t.series=:D
-      t.indices=[b1;b2;vertex;b3]::Vector{Int}
-    else t.series=:E
-      t.indices=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
+    if length(b2)==1 t[:series]=:D
+      t[:indices]=[b1;b2;vertex;b3]::Vector{Int}
+    else t[:series]=:E
+      t[:indices]=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
     end
   else  # types A,B,C,F,G,H,I
     l=i->m[s[i],s[i+1]]
     r=i->m[s[i+1],s[i]]
-    if rank==1 t.series=:A
+    if rank==1 t[:series]=:A
     elseif rank==2
       bond=l(1)*r(1)
-      if bond==1 t.series=:A
-      elseif bond==2 t.series=:B
+      if bond==1 t[:series]=:A
+      elseif bond==2 t[:series]=:B
         if l(1)==-1 reverse!(s) end # B2 preferred to C2
-        t.cartanType=improve_type(-l(1))
-      elseif bond==3 t.series=:G
+        t[:cartanType]=improve_type(-l(1))
+      elseif bond==3 t[:series]=:G
         if r(1)==-1 reverse!(s) end
-        t.cartanType=improve_type(-l(1))
+        t[:cartanType]=improve_type(-l(1))
       else n=conductor(bond)
         if r(1)==-1 reverse!(s) end
         if bond==2+E(n)+E(n,-1) bond=n else bond=2n end
-        t.series=:I
-        if bond%2==0 t.cartanType=improve_type(-l(1)) end
-        t.bond=bond
+        t[:series]=:I
+        if bond%2==0 t[:cartanType]=improve_type(-l(1)) end
+        t[:bond]=bond
       end
     else
       if l(rank-1)*r(rank-1)!=1 reverse!(s) end
       if l(1)*r(1)==1
-        if l(2)*r(2)==1 t.series=:A
-        else t.series=:F
+       if l(2)*r(2)==1 t[:series]=:A
+       else t[:series]=:F
           if r(2)==-1 reverse!(s) end
-          t.cartanType=improve_type(-l(2))
+          t[:cartanType]=improve_type(-l(2))
         end
       else n=conductor(l(1)*r(1))
-        if n==5 t.series=:H
-        else t.series=:B
-          t.cartanType=improve_type(-l(1))
+       if n==5 t[:series]=:H
+       else t[:series]=:B
+        t[:cartanType]=improve_type(-l(1))
         end
       end
     end
-    t.indices=s::Vector{Int}
+    t[:indices]=s::Vector{Int}
   end
-# println("t=$t")
-# println("indices=",t.indices]," cartan=",cartan(t)," m=$m")
-  if cartan(t,permute=true)==m return t end  # countercheck
+  ti=TypeIrred(;t...)
+# println("ti=$ti")
+# println("indices=",ti.indices]," cartan=",cartan(ti)," m=$m")
+  if cartan(ti,permute=true)==m return ti end  # countercheck
 end
 
 """

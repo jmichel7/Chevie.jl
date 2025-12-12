@@ -207,7 +207,7 @@ chevieset(:D,:UnipotentCharacters,function(rank)
       :parameterExponents=>vcat(d,fill(1,max(0, rank-1-r))))
     s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
     if d==0
-      s[:relativeType].series=:D
+      s[:relativeType]=TypeIrred(;series=:D,indices=1:rank,rank)
       s[:cuspidalName]=""
       s[:parameterExponents][1]=1
     end
