@@ -1,5 +1,5 @@
-#A  tbl/coxh4.jl        CHEVIE library       Meinolf Geck and Jean Michel
-#Y  Copyright (C) 1992- The CHEVIE Team
+#A  tbl/coxh4.jl        Chevie library       Meinolf Geck and Jean Michel
+#Y  Copyright (C) 1992- The Chevie Team
 
 chevieset(:H4, :ReflectionDegrees, [2, 12, 20, 30])
 
@@ -738,21 +738,21 @@ chevieset(:H4, :HeckeRepresentation, function (para, rootpara, i)
   -para[1][2]*WGraphToRepresentation(4,chevieget(:H4, :WGraph)(i), v)
 end)
 
-CHEVIE.families[:HS4]=Family(Dict{Symbol, Any}(:group=>"SL2(5)",:name=>"H4",
-  :explanation => "DrinfeldDouble(SL_2(5))?ER(5)",
-  :charLabels => map((i->begin "?" end), 1:74), :special=>9,
-  :eigenvalues=>
+chevieset(:families,:HS4,Family(;group="SL2(5)",name="H4",
+  explanation= "DrinfeldDouble(SL_2(5))?ER(5)",
+  charLabels= map((i->begin "?" end), 1:74), special=9,
+  eigenvalues=
   Cyc{Int64}[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, E(5,3), E(5,2),
  E(5,3), E(5,2), E(5,3), E(5,2), E(5,3), E(5,2), 1, -1, -1, -1, 1, 1, -1, -1,
  1, -1, E(5,3), E(5,2), E(5,3), E(5,2), -E(5,3), -E(5,2), -E(5,3), -E(5,2),
  E(4), -E(4), E(3), E(3,2), -E(3,2), -E(3), E(5,4), E(5), E(5,4), E(5), -E(5,
 4), -E(5), -E(5,4), -E(5), E(3), E(3,2), E(3), E(3,2), E(5,4), E(5), E(5,4),
  E(5), E(15,2), E(15,13), E(15,8), E(15,7), E(5,4), E(5), E(5,4), E(5), -1, 1],
-  :perm=>
+  perm=
    perm"(17,18)(19,20)(21,22)(23,24)(35,36)(37,38)(39,40)(41,42)(43,44)(45,
    46)(47,48)(49,50)(51,52)(53,54)(55,56)(57,58)(59,60)(61,62)(63,64)(65,66)(67,
    68)(69,70)(71,72)",
-  :fourierMat=> 1//60*toM(
+  fourierMat= 1//60*toM(
 Vector{Cyc{Rational{Int64}}}[[18, 0, -18, -6, -6, 18, 6, 6, 6, 6, -6, -6, -6,
  -6, 12, 0, 6, 6, -6, -6, -6, -6, 6, 6, 0, -18, 6, 6, 6, 6, -6, -6, 12, 0, 6,
  6, -6, -6, -6, -6, 6, 6, 0, 0, 0, 0, 0, 0, -6, -6, 6, 6, -6, -6, 6, 6, 0, 0,
@@ -1358,22 +1358,22 @@ chevieset(:H4, :UnipotentCharacters, function ()
   mkcuspidal("H_4",102,E(5);no=6),
   mkcuspidal("H_4",103,-1;no=7),
   mkcuspidal("H_4",104,1;no=5)],
-  :families => [Family("C1", [1]),
+  :families => [Family(:C1, [1]),
   Family(:C1,[2]),
   Family(:C1,[27]),
   Family(:C1,[28]),
-  Family(:C1,[31],ennola=-1),
-  Family(:C1,[32],ennola=-1),
-  Family(Family(:Dihedral)(5), [3, 5, 35, 36], ennola = -1),
-  Family(Family(:Dihedral)(5), [11, 13, 37, 38], ennola = 1),
-  Family(Family(:Dihedral)(5), [12, 14, 44, 43], ennola = 1),
-  Family(Family(:Dihedral)(5), [4, 6, 45, 46], ennola = -1),
-  Family(Family(:TQZ)(2, -1, [1, -1]), [18, 20, 40, 39], cospecial=2,ennola=3),
-  Family(Family(:TQZ)(2, -1, [1, -1]), [21, 19, 42, 41], cospecial=2,ennola=-3),
+  Family(:C1,[31];ennola=-1),
+  Family(:C1,[32];ennola=-1),
+  Family(Family(:Dihedral)(5), [3, 5, 35, 36]; ennola = -1),
+  Family(Family(:Dihedral)(5), [11, 13, 37, 38]; ennola = 1),
+  Family(Family(:Dihedral)(5), [12, 14, 44, 43]; ennola = 1),
+  Family(Family(:Dihedral)(5), [4, 6, 45, 46]; ennola = -1),
+  Family(Family(:TQZ)(2, -1, [1, -1]), [18, 20, 40, 39]; cospecial=2,ennola=3),
+  Family(Family(:TQZ)(2, -1, [1, -1]), [21, 19, 42, 41]; cospecial=2,ennola=-3),
   Family(:HS4,[15,9,10,7,8,22,16,17,26,25,24,23,29,30,33,34,47,48,49,50,51,52,
                53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,
                74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,
-               95,96,97,98,99,100,101,102,103,104],
+               95,96,97,98,99,100,101,102,103,104];
          ennola=29)],
   :a=>[0,60,1,31,1,31,6,6,6,6,2,22,2,22,6,6,6,3,18,3,18,6,6,6,6,6,4,16,6,6,5,
        15,6,6,1,1,2,2,3,3,18,18,22,22,31,31,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,

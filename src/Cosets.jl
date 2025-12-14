@@ -36,7 +36,7 @@ only on `(V,W, F₀)`: the order of the maximal tori, the
 [`fakedegrees`](@ref),  the order of  `𝐆^F`, [`symbols`](@ref) representing
 unipotent characters, Deligne-Lusztig induction in terms of
 [`almost_character`](@ref)s,  the  Fourier  matrix  relating characters and
-almost  characters, etc… see, e.g., [bmm93](@cite).  It is thus possible to
+almost  characters, etc… see, e.g., [bmm14](@cite).  It is thus possible to
 extend  their construction to non-crystallographic  groups (or even to more
 general complex reflection groups, see [`spets`](@ref)); this is why we did
 not include a root system in the definition of a reflection coset. However,

@@ -36,7 +36,7 @@ Dynkin-Richardson  diagram  of  ``e``,  and  in  good  characteristic  is a
 complete  invariant  of  the  ``𝔤``-orbit  of  ``e``. The Dynkin-Richardson
 diagrams thus classify unipotent classes of `𝐆` in good characteristic.
 
-Another classification of unipotent classes was given by Bala and Carter. A
+Another classification of unipotent classes was given by [bc76](@cite). A
 standard  parabolic subgroup `𝐏` of `𝐆` associated with the subset `I⊂Π` of
 the simple roots is *distinguished* if the linear form `σ` taking the value
 `2` on `α∈ I` and `0` on other simple roots satisfies

@@ -43,7 +43,7 @@ chevieset(:timp, :ClassInfo, function (p, q, r, phi)
        :classtext=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
        :classparams=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
        :classnames =>["Id", "1", "12", "123", "121", "1213"])
-    elseif order(phi)==2 CHEVIE.imp[:ClassInfo](3, 3, 3)
+    elseif order(phi)==2 chevieget(:imp,:ClassInfo)(3, 3, 3)
     else error("phi==", phi, " not implemented")
     end
   elseif [p, q, r]==[4, 2, 2]
@@ -151,7 +151,7 @@ chevieset(:timp, :UnipotentCharacters, function (p, q, r, phi)
       :levi=>[],:eigenvalue=>1,:cuspidalName=>"",:charNumbers => 1:7), 
     mkcuspidal("G_{3,3,3}",8,E(3)),
     mkcuspidal("G_{3,3,3}",9,E(3,2))],
-    :families => [Family("C1", [1]), Family("C1", [2]), Family("C1", [3]),
+    :families => [Family(:C1, [1]), Family(:C1, [2]), Family(:C1, [3]),
                   Family(conj(Family(:X)(3)), [7, 5, 8]),
                   Family(conj(Family(:X)(3)), [6, 4, 9])],
     :a => [0, 9, 3, 4, 1, 4, 1, 1, 4],
@@ -166,7 +166,7 @@ chevieset(:timp, :UnipotentCharacters, function (p, q, r, phi)
        :levi=>Int[],:eigenvalue=>1,:cuspidalName=>"",:charNumbers=>1:7), 
     mkcuspidal("G_{3,3,3}",8,E(3)),
     mkcuspidal("G_{3,3,3}",9,E(3,2))],
-     :families => [Family("C1", [1]), Family("C1", [2]), Family("C1", [3]),
+     :families => [Family(:C1, [1]), Family(:C1, [2]), Family(:C1, [3]),
                    Family(Family(:X)(3), [7, 5, 8]),
                    Family(Family(:X)(3), [6, 4, 9])],
      :a => [0, 9, 3, 4, 1, 4, 1, 1, 4],
@@ -183,9 +183,9 @@ chevieset(:timp, :UnipotentCharacters, function (p, q, r, phi)
       :levi=>Int[],:eigenvalue=>1,:cuspidalName => "", :charNumbers => 1:6), 
      mkcuspidal("G_{3,3,3}",7,E(3)),
      mkcuspidal("G_{3,3,3}",8,E(3,2))], 
-     :families => [Family("C1", [1]), Family("C1", [2]),
-        Family(conj(Family(:X)(3)),[3,5,7],signs=[1,1,-1]),
-        Family(Family(:X)(3),[4,6,8],signs=[1,1,-1])],
+     :families => [Family(:C1, [1]), Family(:C1, [2]),
+        Family(conj(Family(:X)(3)),[3,5,7];signs=[1,1,-1]),
+        Family(Family(:X)(3),[4,6,8];signs=[1,1,-1])],
      :a => [0, 9, 4, 1, 4, 1, 4, 1],
      :A => [0, 9, 8, 5, 8, 5, 8, 5])
         res[:families][3][:eigenvalues][3]=E(3, 2)

@@ -1,5 +1,5 @@
-#  tbl/cmplxg31.jl       CHEVIE library                 Jean Michel
-#  Copyright (C) 1998-  The CHEVIE Team
+#  tbl/cmplxg31.jl       Chevie library                 Jean Michel
+#  Copyright (C) 1998-  The Chevie Team
 
 chevieset(:G31,:BraidRelations,[[[1,4,1],[4,1,4]],[[2,4,2],[4,2,4]],
   [[5,3,5],[3,5,3]],[[2,5,2],[5,2,5]],[[2,3,1],[1,2,3]],[[2,3,1],[3,1,2]],

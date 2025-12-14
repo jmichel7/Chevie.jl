@@ -1,4 +1,4 @@
-#  tbl/cmplxg24.jl            CHEVIE library       Gunter Malle, Jean Michel
+#  tbl/cmplxg24.jl            Chevie library       Gunter Malle, Jean Michel
 #  Copyright (C) 1998-2018
 
 chevieset(:G24, :simpleroots,
@@ -152,7 +152,7 @@ chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE.families[:X7]=Family(Dict{Symbol, Any}(:name=>"X7",:fourierMat=>
+chevieset(:families,:X7,Family(;name="X7",fourierMat=
    [-1 1 root(-7) root(-7) -2 -2 -2; 
     1 -1 root(-7) root(-7) 2 2 2; 
     root(-7) root(-7) root(-7) -root(-7) 0 0 0; 
@@ -160,8 +160,8 @@ CHEVIE.families[:X7]=Family(Dict{Symbol, Any}(:name=>"X7",:fourierMat=>
     -2 2 0 0 -2E(7)-2E(7,6) -2E(7,2)-2E(7,5) -2E(7,3)-2E(7,4);
     -2 2 0 0 -2E(7,2)-2E(7,5) -2E(7,3)-2E(7,4) -2E(7)-2E(7,6);
     -2 2 0 0 -2E(7,3)-2E(7,4) -2E(7)-2E(7,6) -2E(7,2)-2E(7,5)]//2root(-7),
-   :eigenvalues => [1, 1, 1, -1, E(7,4), E(7,2), E(7)],
-   :explanation => "mystery G24", :special => 1, :cospecial => 2))
+   eigenvalues= [1, 1, 1, -1, E(7,4), E(7,2), E(7)],
+   explanation= "mystery G24", special=1, cospecial=2))
 
 chevieset(:G24, :UnipotentCharacters,
 Dict{Symbol, Any}(
@@ -182,12 +182,12 @@ Dict{Symbol, Any}(
  mkcuspidal("G_{24}",15,E(7,2)),
  mkcuspidal("G_{24}",16,E(7))],
  :families => Family[Family(:C1,[1]),
-   Family(:X7,[4, 6, 7, 13, 14, 15, 16],ennola=2,cospecial=2),
-   Family(:C1,[10],ennola=-1),
-   Family(Family(:TQZ)(2,-1,(1, -1)),[11, 12, 18, 17],ennola=-4,cospecial=2),
+   Family(:X7,[4, 6, 7, 13, 14, 15, 16];ennola=2,cospecial=2),
+   Family(:C1,[10];ennola=-1),
+   Family(Family(:TQZ)(2,-1,(1, -1)),[11, 12, 18, 17];ennola=-4,cospecial=2),
    Family(:C1,[9]), 
-   conj(Family(:X7,[3, 5, 8, 19, 20, 21, 22],ennola=-2,cospecial=2)),
-   Family(:C1,[2],ennola=-1)],
+   conj(Family(:X7,[3, 5, 8, 19, 20, 21, 22];ennola=-2,cospecial=2)),
+   Family(:C1,[2];ennola=-1)],
  :curtis=>[2,1,6,5,4,3,8,7,10,9,12,11,19,-20,-21,-22,-18,-17,13,-14,-15,-16],
  :A=>[0,21,20,13,20,13,13,20,18,15,17,17,13,13,13,13,17,17,20,20,20,20]))
 

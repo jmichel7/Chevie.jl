@@ -1,5 +1,5 @@
-#  tbl/weyle6.jl           CHEVIE library         Meinolf Geck, Jean Michel
-#  Copyright (C) 1994 - 2001  The CHEVIE Team
+#  tbl/weyle6.jl           Chevie library         Meinolf Geck, Jean Michel
+#  Copyright (C) 1994 - 2001  The Chevie Team
 
 chevieset(:E6, :ReflectionDegrees, [2, 5, 6, 8, 9, 12])
 
@@ -433,12 +433,12 @@ Dict{Symbol, Any}(:a => [0, 36, 7, 1, 25, 7, 3, 15, 3, 15, 2, 20, 6, 12, 3,
       :eigenvalue => -1, :levi => 2:5),
  mkcuspidal("E_6",29,E(3)),
  mkcuspidal("E_6",30,E(3,2))],
- :families => Family[Family("C1",[1]), Family("C1",[2]), Family("C1",[4]),
- Family("C1",[5]), Family("C1",[11]), Family("C1",[12]), Family("C1",[13]),
- Family("C1",[14]), Family("C1",[20]), Family("C1",[21]), Family("C1",[22]),
- Family("C1",[23]), Family("C1",[24]), Family("C1",[25]), Family("C2",[15, 9,
- 7, 26]), Family("C2",[16, 10, 8, 27]),
- Family("S3",[18, 17, 3, 19, 6, 28, 29, 30])],
+ :families => Family[Family(:C1,[1]), Family(:C1,[2]), Family(:C1,[4]),
+ Family(:C1,[5]), Family(:C1,[11]), Family(:C1,[12]), Family(:C1,[13]),
+ Family(:C1,[14]), Family(:C1,[20]), Family(:C1,[21]), Family(:C1,[22]),
+ Family(:C1,[23]), Family(:C1,[24]), Family(:C1,[25]), 
+ Family(:C2,[15, 9, 7, 26]), Family(:C2,[16, 10, 8, 27]),
+ Family(:S3,[18, 17, 3, 19, 6, 28, 29, 30])],
  :A => [0, 36, 29, 11, 35, 29, 21, 33, 21, 33, 16, 34, 24, 30, 21, 33,
  29, 29, 29, 25, 31, 23, 32, 26, 30, 21, 33, 29, 29, 29]))
 

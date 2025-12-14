@@ -1,4 +1,4 @@
-#  weylg2.jl   CHEVIE library         Meinolf Geck, Jean Michel
+#  weylg2.jl   Chevie library         Meinolf Geck, Jean Michel
 chevieset(:G2, :CartanMat,(type_=1)->[2 -type_;-3//type_ 2])
 
 chevieset(:G2, :ParabolicRepresentatives, s->
@@ -138,7 +138,7 @@ chevieset(:G2, :UnipotentCharacters, function ()
    mkcuspidal("G_2",7,-1),
    mkcuspidal("G_2",9,E(3)),
    mkcuspidal("G_2",8,1)], 
-  :families=>[Family(:S3,[5,6,4,3,8,7,9,10],ennola=-5),
+  :families=>[Family(:S3,[5,6,4,3,8,7,9,10];ennola=-5),
               Family(:C1, [1]), Family(:C1, [2])], 
   :a => [0, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
   :A => [0, 6, 5, 5, 5, 5, 5, 5, 5, 5], 

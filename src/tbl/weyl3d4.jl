@@ -1,5 +1,5 @@
-# tbl/weyl3d4.jl        CHEVIE library     Frank Luebeck, Jean Michel
-# Copyright (C) 1994 - 2001  The CHEVIE Team
+# tbl/weyl3d4.jl        Chevie library     Frank Luebeck, Jean Michel
+# Copyright (C) 1994 - 2001  The Chevie Team
 
 chevieset("3D4",:cyclestructure, 
   [[2=>2,6=>3],[3=>6],[2=>3,6=>3],[2=>3,3=>2,6=>2],[12=>2],[3=>8],[6=>4]])
@@ -177,10 +177,8 @@ chevieset("3D4",:UnipotentCharacters,
       TypeIrred(;orbit=[TypeIrred(;series=:A,indices=Int[],rank=0)],
                 twist=Perm()),:levi=>1:4,:eigenvalue=>-1,
         :cuspidalName=>"D_4",:charNumbers=>[8])],
-   :families=>[Family("C1",[1]),Family("C1",[2]),
-               Family("C1",[5],Dict{Symbol,Any}(:ennola=>-1)),
-               Family("C1", [6],Dict{Symbol,Any}(:ennola=>-1)),
-               Family("C2",[7,4,3,8],Dict{Symbol,Any}(:ennola=>-4))],
+   :families=>[Family(:C1,[1]),Family(:C1,[2]), Family(:C1,[5];ennola=-1),
+               Family(:C1,[6];ennola=-1), Family(:C2,[7,4,3,8];ennola=-4)],
    :a=>[0,12,3,3,1,7,3,3],
    :A=>[0,12,9,9,5,11,9,9])
 )

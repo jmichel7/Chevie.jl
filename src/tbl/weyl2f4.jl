@@ -1,5 +1,5 @@
-# tbl/weyl2f4.jl         CHEVIE library       Meinolf Geck and Jean Michel
-# Copyright (C) 1998-2001  The CHEVIE Team
+# tbl/weyl2f4.jl         Chevie library       Meinolf Geck and Jean Michel
+# Copyright (C) 1998-2001  The Chevie Team
 chevieset("2F4", :NrConjugacyClasses, 11)
 
 chevieset("2F4", :ClassInfo, function ()
@@ -123,9 +123,9 @@ chevieset("2F4", :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE.families[:X2]=Family(Dict{Symbol, Any}(:name=>"X_2",
-  :fourierMat=>root(2)//2*[-1 -1;-1 1],:eigenvalues=>[E(8,3),-E(8)],
-  :charLabels=>["1", "2"], :special=>1, :sh=>[1,-1]))
+chevieset(:families,:X2,Family(;name="X_2",
+  fourierMat=root(2)//2*[-1 -1;-1 1],eigenvalues=[E(8,3),-E(8)],
+  charLabels=["1", "2"], special=1, sh=[1,-1]))
 
 chevieset("2F4", :sparseFakeDegrees,
   [[1,0],[1,24],[1,8,1,16],[1,2,-1,4,1,8,-1,12,1,14],
@@ -155,13 +155,14 @@ chevieset("2F4", :UnipotentCharacters,
    mkcuspidal("{}^2F_4",17,-E(4);no=2),
    mkcuspidal("{}^2F_4",18,-E(3,2);no=2),
    mkcuspidal("{}^2F_4",21,-1;no=4)],
-  :families => [Family("C1", [1]), Family("C1", [2]), Family("C1", [4]),
-   Family(Dict{Symbol, Any}(:name => "C''_1", :group => "C1",
-       :charLabels => [""], :fourierMat => [-1;;], :eigenvalues => [1],
-       :sh => [1]), [5]),
-   Family("X2", [9, 12]), Family("X2", [10, 13]),
-   Family(Dict{Symbol, Any}(:name => "sub D(\\tilde S_4)",
-     :fourierMat=>invpermute(transpose([
+  :families => [Family(:C1, [1]), Family(:C1, [2]), Family(:C1, [4]),
+     Family(;charNumbers=[5],name="C''_1", group= "C1",
+       charLabels=[""],fourierMat=[-1;;],eigenvalues=[1],
+       sh=[1]),
+   Family(:X2, [9, 12]), Family(:X2, [10, 13]),
+   Family(;charNumbers=[3, 19, 20, 7, 8, 11, 14, 15, 16, 17, 6, 18, 21],
+          name= "sub D(\\tilde S_4)",
+     fourierMat=invpermute(transpose([
      3 0 -6 3 root(2)*3 root(2)*3 root(2)*3 root(2)*3 3 -3 0 0 0;
      3 0 -6 3 -root(2)*3 -root(2)*3 -root(2)*3 -root(2)*3 3 -3 0 0 0;
      6 0 0 6 0 0 0 0 -6 6 0 0 0;
@@ -175,20 +176,19 @@ chevieset("2F4", :UnipotentCharacters,
      0 4 4 4 0 0 0 0 0 -4 4 -8 0;
      0 4 4 4 0 0 0 0 0 -4 -8 4 0;
      0 -8 4 4 0 0 0 0 0 -4 4 4 0]//12), perm"(8,13)"),
-     :special=>4,
-     :charLabels=>["z,\\chi_3", "t_1t_2,1", "z,\\chi_2", "1,1", "zt_1t_2t_3,1",
+     special=4,
+     charLabels=["z,\\chi_3", "t_1t_2,1", "z,\\chi_2", "1,1", "zt_1t_2t_3,1",
        "t_1t_2t_3,\\zeta_8^6", "t_1t_2t_3,\\zeta_8^2", "t_1t_3,\\zeta_8^6",
        "z,\\chi'_3", "z,\\varepsilon", "t_1t_2,\\zeta_6^4", "t_1t_2,\\zeta_6^2",
        "zt_1t_2t_3,\\zeta_8^4"],
-     :almostCharLabels=>["t_1t_3,\\zeta_8", "t_1t_3,\\zeta_8^3", "t_1,\\zeta_4",
+     almostCharLabels=["t_1t_3,\\zeta_8", "t_1t_3,\\zeta_8^3", "t_1,\\zeta_4",
        "1,\\psi_4", "1,\\psi'_2", "1,\\psi_2", "t_1t_2t_3,\\zeta_8^5",
        "t_1t_2t_3,\\zeta_8^3", "t_1t_2t_3,\\zeta_8^7", "t_1t_2t_3,\\zeta_8",
        "z t_1t_2,\\zeta_6", "z t_1t_2,\\zeta_6^5", "z t_1t_2,\\zeta_6^3"],
-     :explanation=>vcat("subcategory of Drinfeld double of \$\\tilde\\frakS_4\n\$", "see Ph. D. Thesis of Abel Lacabanne, section 5[:2]\n"),
-     :eigenvalues=>[1,1,1,-1,-1,-1,-E(4),E(4),E(4),-E(4),-E(3),-E(3,2),-1],
-     :sh=>[1,1,1,1,1,E(4),-E(4),-1,1,1,E(3),E(3,2),-1],
-     :ennola=>[2,1,3,4, 6, 5, 10, 9, 8, 7, 11, 12, 13]),
-          [3, 19, 20, 7, 8, 11, 14, 15, 16, 17, 6, 18, 21])],
+     explanation=vcat("subcategory of Drinfeld double of \$\\tilde\\frakS_4\n\$", "see Ph. D. Thesis of Abel Lacabanne, section 5[:2]\n"),
+     eigenvalues=[1,1,1,-1,-1,-1,-E(4),E(4),E(4),-E(4),-E(3),-E(3,2),-1],
+     sh=[1,1,1,1,1,E(4),-E(4),-1,1,1,E(3),E(3,2),-1],
+     ennola=[2,1,3,4, 6, 5, 10, 9, 8, 7, 11, 12, 13])],
   :almostHarishChandra => [
      Dict(:relativeType =>TypeIrred(;orbit=[TypeIrred(;series=:F,
       cartanType=root(2),indices=1:4,rank=4)],twist=perm"(1,4)(2,3)"),

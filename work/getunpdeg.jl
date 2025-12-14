@@ -89,7 +89,7 @@ function solveit(val,pos,other,positions=0:length(val)+length(other))
   p=pos[1]
   pp=filter(i->pos[i]==p,eachindex(val))
   v=val[pp]
-  res=Vector{NTuple{2,Int}}[]
+  res=Vector{Tuple{eltype(val),Int}}[]
   for a in arrangements(other,length(p)-length(pp))
     v1=vcat(v,a)
     head=map(x->collect(zip(x,p)),arrangements(v1,length(v1)))
@@ -259,7 +259,8 @@ function FindRelativeHecke(W,ζ,known)
       p=argmax(poss)
       if p!=1 poss=poss[sortperm(map(x->x.r,E(s.e)^(1-p)*E.(s.e,0:s.e-1)))] end
       poss=[poss]
-    else poss=solveit(ser.degparam,ser.specialization,p,0:s.e-1)
+    else 
+      poss=solveit(ser.degparam,ser.specialization,p,0:s.e-1)
       poss=map(poss)do v
         res=fill(0//1,maximum(last.(v))+1)
         for x in v res[x[2]+1]=x[1] end
@@ -374,7 +375,7 @@ Ennola-twist it by `ξ`, getting a `ζξ`-cyclotomic algebra
 function ennola_twist(H::HeckeAlgebra,z::Root1,d::Root1)
   zeta=d*z
   q=Mvp(:q)
-  z=map(y->map(x->x(;q=q//z),y),H.para)
+  z=improve_type(map(y->map(x->x(;q=q//z),y),H.para))
   H=hecke(H.W,map(p->sort(p,by=x->Root1(scalar(x(q=zeta))).r),z))
 # xprintln("by ",z,"-twisting:",H)
   H
@@ -569,16 +570,14 @@ end
 #    columnLabels:=["irr.ch.","frac.eig.","family","series"])),"\n");
 #end;
 
-#findzeta:=function(W)local ct,r,s,uc,i,v;
-#  r:=getunpdeg(W)[1];uc:=UnipotentCharacters(W);
-#  s:=[];
-#  for i in [1..Size(uc)] do
-#    v:=Filtered(r,s->i in s.charNumbers);
-#    s[i]:=List(v,s->Root1(r=s.d)^(uc.a[i]+uc.A[i]
-#         -Sum(ReflectionDegrees(W)+ReflectionCoDegrees(W))));
-#  od;
-#  return s;
-#end;
+function findzeta(W)
+  r=getunpdeg(W)[1]
+  uc=UnipotentCharacters(W)
+  map(1:length(uc))do i
+    v=filter(s->i in charnumbers(s),r)
+    map(s->s.d^(uc.a[i]+uc.A[i]-sum(degrees(W)+codegrees(W))),v)
+  end
+end
 
 #checkseries:=function(s)local e,n,W;
 #  W:=s.spets;

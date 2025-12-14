@@ -1,5 +1,5 @@
-#  tbl/weyl2e6.jl    CHEVIE library           Frank Luebeck and Jean Michel
-#  Copyright (C) 1994 - 2001  The CHEVIE Team
+#  tbl/weyl2e6.jl    Chevie library           Frank Luebeck and Jean Michel
+#  Copyright (C) 1994 - 2001  The Chevie Team
 
 chevieset("2E6", :NrConjugacyClasses, 25)
 
@@ -304,22 +304,20 @@ chevieset("2E6", :UnipotentCharacters,
      :levi=>2:5,:eigenvalue=>-1,:cuspidalName=>"D_4",:charNumbers=>[14,28,13]), 
   mkcuspidal("E_6",29,E(3)),
   mkcuspidal("E_6",30,E(3,2))],
-  :families=>[Family("C1", [1]), Family("C1", [2]), Family("C1", [15]),
-          Family("C1", [16]), Family("C1", [11]), Family("C1", [12]),
-          Family("C1", [26]), Family("C1", [27]), Family("C1", [21]),
-          Family("C1", [20]), Family("C'1", [22]), Family("C'1", [23]),
-          Family("C1", [25]), Family("C1", [24]),
+  :families=>[Family(:C1, [1]), Family(:C1, [2]), Family(:C1, [15]),
+          Family(:C1, [16]), Family(:C1, [11]), Family(:C1, [12]),
+          Family(:C1, [26]), Family(:C1, [27]), Family(:C1, [21]),
+          Family(:C1, [20]), Family("C'1", [22]), Family("C'1", [23]),
+          Family(:C1, [25]), Family(:C1, [24]),
    # change last eigenvalue, and negate last line...
-   Family("C2",[4,10,7,13],Dict(:name=>"Cd_2",:eigenvalues=>[1,1,1,1],
-    :fourierMat=>1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;-1 1 1 -1],
-    :sh => [1, 1, 1, 1])),
+   Family(:C2,[4,10,7,13];name="Cd_2",eigenvalues=[1,1,1,1],
+    fourierMat=1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;-1 1 1 -1],sh=[1, 1, 1, 1]),
    # change last eigenvalue
-   Family("C2",[5,9,8,14],Dict(:eigenvalues=>[1,1,1,1],:name=>"Cc_2",
-     :sh => [1, 1, 1, 1])),
+   Family(:C2,[5,9,8,14];eigenvalues=[1,1,1,1],name="Cc_2",sh=[1, 1, 1, 1]),
    # change 6th eigenvalue
-   Family("S3", [18, 17, 3, 19, 6, 28, 29, 30], Dict(:name => "S3b",
-     :eigenvalues=>[1, 1, 1, 1, 1, 1, E(3),E(3,2)],
-     :sh => [1, 1, 1, 1, 1, 1, E(3, 2), E(3)]))],
+   Family(:S3, [18, 17, 3, 19, 6, 28, 29, 30];name="S3b",
+     eigenvalues=[1, 1, 1, 1, 1, 1, E(3),E(3,2)],
+     sh=[1, 1, 1, 1, 1, 1, E(3, 2), E(3)])],
   :a=>[0,36,7,3,15,7,3,15,15,3,2,20,3,15,1,25,7,7,7,11,5,4,13,10,6,6,12,7,7,7],
   :A=>[0, 36, 29, 21, 33, 29, 21, 33, 33, 21, 16, 34, 21, 33, 11, 35, 29, 29,
        29, 31, 25, 23, 32, 30, 26, 24, 30, 29, 29, 29])

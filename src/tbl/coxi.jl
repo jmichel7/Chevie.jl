@@ -277,7 +277,7 @@ chevieset(:I, :UnipotentCharacters, function(e)
     :cuspidalName=>string("I_2(",e,")[",join(cusp[x],","),"]"),
     :charNumbers=>[x+f+2]),1:length(cusp)))
   uc[:families] = [Family(Family(:Dihedral)(e),(1:length(cusp)+f).+2),
-                   Family("C1", [1]), Family("C1", [2])]
+                   Family(:C1, [1]), Family(:C1, [2])]
   uc[:parameters]=vcat([[0],[1]],uc[:families][1][:parameters])
   uc[:charSymbols]=map(p->chevieget(:I,:ParameterToSymbol)(e,p),uc[:parameters])
   # for S(k,l) the b is min(k+l,e-k-l)

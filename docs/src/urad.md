@@ -9,5 +9,5 @@ UnipotentGroup
 UnipotentGroup(::FiniteCoxeterGroup)
 Urad.reorder
 Urad.abelianpart
-Urad.decompose
+decompose(::Any,::UnipotentElement)
 ```

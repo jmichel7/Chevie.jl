@@ -14,7 +14,7 @@ end
 """
 `generic_decomposition_matrix(W,d)`
 
-This  function  obtains  the  `Φ_d`-decomposition  matrix for the reductive
+This  function obtains  the ``Φ_d``-decomposition  matrix for the reductive
 group  specified  by  the  Coxeter  group  or  coset  `W`  from the package
 [GenericDecMats](https://github.com/oscar-system/GenericDecMats.jl).
 
@@ -132,7 +132,7 @@ end
 `InducedDecompositionMatrix(R,W,d)`
 
 returns the induced from the Levi `L` to the reductive group `W` of the
-generic `Φ_d` decomposition matrix of `L`.
+generic ``Φ_d``-decomposition matrix of `L`.
 
 ```julia-repl
 julia> W=rootdatum(:psu,6)

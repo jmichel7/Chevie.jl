@@ -1,5 +1,5 @@
-#  tbl/cox2i.g         CHEVIE library         Meinolf Geck and Jean Michel
-#  Copyright (C) 1992 - 2001  The CHEVIE Team
+#  tbl/cox2i.g         Chevie library         Meinolf Geck and Jean Michel
+#  Copyright (C) 1992 - 2001  The Chevie Team
 
 chevieset("2I", :NrConjugacyClasses,m->div(m+3,2))
 
@@ -211,13 +211,13 @@ chevieset("2I", :UnipotentCharacters,function(e)
   uc[:charSymbols][1].S[[1,2]]=[[0,2],Int[]]
   uc[:charSymbols][2].S[[1,2]]=[[0,1,2],[1]]
   c(a)=E(2*e,a)+E(2*e,-a)
-  f=Family(Dict{Symbol,Any}(:eigenvalues=>map(s->E(2*e,s[1]*s[2]),symUnp),
-     :fourierMat=>toM(map(j->map(i->(c(i'*reverse(j))-c(i'*j))//e,symUnp),ac)),
-     :sh=>map(s->E(e,-s[1]*s[2]),ac),
-     :charNumbers=>collect(1:length(ac)).+2,
-     :name=>string("?",2+length(ac)),:special=>1))
+  f=Family(;eigenvalues=map(s->E(2*e,s[1]*s[2]),symUnp),
+     fourierMat=toM(map(j->map(i->(c(i'*reverse(j))-c(i'*j))//e,symUnp),ac)),
+     sh=map(s->E(e,-s[1]*s[2]),ac),
+     charNumbers=collect(1:length(ac)).+2,
+     name=string("?",2+length(ac)),special=1)
   f.printname=f.name
-  uc[:families]=[Family("C1",[1]),Family("C1",[2]),f]
+  uc[:families]=[Family(:C1,[1]),Family(:C1,[2]),f]
   uc[:a]=vcat([0,e],map(x->1,ac))
   uc[:A]=vcat([0,e],map(x->e-1,ac))
   if e==5

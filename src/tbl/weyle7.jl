@@ -1,5 +1,5 @@
-#A  tbl/weyle7.jl       CHEVIE library            Meinolf Geck, Jean Michel
-#Y  Copyright (C) 1994-  The CHEVIE Team
+#A  tbl/weyle7.jl       Chevie library            Meinolf Geck, Jean Michel
+#Y  Copyright (C) 1994-  The Chevie Team
 chevieset(:E7, :ReflectionDegrees, [2, 6, 8, 10, 12, 14, 18])
 
 chevieset(:E7, :simpleroots, [
@@ -3003,26 +3003,26 @@ chevieset(:E7, :UnipotentCharacters, function ()
        :cuspidalName => "E_6[\\zeta_3^2]", :charNumbers => [73, 74]), 
   mkcuspidal("E_7",75,-E(4);qeig=1//2),
   mkcuspidal("E_7",76,E(4);qeig=1//2)], 
-  :families => [Family("C1", [1]), 
-    Family(:C1, [2], ennola=-1), Family(:C1, [3]), Family(:C1, [4], ennola=-1), 
+  :families => [Family(:C1, [1]), 
+    Family(:C1, [2]; ennola=-1), Family(:C1, [3]), Family(:C1, [4]; ennola=-1), 
     Family(:C1, [9]), Family(:C1, [10],ennola=-1), Family(:C1, [11]), 
-    Family(:C1, [12],ennola=-1), Family(:C1, [25]), Family(:C1, [26],ennola=-1),
+    Family(:C1, [12];ennola=-1), Family(:C1, [25]), Family(:C1, [26];ennola=-1),
     Family(:C1, [27]), Family(:C1, [28],ennola=-1), Family(:C1, [31]), 
-    Family(:C1, [32],ennola=-1), Family(:C1, [35]), Family(:C1, [36],ennola=-1),
+    Family(:C1, [32];ennola=-1), Family(:C1, [35]), Family(:C1, [36];ennola=-1),
     Family(:C1, [37]), Family(:C1, [38],ennola=-1), Family(:C1, [39]), 
-    Family(:C1, [40],ennola=-1), Family(:C1, [41]), Family(:C1, [42],ennola=-1),
+    Family(:C1, [40];ennola=-1), Family(:C1, [41]), Family(:C1, [42];ennola=-1),
     Family(:C1, [53]), Family(:C1, [54],ennola=-1), 
-    Family(:C2, [18, 15, 7, 70], ennola =-4), 
-    Family(:C2, [29, 6, 24, 63], ennola =4), 
-    Family(:C2, [55, 44, 33, 65], ennola =3), 
-    Family(:C2, [57, 21, 52, 69], ennola =2), 
-    Family(:C2, [58, 22, 51, 62], ennola =-2), 
-    Family(:C2, [56, 43, 34, 66], ennola =-3), 
-    Family(:C2, [30, 5, 23, 67], ennola =-4), 
-    Family(:C2, [17, 16, 8, 61], ennola =4), 
-    Family(:LTQZ2, [60, 59, 76, 75], cospecial=2, ennola=3), 
-    Family("S3", [50, 47, 20, 46, 14, 68, 72, 74], ennola=-5), 
-    Family("S3", [49, 48, 19, 45, 13, 64, 71, 73], ennola=5)], 
+    Family(:C2, [18, 15, 7, 70]; ennola =-4), 
+    Family(:C2, [29, 6, 24, 63]; ennola =4), 
+    Family(:C2, [55, 44, 33, 65]; ennola =3), 
+    Family(:C2, [57, 21, 52, 69]; ennola =2), 
+    Family(:C2, [58, 22, 51, 62]; ennola =-2), 
+    Family(:C2, [56, 43, 34, 66]; ennola =-3), 
+    Family(:C2, [30, 5, 23, 67]; ennola =-4), 
+    Family(:C2, [17, 16, 8, 61]; ennola =4), 
+    Family(:LTQZ2, [60, 59, 76, 75]; cospecial=2, ennola=3), 
+    Family(:S3, [50, 47, 20, 46, 14, 68, 72, 74]; ennola=-5), 
+    Family(:S3, [49, 48, 19, 45, 13, 64, 71, 73]; ennola=5)], 
   :a => [0, 63, 46, 1, 25, 4, 3, 30, 36, 3, 2, 37, 16, 7, 3, 30, 30, 3, 16, 7, 10, 13, 25, 4, 6, 21, 12, 15, 4, 25, 6, 21, 8, 15, 22, 5, 20, 7, 6, 21, 10, 13, 15, 8, 16, 7, 7, 16, 16, 7, 13, 10, 14, 9, 8, 15, 10, 13, 11, 11, 30, 13, 4, 16, 8, 15, 25, 7, 10, 3, 16, 7, 16, 7, 11, 11], 
   :A => [0, 63, 62, 17, 59, 38, 33, 60, 60, 27, 26, 61, 56, 47, 33, 60, 60, 33, 56, 47, 50, 53, 59, 38, 42, 57, 48, 51, 38, 59, 42, 57, 48, 55, 58, 41, 56, 43, 42, 57, 50, 53, 55, 48, 56, 47, 47, 56, 56, 47, 53, 50, 54, 49, 48, 55, 50, 53, 52, 52, 60, 53, 38, 56, 48, 55, 59, 47, 50, 33, 56, 47, 56, 47, 52, 52])
 end)

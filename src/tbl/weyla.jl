@@ -164,7 +164,7 @@ chevieset(:A, :UnipotentCharacters,function(n)
     :relativeType=>TypeIrred(;series=:A,indices=1:n,rank=n), 
     :parameterExponents=>fill(1,n),:cuspidalName=>"",:eigenvalue=>1,
     :charNumbers=>1:length(pp))],
-  :families=>map(i->Family("C1",[i]), 1:length(pp)), 
+  :families=>map(i->Family(:C1,[i]), 1:length(pp)), 
   :charParams=>pp,:charSymbols=>map(x->CharSymbol([βset(x)]),pp),
   :a=>ci[:a],:A=>ci[:A])
 end)

@@ -1,5 +1,5 @@
-# tbl/cmplxg27.jl          CHEVIE library          Gunter Malle, Jean Michel
-# Copyright (C) 1998 - 2005  The CHEVIE Team
+# tbl/cmplxg27.jl          Chevie library          Gunter Malle, Jean Michel
+# Copyright (C) 1998 - 2005  The Chevie Team
 
 # of interest are the alternate presentations of the braid group:
 chevieset(:G27,:AltPres,[
@@ -265,15 +265,15 @@ chevieset(:G27, :HeckeRepresentation, function (para, rootpara, i)
   end
 end)
 
-CHEVIE.families[:Y6]=Family(Dict{Symbol, Any}(:name => "Y_6",
-  :explanation => "subcategory of DQ(B2).20",
-  :fourierMat => [-root(5) -root(5) -2*root(5)  -2*root(5)  -5  -5;
+chevieset(:families,:Y6,Family(;name="Y_6",
+  explanation= "subcategory of DQ(B2).20",
+  fourierMat= [-root(5) -root(5) -2*root(5)  -2*root(5)  -5  -5;
      -root(5)  -root(5)  -2*root(5)  -2*root(5)  5  5;
      -2*root(5)  -2*root(5)  -5+root(5)  5+root(5)  0  0;
      -2*root(5)  -2*root(5)  5+root(5)  -5+root(5)  0  0;
      -5  5  0  0  5  -5; 
      -5  5  0  0  -5  5]//10,
-  :eigenvalues=>[1,1,E(5,3),E(5,2),-1,1], :special=>1, :cospecial=>1))
+  eigenvalues=[1,1,E(5,3),E(5,2),-1,1], special=1, cospecial=1))
 
 chevieset(:G27, :UnipotentCharacters,
 Dict{Symbol, Any}(:a => [0, 45, 1, 16, 1, 16, 1, 16, 1, 16, 3, 3, 12, 12, 16,
@@ -332,21 +332,21 @@ Dict{Symbol, Any}(:a => [0, 45, 1, 16, 1, 16, 1, 16, 1, 16, 3, 3, 12, 12, 16,
  mkcuspidal("G_{27}",62,E(20,3);qeig=1//2)],
  :families => Family[Family(:C1,[1]),
  Family(Family(:X)(3)*Family(:Y6),[5, 3, 38, 37, 35, 16, 9, 7, 40, 39, 36, 18,
- 44, 43, 42, 41, 46, 45],signs=[-1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1,
+ 44, 43, 42, 41, 46, 45];signs=[-1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1,
  1, 1, 1, 1],ennola=-14,cospecial=7),
- Family(:C2,[30, 11, 12, 47], ennola=-4),
- Family(Family(:TQZ)(3,E(3),(E(1), E(3))),[26, 28, 23, 49, 52, 53, 51, 48, 50],
+ Family(:C2,[30, 11, 12, 47]; ennola=-4),
+ Family(Family(:TQZ)(3,E(3),(E(1), E(3))),[26, 28, 23, 49, 52, 53, 51, 48, 50];
         ennola=4,cospecial=3),
- Family(conj(Family(:X)(3)),[33, 31, 54], ennola=-3),
- Family(Family(:Dihedral)(5)*Family(:TQZ)(2,E(2),(E(1), E(2))),[19, 20, 66, 65, 21, 22, 64, 63, 58, 57, 60, 59, 56, 55, 62, 61], ennola=-4,cospecial=2),
- Family(Family(:X)(3),[34, 32, 67],ennola=-2),
- Family(Family(:TQZ)(3,E(3,2)),[24, 27, 25, 72, 69, 73, 68, 71, 70],
+ Family(conj(Family(:X)(3)),[33, 31, 54]; ennola=-3),
+ Family(Family(:Dihedral)(5)*Family(:TQZ)(2,E(2),(E(1), E(2))),[19, 20, 66, 65, 21, 22, 64, 63, 58, 57, 60, 59, 56, 55, 62, 61]; ennola=-4,cospecial=2),
+ Family(Family(:X)(3),[34, 32, 67];ennola=-2),
+ Family(Family(:TQZ)(3,E(3,2)),[24, 27, 25, 72, 69, 73, 68, 71, 70];
         signs=[1, 1, 1, 1, 1, 1, -1, -1, -1],ennola=8,cospecial=2),
- Family(:C2,[29, 13, 14, 74],ennola=4),
+ Family(:C2,[29, 13, 14, 74];ennola=4),
  Family(conj(Family(:X)(3)*Family(:Y6)),[6, 4, 77, 78, 75, 15, 10, 8, 79, 80,
- 76, 17, 84, 83, 81, 82, 86, 85],signs=[-1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1,
+ 76, 17, 84, 83, 81, 82, 86, 85];signs=[-1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1,
  1, -1, 1, 1, 1, 1],ennola=8,cospecial=7),
- Family(:C1,[2],ennola=-1)],
+ Family(:C1,[2];ennola=-1)],
  :A => [0, 45, 29, 44, 29, 44, 29, 44, 29, 44, 33, 33, 42, 42, 44, 29, 44, 29,
  39, 39, 39, 39, 36, 41, 41, 36, 41, 36, 42, 33, 37, 40, 37, 40, 29, 29, 29,
  29, 29, 29, 29, 29, 29, 29, 29, 29, 33, 36, 36, 36, 36, 36, 36, 37, 39, 39,

@@ -1,5 +1,5 @@
-#  tbl/cmplxg25.jl      CHEVIE library          Gunter Malle and Jean Michel
-#  Copyright (C) 1998-  The CHEVIE Team
+#  tbl/cmplxg25.jl      Chevie library          Gunter Malle and Jean Michel
+#  Copyright (C) 1998-  The Chevie Team
 
 chevieset(:G25,:simpleroots,[0  0  -1;
                          -(2*E(3,2)+1)//3 -(2*E(3,2)+1)//3 -(2*E(3,2)+1)//3;
@@ -250,15 +250,15 @@ Dict{Symbol, Any}(:a => [0, 12, 12, 12, 2, 2, 4, 4, 1, 12, 4, 1, 12, 4, 8, 2,
  mkcuspidal("G_{25}",36,-E(3)),
  mkcuspidal("G_{25}",37,E(3))],
  :families => Family[Family(:C1,[1]), 
-   Family(Family(:X)(3),[12, 9, 25],signs=[1, 1, -1],ennola=-2),
-   Family(Family(:QZ)(3, [perm"()", [E(3)]]),[16, 19, 20, 28, 26, 6, 27, 5, 29],
+   Family(Family(:X)(3),[12, 9, 25];signs=[1, 1, -1],ennola=-2),
+   Family(Family(:QZ)(3, [perm"()", [E(3)]]),[16, 19, 20, 28, 26, 6, 27, 5, 29];
           signs=[1, 1, 1, 1, -1, 1, 1, 1, 1],ennola=4,cospecial=2), 
-   Family(Family(:X)(6),[17,23,7,24,14, 32, 34, 30, 36, 8, 37, 31, 11, 35, 33],
+   Family(Family(:X)(6),[17,23,7,24,14, 32, 34, 30, 36, 8, 37, 31, 11, 35, 33];
           signs=[1,1,1,1,1,1,-1,-1,1,-1,1,-1,1,1,-1],ennola=-15),
-   Family(Family(:X)(3), [22, 21, 38],signs=[1, 1, -1],ennola=1),
-   Family(Family(:X)(3),[15, 18, 39],signs=[1, 1, -1],ennola=-3),
+   Family(Family(:X)(3), [22, 21, 38];signs=[1, 1, -1],ennola=1),
+   Family(Family(:X)(3),[15, 18, 39];signs=[1, 1, -1],ennola=-3),
    Family(SubFamilyij(Family(:ExtPowCyclic)(6,3),1,2,root(-2)),
-        [3, 13, 40, 10, 41, 2, 43, 42, 4, 44],
+        [3, 13, 40, 10, 41, 2, 43, 42, 4, 44];
         signs=[1, 1, 1, 1, -1, 1, -1, 1, -1, -1],ennola=-9,cospecial=6)],
  :A => [0,
  24, 24, 24, 16, 16, 20, 20, 11, 24, 20, 11, 24, 20, 22, 16, 20, 22, 16, 16,

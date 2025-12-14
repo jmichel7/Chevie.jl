@@ -16,7 +16,7 @@ module Tests
 using Chevie
 export RG
 
-CHEVIE.CheckIndexChars=true
+Chevie.CheckIndexChars=true
 
 const test=Dict{Symbol,@NamedTuple{applicable::Function,comment::String}}()
 

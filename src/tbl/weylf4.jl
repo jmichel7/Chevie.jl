@@ -1,5 +1,5 @@
-#  tbl/weylf4.g              CHEVIE library          Meinolf Geck, Jean Michel
-#  Copyright (C) 1994 - 2012  The CHEVIE Team
+#  tbl/weylf4.g              Chevie library          Meinolf Geck, Jean Michel
+#  Copyright (C) 1994 - 2012  The Chevie Team
 #
 #  This file contains the irreducible representations of the Hecke algebra
 #  H of F_4 (in terms of W-graphs). They have been determined by H. Naruse
@@ -618,26 +618,26 @@ chevieset(:F4, :HeckeRepresentation, function (param, rootpara, i)
   end
 end)
 
-CHEVIE.families[:S4]=Family(Dict{Symbol, Any}(
-  :group=>Group(perm"(1,4)", perm"(2,4)", perm"(3,4)"),
-  :lusztig=>true,
-  :charLabels => ["(1,1)", "(1,\\lambda^{\\wedge3})", "(1,\\sigma)",
+chevieset(:families,:S4,Family(;
+  group=Group(perm"(1,4)", perm"(2,4)", perm"(3,4)"),
+  lusztig=true,
+  charLabels= ["(1,1)", "(1,\\lambda^{\\wedge3})", "(1,\\sigma)",
      "(1,\\lambda^{\\wedge2})", "(1,\\lambda)", "(g_2,1)",
      "(g_2,\\varepsilon')", "(g_2,\\varepsilon'')", "(g_2,\\varepsilon)",
      "(g'_2,1)", "(g'_2,\\varepsilon)", "(g'_2,\\varepsilon')",
      "(g'_2,\\varepsilon'')", "(g'_2,r)", "(g_3,1)", "(g_3,\\zeta_3)",
      "(g_3,\\zeta_3^2)", "(g_4,1)", "(g_4,-1)", "(g_4,i)", "(g_4,-i)"],
-  :size=>21,
-  :eigenvalues=>[1,1,1,1,1,1,-1,1,-1,1,1,1,1,-1,1,E(3),E(3,2),1,-1,E(4),-E(4)],
-  :name => "D(S_4)", :explanation => "Lusztig'sDrinfeldDouble(S_4)",
-  :mellin=>cat(
+  size=21,
+  eigenvalues=[1,1,1,1,1,1,-1,1,-1,1,1,1,1,-1,1,E(3),E(3,2),1,-1,E(4),-E(4)],
+  name = "D(S_4)", :explanation => "Lusztig'sDrinfeldDouble(S_4)",
+  mellin=cat(
     [1 1 2 3 3;1 -1 0 -1 1;1 1 2 -1 -1;1 1 -1 0 0;1 -1 0 1 -1],
     [1 1 1 1;1 1 -1 -1;1 -1 1 -1;1 -1 -1 1],
     [1 1 1 1 2;1 -1 -1 1 0;1 1 1 1 -2;1 -1 1 -1 0;1 1 -1 -1 0],
     [1 1 1;1 E(3) E(3,2);1 E(3,2) E(3)],
     [1 1 1 1;1 -1 E(4) -E(4);1 1 -1 -1;1 -1 -E(4) E(4)],dims=(1,2)),
-  :mellinLabels => ["(1,1)", "(1,g_2)", "(1,g'_2)", "(1,g_3)", "(1,g_4)", "(g_2,1)", "(g_2,g_2)", "(g_2,g'_2)", "(g_2,2c)", "(g'_2,1)", "(g'_2,g_2)", "(g'_2,g'_2)", "(g'_2,2c)", "(g'_2,g_4)", "(g_3,1)", "(g_3,g_3)", "(g_3,g_3^2)", "(g_4,1)", "(g_4,g_4)", "(g_4,g_2)", "(g_4,g_4^{-1})"],
-  :fourierMat=>[
+  mellinLabels= ["(1,1)", "(1,g_2)", "(1,g'_2)", "(1,g_3)", "(1,g_4)", "(g_2,1)", "(g_2,g_2)", "(g_2,g'_2)", "(g_2,2c)", "(g'_2,1)", "(g'_2,g_2)", "(g'_2,g'_2)", "(g'_2,2c)", "(g'_2,g_4)", "(g_3,1)", "(g_3,g_3)", "(g_3,g_3^2)", "(g_4,1)", "(g_4,g_4)", "(g_4,g_2)", "(g_4,g_4^{-1})"],
+  fourierMat=[
    1 1 2 3 3 6 6 6 6 3 3 3 3 6 8 8 8 6 6 6 6;
    1 1 2 3 3 -6 -6 -6 -6 3 3 3 3 6 8 8 8 -6 -6 -6 -6;
    2 2 4 6 6 0 0 0 0 6 6 6 6 12 -8 -8 -8 0 0 0 0;
@@ -659,18 +659,18 @@ CHEVIE.families[:S4]=Family(Dict{Symbol, Any}(
    6 -6 0 6 -6 0 0 0 0 6 6 -6 -6 0 0 0 0 -12 12 0 0;
    6 -6 0 6 -6 0 0 0 0 -6 -6 6 6 0 0 0 0 0 0 12 -12;
    6 -6 0 6 -6 0 0 0 0 -6 -6 6 6 0 0 0 0 0 0 -12 12]//24,
-  :perm => perm"(16,17)(20,21)",
-  :x => [Perm(), Perm(), Perm(), Perm(), Perm(), perm"(1,2)", perm"(1,2)",
+  perm= perm"(16,17)(20,21)",
+  x=[Perm(), Perm(), Perm(), Perm(), Perm(), perm"(1,2)", perm"(1,2)",
          perm"(1,2)", perm"(1,2)", perm"(1,2)(3,4)", perm"(1,2)(3,4)",
          perm"(1,2)(3,4)", perm"(1,2)(3,4)", perm"(1,2)(3,4)", perm"(1,2,3)",
          perm"(1,2,3)", perm"(1,2,3)", perm"(1,2,3,4)", perm"(1,2,3,4)",
          perm"(1,2,3,4)", perm"(1,2,3,4)"],
-  :y => [Perm(), perm"(1,2)", perm"(1,2)(3,4)", perm"(1,2,3)",
+  y=[Perm(), perm"(1,2)", perm"(1,2)(3,4)", perm"(1,2,3)",
          perm"(1,2,3,4)", Perm(), perm"(3,4)", perm"(1,2)", perm"(1,2)(3,4)",
          Perm(), perm"(3,4)", perm"(1,2)(3,4)", perm"(1,3)(2,4)",
          perm"(1,3,2,4)", Perm(), perm"(1,2,3)", perm"(1,3,2)", Perm(),
          perm"(1,2,3,4)", perm"(1,3)(2,4)", perm"(1,4,3,2)"],
-  :special=>1))
+  special=1))
 
 chevieset(:F4, :UnipotentCharacters,Dict{Symbol,Any}(
   :harishChandra=>[
@@ -692,13 +692,13 @@ chevieset(:F4, :UnipotentCharacters,Dict{Symbol,Any}(
     Family(:C1,[4 ]),
     Family(:C1,[10 ]),
     Family(:C1,[13 ]),
-    Family(:C1,[21 ],ennola=-1),
-    Family(:C1,[22 ],ennola=-1),
-    Family(:C1,[23 ],ennola=-1),
-    Family(:C1,[24 ],ennola=-1),
-    Family(:C2,[17, 7, 5, 30 ],ennola=-4),
-    Family(:C2,[20, 8, 6, 26 ],ennola=-4),
-    Family(:S4,[16,37,15,2,11,25,28,18,31,12,36,3,9,27,14,34,35,19,29,33,32],
+    Family(:C1,[21 ];ennola=-1),
+    Family(:C1,[22 ];ennola=-1),
+    Family(:C1,[23 ];ennola=-1),
+    Family(:C1,[24 ];ennola=-1),
+    Family(:C2,[17, 7, 5, 30 ];ennola=-4),
+    Family(:C2,[20, 8, 6, 26 ];ennola=-4),
+    Family(:S4,[16,37,15,2,11,25,28,18,31,12,36,3,9,27,14,34,35,19,29,33,32];
      ennola=2)],
   :a=>[0,4,4,24,1,13,1,13,4,2,4,4,10,4,4,4,1,4,4,13,3,9,3,9,4,13,4,4,4,1,4,4,
       4,4,4,4,4],

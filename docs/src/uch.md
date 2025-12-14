@@ -20,10 +20,12 @@ lusztig_induction_table
 Families
 Family
 Chars.charnumbers(::Family)
-galois(f::Family,p::Int)
+CyclotomicNumbers.galois(::Family,::Int)
 PermGroups.invpermute(f::Family,p::Perm)
 conj(f::Family)
 fourier
+eigen(::Family)
+Base.length(::Family)
 drinfeld_double
 ndrinfeld_double
 family_imprimitive

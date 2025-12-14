@@ -434,7 +434,7 @@ function schur_functor(A::AbstractMatrix,λ)
   p=findfirst(==(λ),partitions(n))
 # r=representation(Sn,p)
 # does not work with the above repr but works with the below one. Fishy!
-  r=CHEVIE.imp[:Representation](1,1,n,p)[2:end]
+  r=chevieget(:imp,:Representation)(1,1,n,p)[2:end]
   rep(x)=isone(x) ? one(r[1]) : prod(r[word(Sn,x)])
   f(μ)=prod(factorial,last.(tally(μ)))
   basis=multisets(axes(A,1),n)
@@ -1949,8 +1949,9 @@ end
 """
 `decomposition_matrix(W,p)`
 
-This provides an interface to some decomposition matrices for Weyl groups
-available in the Chevie library: those for `E₆, E₇, E₈` for `p=2,3,5,7`.
+This  provides an interface to some  decomposition matrices for Weyl groups
+available  in the Chevie  library: those for  `W(E₆), W(E₇), W(E₈)` for `p`
+dividing `|W|`.
 """
 function decomposition_matrix(W,p)
   m=decomposition_matrix.(refltype(W),p)

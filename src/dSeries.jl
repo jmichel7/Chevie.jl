@@ -7,22 +7,22 @@ what has been established and what is still conjectural.
 
 If  `(𝐋,λ)` is  a `d`-cuspidal  pair then  the constituents  of the Lusztig
 induced  ``R_𝐋^𝐆(λ)`` are called a `d`-Harish-Chandra series; they form the
-unipotent part of an `l`-block of ``𝐆^F``. It is conjectured (and proven in
-some   cases)  that  the  ``𝐆^F``-endomorphism   algebra  of  the  `l`-adic
-cohomology  of the  variety `𝐗`  which defines  the Lusztig  induction is a
-`d`-cyclotomic Hecke algebra ``H_𝐆(𝐋,λ)`` for the group
-``W_𝐆(𝐋,λ):=N_𝐆(𝐋,λ)/𝐋``,  which  is  a  complex  reflection group --- here
-`d`-cyclotomic  means that the parameters  of ``H_𝐆(𝐋,λ)`` are monomials in
-`q`  and that ``H_𝐆(𝐋,λ)``  specializes to the  algebra of ``W_𝐆(𝐋,λ)`` for
-``q↦ζ_d``.
+unipotent  part  of  an  `l`-block  of  ``𝐆^F`` [bmm93; 5.24](@cite). It is
+conjectured [bm97; 5.7](@cite) (and proven in some cases) that the
+``𝐆^F``-endomorphism  algebra of the `l`-adic cohomology of the variety `𝐗`
+which  defines  the  Lusztig  induction  is  a `d`-cyclotomic Hecke algebra
+``H_𝐆(𝐋,λ)``  for the  group ``W_𝐆(𝐋,λ):=N_𝐆(𝐋,λ)/𝐋``,  which is  a complex
+reflection  group  ---  here  `d`-cyclotomic  means  that the parameters of
+``H_𝐆(𝐋,λ)``  are monomials in `q` and that ``H_𝐆(𝐋,λ)`` specializes to the
+algebra of ``W_𝐆(𝐋,λ)`` for ``q↦ζ_d``.
 
 It  follows that the decomposition of the  Lusztig induction is of the form
 ``R_𝐋^𝐆(λ)=∑_{ϕ∈Irr(W_𝐆(𝐋,λ))}(-1)^{nᵩ} ϕ(1)γᵩ,`` where `γᵩ` is a unipotent
 character   of  `𝐆^F`  attached  to  `ϕ`  and  where  `nᵩ`  is  the  degree
 ``H^{nᵩ}_c(𝐗)``  where  `γᵩ`  occurss;  and  further  for  any  `ϕ` we have
 ``R_𝐋^𝐆(λ)(1)=  (-1)^{nᵩ} γᵩ(1)Sᵩ`` where `Sᵩ` is  the Schur element of the
-character  of  ``H_𝐆(𝐋,λ)``  which  deforms  to  `ϕ`. The function |Series|
-allows to explore a `d`-Harish-Chandra series.
+character   of   ``H_𝐆(𝐋,λ)``   which   deforms   to   `ϕ`.   The  function
+[`Series`](@ref) allows to explore a `d`-Harish-Chandra series.
 
 ```julia-repl
 julia> W=rootdatum("3D4")
@@ -89,7 +89,7 @@ julia> Series(W,l[5]...)
 Above  we explore the `3`-series corresponding  to the trivial character of
 the  torus of type `(q-1)(q-ζ₃)`. For cyclic groups ``W_𝐆(𝐋,λ)`` we display
 the  parameters in  the table  since they  are associated  to characters of
-``W_𝐆(𝐋,λ)``. Finally the mention '(mod 3)' which appears in the 'φ' column
+``W_𝐆(𝐋,λ)``. Finally the mention `(mod 3)` which appears in the `φ` column
 means that in this case the axioms leave an ambiguity in the correspondence
 between  unipotent  characters  `γᵩ`  and  characters  `ϕ` (as well as with
 parameters):  the correspondence is known only up to a translation by 3 (in
@@ -465,7 +465,7 @@ end
 # optional fields (in s.prop)
 #  .charNumbers \CE(𝐆,(𝐋,λ) (indices in UnipotentCharacters(.spets))
 #  .degree      The degree of R_𝐋^𝐆(λ)=|𝐆/L|_{q'} degλ
-#  .eps         For each χ in .charNumbers sign(<χ,R_𝐋^𝐆(λ)>)
+#  .signs       For each χ in .charNumbers sign(<χ,R_𝐋^𝐆(λ)>)
 #  .dims        χ(1) for γ_χ; for each χ in .charNumbers abs(<χ,R_𝐋^𝐆(λ)>)
 #  .WGL         W_𝐆(L,λ)
 #  .Hecke       H_𝐆(L,λ)
@@ -484,39 +484,37 @@ end
 If the reflection coset or group `W` corresponds to the algebraic group `𝐆`
 and  `cuspidal` is the  index of a  `d`-cuspidal unipotent character `λ` of
 the  `d`-split Levi `𝐋`, constructs the `d`-series ``R_𝐋^𝐆(λ)``. The result
-`s` has the following fields and functions:
+`s` has the following properties and functions:
 
-`s.spets`: the reflection group or coset `W`.
+  - `s.spets`: the reflection group or coset `W`.
 
-`s.levi`: the subcoset `L`.
+  - `s.levi`: the subcoset `L`.
 
-`s.cuspidal`: the index of `λ` in `UnipotentCharacters(L)`.
+  - `s.cuspidal`: the index of `λ` in `UnipotentCharacters(L)`.
 
-`s.d`: the value of `d` (a `Root1`).
+  - `s.d`: the value of `d` (a `Root1`).
 
-`relative_group(s)`: the group ``W_𝐆(𝐋,λ)``.
+  - `relative_group(s)`: the group ``W_𝐆(𝐋,λ)``.
 
-`s.e`: the order of ``W_𝐆(𝐋,λ)``.
+  - `s.e`: the order of ``W_𝐆(𝐋,λ)``.
 
-`dSeries.RLG(s)`: the `UnipotentCharacter` given by ``R_𝐋^𝐆(λ)``.
+  - `dSeries.RLG(s)`: the `UnipotentCharacter` given by ``R_𝐋^𝐆(λ)``.
 
-`dSeries.eps(s)`:  for each  character `φ`  of `relative_group(s)` the sign
-``(-1)^{n_φ}``  in `RLG(s)` of the corresponding constituent `γᵩ` of `RLG(s)`.
+  - `signs(s)`:  for each  character `φ`  of `relative_group(s)` the sign ``(-1)^{n_φ}``  in `RLG(s)` of the corresponding constituent `γᵩ` of `RLG(s)`.
 
-`degree(s)`: the generic degree of `RLG(s)`, as a `CycPol`.
+  - `degree(s)`: the generic degree of `RLG(s)`, as a `CycPol`.
 
-`charnumbers(s)`:  the indices in  `UnipotentCharacters(W)` of the
+  - `charnumbers(s)`:  the indices in  `UnipotentCharacters(W)` of the
 constituents of `RLG(s)`.
 
-`hecke(s)`: the hecke algebra ``H_𝐆(𝐋,λ)``.
+  - `hecke(s)`: the hecke algebra ``H_𝐆(𝐋,λ)``.
 
 The function `Series` has another form:
 
 `Series(W [,d [,ad]];k...)`
 
-where  it returns a  vector of `Series`  corresponding to the cuspidal data
-described   by  the   arguments  and   the  keywords   (see  the  help  for
-`cuspidal_data`).
+where it returns a vector of `Series` corresponding to the
+[`cuspidal_data`](@ref) described by the arguments and the keywords.
 
 ```julia-repl
 julia> W=complex_reflection_group(4)
@@ -569,7 +567,7 @@ julia> charnumbers(s)
  9
  4
 
-julia> dSeries.eps(s)
+julia> signs(s)
 6-element Vector{Int64}:
   1
   1
@@ -658,7 +656,7 @@ function format(io::IO,s::Series)
   n="\\varphi"
   if haskey(s,:translation) n*="(mod $(s.translation))" end
   f(n, charnames(io,relative_group(s)))
-  f("\\varepsilon", s.eps)
+  f("\\varepsilon", s.signs)
 # if haskey(s, :eigen) f("\\hbox{eigen}", s.eigen) end
   if s.cyclic && s.e>1
     if haskey(s, :Hecke) f("\\hbox{parameter}", s.Hecke.para[1])
@@ -928,8 +926,8 @@ end
 
 We  assume `s.spets` is  split. We first  compute `relative_group(s)` if it
 has  not yet been done, as well as `RLG(s)`, and we compute `s.charNumbers,
-s.eps,  s.dims` such that  the `R_L^G` attached  to `s`is equal to `sum_{i∈
-charnumbers(s)}φᵢ  s.eps[i] s.dims[i]`  where `φᵢ`  is the `i`-th unipotent
+s.signs,  s.dims` such that  the `R_L^G` attached  to `s`is equal to `sum_{i∈
+charnumbers(s)}φᵢ  s.signs[i] s.dims[i]`  where `φᵢ`  is the `i`-th unipotent
 character (`s.dims` is thus the list of dimensions of irreducibles of the
 relative Weyl group).
 
@@ -939,7 +937,7 @@ elements of the relative algebra.
 function Chars.charnumbers(s::Series)
   get!(s,:charNumbers) do
   if s.levi==s.spets # cuspidal series
-    s.eps=[1]
+    s.signs=[1]
     s.dims=[1]
     return [s.cuspidal]
   end
@@ -948,7 +946,7 @@ function Chars.charnumbers(s::Series)
   uc=UnipotentCharacters(s.spets)
   if rlg!==nothing # easy case
     charNumbers=findall(!iszero,rlg.v)
-    s.eps=sign.(rlg.v[charNumbers])
+    s.signs=sign.(rlg.v[charNumbers])
     s.dims=abs.(rlg.v[charNumbers])
     s.span=degree(degree(s))-valuation(degree(s)).+uc.a.-uc.A
     return charNumbers
@@ -975,7 +973,7 @@ function Chars.charnumbers(s::Series)
     f=Int(f)
     if !(abs(f) in WGLdims(s)) return false end
     c[:dims]=abs(f)
-    c[:eps] =sign(f)
+    c[:signs] =sign(f)
     true
   end
   eig=eigen(UnipotentCharacters(s.levi))[s.cuspidal]
@@ -988,18 +986,18 @@ function Chars.charnumbers(s::Series)
   sort!(cand,by=x->x[:dims])
   sort!(WGLdims(s))
   function enrich(s,cand)
-    for n in [:charNumbers, :eps, :dims, :span] 
+    for n in [:charNumbers, :signs, :dims, :span] 
       setproperty!(s,n,getindex.(cand,n))
     end
     v=fill(0,length(uc))
-    for i in eachindex(s.charNumbers) v[s.charNumbers[i]]=s.dims[i]*s.eps[i] end
+    for i in eachindex(s.charNumbers) v[s.charNumbers[i]]=s.dims[i]*s.signs[i] end
     s.RLG=UniChar(s.spets,v)
     s.charNumbers
   end
   cands(n)=getindex.(cand,n)
   cands(n,l)=l isa Vector ? getindex.(cand[l],n) : cand[l][n]
   if length(cand)==length(WGLdims(s)) return enrich(s,cand) end
-  ud=cands(:dims).*ud[cands(:charNumbers)].*cands(:eps)
+  ud=cands(:dims).*ud[cands(:charNumbers)].*cands(:signs)
   v=Subsets_sum(degree(s)(Pol()),map(x->x(Pol()),ud),
                 WGLdims(s),improve_type(cands(:dims)))
   InfoChevie("# ", length(v), " found\n")
@@ -1034,7 +1032,7 @@ function Chars.charnumbers(s::Series)
     t=map(k->sum(t[filter(j->i[j]==k,eachindex(i))]),
                        1:nconjugacy_classes(s.spets))
     c=dlCharTable(s.spets)
-    v=filter(a->c[:,cands(:charNumbers,a)]*(cands(:dims,a).*cands(:eps,a))==t,v)
+    v=filter(a->c[:,cands(:charNumbers,a)]*(cands(:dims,a).*cands(:signs,a))==t,v)
   end
   if length(v)>1
     ChevieErr(s," ",join(factorset(map(x->cands(:charNumbers,x),v)),"x"),
@@ -1051,7 +1049,7 @@ function Chars.charnumbers(s::Series)
   end
 end
 
-eps(s::Series)=getp(charnumbers,s,:eps)
+SignedPerms.signs(s::Series)=getp(charnumbers,s,:signs)
 
 COMPACTCOHOMOLOGY=true
 function paramcyclic(s::Series)
@@ -1060,7 +1058,7 @@ function paramcyclic(s::Series)
   if e(s)==1 return (s.Hecke=hecke(relative_group(s))) end
   uc=UnipotentCharacters(s.spets)
   Schur=CycPoldegrees(uc)[charnumbers(s)]
-  Schur=map(x->degree(s)//Schur[x]*eps(s)[x],1:e(s))
+  Schur=map(x->degree(s)//Schur[x]*signs(s)[x],1:e(s))
   s.eigen=eigen(uc)[charnumbers(s)]
   LFrob=eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   m=degrees(Group(s.spets))
@@ -1120,7 +1118,7 @@ function paramcyclic(s::Series)
     end
   end
   p=inv(Perm(sortperm(r)))
-  for i in [:mC, :charNumbers, :eigen, :span, :eps, :dims, :permutable]
+  for i in [:mC, :charNumbers, :eigen, :span, :signs, :dims, :permutable]
     setproperty!(s,i,invpermute(getproperty(s,i),p))
   end
   s.translation=filter(t->
@@ -1138,7 +1136,7 @@ function paramcyclic(s::Series)
     m=circshift.(Ref(mC(s)),length(mC(s)):-1:1)
     m=findfirst(==(maximum(m[quality])),m)
     m=circshift(1:e(s),m-1)
-    for i in [:mC,:charNumbers,:eigen,:span,:eps,:dims,:permutable]
+    for i in [:mC,:charNumbers,:eigen,:span,:signs,:dims,:permutable]
       setproperty!(s,i,getproperty(s,i)[m])
     end
     s.translation=p

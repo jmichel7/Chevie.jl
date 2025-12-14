@@ -4,16 +4,16 @@ Families of unipotent characters
 The blocks of the (rectangular) matrix ``⟨Rᵪ,ρ⟩_{𝐆 ^F}`` when `χ` runs over
 `Irr(W)`  and  `ρ`  runs  over  the  unipotent  characters,  are called the
 *Lusztig  families*. When  `𝐆 `  is split  and `W`  is a Coxeter group they
-correspond  on the `Irr(W)` side to two-sided Kazhdan-Lusztig cells --- for
+correspond  on the `Irr(W)` side to two-sided Kazhdan-Lusztig cells -- for
 split  Spetses they  correspond to  Rouquier blocks  of the  Spetsial Hecke
 algebra.  The matrix of scalar products  ``⟨Rᵪ,ρ⟩_{𝐆 ^F}`` can be completed
 to   a  square  matrix  ``⟨A_{ρ'},ρ⟩_{𝐆  ^F}``  where  ``A_{ρ'}``  are  the
 *characteristic  functions of character  sheaves* on ``𝐆  ^F``; this square
 matrix is called the *Fourier matrix* of the family.
 
-The  'UnipotentCharacters' record in Chevie contains a field '.families', a
-list of family records containing information on each family, including the
-Fourier matrix. Here is an example.
+The  `UnipotentCharacters` object  in Chevie  has a  property `families`, a
+vector of `Family` objects containing information on each family, including
+the Fourier matrix. Here is an example.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -55,16 +55,23 @@ julia> charnames(uc)[uc.families[1].charNumbers]
  "G2[E3^2]"
 ```
 
-The  Fourier matrix is obtained  by 'fourier(f)'; the field 'f.charNumbers'
-holds  the indices of the unipotent characters  which are in the family. We
-obtain  the list of eigenvalues of Frobenius for these unipotent characters
-by  'Eigenvalues(f)'. The Fourier matrix  and vector of eigenvalues satisfy
-the  properties of  *fusion data*,  see below.  The field 'f.charLabels' is
-what  is displayed  in the  column 'labels'  when displaying the family. It
-contains  labels naturally attached to lines  of the Fourier matrix. In the
-case   of  reductive  groups,   the  family  is   always  attached  to  the
-"drinfeld_double"  of a small finite group  and the '.charLabels' come from
-this construction.
+The Fourier matrix is obtained by [`fourier`](@ref)`(f)`;
+[`charnumbers`](@ref)`(f)`  returns the indices of the unipotent characters
+which are in the family. We obtain the list of eigenvalues of Frobenius for
+these  unipotent characters by [`eigen`](@ref)`(f)`. [`special`](@ref)`(f)`
+(resp.  [`cospecial`](@ref)`(f)`) returns the  index in `f`  of the special
+(resp.  cospecial) character.The  Fourier matrix  and vector of eigenvalues
+satisfy   the   properties   of   *fusion   data*,  see  below.  The  field
+`f.charLabels`  is what is displayed in the column `labels` when displaying
+the  family. It contains labels naturally  attached to lines of the Fourier
+matrix.  In the case of reductive groups,  the family is always attached to
+the [`drinfeld_double`](@ref) of a small finite group and the `.charLabels`
+come from this construction.
+
+Methods  for  families  include  [`*`](@ref)  (tensor product), `conj` (see
+[`galois`](@ref)),  [`length`](@ref) (the number of unipotent characters in
+the family), [`Zbasedring`](@ref)
+
 """
 module Families
 
@@ -82,32 +89,20 @@ using ..Chevie
 
 Base.:(==)(f::Family,g::Family)=f.prop==g.prop
 
-getf(s::String)=getf(Symbol(s))
-
-function getf(s::Symbol)
-  f=chevieget(:families,s)
-  if f isa Function return f end
-  f=copyGapObj(f)
-  f.printname="Family("*repr(s)*")"
-  f
-end
-
 """
-`Family(f [, charNumbers [, opt]])`
+`Family(f [, charNumbers] ; opt)`
 
 This function creates a new family in two possible ways.
 
-In  the first case `f` is a string which denotes a family known to  Chevie.
-Examples are "S3",   "S4",   "S5"   which denote the family obtained as the
-Drinfeld  double of the symmetric group  on 3,4,5 elements, or "C2"   which
-denotes the Drinfeld double of the cyclic group of order 2.
+In  the first case `f` is a string or a symbol which denotes a family known
+to Chevie. Examples are `:S3, :S4, :S5` which denote the family obtained as
+the  Drinfeld double  of the  symmetric group  on 3,4,5  elements, or `:C2`
+which denotes the Drinfeld double of the cyclic group of order 2.
 
 In the second case `f` is already a `struct Family`.
 
-The other (optional) arguments add information to the family defined by the
-first argument. If given, the second argument becomes `f.charNumbers`. If
-given,  the third argument  `opt` is a  `Dict` whose keys  are added to the
-resulting family.
+If given, the second argument becomes `f.charNumbers`. 
+If given,  the `opt` are added as fields to the resulting family.
 
 If `opt` has a key `signs`, this should be a list of '1' and '-1', and then
 the  Fourier matrix  is conjugated  by the  diagonal matrix of those signs.
@@ -115,7 +110,7 @@ This  is used  in Spetses  to adjust  the matrix  to the choice of signs of
 unipotent degrees.
 
 ```julia-repl
-julia> Family("C2")
+julia> Family(:C2)
 Family(C₂)
 Drinfeld double D(ℤ/2)
 ┌──────┬────────────────────────────┐
@@ -127,7 +122,7 @@ Drinfeld double D(ℤ/2)
 │(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2│
 └──────┴────────────────────────────┘
 
-julia> Family("C2",4:7;signs=[1,-1,1,-1])
+julia> Family(:C2,4:7;signs=[1,-1,1,-1])
 Family(C₂,4:7,signs=[1, -1, 1, -1])
 Drinfeld double D(ℤ/2)
 ┌──────┬──────────────────────────────────┐
@@ -140,36 +135,38 @@ Drinfeld double D(ℤ/2)
 └──────┴──────────────────────────────────┘
 ```
 """
-function Family(s::Union{String,Symbol},v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
-  f=getf(s)
+function Family(s::Union{String,Symbol,Family},v::AbstractVector;opt...)
+  f=Family(s)
   f.charNumbers=v
-  merge!(f,d)
-  merge!(f,Dict(opt))
+  merge!(f,Dict{Symbol,Any}(opt))
 end
 
-function Family(s::Union{String,Symbol},d::Dict=Dict{Symbol,Any}())
-  f=getf(s)
-  if isempty(d) && f isa Function return f end
-  merge!(f,d)
-end
-
-function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
+function Family(f::Family;opt...)
   f=copyGapObj(f)
-  f.charNumbers=v
-  merge!(f,d)
-  merge!(f,Dict(opt))
+  merge!(f,Dict{Symbol,Any}(opt))
 end
 
-function Family(f::Family,d::Dict=Dict{Symbol,Any}();opt...)
+Family(s::String)=Family(Symbol(s))
+
+function Family(s::Symbol)
+  f=chevieget(:families,s)
+  if f isa Function return f end
   f=copyGapObj(f)
-  merge!(f,d)
-  merge!(f,Dict(opt))
+  f.printname="Family("*repr(s)*")"
+  f
 end
 
-function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}())
-  f=Family(copy(f))
-  f.charNumbers=v
-  merge!(f,d)
+Family(;opt...)=Family(Dict{Symbol,Any}(opt))
+
+function Base.merge!(f::Family,d::Dict)
+  merge!(f.prop,d)
+  if !haskey(f,:charLabels) f.charLabels=string.(1:length(f)) end
+  if haskey(d,:signs)
+    signs=d[:signs]
+    f.fourierMat=Diagonal(signs)*f.fourierMat*Diagonal(signs)
+    if haskey(f,:perm) && -1 in f.fourierMat^2 delete!(f.prop,:perm) end
+  end
+  f
 end
 
 "`special(f::Family)` the index of the special character in `f`"
@@ -187,6 +184,7 @@ Base.length(f::Family)=length(eigen(f))
 "`signs(f::Family)`: the signs of the family."
 SignedPerms.signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
 
+"`qeigen(f::Family)`: the factional power of `q` in the eigenvalues of Frobenius."
 qeigen(f::Family)=haskey(f,:qEigen) ? f.qEigen : zeros(Rational{Int},length(f))
 
 "`fourier(f::Family)`: the Fourier matrix of the family."
@@ -202,17 +200,6 @@ end
 Chars.charnumbers(f::Family)=Chars.charnumbers(f.prop)
 
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
-
-function Base.merge!(f::Family,d::Dict)
-  merge!(f.prop,d)
-  if !haskey(f,:charLabels) f.charLabels=string.(1:length(f)) end
-  if haskey(d,:signs)
-    signs=d[:signs]
-    f.fourierMat=Diagonal(signs)*f.fourierMat*Diagonal(signs)
-    if haskey(f,:perm) && -1 in f.fourierMat^2 delete!(f.prop,:perm) end
-  end
-  f
-end
 
 """
 `f*g`:  returns the tensor product of two families `f` and `g`; the Fourier
@@ -371,77 +358,73 @@ end
 
 #----------------------- now definitions of particular families -------------
 chevieset(:families,:C1,
-  Family(Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
-         :charLabels=>[""], :fourierMat=>[1;;], :eigenvalues=>[1],
-         :mellin=>[[1]],:mellinLabels=>[""])))
+  Family(;group="C1",name="C_1",explanation="trivial",
+         charLabels=[""],fourierMat=[1;;],eigenvalues=[1],
+         mellin=[[1]],mellinLabels=[""]))
 
 chevieset(:families,Symbol("C'1"),
-  Family(Dict(:group=>"C1", :name=>"C'_1",
-  :explanation=>"-trivial",
-  :charLabels=>[""],
-  :fourierMat=>[-1;;],
-  :eigenvalues=>[-1],
-  :sh=>[1])))
+  Family(;group="C1", name="C'_1",explanation="-trivial",
+  charLabels=[""],fourierMat=[-1;;],eigenvalues=[-1],sh=[1]))
 
 chevieset(:families,:C2,
-  Family(Dict(:group=>"C2", :name=>"C_2",
-  :explanation=>"Drinfeld double \$D(\\mathbb Z/2)\$",
-  :charLabels=>["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
-  :fourierMat=>1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;1 -1 -1 1],
-  :eigenvalues=>[1,1,1,-1],
-  :perm=>Perm(),
-  :mellin=>[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
-  :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"])))
+  Family(;group="C2", name="C_2",
+  explanation="Drinfeld double \$D(\\mathbb Z/2)\$",
+  charLabels=["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
+  fourierMat=1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;1 -1 -1 1],
+  eigenvalues=[1,1,1,-1],
+  perm=Perm(),
+  mellin=[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
+  mellinLabels=["(1,1)","(1,g2)","(g2,1)","(g2,g2)"]))
 
 chevieset(:families,:LTQZ2,
-          Family(Dict(:group=>Group(Perm(1,2)),:cocycle=>-1,:pivotal=>(1,-1),
-  :charparams=>[[1,1],[1,-1],[-1,E(4)],[-1,-E(4)]],
-  :charLabels=>[ "(1,1)","(1,-1)","(-1,\\zeta_4)","(-1,-\\zeta_4)"],
-  :bar=>[1,1],:defect=>1,
-  :fourierMat=>[1 1 -1 -1;1 1 1 1;-1 1 1 -1;-1 1 -1 1]//2,
-  :eigenvalues=>[1,1,E(4),-E(4)],
-  :name=>"LTQZ2",
-  :explanation=>"Lusztig's twisted_drinfeld_double_cyclic(2,-1,[1,-1])",
-  :qEigen=>[ 0, 0, 1/2, 1/2 ],
-  :perm=>Perm(3,4),
-  :lusztig=>true)))# does not satisfy (ST)^3=1 but (SPT)^3=1
+  Family(;group=Group(Perm(1,2)),cocycle=-1,pivotal=(1,-1),
+  charparams=[[1,1],[1,-1],[-1,E(4)],[-1,-E(4)]],
+  charLabels=[ "(1,1)","(1,-1)","(-1,\\zeta_4)","(-1,-\\zeta_4)"],
+  bar=[1,1],defect=1,
+  fourierMat=[1 1 -1 -1;1 1 1 1;-1 1 1 -1;-1 1 -1 1]//2,
+  eigenvalues=[1,1,E(4),-E(4)],
+  name="LTQZ2",
+  explanation="Lusztig's twisted_drinfeld_double_cyclic(2,-1,[1,-1])",
+  qEigen=[ 0, 0, 1/2, 1/2 ],
+  perm=Perm(3,4),
+  lusztig=true)) # does not satisfy (ST)^3=1 but (SPT)^3=1
 
 chevieset(:families,:S3,
-  Family(Dict(:group=>"S3", :name=>"D(\\mathfrak S_3)",
-  :explanation=>"Drinfeld double of \$\\mathfrak S_3\$, Lusztig's version",
-  :charLabels=>[ "(1,1)", "(g_2,1)", "(g_3,1)", "(1,\\rho)", "(1,\\varepsilon)",
+  Family(;group="S3", name="D(\\mathfrak S_3)",
+  explanation="Drinfeld double of \$\\mathfrak S_3\$, Lusztig's version",
+  charLabels=[ "(1,1)", "(g_2,1)", "(g_3,1)", "(1,\\rho)", "(1,\\varepsilon)",
 		"(g_2,\\varepsilon)", "(g_3,\\zeta_3)", "(g_3,\\zeta_3^2)"],
-  :fourierMat=>[1  3  2  2 1  3  2  2;3  3  0  0 -3 -3  0  0;
+  fourierMat=[1  3  2  2 1  3  2  2;3  3  0  0 -3 -3  0  0;
 		2  0  4 -2 2  0 -2 -2;2  0 -2  4  2  0 -2 -2;
 		1 -3  2  2 1 -3  2  2;3 -3  0  0 -3  3  0  0;
 		2  0 -2 -2 2  0  4 -2;2  0 -2 -2  2  0 -2  4]//6,
-  :eigenvalues=>[1,1,1,1,1,-1,E(3),E(3,2)],
-  :perm=>Perm(7,8),
-  :lusztig=>true, # does not satisfy (ST)^3=1 but (SPT)^3=1
-  :mellin=>[[1,0,0,2,1,0,0,0],[0,1,0,0,0,1,0,0],[0,0,1,0,0,0,1,1],[1,0,0,-1,1,0,
+  eigenvalues=[1,1,1,1,1,-1,E(3),E(3,2)],
+  perm=Perm(7,8),
+  lusztig=true, # does not satisfy (ST)^3=1 but (SPT)^3=1
+  mellin=[[1,0,0,2,1,0,0,0],[0,1,0,0,0,1,0,0],[0,0,1,0,0,0,1,1],[1,0,0,-1,1,0,
    0,0],[1,0,0,0,-1,0,0,0],[0,1,0,0,0,-1,0,0],[0,0,1,0,0,0,E(3),E(3,2)],
    [0,0,1,0,0,0,E(3,2),E(3)]],
-  :mellinLabels=>["(1,1)","(g2,1)","(g3,1)","(1,g3)","(1,g2)","(g2,g2)",
-                  "(g3,g3)","(g3,g3^2)"])))
+  mellinLabels=["(1,1)","(g2,1)","(g3,1)","(1,g3)","(1,g2)","(g2,g2)",
+                  "(g3,g3)","(g3,g3^2)"]))
 
 # The big family in Z/pZ. Same as family_imprimitive(0^{p-1}1^2,p)
 chevieset(:families,:X,function(p)
   ss=combinations(0:p-1,2)
-  Family(Dict(
-    :explanation=>"DoubleTaft($p): \$R_{\\mathbb Z/$p}^{\\wedge 2}\$",
-    :charSymbols=>ss,
-    :charLabels=>map(((s1,s2),)->
+  Family(;
+    explanation="DoubleTaft($p): \$R_{\\mathbb Z/$p}^{\\wedge 2}\$",
+    charSymbols=ss,
+    charLabels=map(((s1,s2),)->
        xrepr(E(p,s1),TeX=true)*"\\!\\wedge\\!"*xrepr(E(p,s2),TeX=true),ss),
-   :eigenvalues=>map(s->E(p,prod(s)),ss),
-   :fourierMat=>[(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss],
-   :cospecial=>p-1,
-   :printname=>"Family(:X)($p)",
-   :name=>"Family(:X)($p)"))
+   eigenvalues=map(s->E(p,prod(s)),ss),
+   fourierMat=[(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss],
+   cospecial=p-1,
+   printname="Family(:X)($p)",
+   name="Family(:X)($p)")
 end)
 
 function SubFamily(f::Family,ind,scal,label)
   ind=filter(i->ind(f,i),1:length(f.eigenvalues))
-  res=Family(Dict{Symbol,Any}())
+  res=Family()
   res.fourierMat=f.fourierMat[ind,ind].*scal
   res.eigenvalues=f.eigenvalues[ind]
   res.charLabels=f.charLabels[ind]
@@ -461,7 +444,7 @@ function SubFamilyij(f::Family,i,j,scal)
 end
 
 chevieset(:families,:ExtPowCyclic,function(e,n)
-  g=Family(Dict{Symbol,Any}())
+  g=Family()
   g.charSymbols=combinations(0:e-1,n)
   g.charLabels=map(s->join(xrepr.(E.(e,s),TeX=true),"\\!\\wedge\\!"), g.charSymbols)
   if iszero(e%2) g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1))
@@ -519,7 +502,7 @@ chevieset(:families,:Dihedral,function(e)
 # the cuspidal chars are S(k,l) where 0<k<l<e-k
   nc=vcat(nc,[[k,l] for k in 1:e1-1 for l in k+1:e-k-1])
   c=a->E(e,a)+E(e,-a)
-  f=Family(Dict{Symbol,Any}())
+  f=Family()
   f.eigenvalues=map(s->E(e,-prod(s[1:2])),nc)
   f.size=length(nc)
   f.parameters=nc
@@ -580,16 +563,16 @@ associated  an  eigenvalue  of  Frobenius  defined  by  ``ω_ρ:=φ(x)/φ(1)``.
 Lusztig  then defines a Fourier matrix `S₀` whose coefficient is given, for
 `ρ=(x,φ)` and `ρ'=(x', φ')`, by:
 
-``S₀_{ρ,ρ'}:=|C_Γ(x)⁻¹|∑_{ρ₁=(x₁,φ₁)}φ₁(x)φ(y₁)``
+``{S_0}_{\\rho,\\rho'}:=|C_Γ(x)⁻¹|∑_{\\rho_1=(x_1,φ_1)}φ_1(x)φ(y_1)``
 
 where  the sum is over all pairs `ρ₁∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
 and  such that ``y₁∈ C_Γ(x)``. This  coefficient also represents the scalar
 product ``⟨ρ,ρ'⟩_{𝐆^F}`` of the corresponding unipotent characters.
 
-A  way to  understand the  formula for  ``S₀_{ρ,ρ'}`` better is to consider
-another  basis of the complex  vector space with basis  `𝓜 (Γ)`, indexed by
-the  pairs  `(x,y)`  taken  up  to  `Γ`-conjugacy,  where  `x`  and `y` are
-commuting  elements  of  `Γ`.  This  basis  is  called  the basis of Mellin
+A  way to understand the formula  for ``{S_0}_{\\rho,\\rho'}`` better is to
+consider  another basis  of the  complex vector  space with  basis `𝓜 (Γ)`,
+indexed  by the pairs `(x,y)` taken up  to `Γ`-conjugacy, where `x` and `y`
+are  commuting elements of  `Γ`. This basis  is called the  basis of Mellin
 transforms, and given by:
 
 ``(x,y)=∑_{φ∈ Irr(C_Γ(x))}φ(y)(x,φ)``
@@ -604,14 +587,14 @@ where ``\\begin{pmatrix}a&b\\cr c&d\\end{pmatrix}`` acts by
 Fourier  matrices in finite reductive groups  are given by the above matrix
 `S₀`.  But for non-rational Spetses, we use a different matrix `S` which in
 the  basis of Mellin transforms  is given by `(x,y)↦(y⁻¹,x)`. Equivalently,
-the formula ``S_{ρ,ρ'}`` differs from the formula for ``S₀_{ρ,ρ'}`` in that
-there  is no complex conjugation  of `χ₁`; thus the  matrix `S` is equal to
-`S₀` multiplied on the right by the permutation matrix which corresponds to
-`(x,φ)↦(x,φ)`.  The advantage of the matrix `S`  over `S₀` is that the pair
-`S,T`  satisfies directly the axioms for  fusion data (see below); also the
-matrix `S` is symmetric, while `S₀` is Hermitian.
+the  formula ``S_{ρ,ρ'}`` differs from  the formula for ``{S_0}_{ρ,ρ'}`` in
+that  there is no complex conjugation of `χ₁`; thus the matrix `S` is equal
+to `S₀` multiplied on the right by the permutation matrix which corresponds
+to  `(x,φ)↦(x,φ)`. The advantage  of the matrix  `S` over `S₀`  is that the
+pair  `S,T` satisfies directly the axioms for fusion data (see below); also
+the matrix `S` is symmetric, while `S₀` is Hermitian.
 
-Thus there are two variants of 'drinfeld_double`:
+Thus there are two variants of `drinfeld_double`:
 
 `drinfeld_double(g;lu=false)`
 
@@ -625,29 +608,23 @@ field  '.perm'  containing  the  permutation  of  the  indices  induced  by
 returns a family with the matrix `S`, which does not have fields '.lusztig'
 or '.perm'.
 
-The family record 'f' returned also has the fields:
+The family object 'f' returned also has the properties:
 
-`:group`: the group `Γ`.
+  - `:group`: the group `Γ`.
 
-`:charLabels`: a list of labels describing the pairs `(x,φ)`, and thus also
-specifying in which order they are taken.
+  - `:charLabels`: a list of labels describing the pairs `(x,φ)`, and thus also specifying in which order they are taken.
 
-`:fourierMat`: the Fourier matrix (the matrix `S` or `S₀` depending on the
-call).
+  - `:fourierMat`: the Fourier matrix (the matrix `S` or `S₀` depending on the call).
 
-`:eigenvalues`: the eigenvalues of Frobenius.
+  - `:eigenvalues`: the eigenvalues of Frobenius.
 
-`:xy`: a list of pairs '[x,y]' which are representatives of the
-`Γ`-orbits of pairs of commuting elements.
+  - `:xy`: a list of pairs `(x,y)` which are representatives of the `Γ`-orbits of pairs of commuting elements.
 
-`:mellinLabels`: a list of labels describing the pairs '[x,y]'.
+  - `:mellinLabels`: a list of labels describing the pairs `(x,y)`.
 
-`:mellin`:  the base change matrix between  the basis `(x,φ)` and the basis
-of   Mellin  transforms,   so  that   |f.fourierMat^(f.mellin^-1)|  is  the
-permutation  matrix (for `(x,y)↦(y⁻¹,x)`  or `(x,y)↦(y⁻¹,x⁻¹)` depending on
-the call).
+  - `:mellin`:  the base change matrix between  the basis `(x,φ)` and the basis of   Mellin  transforms,   so  that   `f.fourierMat^(f.mellin^-1)`  is  the permutation  matrix (for `(x,y)↦(y⁻¹,x)`  or `(x,y)↦(y⁻¹,x⁻¹)` depending on the call).
 
-`:special`: the index of the special element, which is `(x,φ)=(1,1)`.
+  - `:special`: the index of the special element, which is `(x,φ)=(1,1)`.
 
 ```julia-rep1
 julia> drinfeld_double(coxsym(3)) # needs "using GAP"
@@ -689,7 +666,7 @@ generators of `g`.
 """
 function drinfeld_double(g;lu=false,pivotal=nothing)
 # pivotal=(pivotal element, value of pivotal char on gens(g))
-  res=Family(Dict{Symbol,Any}(:group=> g))
+  res=Family(;group=g)
   res.classinfo=map(classreps(g), classnames(g;TeX=true))do c,n
     r=Dict{Symbol, Any}(:elt => c,:name => n)
     if isone(c) r[:name]="1" end
@@ -773,7 +750,7 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     res.perm=Perm(conj(res.mellin),res.mellin;dims=2)
     res.fourierMat=invpermute(res.fourierMat, res.perm,dims=1)
   end
-  Family(res)
+  res
 end
 
 drinfeld_double(g,d::Dict)=drinfeld_double(g;d...)
@@ -855,7 +832,7 @@ The result is a `GapObj` with fields:
      multiplier  is trivial,  therefore these  pairs correspond exactly to
      simple objects of the category)
    .charparams: labels of lines of the fourier matrix by
-     pairs [x,chi]: elt of  G, projective character of G for the
+     pairs (x,chi): elt of  G, projective character of G for the
      corresponding cocycle 
    .special is the position of the special line (here 1 where (x,chi)=(1,1) is)
    .eigenvalues are the eigenvalues chi(x)/chi(1) 
@@ -873,7 +850,7 @@ function twisted_drinfeld_double_cyclic(n,ζ,pivotal=(1,1))
   piv1=Int(Root1(piv1e).r*n)
   piv=(piv1,piv2)
   G=crg(n,1,1)
-  res=Family(Dict(:group=>G))
+  res=Family(;group=G)
   res.cocycle=ζ
   # 3-cocycle associated to ζ: (a,b,c)->ζ^(a*(b+c)^quo), where 0<=a,b,c<n
   ω(a,b,c)=ζ^(mod(a,n)*div(mod(b,n)+mod(c,n),n))
@@ -929,9 +906,8 @@ family_imprimitive(S)=family_imprimitive(Symbols.entries(S),length(S))
 """
 `family_imprimitive(ct,e)`
 
-returns  the family attached to `e`-symbols  with entries `ct`, following
-G. Malle, "Unipotente Grade...", J. Algebra 177 (1995), §4 for G(e,1,n) and 
-§6 for G(e,e,n).
+returns  the family  attached to  `e`-symbols with  entries `ct`, following
+[mal95; §4 for G(e,1,n) and §6 for G(e,e,n)](@cite).
 
 The  Fourier  matrix  is  as  follows:  Let  `F`  be  the  set of functions
 `ct→0:e-1`  which are  injective restricted  to a  given value in `ct`, and
@@ -1009,18 +985,18 @@ function family_imprimitive(ct,e)
     end
   end
   principal=findall(S->Symbols.relative_rank(S)==rank(S),symbs)
-  Family(Dict(:symbols=>symbs,
-   :special=>principal[findmin(valuation_feg.(symbs[principal]))[2]],
-   :cospecial=>principal[findmax(degree_feg.(symbs[principal]))[2]],
-   :fcdict=>fcdict,
-   :ff=>ff,
-   :fourierMat=>mat,
-   :eigenvalues=>frobs,
-   :name=>joindigits(ct),
-   :printname=>"family_imprimitive($ct,$e)",
-   :explanation=>"imprimitive family",
-   :charLabels=>string.(1:length(symbs)), # should be improved
-   :size=>length(symbs)))
+  Family(;symbols=symbs,
+   special=principal[findmin(valuation_feg.(symbs[principal]))[2]],
+   cospecial=principal[findmax(degree_feg.(symbs[principal]))[2]],
+   fcdict=fcdict,
+   ff=ff,
+   fourierMat=mat,
+   eigenvalues=frobs,
+   name=joindigits(ct),
+   printname="family_imprimitive($ct,$e)",
+   explanation="imprimitive family",
+   charLabels=string.(1:length(symbs)), # should be improved
+   size=length(symbs))
 end
 
 """
@@ -1161,8 +1137,8 @@ fact  that the  coefficient of  `bᵢbⱼ` on  `bₖ` is  equal to `Cᵢ,ⱼ,ₖ
 algebra  can be specified by giving a family `f` or just its Fourier matrix
 and the number of its special line.
 
-`A`  is commutative, and has as unit  the element `bₛ`; the basis σ(bᵢ)` is
-`dual to `bᵢ` for the linear form (bᵢ,bⱼ)=Cᵢ,ⱼ,σ₍ₛ₎`.
+`A`  is commutative, and has as unit the element `bₛ`; the basis `σ(bᵢ)` is
+dual to `bᵢ` for the linear form `(bᵢ,bⱼ)=Cᵢ,ⱼ,σ₍ₛ₎`.
 
 ```julia-repl
 julia> W=complex_reflection_group(4)

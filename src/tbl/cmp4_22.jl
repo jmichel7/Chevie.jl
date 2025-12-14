@@ -19,10 +19,10 @@
 
 const G4_22IndexChars_dict=Dict{Int,Any}((i=>Dict() for i in 4:22)...)
 
-CHEVIE.CheckIndexChars=false
+CheckIndexChars::Bool=false
 
 function G4_22FetchIndexChars(ST, para)
-  if !CHEVIE.CheckIndexChars
+  if !CheckIndexChars
     return chevieget(:G4_22, :CharInfo)(ST)[:indexchars]
   end
   get!(G4_22IndexChars_dict[ST],para)do
@@ -1230,7 +1230,7 @@ Dict{Symbol,  Any}(:charparams=>[[1, 0], [1, 6], [1,  8], [1, 14], [1, 16],
   [0, 0, 0, z5, (z4-z5)*z4//r*z5,-z5^2//r^4//a*z4],
   [0, 0, 0, 0, z4, -1//a//r^3*z5],[0, 0, 0, 0, 0, z5]])]
   end],
-  # embedding of Hecke algebra
+  # embedding of Hecke algebra(ST) into that of generic(ST)
   Embed=[[[1,3,-1],[3]],[[2],[3]],[[1],[3]],[[1],[2],[3]],
   [[3],[1,3,-1]],[[1],[3]],[[2],[3]],[[1],[2],[3]],[[1],[2,1,-2],[-2,1,2]],
   [[3,3],[1],[-2,1,2]],[[1],[2]],[[1],[2],[3,3]],[[3],[1,3,-1]],[[1],[3]],
@@ -1603,8 +1603,8 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       if ic!=i
         println("*** WARNING: choice of character restrictions from ", T(ST),
           " for this specialization does not agree with group CharTable")
-        if !CHEVIE.CheckIndexChars
-          print("Try again with CHEVIE.CheckIndexChars=true\n")
+        if !CheckIndexChars
+          print("Try again with Chevie.CheckIndexChars=true\n")
         end
       end
       return ic
@@ -1619,8 +1619,8 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       end
       xprintln("*** WARNING: bad choice of char. restrictions from ",T(ST),
                " for H(G$ST,",HeckeAlgebras.simplify_para(res[:parameter]),")")
-      if !CHEVIE.CheckIndexChars
-        print("Try again with CHEVIE.CheckIndexChars=true\n")
+      if !CheckIndexChars
+        print("Try again with Chevie.CheckIndexChars=true\n")
       end
    #  l=map(x->filter(i->l[i]==x,eachindex(l)), sort(unique(l)))
       l=map(x->findall(==(x),l), unique(sort(l)))
@@ -1647,7 +1647,7 @@ chevieset(:G4_22,:CharTable,function(ST)
 end)
 
 let r3=root(-3), r6=root(6), r2=root(-2)
-CHEVIE.families[:G14]=Family(Dict(:fourierMat=>root(-3)//24*
+chevieset(:families,:G14,Family(;fourierMat=root(-3)//24*
 [4 -4 4 -4 -4 -4 -4 -4 0 0 -4 -4 4 4 0 0 0 0;
 -4 4 4 -4 4 4 4 4 0 0 -4 -4 4 4 0 0 0 0;
 4 4 4 4 -4 -4 4 4 0 0 -4 -4 -4 -4 0 0 0 0;
@@ -1666,13 +1666,13 @@ CHEVIE.families[:G14]=Family(Dict(:fourierMat=>root(-3)//24*
 0 0 0 0 -2*r3 2*r3 2*r3 -2*r3 -2*r6 2*r6 r6 -r6 r6 -r6 (2+r2)*r3 (2+r2)*r3 (-2+r2)*r3 (-2+r2)*r3;
 0 0 0 0 2*r3 -2*r3 -2*r3 2*r3 -2*r6 2*r6 r6 -r6 r6 -r6 (-2+r2)*r3 (-2+r2)*r3 (2+r2)*r3 (2+r2)*r3;
 0 0 0 0 -2*r3 2*r3 2*r3 -2*r3 2*r6 -2*r6 r6 -r6 r6 -r6 (-2+r2)*r3 (-2+r2)*r3 (2+r2)*r3 (2+r2)*r3],
-:eigenvalues=>[E(3,2),E(3,2),E(3,2),-E(3,2),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
+eigenvalues=[E(3,2),E(3,2),E(3,2),-E(3,2),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
                E(4),-E(4),-E(4),E(4)],
-:charLabels=>string.(1:18),:special=>12,:cospecial=>12,:name=>"X_{18}",
-:explanation =>"mysteryG14"))
+charLabels=string.(1:18),special=12,cospecial=12,name="X_{18}",
+explanation="mysteryG14"))
 end
 
-CHEVIE.families[:X18]=Family(Dict(:name=>"X18",:fourierMat=>[
+chevieset(:families,:X18,Family(;name="X18",fourierMat=[
 -1 -1 3 -3E(4) 3E(4) 1 3 -3E(4) -3E(4) -3 3 3E(4) 3E(4) 1 -3E(4) -3E(4) 4 4;
 -1 -1 3 3E(4) -3E(4) 1 3 3E(4) 3E(4) -3 3 -3E(4) -3E(4) 1 3E(4) 3E(4) 4 4;
 3 3 3 -3 -3 3 3 3 -3 3 -3 -3 3 3 -3 3 0 0;
@@ -1691,10 +1691,10 @@ CHEVIE.families[:X18]=Family(Dict(:name=>"X18",:fourierMat=>[
 -3E(4) 3E(4) 3 3E(4) -3E(4) 3 -3 -3E(4) -3E(4) 3E(4) 3E(4) -3 3 -3 3 -3 0 0;
 4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 -4 8;
 4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 8 -4]//12,
-:eigenvalues=>[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
-:explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6))
+eigenvalues=[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
+explanation="mystery G8",special=1,cospecial=2,ennola=6))
 
-CHEVIE.families[:X8]=Family(Dict(:name=>"X8",:fourierMat=>onmats(
+chevieset(:families,:X8,Family(;name="X8",fourierMat=onmats(
 [1 1 2 1 1 -root(-2) -root(-2) -root(-2) -root(-2);
 1 1 2 1 1 root(-2) root(-2) root(-2) root(-2);
 2 2 0 -2 -2 0 0 0 0;
@@ -1704,10 +1704,10 @@ CHEVIE.families[:X8]=Family(Dict(:name=>"X8",:fourierMat=>onmats(
 -root(-2) root(-2) 0 root(-2) -root(-2) -2*E(4) 0 2*E(4) 0;
 -root(-2) root(-2) 0 -root(-2) root(-2) 0 2*E(4) 0 -2*E(4);
 -root(-2) root(-2) 0 root(-2) -root(-2) 2*E(4) 0 -2*E(4) 0]//4,
-  perm"(4,5)"),:explanation=>"another mysteryG14",
-:eigenvalues=>[1,1,1,-1,-1,E(16,5),E(16,7),-E(16,5),-E(16,7)],
-:qEigen=>[0,0,0,0,0,1//2,1//2,1//2,1//2],:special=>2,
-:ennola=>-4)) # ennola could be -5
+  perm"(4,5)"),explanation="another mysteryG14",
+eigenvalues=[1,1,1,-1,-1,E(16,5),E(16,7),-E(16,5),-E(16,7)],
+qEigen=[0,0,0,0,0,1//2,1//2,1//2,1//2],:special=>2,
+ennola=-4)) # ennola could be -5
 
 const UnipotentCharacters4_22=[
 Dict{Symbol,Any}(:harishChandra=>[
@@ -1720,9 +1720,9 @@ Dict{Symbol,Any}(:harishChandra=>[
   mkcuspidal("G_4",10,-1;eig=false)],
   :families=>[
     Family(:C1,[1]),
-    Family(Family(:X)(3),[6,5,8],signs=[1,1,-1],ennola=-1),
+    Family(Family(:X)(3),[6,5,8];signs=[1,1,-1],ennola=-1),
     Family(:C1,[7]),
-    Family(:X5,[2,4,10,9,3],signs=[1,1,-1,-1,1],ennola=-5)],
+    Family(:X5,[2,4,10,9,3];signs=[1,1,-1,-1,1],ennola=-5)],
   :a=>[0,4,4,4,1,1,2,1,4,4],:A=>[0,8,8,8,5,5,6,5,8,8]),
 Dict{Symbol,Any}(:harishChandra=>[
   Dict(:relativeType=>TypeIrred(;series=:ST,indices=1:2,rank=2,ST=6),
@@ -1748,12 +1748,12 @@ Dict{Symbol,Any}(:harishChandra=>[
   mkcuspidal("G_6",30,E(8,7);qeig=1//2)],
   :families => [Family("C1", [1]),
                 Family(conj(SubFamilyij(Family(:X)(12),1,3,-E(3)-2E(3,2))),
-      [7,13,8,2,27,21,24,18,15,19,10,25,22,3,9,17,28,20,4,26,16,23],
+      [7,13,8,2,27,21,24,18,15,19,10,25,22,3,9,17,28,20,4,26,16,23];
       signs=[1,1,1,1,1,1,1,1,1,1,1,1,1,-1,-1,1,-1,1,-1,-1,-1,1],
       cospecial=11,ennola=-22),
     Family(:C1,[14]),
-    Family(:Z4,[29,12,30,11],signs=[-1,1,1,-1],ennola=-3),
-    Family(Family(:X)(3),[5,6,31],signs=[1,1,-1],ennola=-1)],
+    Family(:Z4,[29,12,30,11];signs=[-1,1,1,-1],ennola=-3),
+    Family(Family(:X)(3),[5,6,31];signs=[1,1,-1],ennola=-1)],
   :a=>[0,1,1,1,10,10,1,1,1,1,5,5,1,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,10],
   :A=>[0,11,11,11,14,14,11,11,11,11,13,13,11,12,11,11,11,11,11,11,11,11,11,11,
        11,11,11,11,13,13,14]),
@@ -1782,10 +1782,10 @@ Dict{Symbol,Any}(:harishChandra=>[
   mkcuspidal("G_8",34,E(3)), 
   mkcuspidal("G_8",35,E(3,2))],
   :families=>[Family(:C1,[1]),
-    Family(Family(:X)(4),[5,6,7,17,18,19],signs=[1,1,1,-1,-1,-1],ennola=4),
-    Family(Family(:X)(4),[11,12,13,20,21,22],signs=[1,1,1,-1,-1,-1],ennola=-6),
-    Family(Family(:Z4),[23,15,24,16],signs=[-1,1,1,-1],ennola=1),
-    Family(:X18,[2,4,3,8, 10,9,14, 25,26,27, 28,29,30, 31,32,33,34,35],
+    Family(Family(:X)(4),[5,6,7,17,18,19];signs=[1,1,1,-1,-1,-1],ennola=4),
+    Family(Family(:X)(4),[11,12,13,20,21,22];signs=[1,1,1,-1,-1,-1],ennola=-6),
+    Family(Family(:Z4),[23,15,24,16];signs=[-1,1,1,-1],ennola=1),
+    Family(:X18,[2,4,3,8, 10,9,14, 25,26,27, 28,29,30, 31,32,33,34,35];
       signs=[1,1,1,1,1,1,1,1,1,1,1,-1,-1,1,-1,1,-1,-1])],
   :a=>[0,6,6,6,1,1,1,6,6,6,2,2,2,6,3,3,1,1,1,2,2,2,3,3,6,6,6,6,6,6,6,6,6,6,6],
   :A=>[0,18,18,18,11,11,11,18,18,18,14,14,14,18,15,15,11,11,11,14,14,14,15,15,
@@ -1853,15 +1853,15 @@ Dict{Symbol,Any}(:harishChandra=>[
     Family(conj(Family(:X)(3))*Family(:G14),
        [26,37,28,39,14,3,34,18,46,48,15,13,30,29,59,60,55,56,25,
         36,27,38,2,11,16,35,49,47,12,10,32,31,58,61,54,57,4,17,22,33,41,40,43,
-        42,44,45,51,50,53,52,64,65,62,63],
+        42,44,45,51,50,53,52,64,65,62,63];
       signs=[-1,1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,1,-1,1,-1,1,-1,-1,-1,-1,
    -1,1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,1,1,1,-1,1,1,1,1],
       ennola=32),
-  Family(Family(:X)(3),[23,24,66],signs=[1,1,-1],ennola=2),
-  Family(Family(:TQZ)(3,E(3,2)),[19,20,21,68,70,72,67,71,69],
+  Family(Family(:X)(3),[23,24,66];signs=[1,1,-1],ennola=2),
+  Family(Family(:TQZ)(3,E(3,2)),[19,20,21,68,70,72,67,71,69];
     cospecial=2,ennola=8),
   Family(:X8,[8, 9, 7, 73, 74, 75, 76, 77, 78]),
-  Family(Family(:X)(3),[5,6,79],signs=[1,1,-1],ennola=-2)],
+  Family(Family(:X)(3),[5,6,79];signs=[1,1,-1],ennola=-2)],
   :a=>[0,1,1,1,20,20,9,9,9,1,1,1,1,1,1,1,1,1,6,6,6,1,5,5,1,1,1,1,1,1,1,1,1,1,1,
        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,6,6,6,6,6,
        6,9,9,9,9,9,9,20],
@@ -2034,65 +2034,65 @@ chevieset(:G4_22, :ClassInfo, function(ST)
   f(class,z)=vcat([Int[],[1],[2],[3],[3,3]][class[1]],repeat(z,class[2]))
   h(z,l)=map(x->Replace(f(x, z), l...),p[res[:indexclasses]])
   if ST==4
-    res[:classtext] = h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-    z = "121212"
-  elseif ST == 5
-    res[:classtext] = h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-    z = "1212"
-  elseif ST == 6
-    res[:classtext] = h([3, 1], [[2], Int[], [3], [2]])
-    z = "212121"
-  elseif ST == 7
-    res[:classtext] = h([1, 2, 3], Vector{Int}[])
-    z = "123"
-  elseif ST == 8
-    res[:classtext] = h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-    z = "121212"
-  elseif ST == 9
-    res[:classtext] = h([3, 1], [[2], Int[], [3], [2]])
-    z = "212121"
-  elseif ST == 10
-    res[:classtext] = h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-    z = "1212"
-  elseif ST == 11
-    res[:classtext] = h([1, 2, 3], Vector{Int}[])
-    z = "123"
-  elseif ST == 12
-    res[:classtext] = h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
-    z = "123123123123"
-  elseif ST == 13
-    res[:classtext] = map(x->Replace(x,[0],[1,2,3,1,2,3,1,2,3]),
+    res[:classtext]=h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
+    z="121212";c="12"
+  elseif ST==5
+    res[:classtext]=h([2, 3], [[1], Int[], [2], [1], [3], [2]])
+    z="1212";c="12"
+  elseif ST==6
+    res[:classtext]=h([3, 1], [[2], Int[], [3], [2]])
+    z="212121";c="2zzz"
+  elseif ST==7
+    res[:classtext]=h([1, 2, 3], Vector{Int}[])
+    z="123";c="123"
+  elseif ST==8
+    res[:classtext]=h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
+    z="121212";c="12"
+  elseif ST==9
+    res[:classtext]=h([3, 1], [[2], Int[], [3], [2]])
+    z="212121";c="zzzzz2121"
+  elseif ST==10
+    res[:classtext]=h([2, 3], [[1], Int[], [2], [1], [3], [2]])
+    z="1212";c="12"
+  elseif ST==11
+    res[:classtext]=h([1, 2, 3], Vector{Int}[])
+    z="123";c="zzzzzzzzzzzzz"
+  elseif ST==12
+    res[:classtext]=h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
+    z="123123123123";c="z123"
+  elseif ST==13
+    res[:classtext]=map(x->Replace(x,[0],[1,2,3,1,2,3,1,2,3]),
       [Int[],[0],[0,0],[0,0,0],[2],[2,0],[3,1,2],[3,1,2,0],[3,1,2,0,0],[3,1,2,0,0,0],[2,3,1,2,1],[2,3,1,2,1,0],[2,3,1,2,1,0,0],[2,3,1,2,1,0,0,0],[1],[1,0]])
-      z = "123123123"
-  elseif ST == 14
-    res[:classtext] = h([1, 2], [[3], Int[]])
-    z = "12121212"
-  elseif ST == 15
-    res[:classtext] = h([1,2,3],[[3,3],[4],[3,1,2,3],[4,1,2],[4],[3]])
-    z = "12312"
-  elseif ST == 16
-    res[:classtext] = h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-    z = "121212"
-  elseif ST == 17
-    res[:classtext] = h([3, 1], [[2], Int[], [3], [2]])
-    z = "212121"
-  elseif ST == 18
-    res[:classtext] = h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-    z = "1212"
-  elseif ST == 19
-    res[:classtext] = h([1, 2, 3], Int[])
-    z = "123"
-  elseif ST == 20
+      z="123123123";c="312zz"
+  elseif ST==14
+    res[:classtext]=h([1, 2], [[3], Int[]])
+    z="12121212";c="zzzz121212"
+  elseif ST==15
+    res[:classtext]=h([1,2,3],[[3,3],[4],[3,1,2,3],[4,1,2],[4],[3]])
+    z="12312";c="312zzz"
+  elseif ST==16
+    res[:classtext]=h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
+    z="121212";c="12"
+  elseif ST==17
+    res[:classtext]=h([3, 1], [[2], Int[], [3], [2]])
+    z="212121";c="zzzzzzzzzzzzz2121"
+  elseif ST==18
+    res[:classtext]=h([2, 3], [[1], Int[], [2], [1], [3], [2]])
+    z="1212";c="12"
+  elseif ST==19
+    res[:classtext]=h([1, 2, 3], Int[])
+    z="123";c="123"
+  elseif ST==20
     res[:classtext]=h([1,2],[[3],Int[],[1,1],Int[],[1,2,1],[3],[2],[1],[3],[2]])
-    z = "2121212121"
-  elseif ST == 21
-    res[:classtext] = h([1, 2], [[3], Int[]])
-    z = "1212121212"
-  elseif ST == 22
-    res[:classtext] = h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
-    z = "123123123123123"
+    z="2121212121";c="zzz21212121"
+  elseif ST==21
+    res[:classtext]=h([1, 2], [[3], Int[]])
+    z="1212121212";c="zzzzzzzzz12121212"
+  elseif ST==22
+    res[:classtext]=h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
+    z="123123123123123";c="123"
   end
-  res[:classnames]=map(x->isempty(x) ? "." : replace("123"[x],z=>"z"),
+  res[:classnames]=map(x->isempty(x) ? "." : replace(replace("123"[x],z=>"z"),c=>"c"),
                        res[:classtext])
   zord=Data4_22.classes_orders[G4_22type(ST)]
   res[:classes]=zord.z[first.(p[res[:indexclasses]])]

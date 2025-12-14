@@ -1,7 +1,7 @@
 # programmes accompagnant le bilan de Luminy 2017
 using Chevie
 include("getunpdeg.jl")
-CHEVIE.CheckIndexChars=true
+Chevie.CheckIndexChars=true
 
 KnownSeries(W)=get!(()->getunpdeg(W)[1],W,:series)
 

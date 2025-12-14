@@ -2068,7 +2068,7 @@ end)
 
 # the family of uc containing symbols
 function MakeFamilyImprimitive(S, symbs)
-  if length(S)==1 return Family("C1",[findfirst(==(S[1]),symbs)]) end
+  if length(S)==1 return Family(:C1,[findfirst(==(S[1]),symbs)]) end
   r=family_imprimitive(Symbols.entries(S[1]),length(S[1]))
   r.charNumbers=map(x->findfirst(==(x),symbs),r.symbols)
   r
@@ -2134,7 +2134,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       if length(unique(map(x->x.S,csy[f])))>1
         push!(uc[:families],Dict{Symbol,Any}(:charNumbers=>f))
       else
-        append!(uc[:families],map(x->Family("C1", [x]),f))
+        append!(uc[:families],map(x->Family(:C1,[x]),f))
       end
     end
     sort!(uc[:families],by=charnumbers)

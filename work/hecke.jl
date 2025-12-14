@@ -166,8 +166,8 @@ function check_specialize(H;spec=group_specialization(H))
   #length(bad)
 end
 
-# get central characters without having to know Chartable
-# for algebras above group algebra
+# get central characters without having to know Chartable(H)
+# for Hecke algebras H above group algebra
 function HeckeCentralCharacters(H,z=gcd(degrees(H.W));spec=group_specialization(H))
   W=H.W
   v=map(m->root(m,z),central_monomials(H))
@@ -256,6 +256,7 @@ function checkparabolic(W)
   triples
 end
 
+# info about regular elements of W
 function showregular(W)
   ci=classinfo(W)
   txt=ci.classtext
@@ -279,7 +280,7 @@ function showregular(W)
     rows_label="RegEig")
 end
 
-# partial chartable of Hecke algebra H on classtexts n some W_I<z>
+# partial chartable of Hecke algebra H on classtexts in some W_I<z>
 function fromparabolic(H;spec=group_specialization(H))
   W=H.W 
   ct=classinfo(W).classtext
@@ -370,6 +371,7 @@ function fromrootpi(H,w;spec=group_specialization(H))
   t
 end
 
+# partial table of H from known reps.
 function from_representations(H,inds=1:nconjugacy_classes(H.W))
   W=H.W
   cl=classinfo(W).classtext

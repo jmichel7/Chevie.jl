@@ -60,13 +60,13 @@ is  a prime divisor of `Φ_d(q)` which  does not divide any other cyclotomic
 factor of the order of ``𝐆^F``.
 
 The functions 
-`relative_degrees,
-regular_eigenvalues,
-eigenspace_projector,
-position_regular_class,
-split_levis,
-cuspidal`
-in this module and the functions in the module `dSeries`
+[`relative_degrees`](@ref),
+[`regular_eigenvalues`](@ref),
+[`eigenspace_projector`](@ref),
+[`position_regular_class`](@ref),
+[`split_levis`](@ref),
+[`cuspidal`](@ref)
+in this module and the functions in the module [`dSeries`](@ref)
 allow to explore these situations.
 """
 module Eigenspaces

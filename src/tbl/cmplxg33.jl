@@ -1,5 +1,5 @@
-#  tbl/cmplxg33.jl      CHEVIE library                Jean Michel
-#  Copyright (C) 1998-  The CHEVIE Team
+#  tbl/cmplxg33.jl      Chevie library                Jean Michel
+#  Copyright (C) 1998-  The Chevie Team
 
 chevieset(:G33,:BraidRelations,[[[1,2,1],[2,1,2]],[[3,2,3],[2,3,2]],
   [[4,2,4],[2,4,2]],[[4,3,4],[3,4,3]],[[4,5,4],[5,4,5]],[[1,3],[3,1]],
@@ -2515,26 +2515,26 @@ chevieset(:G33, :UnipotentCharacters, function ()
   mkcuspidal("G_{33}",62,-E(3)),
   mkcuspidal("G_{33}",50,-E(3,2))], 
  :families => [Family(:C1, [1]), 
-   Family(conj(Family(:X)(3)),[4, 6, 41],signs=[1, 1, -1],ennola=-1), 
+   Family(conj(Family(:X)(3)),[4, 6, 41];signs=[1, 1, -1],ennola=-1), 
    Family(:C1, [15]), 
-   Family(:C2, [22, 8, 19, 42], ennola= -2), 
-   Family(conj(Family(:X)(6)),[25,30,17,28,23,45,48,43,50,9,47,44,11,49,46],
+   Family(:C2, [22, 8, 19, 42]; ennola= -2), 
+   Family(conj(Family(:X)(6)),[25,30,17,28,23,45,48,43,50,9,47,44,11,49,46];
          signs=[1, 1, 1, 1, 1, -1, -1, -1,-1,-1, 1, -1, 1, 1, -1],ennola=-13),
    Family(:C1, [39]), 
-   Family(:C1, [36],ennola=-1), 
-   Family(conj(Family(:X)(3)), [34, 32, 51], signs=[1, 1, -1], ennola=-1), 
-   Family(Family(:TQZ)(2, -1, [1, -1]), [37,38,53,52],cospecial=2,ennola=-4), 
-   Family(:C1, [14],ennola=-1), 
-   Family(Family(:X)(3),[33, 31, 54],signs=[1, 1, -1],ennola=1), 
-   Family(:C1, [40],ennola=-1), 
+   Family(:C1, [36];ennola=-1), 
+   Family(conj(Family(:X)(3)), [34, 32, 51]; signs=[1, 1, -1], ennola=-1), 
+   Family(Family(:TQZ)(2, -1, [1, -1]), [37,38,53,52];cospecial=2,ennola=-4), 
+   Family(:C1, [14];ennola=-1), 
+   Family(Family(:X)(3),[33, 31, 54];signs=[1, 1, -1],ennola=1), 
+   Family(:C1, [40];ennola=-1), 
    Family(:C1, [35]), 
    Family(:C1, [13]), 
-   Family(Family(:X)(6),[26,29,18,27,24,57,60,55,62,10,59,56,12,61,58],
+   Family(Family(:X)(6),[26,29,18,27,24,57,60,55,62,10,59,56,12,61,58];
      signs=[1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1],ennola=13), 
-   Family(:C2, [21, 7, 20, 63], ennola=2), 
-   Family(:C1, [16], ennola=-1), 
-   Family(Family(:X)(3), [3, 5, 64], signs=[1, 1, -1],ennola=1), 
-   Family(:C1, [2], ennola=-1)], 
+   Family(:C2, [21, 7, 20, 63]; ennola=2), 
+   Family(:C1, [16]; ennola=-1), 
+   Family(Family(:X)(3), [3, 5, 64]; signs=[1, 1, -1],ennola=1), 
+   Family(:C1, [2]; ennola=-1)], 
   :a => [0, 45, 28, 1, 28, 1, 18, 3, 4, 13, 4, 13, 12, 9, 2, 23, 4, 13, 3, 18, 18, 3, 4, 13, 4, 13, 13, 4, 13, 4, 10, 7, 10, 7, 10, 7, 8, 8, 6, 11, 1, 3, 4, 4, 4, 4, 4, 4, 4, 4, 7, 8, 8, 10, 13, 13, 13, 13, 13, 13, 13, 13, 18, 28], 
   :A => [0, 45, 44, 17, 44, 17, 42, 27, 32, 41, 32, 41, 36, 33, 22, 43, 32, 41, 27, 42, 42, 27, 32, 41, 32, 41, 41, 32, 41, 32, 38, 35, 38, 35, 38, 35, 37, 37, 34, 39, 17, 27, 32, 32, 32, 32, 32, 32, 32, 32, 35, 37, 37, 38, 41, 41, 41, 41, 41, 41, 41, 41, 42, 44], 
   :curtis => [2, 1, 6, 5, 4, 3, 8, 7, 12, 11, 10, 9, 14, 13, 16, 15, 18, 17, 20, 19, 22, 21, 26, 25, 24, 23, 30, 29, 28, 27, 34, 33, 32, 31, 36, 35, 38, 37, 40, 39, -64, 63, -56, -55, -58, -57, -59, 61, 60, -62, -54, -53, -52, -51, -44, -43, -46, -45, -47, 49, 48, -50, 42, -41])

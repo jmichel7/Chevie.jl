@@ -1,5 +1,5 @@
-#  tbl/coxh3.jl                 CHEVIE library      Meinolf Geck, Jean Michel
-#  Copyright (C) 1992 - 2004  The CHEVIE Team
+#  tbl/coxh3.jl                 Chevie library      Meinolf Geck, Jean Michel
+#  Copyright (C) 1992 - 2004  The Chevie Team
 chevieset(:H3, :ReflectionDegrees, [2, 6, 10])
 
 # from Humphreys, "Reflection Groups and Coxeter Groups"
@@ -152,13 +152,13 @@ chevieset(:H3, :UnipotentCharacters, function ()
          :cuspidalName=>"I_2(5)[1,2]", :charNumbers=>[12, 14]),
     mkcuspidal("H_3",15,E(4);qeig=1//2),
     mkcuspidal("H_3",16,-E(4);qeig=1//2)],
-    :families=>[Family("C1", [2]),
-       Family(Family(:Dihedral)(5),[7,8,14,13],ennola=-1),
-       Family("C1",[4]),
-       Family(Family(:TQZ)(2,-1,[1,-1]),[9,10,16,15],cospecial=2,ennola=4),
-       Family("C1",[3],ennola=-1),
-       Family(Family(:Dihedral)(5),[5,6,12,11],ennola=1),
-       Family("C1",[1],ennola=-1)],
+    :families=>[Family(:C1, [2]),
+       Family(Family(:Dihedral)(5),[7,8,14,13];ennola=-1),
+       Family(:C1,[4]),
+       Family(Family(:TQZ)(2,-1,[1,-1]),[9,10,16,15];cospecial=2,ennola=4),
+       Family(:C1,[3];ennola=-1),
+       Family(Family(:Dihedral)(5),[5,6,12,11];ennola=1),
+       Family(:C1,[1];ennola=-1)],
     :a=>[15, 0, 5, 2, 6, 6, 1, 1, 3, 3, 6, 6, 1, 1, 3, 3],
     :A=>[15, 0, 13, 10, 14, 14, 9, 9, 12, 12, 14, 14, 9, 9, 12, 12])
 end)

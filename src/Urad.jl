@@ -65,7 +65,7 @@ It is possible to display the decomposition of the roots in simple roots
 instead of their index:
 
 ```julia-rep1
-julia> xdisplay(U(4=>5,2=>4);root=true)
+julia> xprint(U(4=>5,2=>4);root=true)
 u₀₁₀₀₀₀(4)u₀₀₀₁₀₀(5)u₀₁₀₁₀₀(-20)
 ```
 
@@ -342,7 +342,7 @@ N(W,special,Nc,r,-s1)+N(W,special,Nc,-r1,r;scaled=true)*N(W,special,Nc,s,-s1)),)
 end
 
 """
-`UnipotentGroup(W;chevalley=nothing,order=1:nref(W))`
+`UnipotentGroup(W;chevalley=nothing;order=1:nref(W))`
 
 `W` should be a Weyl group. This function returns a `struct UnipotentGroup`
 associated  to the reductive group of Weyl group `W`. 
@@ -427,13 +427,13 @@ function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
 end
 
 """
-'reorder(U,l[,order])'
+`reorder(U,l[,order])`
 
-This  function  takes  a  list  of  pairs  'r=>c'  representing a unipotent
-element,  where 'r'  is a  root and  'c' the corresponding coefficient, and
-puts  it in  canonical form,  reordering the  terms to agree with 'U.order'
+This  function  takes  a  list  of  pairs  `r=>c`  representing a unipotent
+element,  where `r`  is a  root and  `c` the corresponding coefficient, and
+puts  it in  canonical form,  reordering the  terms to agree with `U.order`
 using  the commutation  relations. If  a second  argument is given, this is
-used instead of 'U.order'.
+used instead of `U.order`.
 
 ```julia-repl
 julia> U=UnipotentGroup(coxgroup(:G,2))
@@ -487,9 +487,9 @@ function reorder(U::UnipotentGroup,l,order=U.order)
 end
 
 """
-'U(r)'
+`U(r)`
 
-'U(r_1=>c_1`,..,r_n=>c_n`)'
+`U(r_1=>c_1,..,r_n=>c_n)`
 
 Where `U` is a `UnipotentGroup`. In the first form the function creates the
 element  `uᵣ(1)`,  and  in  the  second  form  the  element  `u_{r_1}(c_1)…
@@ -516,10 +516,10 @@ u1(2)u2(4)u3(-8)u4(32)u5(-128)u6(512)
 Base.show(io::IO,U::UnipotentGroup)=print(io,"UnipotentGroup(",U.W,")")
 
 """
-'abelianpart(u::UnipotentElement)'
+`abelianpart(u::UnipotentElement)`
 
 If  `𝐔` is the unipotent subgroup and `D(𝐔)` its derived subgroup, this
-function   returns  the  projection   of  the  unipotent   element  'u'  on
+function   returns  the  projection   of  the  unipotent   element  `u`  on
 `𝐔/D(𝐔)`, that is its coefficients on the simple roots.
 
 ```julia-repl
@@ -538,10 +538,11 @@ abelianpart(u::UnipotentElement)=UnipotentElement(u.U,filter(x->x[1] in
 """
 `decompose(w,u::UnipotentElement)`
 
-`w`  should be an element of the Weyl group corresponding to `u`. If `𝐔` is
-the  unipotent radical  of the  Borel subgroup  determined by  the positive
-roots,  and `𝐔⁻` the  opposite unipotent radical,  this function decomposes
-`u` into its component in `𝐔 ∩ ʷ𝐔⁻` and its component in `𝐔 ∩ ʷ𝐔`.
+`w`  should  be  an  element  of  the  Weyl  group  of  the reductive group
+containing  `u`.  If  `𝐔`  is  the  unipotent radical of the Borel subgroup
+determined  by the positive roots, and `𝐔⁻` the opposite unipotent radical,
+this  function  decomposes  `u`  into  its  component  in `𝐔 ∩ ʷ𝐔⁻` and its
+component in `𝐔 ∩ ʷ𝐔`.
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
