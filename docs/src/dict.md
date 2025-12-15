@@ -1,4 +1,4 @@
-## Dictionary from GAP3/Chevie
+# Dictionary from GAP3/Chevie
 on the left a Chevie/Gap3 expression and on the right the Chevie/Julia translation
 ```
 AbelianGenerators                           abelian_gens

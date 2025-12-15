@@ -230,6 +230,11 @@ function shiftβ(β,n=1)
   end
 end
 
+function shiftβ(β)
+  while β[1]==0 β=shiftβ(β,-1) end
+  β
+end
+
 """
 `βset(p)` normalized β-set of partition `p`
 

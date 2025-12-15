@@ -101,7 +101,7 @@ end)
 # partition associated to 2-core d and partitions-pair p
 function PartitionTwoCoreQuotient(d,p)
   x=Symbol_partition_tuple(reverse(p),-d).S
-  partβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))
+  CharSymbol([shiftβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))])
 end
 
 chevieset("2A", :ClassParameter, function (n, w)
@@ -112,7 +112,7 @@ end)
 # [LuB, 4.4, 4.16, 4.19]
 chevieset("2A", :UnipotentCharacters, function (l,)
   uc=chevieget(:A,:UnipotentCharacters)(l)
-  uc[:charSymbols] = map(i->[i],partitions(l+1))
+  uc[:charSymbols]=map(x->CharSymbol([βset(x)]),partitions(l+1))
   uc[:almostHarishChandra] = uc[:harishChandra]
   uc[:almostHarishChandra][1][:relativeType]=
   TypeIrred(;orbit=[TypeIrred(;series=:A,indices=1:l,rank=l)],
@@ -137,7 +137,7 @@ chevieset("2A", :UnipotentCharacters, function (l,)
       else s[:cuspidalName]=""
       end
       # see Fong/Srinivasan for this map
-      s[:charNumbers]=map(a->findfirst(==([PartitionTwoCoreQuotient(d, a)]),
+      s[:charNumbers]=map(a->findfirst(==(PartitionTwoCoreQuotient(d, a)),
               uc[:charSymbols]),partition_tuples(r,2))
       FixRelativeType(s)
       push!(uc[:harishChandra],s)
