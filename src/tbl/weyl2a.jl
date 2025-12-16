@@ -98,8 +98,8 @@ chevieset("2A", :Representation, function(n,i)
   chevieget("2A",:HeckeRepresentation)(n,map(x->[1,-1],1:n),1:1,i)
 end)
 
-# partition associated to 2-core d and partitions-pair p
-function PartitionTwoCoreQuotient(d,p)
+# symbol associated to 2-core d and partitions-pair p
+function SymbolTwoCoreQuotient(d,p)
   x=Symbol_partition_tuple(reverse(p),-d).S
   CharSymbol([shiftβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))])
 end
@@ -137,7 +137,7 @@ chevieset("2A", :UnipotentCharacters, function (l,)
       else s[:cuspidalName]=""
       end
       # see Fong/Srinivasan for this map
-      s[:charNumbers]=map(a->findfirst(==(PartitionTwoCoreQuotient(d, a)),
+      s[:charNumbers]=map(a->findfirst(==(SymbolTwoCoreQuotient(d, a)),
               uc[:charSymbols]),partition_tuples(r,2))
       FixRelativeType(s)
       push!(uc[:harishChandra],s)

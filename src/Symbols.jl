@@ -220,18 +220,29 @@ julia> shiftβ([0,1,4,5],-2)
 2-element Vector{Int64}:
  2
  3
-
 ```
 """
-function shiftβ(β,n=1)
+function shiftβ(β,n)
   if n>=0 return [0:n-1;β .+ n]
   elseif β[1:-n]!= 0:-n-1 error("Cannot shift $β by $n\n")
   else return β[1-n:end].+n
   end
 end
 
+"""
+`shiftβ(β)` returns the unique normalized representative of `β`.
+
+```julia-repl
+julia> shiftβ([0,1,4,5])
+2-element Vector{Int64}:
+ 2
+ 3
+```
+"""
 function shiftβ(β)
-  while β[1]==0 β=shiftβ(β,-1) end
+  i=0
+  while i+1<=length(β) && β[i+1]==i i+=1 end
+  if i>0 β=shiftβ(β,-i) end
   β
 end
 
