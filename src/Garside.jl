@@ -373,8 +373,8 @@ export BraidMonoid, shrink, α, δad, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, right_divisors, Category,
 endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc,
 leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt,
-Brieskorn_normal_form, Monoid, GarsideMonoid, LocallyGarsideMonoid, hurwitz,
-rightascents
+Brieskorn_normal_form, Monoid, MonoidElt, GarsideMonoid, LocallyGarsideMonoid,
+hurwitz, rightascents
 
 abstract type Monoid end
 
@@ -809,7 +809,8 @@ rightgcd(M::ArtinMonoid{T},simp::Vararg{T,N}) where {T,N}=
   inv(leftgcd(M,inv.(simp)...))
 
 #---------------------------------------------------------------------
-abstract type LocallyGarsideElt{T,TM<:LocallyGarsideMonoid} end
+abstract type MonoidElt end
+abstract type LocallyGarsideElt{T,TM<:LocallyGarsideMonoid}<:MonoidElt end
 
 struct GarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   M::TM
@@ -1708,14 +1709,15 @@ function Base.show(io::IO,C::Category)
   end
 end
 
-#   If the  julia objects  of type  `TM` belong  to a  monoid, a
-#   general  map can be represented  as a triple `(i,m,j)`  where `m` is of
-#   type `TM` representing a map from `obj[i]` to `obj[j]`.
 """
 `Category(atomsfrom::Function,o;action::Function=^)`
 
 constructs a category from an initial object `o` and two functions:
-  - `atomsfrom(o)` given an object `o` returns  the list of atoms from `o`. - `action(o,m)` returns the resulting object obtained by applying the map `m`  to the object  `o`. If `action`  is not given,  it is assumed that `o^m` does the job.
+  - `atomsfrom(o)` given an object `o` returns  the list of atoms from `o`. 
+  - `action(o,m)` returns the target object of the map `m` starting from `o`. 
+
+If  `action` is  not given,  it is  assumed that  `o^m` does the job. While
+constructing  the category, `action` is only applied for atoms `m`.
 
 The  result is  a `Category{TO,TM}`  where `TO=typeof(o)`  and `TM`  is the
 `eltype`  of the result of  `atomsfrom`. 
@@ -1773,6 +1775,9 @@ end
 
 # io properties :showobj and :showmap can vary the output
 function showgraph(io,C::Category)
+#   If the  julia objects  of type  `TM` belong  to a  monoid, a
+#   general  map can be represented  as a triple `(i,m,j)`  where `m` is of
+#   type `TM` representing a map from `obj[i]` to `obj[j]`.
   maps=vcat(map(i->map(((m,t),)->[i,m,t],sort(C.atoms[i],by=x->abs(x[2]-i))),
                  eachindex(C.obj))...)
   found=true
