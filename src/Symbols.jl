@@ -121,7 +121,7 @@ classical reductive groups.
 """
 module Symbols
 using ..Format: joindigits, rio, xrepr
-using Combinat: arrangements, partition_tuples, collectby
+using Combinat: arrangements, partition_tuples, collectby, conjugate_partition
 using CyclotomicNumbers: E
 using CycPols: CycPol, subs
 using LaurentPolynomials
@@ -130,7 +130,8 @@ using ModuleElts: ModuleElt
 export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
 gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg, 
 fakedegree, defectsymbol,   fullsymbol,
-Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola
+Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola, ecore,
+equotient
 
 struct CharSymbol
   S::Vector{Vector{Int}}
@@ -154,12 +155,6 @@ julia> CharSymbol([[1],[1],[1]],3,2)
 """
 CharSymbol(v::Vector{<:AbstractVector})=
       CharSymbol(convert(Vector{Vector{Int}},v),1,0)
-
-# new from old
-#function CharSymbol(S::Union{Vector{Any},Vector{Vector{Any}}})
-#  if isempty(S) || S[end] isa Vector return CharSymbol(S,1,0) end
-#  CharSymbol(fullsymbol(S),S[end-1],S[end])
-#end
 
 Base.:(==)(S::CharSymbol,T::CharSymbol)=S.S==T.S && S.no==T.no && S.repeats==T.repeats
 
@@ -277,6 +272,46 @@ julia> partβ([0,4,5])
 ```
 """
 partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
+
+"""
+`ecore(e,μ)` the `e`-core of the partition `μ`
+```julia-repl
+julia> ecore(3,[3,3,1])
+3-element Vector{Int64}:
+ 2
+ 1
+ 1
+```
+"""
+function ecore(e,μ)
+  β=βset(μ,mod(-length(μ),e))
+  cnt=map(i->count(j->mod(j,e)==i,β),0:e-1)
+  cnt.-=minimum(cnt)
+  if maximum(cnt)==0 return Int[] end
+  core=[j for i in 1:e for j in (i-1).+e.*(0:cnt[i]-1)]
+  partβ(sort!(core))
+end
+
+"""
+`equotient(e,μ)` the `e`-quotient of the partition `μ`
+```julia-repl
+julia> equotient(3,[3,3,1])
+3-element Vector{Vector{Int64}}:
+ []
+ []
+ [1]
+```
+"""
+function equotient(e,μ)
+  λ=conjugate_partition(μ)
+  q=[Int[] for i in 1:e]
+  for (i,m) in enumerate(μ)
+    qj=mod(m-i,e)
+    x=count(j->mod(j-λ[j]-1,e)==qj,1:m)
+    if x!=0 push!(q[qj+1], x) end
+  end
+  q
+end
 
 # rank of partition_tuple described by symbol S
 relative_rank(S::CharSymbol)=sum(x->sum(x)-div(length(x)*(length(x)-1),2),S.S)

@@ -8,6 +8,8 @@ shiftβ
 βset
 partβ
 string_partition_tuple
+ecore
+equotient
 CharSymbol
 rank(::CharSymbol)
 defect(::CharSymbol)
