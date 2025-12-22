@@ -158,6 +158,8 @@ CharSymbol(v::Vector{<:AbstractVector})=
 
 Base.:(==)(S::CharSymbol,T::CharSymbol)=S.S==T.S && S.no==T.no && S.repeats==T.repeats
 
+Base.hash(S::CharSymbol,h::UInt64)=hash(S.S,hash(S.repeats,hash(S.no,h)))
+
 """
 `string_partition_tuple(tuple)`
 
@@ -274,16 +276,16 @@ julia> partβ([0,4,5])
 partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
 
 """
-`ecore(e,μ)` the `e`-core of the partition `μ`
+`ecore(μ,e)` the `e`-core of the partition `μ`
 ```julia-repl
-julia> ecore(3,[3,3,1])
+julia> ecore([3,3,1],3)
 3-element Vector{Int64}:
  2
  1
  1
 ```
 """
-function ecore(e,μ)
+function ecore(μ,e)
   β=βset(μ,mod(-length(μ),e))
   cnt=map(i->count(j->mod(j,e)==i,β),0:e-1)
   cnt.-=minimum(cnt)
@@ -293,16 +295,16 @@ function ecore(e,μ)
 end
 
 """
-`equotient(e,μ)` the `e`-quotient of the partition `μ`
+`equotient(μ,e)` the `e`-quotient of the partition `μ`
 ```julia-repl
-julia> equotient(3,[3,3,1])
+julia> equotient([3,3,1],e)
 3-element Vector{Vector{Int64}}:
  []
  []
  [1]
 ```
 """
-function equotient(e,μ)
+function equotient(μ,e)
   λ=conjugate_partition(μ)
   q=[Int[] for i in 1:e]
   for (i,m) in enumerate(μ)
@@ -383,6 +385,35 @@ Base.length(s::CharSymbol)=length(s.S)
 
 entries(p)=sort!(vcat(p...))
 entries(p::CharSymbol)=sort!(vcat(p.S...))
+
+" the (l,ζʲ) core of s"
+function core(s::CharSymbol,l,j=0)
+  s=CharSymbol(copy.(s.S),s.repeats,s.no)
+  e=length(s.S)
+  j=mod(j,e)
+  acted=true
+  while acted
+    acted=false
+    for i in 1:e
+      o=mod1(i+j,e)
+      p=findall(x->x-l>=0 && !(x-l in s.S[o]),s.S[i])
+      s.S[i][p].-=l
+      acted=acted || !isempty(p)
+      if i!=o
+        s.S[o]=union(s.S[o],s.S[i][p])
+        deleteat!(s.S[i],p)
+      end
+      sort!(s.S[o])
+    end
+  end
+  while all(S->!isempty(S) && S[1]==0,s.S)
+    for i in 1:e
+      deleteat!(s.S[i],1)
+      s.S[i].-=1
+    end
+  end
+  s
+end
 
 """
 `valuation_gendeg(S::CharSymbol)`
