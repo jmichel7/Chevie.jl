@@ -2,9 +2,11 @@
 The  combinatorial objects  in this  module are  *partitions*, *β-sets* and
 *symbols*.
 
-A  partition is a  non-increasing list of  positive integers `p₁≥p₂≥…pₙ≥0`,
+A  partition is a non-increasing  list of nonnegative integers `p₁≥p₂≥…pₙ`,
 represented as a `Vector{Int}`, which is *normalized* if it has no trailing
-zeroes.
+zeroes. The functions for partitions in this module are
+  - [`ecore`](@ref)`(μ,e)` which returns the `e`-core of `μ`.
+  - [`equotient`](@ref)`(μ,e)` which returns the `e`-quotient of `μ`.
 
 A  *β-set* is a strictly increasing `Vector` of nonnegative integers, up to
 *shift*,  the  equivalence  relation  generated  by the *elementary shifts*
@@ -36,12 +38,15 @@ symbol, as well as the *rank*, defined for an `e`-symbol as
 `sum(sum,S)-div((c-1)*(c-e+1),2*e)`.  Invariant  by  shift  but  not cyclic
 permutation is the *shape* `s.-minimum(s)` where `s=length.(S)`.
 
-When  `e=2` we  choose representatives  of the  symbols `[S₁,S₂]` such that
-`length(S₁)≥length(S₂)`,  so the shape is `[d,0]` for some `d≥0` called the
-*defect*  of the  symbol; the  content is  equal to `mod(d,2)`. For symbols
-`[S₁,S₂]` with `length(S₁)==length(S₂)` we choose representatives such that
-`P₁≤P₂`  lexicographically where  `P₁,P₂` are  the partitions associated to
-`S₁,S₂`.
+When `e=2` we choose a normalized representative of a symbol `[S₁,S₂]` such
+that `length(S₁)≥length(S₂)`, so the shape is `[d,0]` for some `d≥0` called
+the *defect* of the symbol; the content is equal to `mod(d,2)`. When `d==0`
+we  choose a normalized representative  such that `P₁≤P₂` lexicographically
+where `P₁,P₂` are the partitions associated to `S₁,S₂`. For `e>2` we choose
+the  *reduced* representative, which  means a symbol  `≥` to all its cyclic
+permutations,  where a symbol  is `<` another  if the shape `length.(S)` is
+lexicographically smaller and, if the shapes are the same, if the vector of
+βsets is lexicographically greater.
 
 Partitions  and  pairs  of  partitions  parametrize  characters of the Weyl
 groups  of classical types, and tuples of partitions parametrize characters
@@ -68,8 +73,8 @@ one circular permutation has Malle-defect `0`.
 
 `e`-symbols  of rank `n` and  content `1` parameterize unipotent characters
 of the spets `G(e,1,n)`. The principal series (in bijection with characters
-of  the reflection group) is parametrized  by symbols such that the reduced
-ones have shape `[1,0,…,0]`.
+of   the  reflection  group)  is  parametrized  by  symbols  whose  reduced
+representative has shape `[1,0,…,0]`.
 
 Unipotent   characters  of   the  spets   `G(e,e,n)`  are  parametrized  by
 `e`-symbols  of  content  `0`  and  Malle-defect  `0`.  The symbols for the
@@ -109,12 +114,13 @@ The functions for symbols in this module are
   - [`rank`](@ref) which computes the rank of a symbol
   - [`defect`](@ref) which returns the defect  of a 2-symbol
   - [`Malledefect`](@ref) which returns the Malle-defect of a symbol
+  - [`core`](@ref)`(l,ζₑʲ)` which returns the `(l,ζₑʲ)`-core of a symbol
   - [`fakedegree`](@ref), [`degree_feg`](@ref), [`valuation_feg`](@ref) return the fake degree (resp. its degree and valuation) of the unipotent character parametrized by a symbol
   - [`gendeg`](@ref), [`degree_gendeg`](@ref), [`valuation_gendeg`](@ref) return the generic degree (resp. its degree and valuation) of the unipotent character parametrized by a symbol
   - [`symbols`](@ref) returns the list of symbols of a given length, rank and content.
 
 Finally,  in this  module we  also provides  a function [`XSP`](@ref) which
-returns  the  "symbols"  (pairs  of  lists  of increasing positive integers
+returns  the "symbols"  (pairs of  vectors of  increasing positive integers
 satisfying  some  conditions)  ``X̃^{ρ-s,s}_{n,d}``  defined by Lusztig and
 Spaltenstein  which  parametrize  local  systems  on  unipotent classes for
 classical reductive groups.
@@ -641,26 +647,41 @@ function shapesSymbols(e,r,c=1,def=0)
      all(x->Malledefect(x)!=def || x<=s,circshift.(Ref(s),1:length(s)-1)),res)
 end
 
-function isreduced(s::CharSymbol)
-  for i in 1:length(s)-1
-    x=circshift(s.S,i)
-    c=cmp(length.(x),length.(s.S))
-    if c==1 || (c==0 && x<s.S) return false end
-# A symbol is smaller than another if the shape is lexicographically smaller,
-# or the shape is the same and the symbol is lexicographically bigger
+function cmpIterators(s,t)
+  is=iterate(s)
+  it=iterate(t)
+  while true
+   if isnothing(is) return isnothing(it) ? 0 : -1
+   elseif isnothing(it) return 1 end
+   vs,states=is
+   vt,statet=it
+   c=cmp(vs,vt)
+   if c!=0 return c end
+   is=iterate(s,states)
+   it=iterate(t,statet)
   end
-  true
 end
 
-function isreducedsymb(s)
-  for i in 1:length(s)-1
-    x=circshift(s,i)
-    c=cmp(length.(x),length.(s))
-    if c==1 || (c==0 && x<s) return false end
-# A symbol is smaller than another if the shape is lexicographically smaller,
-# or the shape is the same and the symbol is lexicographically bigger
+"""
+`isless(s::CharSymbol,t::CharSymbol)`
+
+A symbol is smaller than another if the shape is lexicographically smaller,
+or the shape is the same and the vector of βsets is lexicographically bigger.
+"""
+function Base.isless(s::CharSymbol,t::CharSymbol)
+  c=cmpIterators((length(x) for x in s.S),length(x) for x in t.S)
+  c==-1 || (c==0 && t.S<s.S)
+end
+
+circshiftIterator(s,i)=(s[mod1(j-i,length(s))] for j in eachindex(s))
+
+# s is reduced if >= to all its circshifts
+function isreduced(s::CharSymbol)
+  !any(1:length(s.S)-1)do i
+    c=cmpIterators((length(x) for x in s.S),
+                   (length(x) for x in circshiftIterator(s.S,i)))
+    c==-1 || (c==0 && cmpIterators(circshiftIterator(s.S,i),s.S)==-1)
   end
-  true
 end
 
 "`symbolsshape(r,s)` symbols of rank `r` and shape `s`"
@@ -672,7 +693,7 @@ function Symbolsshape(r,s)
   if !iszero(Malledefect(s)) return S end
   res=CharSymbol[]
   for s in S
-    p=findfirst(i->s.S==circshift(s.S,1-i),2:length(s))
+    p=findfirst(i->cmpIterators(s.S,circshiftIterator(s.S,1-i))==0,2:length(s))
     if p===nothing push!(res,s)
     else repeats=div(length(s),p)
       append!(res,map(i->CharSymbol(s.S,repeats,i),0:repeats-1))
@@ -846,30 +867,30 @@ function xsp(rho,s,n,d)
 end
 
 """
-`XSP(ρ,s,n,even=false)`
+`XSP(ρ,s,n,even=false)` Lusztig-Spaltenstein symbols.
 
-returns  the union of the  [lusp85](@cite) ``X̃^{ρ-s,s}_{n,d}`` for all `d`
-even  when `even=true`,  all `d`  odd otherwise;  these symbols parametrize
-local  systems  on  unipotent  conjugacy  classes  for classical groups. In
-[lus04;  13.2](@cite) the notation  is ``{}^ρ X^s_{n,d}``.  The result is a
-list  of  lists,  each  one  corresponding  to  a  similarity  class (which
-correspond  to a  given conjugacy  class for  the support). If `s==0`, only
-positive defects are considered.
+returns  the union of the  [lusp85](@cite) symbols ``X̃^{ρ-s,s}_{n,d}`` for
+all  `d`  even  when  `even=true`,  all  `d`  odd  otherwise; these symbols
+parametrize  local  systems  on  unipotent  conjugacy classes for classical
+groups.  In [lus04;  13.2](@cite) the  notation is  ``{}^ρ X^s_{n,d}``. The
+result  is a vector of vectors, each inner vector regrouping the symbols in
+a  similarity class (the local systems  whose support is the same conjugacy
+class). If `s==0`, only positive defects `d` are considered.
 
-  - `XSP(2,1,n)` gives L-S symbols for Sp₂ₙ
-  - `XSP(4,2,n)` gives L-S symbols for Sp₂ₙ in char.2
-  - `XSP(2,0,n)` gives L-S symbols for SO₂ₙ₊₁ [defect odd]
-  - `XSP(2,0,n,true)` gives L-S symbols for SO₂ₙ [defect even]
-  - `XSP(4,0,n,true)` gives L-S symbols for SO₂ₙ in char 2
+  - `XSP(2,1,n)` gives Lusztig-Spaltenstein symbols for Sp₂ₙ
+  - `XSP(4,2,n)` gives Lusztig-Spaltenstein symbols for Sp₂ₙ in char.2
+  - `XSP(2,0,n)` gives Lusztig-Spaltenstein symbols for SO₂ₙ₊₁ of odd defect
+  - `XSP(2,0,n,true)` gives Lusztig-Spaltenstein symbols for SO₂ₙ of even defect
+  - `XSP(4,0,n,true)` gives Lusztig-Spaltenstein symbols for SO₂ₙ in char 2
 
-each item is a `NamedTuple` giving some information on the local system.
-It has fields
+Each  Lusztig-Spaltenstein symbol  is represented  by a  `NamedTuple` whose
+fields describe the local system. The fields are
 
   - `symbol` the Lusztig-Spaltenstein symbol
   - `dimBu` for the support `u` of the local system
-  - `Au` describes the character  of `A(u)` for the  local system as a list:
-    `true`->sgn, `false`->Id
-  - `sp`  parameter (double partition) of the generalized Springer
+  - `Au` describes the character  of `A(u)` corresponding to the  local system 
+     as a boolean list where `true`->sgn, `false`->Id
+  - `sp`  is the parameter (double partition) of the generalized Springer
      correspondent (a character of the relative Weyl group)
 """
 function XSP(rho,s,n,even=false)
