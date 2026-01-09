@@ -19,8 +19,8 @@ column.  Conversely, to each β-set `b₁<b₂<…<bₙ` is associated the parti
 non-normalized representative.
 
 The functions for βsets in this module are
-  - [`βset`](@ref) which constructs a normalized βset from a partition.   
-  - [`shiftβ`](@ref) which shifts a βset 
+  - [`βset`](@ref) which constructs a normalized βset from a partition.
+  - [`shiftβ`](@ref) which shifts a βset
   - [`partβ`](@ref) which constructs a partition from a βset
 
 As  a generalisation of `β`-sets, [lus77](@cite) has introduced `2`-symbols
@@ -101,9 +101,9 @@ julia> symbols(3,3,0)
  (012,012,)
 ```
 when  the symbol has  a period, only  the period is  shown, followed by the
-root  of unity (where  `1` is shown  as `+` and  `-1` is shown  as `-`. 
+root  of unity (where  `1` is shown  as `+` and  `-1` is shown  as `-`.
 
-The functions for symbols in this module are 
+The functions for symbols in this module are
   - [`CharSymbol`](@ref), which constructs a symbol
   - [`Symbol_partition_tuple`](@ref) which constructs a symbol of a given shape from a partition tuple
   - [`rank`](@ref) which computes the rank of a symbol
@@ -128,10 +128,10 @@ using LaurentPolynomials
 using LinearAlgebra: dot
 using ModuleElts: ModuleElt
 export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
-gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg, 
+gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg,
 fakedegree, defectsymbol,   fullsymbol,
 Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola, ecore,
-equotient
+equotient, core
 
 struct CharSymbol
   S::Vector{Vector{Int}}
@@ -276,7 +276,10 @@ julia> partβ([0,4,5])
 partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
 
 """
-`ecore(μ,e)` the `e`-core of the partition `μ`
+`ecore(μ,e)` the  `e`-core of the partition `μ`.
+
+It  is the partition left after removing recursively all possible `e`-hooks
+from the young diagram of `μ`.
 ```julia-repl
 julia> ecore([3,3,1],3)
 3-element Vector{Int64}:
@@ -295,9 +298,15 @@ function ecore(μ,e)
 end
 
 """
-`equotient(μ,e)` the `e`-quotient of the partition `μ`
+`equotient(μ,e)` the `e`-quotient of the partition `μ`.
+
+The  `e`-quotient is best described  in terms of βsets.  Divide the βset of
+`μ`  in `e` sets  `S₀,…,Sₑ₋₁` according to  the congruence mod `e`. Replace
+`Sᵢ` by `S'ᵢ={(x-i)/e∣x∈Sᵢ}`. Then each `S'ᵢ` can be interpreted in turn as
+the  βset  of  a  partition.  The  resulting `e`-tuple of partitions is the
+`e`-quotient of `mu`.
 ```julia-repl
-julia> equotient([3,3,1],e)
+julia> equotient([3,3,1],3)
 3-element Vector{Vector{Int64}}:
  []
  []
@@ -386,7 +395,14 @@ Base.length(s::CharSymbol)=length(s.S)
 entries(p)=sort!(vcat(p...))
 entries(p::CharSymbol)=sort!(vcat(p.S...))
 
-" the (l,ζʲ) core of s"
+"""
+`core(s::CharSymbol,l,j=0)` the `(l,ζₑʲ)` core of the `e`-symbol `s`
+
+This core is obtained by removing recursively all possible `(l,ζₑʲ)`-hooks.
+An  `(l,ζₑʲ)`-hook consists of,  assuming `x` occurs  in the `i`-th βset of
+`s`  and `x-l` does not occur in the `mod1(i+j,e)`-th βset of `s`, removing
+`x` from the `i`-th β-set and adding `x-l` to the `mod1(i+j,e)`-th βset.
+"""
 function core(s::CharSymbol,l,j=0)
   s=CharSymbol(copy.(s.S),s.repeats,s.no)
   e=length(s.S)
@@ -565,7 +581,7 @@ function Base.show(io::IO,S::CharSymbol)
       print(io,r)
     end
     print(io,")")
-  else 
+  else
     print(io,"CharSymbol([")
     join(io,map(x->"["*join(x,",")*"]",S.S),",")
     print(io,"]")
@@ -581,7 +597,7 @@ function Malledefect(s::Vector{Int})
 end
 
 """
-`Malledefect(S::CharSymbol)`  
+`Malledefect(S::CharSymbol)`
 
 Malle-defect of `S`. This is an invariant by shift but not in general under
 cyclic permutations.
@@ -666,7 +682,7 @@ function Symbolsshape(r,s)
 end
 
 """
-`symbols(e,r,content=1,Malledefect=0)` 
+`symbols(e,r,content=1,Malledefect=0)`
 
 The list of `e`-symbols of rank `r` and given content and Malle-defect.
 
@@ -701,7 +717,7 @@ julia> symbols(2,4,0,1) # unipotent characters of ²D₄
 symbols(e,r,c=1,def=0)=vcat(Symbolsshape.(r,shapesSymbols(e,r,c,def))...)
 
 # for S β-numbers ∏(x^{ei}-x^{ej}) for i>j, i,j∈S
-function Δ(S,e) 
+function Δ(S,e)
   l=length(S)
   if l<2 return one(CycPol) end
   v=sum(e*S[i] for i in 1:l for j in i+1:l)
@@ -710,7 +726,7 @@ function Δ(S,e)
 end
 
 # for S β-numbers ∏(x^{eh}-1) for l in S for h in 1:l
-function Θ(S,e) 
+function Θ(S,e)
   if iszero(sum(S)) return one(CycPol) end
   p=[i//(e*h) for l in S for h in 1:l for i in 0:e*h-1]
   CycPol(1,0,ModuleElt(p.=>1))

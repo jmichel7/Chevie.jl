@@ -152,7 +152,7 @@ The  first two characters are  each in a Lusztig  family by themselves. The
 last  eight are in a family associated to the group `Γ=𝔖₃`: the last column
 shows  the parameters  `(x,θ)`. The  third column  shows the  degree of the
 unipotent characters, which is transformed by the Lusztig Fourier matrix of
-the  third  column,  which  gives  the  degree  of the corresponding almost
+the  fourth  column,  which  gives  the  degree of the corresponding almost
 character,  or equivalently the fake  degree of the corresponding character
 of `W` (extended by `0` outside the principal series).
 

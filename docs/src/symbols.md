@@ -14,6 +14,7 @@ CharSymbol
 rank(::CharSymbol)
 defect(::CharSymbol)
 Malledefect
+core
 Symbol_partition_tuple
 fakedegree(::CharSymbol)
 degree_feg
