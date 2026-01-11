@@ -26,7 +26,7 @@ end)
 #( 5,26,40)( 6,24,27)( 7,42,13)( 8,33,19)(14,21,46)(16,53,44)(18,51,49)
 #(22,38,31)(28,54,47)(30,36,50)); # a section G of the Diagram automorphisms
 
-chevieset(:timp, :ClassInfo, function (p, q, r, phi)
+chevieset(:timp, :classinfo, function (p, q, r, phi)
   if [p, q, r]==[3, 3, 3]
     if phi==perm"(1,4,2)"
       Dict{Symbol, Any}(:classes => [3, 9, 9, 3, 18, 9, 3], 
@@ -43,7 +43,7 @@ chevieset(:timp, :ClassInfo, function (p, q, r, phi)
        :classtext=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
        :classparams=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
        :classnames =>["Id", "1", "12", "123", "121", "1213"])
-    elseif order(phi)==2 chevieget(:imp,:ClassInfo)(3, 3, 3)
+    elseif order(phi)==2 chevieget(:imp,:classinfo)(3, 3, 3)
     else error("phi==", phi, " not implemented")
     end
   elseif [p, q, r]==[4, 2, 2]
@@ -51,15 +51,15 @@ chevieset(:timp, :ClassInfo, function (p, q, r, phi)
                       :classes => [4, 4, 4, 4], 
                       :classnames => ["Id", "1", "cc", "z"])
   else
-      ChevieErr("ClassInfo not implemented")
+      ChevieErr("classinfo not implemented")
       false
   end
 end)
 
-chevieset(:timp, :NrConjugacyClasses, function (p, q, r, phi)
-  length(chevieget(:timp, :ClassInfo)(p, q, r, phi)[:classtext]) end)
+chevieset(:timp, :nconjugacy_classes, function (p, q, r, phi)
+  length(chevieget(:timp, :classinfo)(p, q, r, phi)[:classtext]) end)
 
-chevieset(:timp, :CharInfo, function (p, q, r, phi)
+chevieset(:timp, :charinfo, function (p, q, r, phi)
   if [p, q, r]==[3, 3, 3]
     if order(phi)==3
      res=Dict{Symbol,Any}(:charparams=>[[Int[],Int[],[3]],[Int[],Int[],[1,1,1]],
@@ -77,7 +77,7 @@ chevieset(:timp, :CharInfo, function (p, q, r, phi)
      [Int[],Int[],Int[],[1,1]],[Int[],[1],[1],Int[]],[Int[],Int[],[1],[1]]],
                         :extRefl=>[1,4,2])
   else
-    ChevieErr("CharInfo not implemented")
+    ChevieErr("charinfo not implemented")
     return false
   end
   res[:charnames]=string_partition_tuple.(res[:charparams])
@@ -213,7 +213,7 @@ chevieset(:timp, :ReducedInRightCoset, function (W, phi)
   g=PermX(W,reflrep(W,phi)*reflrep(W,m1perm))
   if g in W return (gen=inclusion(W,1:3),phi=inv(g)*phi) end
   # quads of roots which have the same cartan mat and are representatives of 
-  # <-1,W>-orbits of quads of reflections satisfying Corran-Picantin relations
+  # <-1,W>-orbits of quads of reflections satisfying [cp11] relations
   sets=[[1,2,3,44],[2,12,11,37],[3,11,2,36],[1,12,10,16]] # 3G333
   for g in [Perm(),m1perm], i in inclusion.(Ref(W),sets), 
      o in [[4,1,3,2],[2,4,3,1]]

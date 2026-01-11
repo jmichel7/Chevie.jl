@@ -10,12 +10,12 @@ chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:simplecoroots,function(t)
   toM(coroot.(eachrow(chevieget(t,:simpleroots)),eig))
 end)
 
-chevieset([:G24,:G27,:G33,:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat, t->
+chevieset([:G24,:G27,:G33,:G25,:G26,:G29,:G31,:G32,:G34],:cartan, t->
   convert(Matrix{Cyc{Int}},chevieget(t,:simplecoroots)*
          transpose(chevieget(t,:simpleroots))))
 
 chevieset([:E7, :E8, :H3, :H4], :Invariants, t->function()
-  C=chevieget(t, :CartanMat)
+  C=chevieget(t, :cartan)
   r=toM(roots(C))*C
   map(d->function(arg...)sum((r*collect(arg)).^d) end, 
       chevieget(t, :ReflectionDegrees))
@@ -23,7 +23,7 @@ end)
 
 chevieset([:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34,:H3,:H4,"2E6","2F4",
            "3D4",:E6,:E7,:E8,:F4,:G2],:IrredInfo,function(t)
-  ci=chevieget(t,:CharInfo)()
+  ci=chevieget(t,:charinfo)()
   map((x,y)->(charparam=x,charname=y),ci[:charparams],ci[:charnames])
 end)
 
@@ -75,7 +75,7 @@ chevieset([:A,:B,:D],:SemisimpleRank,t->(r->r))
 
 chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34,
            :H4, :E7, :E8, :G31],:charindex,t->
-  phi->findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams]))
+  phi->findfirst(==(phi),chevieget(t,:charinfo)()[:charparams]))
 
 # cycpolfakedegrees is a compact representation of fake degrees
 chevieset([:H4, :E7, :E8, :G31], :FakeDegree,t->

@@ -1,8 +1,8 @@
 # tbl/weyl2f4.jl         Chevie library       Meinolf Geck and Jean Michel
 # Copyright (C) 1998-2001  The Chevie Team
-chevieset("2F4", :NrConjugacyClasses, 11)
+chevieset("2F4", :nconjugacy_classes, 11)
 
-chevieset("2F4", :ClassInfo, function ()
+chevieset("2F4", :classinfo, function ()
   res=Dict{Symbol,Any}(:classtext=>
     [Int[],[2,3,2],[1],[1,2,1,3,2,1,4,3,2,1],[1,2],[2],[1,2,1,3,2,1,3,2],
      [1,2,3,2],[1,2,1,3,2,1,3,2,4,3,2,1],[1,2,1,3,2,1,3,2,4,3,2,1,3,2,4,3,2,1],
@@ -14,11 +14,11 @@ chevieset("2F4", :ClassInfo, function ()
   return res
 end)
 
-chevieset("2F4", :CharInfo, function ()
+chevieset("2F4", :charinfo, function ()
   res=Dict{Symbol,Any}(:extRefl=>[1,9,7,10,2],:charparams=>
    [[1,0],[1,24],[4,8],[9,2],[9,10],[6,6,1],[6,6,2],[12,4],[4,1],[4,13],[16,5]],
    :kondo=>["1_1","1_4","4_1","9_1","9_4","6_1","6_2","12","4_2","4_5","16"])
-  resparams=chevieget(:F4,:CharInfo)()[:charparams]
+  resparams=chevieget(:F4,:charinfo)()[:charparams]
   res[:charRestrictions]=map(x->findfirst(==(x),resparams),res[:charparams])
   res[:nrGroupClasses]=length(resparams)
   res[:b]=map(x->x[2],res[:charparams])
@@ -38,19 +38,19 @@ chevieset("2F4",:generators,[
 
 chevieset("2F4",:phi,perm"(1,4)(2,3)(5,8)(6,7)(9,12)(10,11)(13,16)(14,15)(17,18)(19,20)(21,22)(23,24)(25,28)(26,27)(29,32)(30,31)(33,36)(34,35)(37,40)(38,39)(41,42)(43,44)(45,46)(47,48)")
 
-chevieset("2F4",:CartanMat,
+chevieset("2F4",:cartan,
   [2 -1 0 0;-1 2 -root(2) 0;0 -root(2) 2 -1;0 0 -1 2])
 
 chevieset("2F4",:ClassParameter,function(w)
   if length(w)==1
-    params=chevieget("2F4",:ClassInfo)[:classparams]
+    params=chevieget("2F4",:classinfo)[:classparams]
     if tally(cycletype(x*chevieget("2F4",:phi)))==[2=>2,4=>11]
          return params[3]
     else return params[6]
     end
   else
     params[findfirst(x->length(x)==length(w),
-                     chevieget("2F4",:ClassInfo)[:classtext])]
+                     chevieget("2F4",:classinfo)[:classtext])]
   end
 end)
 
@@ -58,7 +58,7 @@ chevieset("2F4", :HeckeCharTable, function (param, rootpara)
   q=-param[1][1]//param[1][2]
   v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(2F4)", :parameter => [q, q, q, q],
-   :sqrtparameter=>[v,v,v,v],:cartan=>chevieget("2F4", :CartanMat),
+   :sqrtparameter=>[v,v,v,v],:cartan=>chevieget("2F4", :cartan),
    :size=>1152,:irreducibles=>[
     1 v^6 v^2 v^20 v^4 v^2 v^16 v^8 v^24 v^36 v^12;
     1 -1 -1 1 1 -1 1 1 1 1 1;
@@ -72,7 +72,7 @@ chevieset("2F4", :HeckeCharTable, function (param, rootpara)
     0 -root(2)*v^3 0 root(2)*v^5 -root(2)*v root(2)*v root(2)*(v^5-v^3) 0 0 2*root(2)*v^9 -2*root(2)*v^3;
     0 0 0 root(2)*v^10 -root(2)*v^2 0 root(2)*(v^10-2*v^8+v^6) 0 0 -4*root(2)*v^18 4*root(2)*v^6]*v^0,
    :irredinfo=>chevieget("2F4",:IrredInfo))
-  merge!(tbl, chevieget("2F4", :ClassInfo)())
+  merge!(tbl, chevieget("2F4", :classinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)

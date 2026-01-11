@@ -6,7 +6,7 @@
 #  in the equal parameter case (private communication, January 1998),
 #  and by M. Geck in  the 2-parameter case (August 1997).
 
-chevieset(:F4, :CartanMat,function(cartantype=1)
+chevieset(:F4, :cartan,function(cartantype=1)
   [2 -1 0 0;-1 2 -cartantype 0;0 -2//cartantype 2 -1;0 0 -1 2]
 end)
 
@@ -18,7 +18,7 @@ chevieset(:F4,:simpleroots,
 
 chevieset(:F4,:HyperplaneRepresentatives, [1, 3])
 
-chevieset(:F4,:ParabolicRepresentatives, function(s)
+chevieset(:F4,:parabolic_reps, function(s)
   t=[[Int[]],[[1],[3]],[[1,2],[1,3],[2,3],[3,4]],
      [[1,2,3],[1,2,4],[1,3,4],[2,3,4]],[1:4]]
   t[s+1]
@@ -26,10 +26,9 @@ end)
 
 chevieset(:F4,:ReflectionDegrees, [2, 6, 8, 12])
 
-chevieset(:F4,:NrConjugacyClasses, 25)
+chevieset(:F4,:nconjugacy_classes, 25)
 
-chevieset(:F4,:ClassInfo, function ()
-# representatives are "very good" see Geck-Michel
+chevieset(:F4,:classinfo,function() # representatives are "very good" see [gm97]
   res=Dict{Symbol,Any}(:classtext=>map(x->Replace(x,[0],1:4),
     [[],[0,0,0,0,0,0],[2,3,2,3],[2,1],[0,2,3,2,3,4,3],[0,0,0],[4,3],
      [1,2,1,3,2,3,0],[0,0,0,0],[0,0],[0],[1],[2,3,2,3,4,3,2,3,4],[1,4,3],
@@ -47,7 +46,7 @@ chevieset(:F4,:ClassInfo, function ()
   res
 end)
 
-chevieset(:F4, :CharInfo, function ()
+chevieset(:F4, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,12,2],[1,12,1],[1,24],[2,4,2],
     [2,16,1],[2,4,1],[2,16,2],[4,8],[9,2],[9,6,2],[9,6,1],[9,10],[6,6,1],
     [6,6,2],[12,4],[4,1],[4,7,2],[4,7,1],[4,13],[8,3,2],[8,9,1],[8,3,1],
@@ -55,11 +54,9 @@ chevieset(:F4, :CharInfo, function ()
   :kondo=>["1_1","1_2","1_3","1_4","2_1","2_2","2_3","2_4","4_1","9_1","9_2",
            "9_3","9_4","6_1","6_2","12","4_2","4_3","4_4","4_5","8_1","8_2",
            "8_3","8_4","16"],
-# names used in Spaltenstein's [Generalized Springer correspondance for
-# exceptional groups]
   :spaltenstein=>["1_1","1_2","1_3","1_4","2_1","2_2","2_3","2_4","4","9_1",
                   "9_2","9_3","9_4","6_1","6_2","12","4_1","4_2","4_3","4_4",
-                  "8_1","8_2","8_3","8_4","16"],
+                  "8_1","8_2","8_3","8_4","16"], # names used in [spalt85]
   :extRefl=>[1,17,15,20,4],
   :a=>[0,4,4,24,1,13,1,13,4,2,4,4,10,4,4,4,1,4,4,13,3,9,3,9,4],
   :A=>[0,20,20,24,11,23,11,23,20,14,20,20,22,20,20,20,11,20,20,23,15,21,15,21,20])
@@ -140,8 +137,8 @@ chevieset(:F4, :HeckeCharTable, function (param, rootpara)
   tbl=Dict{Symbol, Any}(:identifier=>"H(F4)",
     :text=>"origin: Meinolf Geck, April 1992",
     :parameter => [u, u, v, v], :size => 1152)
-  merge!(tbl,chevieget(:F4, :ClassInfo)())
-  merge!(tbl,chevieget(:F4, :CharInfo)())
+  merge!(tbl,chevieget(:F4, :classinfo)())
+  merge!(tbl,chevieget(:F4, :charinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   dual(f)=map((a,w)->a*(-u)^count(j->j in [1,2],w)*(-v)^count(j->j in [3,4],w),
                                   f(uinv,vinv),tbl[:classtext])

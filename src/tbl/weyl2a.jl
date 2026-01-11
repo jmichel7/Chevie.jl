@@ -11,9 +11,9 @@ chevieset("2A",:WordsClassRepresentatives,function(n,part=partitions(n+1))
       push!(l,i)
       w=Perm(i,i+1)*w
     end
-    l
   end
-  function guesslongest(p) # longest element in class, see [Geck-Kim]
+  # longest element in class, see [gkp00]
+  function guesslongest(p,l) 
     p=vcat(filter(iseven, p), filter(i->i!=1 && isodd(i), p))
     x=Perm()
     off=0
@@ -30,28 +30,28 @@ chevieset("2A",:WordsClassRepresentatives,function(n,part=partitions(n+1))
     w0*=Perm(p,n-p+2)
   end
   if iseven(n) push!(l,div(n,2)+1) end
-  map(p->redw(n,guesslongest(p)*w0),part)
+  map(p->redw(n,guesslongest(p,l)*w0),part)
 end)
 
-chevieset("2A", :ClassInfo, function (n,)
-  res=chevieget(:A,:ClassInfo)(n)
+chevieset("2A", :classinfo, function (n,)
+  res=chevieget(:A,:classinfo)(n)
   res[:classtext]=chevieget("2A",:WordsClassRepresentatives)(n,res[:classparams])
   delete!(res, :orders)
   res
 end)
 
-chevieset("2A",:NrConjugacyClasses,n->npartitions(n+1))
+chevieset("2A",:nconjugacy_classes,n->npartitions(n+1))
 
-chevieset("2A",:CharInfo,n->chevieget(:A,:CharInfo)(n))
+chevieset("2A",:charinfo,n->chevieget(:A,:charinfo)(n))
 
 chevieset("2A",:PhiFactors,n->map(x->(-1)^x,2:n+1))
 
 chevieset("2A",:CharTable,function(r)
   tbl=copy(chevieget(:A,:CharTable)(r))
   tbl[:identifier]="W(^2A_$r)"
-  A=chevieget(:A,:b).(chevieget(:A,:CharInfo)(r)[:charparams])
+  A=chevieget(:A,:b).(chevieget(:A,:charinfo)(r)[:charparams])
   tbl[:irreducibles]=Diagonal((-1).^A)*tbl[:irreducibles]
-  merge!(tbl,chevieget("2A",:ClassInfo)(r))
+  merge!(tbl,chevieget("2A",:classinfo)(r))
 end)
 
 chevieset("2A",:FakeDegree,function(n,p,q)
@@ -59,17 +59,17 @@ chevieset("2A",:FakeDegree,function(n,p,q)
   (-1)^valuation(res)*res(-q)
 end)
 
-chevieset("2A",:HeckeCharTable, function(r, param, rootparam)
-  q=-param[1][1]//param[1][2]
-  v=rootparam[1]; if ismissing(v) v=root(q) end
+chevieset("2A",:HeckeCharTable, function(r, para, rootpara)
+  v=rootpara[1]
+  if ismissing(v) v=root(-para[1][1]//para[1][2]) end
   tbl=Dict{Symbol,Any}(:identifier=>"H(^2A_$r)")
-  merge!(tbl,chevieget("2A",:ClassInfo)(r))
+  merge!(tbl,chevieget("2A",:classinfo)(r))
   W=coxgroup(:A,r)
 # If q_E is the square root which deforms to 1 of the eigenvalue of T_{w_0}
 # on E which deforms to 1, then we have:
 #  Ẽ(T_wφ)=τ(E(T_{w^-1w_0}))q_E (trivial extension)
 #  Ẽ(T_wφ)=(-1)^a_E τ(E(T_{w^-1w_0}))q_E (preferred extension)
-# where τ is q->q^-1
+# where τ is v->v^-1
 # Here we take the preferred extension
   H=hecke(W, v^-2)
   ct=CharTable(H)
@@ -78,16 +78,16 @@ chevieset("2A",:HeckeCharTable, function(r, param, rootparam)
   T=Tbasis(H)
   cl=map(x->T(W(x...)*longest(W)), tbl[:classtext])
   tbl[:irreducibles]=transpose(toM(char_values.(cl)))
-  charparams=chevieget(:A,:CharInfo)(r)[:charparams]
+  charparams=chevieget(:A,:charinfo)(r)[:charparams]
   a=chevieget(:A,:b).(charparams)
   qE=central_monomials(hecke(W,v))
   tbl[:irreducibles]=Diagonal((-1).^a .* qE)*tbl[:irreducibles]
-  AdjustHeckeCharTable(tbl, param)
+  AdjustHeckeCharTable(tbl, para)
 end)
 
-chevieset("2A", :HeckeRepresentation, function (n, param, sqrtparam, i)
+chevieset("2A", :HeckeRepresentation, function (n, para, sqrtpara, i)
   W=coxgroup(:A,n)
-  H=hecke(W,-param[1][1]//param[1][2])
+  H=hecke(W,-para[1][1]//para[1][2])
   p=partitions(n+1)[i]
   gens=Spechtmodel(H,p)
   (gens=gens,F=prod(gens[word(W,longest(W))]).//
@@ -99,7 +99,7 @@ chevieset("2A", :Representation, function(n,i)
 end)
 
 # symbol associated to 2-core d and partitions-pair p
-function SymbolTwoCoreQuotient(d,p)
+function Symbol2core2quotient(d,p)
   x=Symbol_partition_tuple(reverse(p),-d).S
   CharSymbol([shiftβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))])
 end
@@ -109,24 +109,24 @@ chevieset("2A", :ClassParameter, function (n, w)
   cycletype(x,1:n+1)
 end)
 
-# [LuB, 4.4, 4.16, 4.19]
+# see [4.4, 4.16, 4.19, lus85]
 chevieset("2A", :UnipotentCharacters, function (l,)
   uc=chevieget(:A,:UnipotentCharacters)(l)
   uc[:charSymbols]=map(x->CharSymbol([βset(x)]),partitions(l+1))
-  uc[:almostHarishChandra] = uc[:harishChandra]
+  uc[:almostHarishChandra]=uc[:harishChandra]
   uc[:almostHarishChandra][1][:relativeType]=
-  TypeIrred(;orbit=[TypeIrred(;series=:A,indices=1:l,rank=l)],
-    twist=prod(i->Perm(i,l+1-i),1:div(l,2)),rank=l)
-  uc[:harishChandra]=[]
+    TypeIrred(;orbit=[TypeIrred(;series=:A,indices=1:l,rank=l)],
+      twist=prod(i->Perm(i,l+1-i),1:div(l,2)),rank=l)
+  uc[:harishChandra]=Dict{Symbol,Any}[]
   d=0
-  while d*(d+1)//2<=l+1
+  while div(d*(d+1),2)<=l+1
     k=l+1-div(d*(d+1),2)
     if iseven(k)
       r=div(k, 2)
       s=Dict{Symbol, Any}(:levi=>r+1:l-r,:relativeType=> 
         TypeIrred(;series=:B,indices=r:-1:1,rank=r),
         :eigenvalue=>(-1)^div(prod(d.+(-1:2)),8))
-      # for the eigenvalue see Lusztig CBMS proof of 3.34 (ii)
+      # for the eigenvalue see [proof of 3.34 (ii), lu78]
       if d==0 
        s[:relativeType]=TypeIrred(;series=:B,indices=r:-1:1,rank=r,cartanType=1)
       end
@@ -136,15 +136,14 @@ chevieset("2A", :UnipotentCharacters, function (l,)
       if k<l s[:cuspidalName]="{}^2A"*stringind(rio(TeX=true),l-k)
       else s[:cuspidalName]=""
       end
-      # see Fong/Srinivasan for this map
-      s[:charNumbers]=map(a->findfirst(==(SymbolTwoCoreQuotient(d, a)),
-              uc[:charSymbols]),partition_tuples(r,2))
+      s[:charNumbers]=map(a->findfirst(==(Symbol2core2quotient(d, a)),
+        uc[:charSymbols]),partition_tuples(r,2)) # see [fg82] for this map
       FixRelativeType(s)
       push!(uc[:harishChandra],s)
     end
     d+=1
   end
-  # for delta see Lusztig's book page 124 line 7
+  # for delta see [page 124 line 7, lus85]
   for i in 1:length(uc[:families])
     if isodd(uc[:a][i]+uc[:A][i])
       uc[:families][i]=Family("C'1",uc[:families][i][:charNumbers])

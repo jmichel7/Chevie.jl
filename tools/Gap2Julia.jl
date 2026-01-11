@@ -2,8 +2,10 @@
 This  module provides the function  trad(s::String) which takes as argument
 some GAP3 code, and returns a string which is some valid julia code.
 
-To run that Julia code it may be helpful to use gap3support.jl which
-contains Julia implementations of some common Gap3 functions.
+To  run  that  Julia  code  it  may  be helpful to use gap3support.jl which
+contains   Julia  implementations   of  some   common  Gap3  functions,  or
+cheviesupport.jl  which provides a  GAPENV module mimicking  even more gap3
+environment.
 """
 module Gap2Julia
 

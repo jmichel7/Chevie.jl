@@ -14,9 +14,9 @@ chevieset(:G25,:BraidRelations,
 
 chevieset(:G25,:ReflectionDegrees, [6, 9, 12])
 
-chevieset(:G25,:NrConjugacyClasses, 24)
+chevieset(:G25,:nconjugacy_classes, 24)
 
-chevieset(:G25,:ParabolicRepresentatives,s->
+chevieset(:G25,:parabolic_reps,s->
   [[Int[]],[[1]],[[1,2],[1,3]],[1:3]][s+1])
 
 # position in classes of G26
@@ -31,7 +31,7 @@ chevieset(:G25, :WordsClassRepresentatives, map(x->
 
 chevieset(:G25, :PowerMaps, [nothing, [1, 9, 4, 3, 15, 5, 8, 7, 10, 9, 3, 15, 16, 14, 5, 13, 16, 13, 4, 1, 10, 20, 2, 21], [1, 20, 1, 1, 1, 20, 9, 10, 1, 1, 20, 20, 1, 1, 1, 1, 20, 20, 20, 20, 20, 22, 22, 22], nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], nothing, nothing, nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23]])
 
-chevieset(:G25, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G25, :classinfo, Dict{Symbol, Any}(
   :classtext=>chevieget(:G25,:WordsClassRepresentatives),
   :classnames=>chevieget(:G25,:ClassNames),
   :classparams=>chevieget(:G25,:ClassNames),
@@ -39,7 +39,7 @@ chevieset(:G25, :ClassInfo, Dict{Symbol, Any}(
   :orders=>[1,6,3,3,3,6,9,9,3,3,6,6, 3, 3, 3, 3, 6, 6, 6, 2, 6, 4, 12, 12], 
  :classes=>[1,9,12,12,12,36,72,72,1,1,36,36,12,24,12,12,36,36,36,9,9,54,54,54]))
 
-chevieset(:G25, :CharInfo, function ()
+chevieset(:G25, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,24],[1,12],[2,15],[2,3],[2,9],
     [3,6],[3,5,2],[3,5,1],[3,17],[3,13,2],[3,1],[3,13,1],[6,8,2],[6,8,1],[6,2],
     [6,4,2],[6,10],[6,4,1],[8,3],[8,9],[8,6],[9,5],[9,7]],
@@ -94,8 +94,8 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
     (((((-u*v^3-u*w^3)-v*w^3)+u^2*v^2+u^2*w^2+v^2*w^2)-u^3*v)-u^3*w)-v^3*w,
     u*v+u*w+v*w,v^4*J*u^4*w^4*(u*v+u*w+v*w),(-(u^6)*v^6-u^6*w^6)-v^6*w^6,
     -J*u*v*w*(((2*w^3+2*v^3)-3*u*v*w)+2*u^3),-u*v*w,-J*u*v*w,-(J^2)*u^5*v^5*w^5]
-  merge!(res, chevieget(:G25, :ClassInfo))
-  merge!(res, chevieget(:G25, :CharInfo)())
+  merge!(res, chevieget(:G25, :classinfo))
+  merge!(res, chevieget(:G25, :charinfo)())
   res[:centralizers]=div.(res[:order],res[:classes])
   # position in chars of G26
 # [1,3,4,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47]

@@ -582,7 +582,7 @@ julia> representation(H,7)
 function Chars.representation(H::HeckeAlgebra,i::Integer)
   tt=refltype(H.W)
   if isempty(tt) return Matrix{Int}[] end
-  dims=chevieget.(tt,:NrConjugacyClasses)
+  dims=chevieget.(tt,:nconjugacy_classes)
   mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],
                       H.rootpara[t.indices],j),tt,lin2cart(dims,i))
   if any(isnothing,mm) return nothing end
@@ -1600,7 +1600,7 @@ end
 function Chars.representation(H::HeckeCoset,i::Int)
   tt=refltype(H.W)
   if isempty(tt) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
-  dims=chevieget.(tt,:NrConjugacyClasses)
+  dims=chevieget.(tt,:nconjugacy_classes)
   mm=map(tt,lin2cart(dims,i)) do t,j
     r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rootpara(H.H),j)
     if r==nothing return nothing

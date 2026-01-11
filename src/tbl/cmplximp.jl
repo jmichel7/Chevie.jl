@@ -55,14 +55,14 @@ chevieset(:imp, :BraidRelations, function (p, q, r)
   res
 end)
 
-chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
+chevieset(:imp, :nconjugacy_classes, function (p, q, r)
   if [q,r]==[2,2] div(p*(p+6),4)
   elseif q==1 npartition_tuples(r,p)
-  else length(chevieget(:imp,:ClassInfo)(p,q,r)[:classtext])
+  else length(chevieget(:imp,:classinfo)(p,q,r)[:classtext])
   end
 end)
 
-chevieset(:imp,:CartanMat,function(p,q,r)
+chevieset(:imp,:cartan,function(p,q,r)
   rt=chevieget(:imp, :simpleroots)(p,q,r)
   rbar=conj(rt)
   e=1 .-E.(chevieget(:imp,:ordergens)(p,q,r))
@@ -83,7 +83,7 @@ chevieset(:imp,:AuName,function(p,q,r)
   "Z"*stringind(rio(TeX=true),p)
 end)
 
-chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
+chevieset(:imp, :parabolic_reps, function (p, q, r, s)
   if q==1
     if p==1
       if s==0 
@@ -92,7 +92,7 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
                     vcat(map(i->partitions(s,i),1:r+1-s)...))
       end
     else vcat(map(i->map(j->vcat(1:i,i+1 .+j), 
-        chevieget(:imp, :ParabolicRepresentatives)(1,1,r-i-1,s-i)),0:s)...)
+        chevieget(:imp, :parabolic_reps)(1,1,r-i-1,s-i)),0:s)...)
     end
   elseif r==2
     if q==2 
@@ -121,9 +121,7 @@ chevieset(:imp, :CharParams, function (de, e, r)
   charparams
 end)
 
-# see page 172 of Halverson and Ram,
-# Murnaghan-Nakayama rules for characters of Iwahori-Hecke algebras of the 
-# complex reflection groups G(r,p,n) Canad. J. Math. 50 (1998) 167--192
+# see [p.172, hr98]
 struct Hook
   area::Int       # area of the hook
   startpos::Int   # the position of the decreased βnumber in the βlist
@@ -197,17 +195,16 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
   res[:identifier] = res[:name]
   res[:size] = prod(res[:degrees])
   res[:order] = res[:size]
-  cl=chevieget(:imp, :ClassInfo)(p, q, r)
+  cl=chevieget(:imp, :classinfo)(p, q, r)
   if r==1
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
     res[:irreducibles]=[para[1][i]^j for i in 1:p, j in 0:p-1]
     res[:powermaps]=cl[:powermaps]
-    merge!(res,chevieget(:imp,:CharInfo)(p,q,r))
+    merge!(res,chevieget(:imp,:charinfo)(p,q,r))
   elseif q==1
 # character table of the Hecke algebra of G(p,1,r) parameters v and [q,-1]
-# according to [Halverson-Ram]"Characters of Iwahori-Hecke algebras of G(r,p,n)"
-# Canadian Journal of math. 50 (1998) 167--192
+# according to [hr98]
     merge!(res,cl)
     T=@NamedTuple{area::Int64, cc::Int64, hooklength::Int64, 
          DC::Vector{Pair{Int64, Int64}}, SC::Vector{Pair{Int64, Int64}},
@@ -217,17 +214,17 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
 Strips(S,s)  returns the  list of  collections of  broken border  strips of
 total  area equal to s coming from the various βlists in the symbol S. Each
 collection  is  represented  by  a  named  tuple containing the statistical
-information   about  it  necessary   to  compute  the   function  Delta  in
-[Halverson-Ram] 2.17. These named tuples have the following fields:
-   area       total area
-   cc         number of connected components (hooks)
-   hooklength sum of hooklengths of individual hooks (the # of rows -1 of the
+information  about  it  necessary  to  compute  the  function `Δ` in [hr98;
+2.17](@cite). These named tuples have the following fields:
+  - area       total area
+  - cc         number of connected components (hooks)
+  - hooklength sum of hooklengths of individual hooks (the # of rows -1 of the
                   hook, equal to startpos-endpos)
-   DC         the list of all dull corners, represented by a pair:
+  - DC         the list of all dull corners, represented by a pair:
                 which βlist they come from, axial position
-   SC         the list of all sharp corners, represented by a pair:
+  - SC         the list of all sharp corners, represented by a pair:
                 which βlist they come from, axial position
-   stripped   the symbol left after removing the strip collection
+  - stripped   the symbol left after removing the strip collection
 """
     function Strips(S,s)local e, res, hs, ss, a
       get!(StripsCache,S=>s) do
@@ -268,9 +265,9 @@ information   about  it  necessary   to  compute  the   function  Delta  in
       res
       end
     end
-# the function Delta of Halverson-Ram 2.17, modified to take in account that
+# the function Δ of [2.17, hr98], modified to take in account that
 # our eigenvalues for T_2..T_r are (Q1,Q2) instead of (q,-q^-1)
-    function Delta(k,hs,(Q1,Q2),v)local q
+    function Δ(k,hs,(Q1,Q2),v)local q
       delta=1
       if hs.cc>1
         if k==1 || iszero(Q1+Q2) return 0
@@ -290,20 +287,23 @@ information   about  it  necessary   to  compute  the   function  Delta  in
                0:min(length(ctDC),k-hs.cc));init=0)
     end
     chiCache=Dict{Pair{Vector{Vector{Int}},Vector{Vector{Int}}}, Any}()
-    function entry(lambda,mu)
-      get!(chiCache,lambda=>mu) do
-        n=sum(sum,lambda)
+    function entry(λ,μ)#λ partition_tuple μ βsets
+      get!(chiCache,λ=>μ) do # memoize function entry
+        n=sum(sum,λ)
         if iszero(n) return 1 end
-        bp=maximum(x for S in lambda for x in S)
-        i=findfirst(x->bp in x,lambda)
+        bp=maximum(x for S in λ for x in S)
+        i=findfirst(x->bp in x,λ)
         # choice of bp and i corresponds to choice (sort) in classtext
-        strips=Strips(mu, bp)
+        strips=Strips(μ, bp)
         if isempty(strips) return 0 end
-        rest=copy(lambda)
+        rest=copy(λ)
         rest[i]=rest[i][2:end]
-        f1=(-prod(para[2]))^((i-1)*(n-bp))
+        if length(para)==1 p1=para[1];p2=p1
+        else p1,p2=para[1:2]
+        end
+        f1=(-prod(p2))^((i-1)*(n-bp))
         f2=sum(strips) do x
-          d=Delta(i-1,x,para[2],para[1])
+          d=Δ(i-1,x,p2,p1)
           iszero(d) ? d : d*entry(rest, x.stripped)
         end
         f1*f2
@@ -311,7 +311,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     end
     pts=partition_tuples(r,p)
     res[:irreducibles]=[entry(pt,x) for x in map(y->βset.(y),pts), pt in pts]
-    merge!(res,chevieget(:imp,:CharInfo)(p,q,r))
+    merge!(res,chevieget(:imp,:charinfo)(p,q,r))
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
@@ -321,7 +321,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     Z=root.(Z,e1)
     Z=vcat(map(i->Z.*E(e1,i),0:e1-1)...)
     # H is a subalgebra of H(G(p,2,2)) with parameters Z
-    ci=chevieget(:imp, :CharInfo)(p, q, r)
+    ci=chevieget(:imp, :charinfo)(p, q, r)
     function entry2(char, class)
       char=ci[:malle][findfirst(==(char),ci[:charparams])]
       if char[1]==1
@@ -345,7 +345,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
     end
     res[:irreducibles]=[entry2(char,c) for char in ci[:charparams],
                         c in cl[:classparams]]
-    merge!(res,chevieget(:imp,:CharInfo)(p,q,r))
+    merge!(res,chevieget(:imp,:charinfo)(p,q,r))
   else
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
@@ -426,7 +426,7 @@ chevieset(:imp, :Invariants, function(p,q,r)
   end
 end)
 
-chevieset(:imp, :CharInfo, function (de, e, r)
+chevieset(:imp, :charinfo, function (de, e, r)
   res=Dict{Symbol,Any}(:charparams=>chevieget(:imp, :CharParams)(de, e, r))
   d=div(de,e)
   if e==1
@@ -459,7 +459,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
         res[:malle]=exceptioCharName.(res[:malleparam])
       end
     elseif iseven(e) && r==2
-# .malle: indexing of chars as in Malle's paper on rank 2 cyclotomic algebras.
+# .malle: indexing of chars as in [mal96]
       res[:malle]=map(res[:charparams])do t
         local pos, de
         if t[end] isa Number
@@ -568,7 +568,7 @@ chevieset(:imp,:pow,function(S,n)
   S1
 end)
 
-chevieset(:imp, :ClassInfo, function (p, q, r)
+chevieset(:imp, :classinfo, function (p, q, r)
   order(S)=lcm(map(((i,m),)->isempty(m) ? 1 : lcm(m)*div(p,gcd(i-1,p)),
                    enumerate(S)))
   centralizer(S)=p^sum(length,S)*prod(map(pp->prod(y->factorial(y[2])*y[1]^y[2],
@@ -580,7 +580,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     w=Int[]
     for d in s
       append!(w,repeat(vcat(l+1:-1:2,1:l+1),d[2]))
-      # non-reduced word because this is the one used by Halverson-Ram
+      # non-reduced word because this is the one used by [hr98]
       # for characters of the Hecke algebra (see HeckeCharTable).
       append!(w,l+2:l+d[1])
       l+=d[1]
@@ -641,8 +641,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     end
     return res
   else
-  # According  to Hugues  ``On  decompositions  in complex  imprimitive 
-  # reflection groups'' Indagationes 88 (1985) 207--219:                
+  # According  to [hu85]
   #
   # Let l=(S_0,..,S_{p-1}) be  a p-partition of r specifying  a class C 
   # of G(p,1,r);  C is in G(p,q,r)  iff q divides sumᵢ i*|Sᵢ|;  C splits in 
@@ -721,7 +720,7 @@ chevieset(:imp, :ClassName, function(p)
 end)
 
 chevieset(:imp, :SchurModel, function (p, q, r, phi)
-  if q==1 # cf. Chlouveraki, arxiv 1101.1465
+  if q==1 # cf. [cj12]
     function GenHooks(l,m)
       if isempty(l) return [] end
       m=conjugate_partition(m)
@@ -752,7 +751,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
     end
     return res
   elseif (q,r)==(2,2)
-    ci = chevieget(:imp, :CharInfo)(p, q, r)
+    ci = chevieget(:imp, :charinfo)(p, q, r)
     phi = ci[:malle][findfirst(==(phi),ci[:charparams])]
     p2 = div(p, 2)
     if phi[1] == 1
@@ -787,7 +786,7 @@ end)
 
 chevieset(:imp, :SchurData, function (p, q, r, phi)
   if (q,r)==(2,2)
-    ci=chevieget(:imp, :CharInfo)(p, q, r)
+    ci=chevieget(:imp, :charinfo)(p, q, r)
     phi=ci[:malle][findfirst(==(phi),ci[:charparams])]
     if phi[1]==1
       res=Dict(:order=>[phi[2],3-phi[2],2+phi[3],5-phi[3],4+phi[4]])
@@ -1964,9 +1963,9 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
      [[y 0;y x], [y 0;y x], [x -x;0 y]], 
      [[x;;], [x;;], [x;;]]][i]
   elseif q==1
-    # Model of Ariki,  Halverson-Ram for reps of G(p,1,r): 
+    # Model of [ar94],  [hr98] for reps of G(p,1,r): 
     # needs rational fractions if the parameters are indeterminates
-    S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
+    S=chevieget(:imp, :charinfo)(p, q, r)[:charparams][i]
     if r>1 Q=-para[2][1]//para[2][2]
     else Q=0
     end
@@ -1998,11 +1997,11 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
        end)*prod(prod,para)^0
     end)
   else
-    S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
+    S=chevieget(:imp, :charinfo)(p, q, r)[:charparams][i]
     if p==q para=[E.(p,0:p-1),para[1]]
     else e=div(p, q)
       if iseven(q) && r==2
-        char=chevieget(:imp, :CharInfo)(p,q,r)[:malle][i]
+        char=chevieget(:imp, :charinfo)(p,q,r)[:malle][i]
         Z,X,Y=para
         if char[1]==1
           return [[Z[mod1(char[4],e)];;],[X[char[2]];;],[Y[char[3]];;]]
@@ -2047,7 +2046,7 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     end
     p1=length(para[1]);if p1!=p error() end
     v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],
-      findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]);gen=true)
+      findfirst(==(S),chevieget(:imp,:charinfo)(p1,1,r)[:charparams]);gen=true)
     v*=1//1
     if p==q v[1]=inv(v[1])*v[2]*v[1]
     elseif q>1 v=vcat([v[1]^q,inv(v[1])*v[2]*v[1]],v[2:end]) end
@@ -2082,7 +2081,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
   uc=Dict{Symbol, Any}(:charSymbols=>csy)
   uc[:a]=valuation_gendeg.(csy)
   uc[:A]=degree_gendeg.(csy)
-  ci=chevieget(:imp, :CharInfo)(p,q,r)
+  ci=chevieget(:imp, :charinfo)(p,q,r)
   if q==1
     cusp=unique(sort(map(S->length.(S.S).-minimum(length.(S.S)),csy)))
     cusp=map(x->map(y->collect(0:y-1),x),cusp)

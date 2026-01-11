@@ -18,7 +18,7 @@ chevieset(:E7, :WeightInfo, function ()
                     :moduli => [2], :chosenAdaptedBasis => M)
 end)
 
-chevieset(:E7,:NrConjugacyClasses, 60)
+chevieset(:E7,:nconjugacy_classes, 60)
 
 chevieset(:E7,:WordsClassRepresentatives,map(x->Replace(x,[0],[7,6,5,4,3,2,1]),
   [[],[7,6,7,5,6,7,4,5,6,7,2,4,5,6,7,3,4,5,6,7,2,4,5,6,3,4,5,2,4,3],
@@ -52,7 +52,7 @@ chevieset(:E7,:ClassNames,["A_0","6A_1","4A_1''","2A_1","4A_1'","A_2","3A_2",
 
 chevieset(:E7,:PowerMaps,[nothing,[1,1,1,1,1,6,7,8,3,4,4,3,4,14,6,6,7,6,8,8,8,22,9,12,25,14,18,18,17,30,1,1,1,1,1,6,7,8,3,4,4,3,4,14,6,6,7,6,8,8,8,22,9,12,25,14,18,18,17,30],[1,2,3,4,5,1,1,1,9,10,11,12,13,14,2,3,3,4,2,3,5,22,23,24,7,26,10,11,9,14,31,32,33,34,35,31,31,31,39,40,41,42,43,44,32,33,33,34,32,33,35,52,53,54,37,56,40,41,39,44],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,1,15,16,17,18,19,20,21,22,23,24,25,2,27,28,29,6,31,32,33,34,35,36,37,38,39,40,41,42,43,31,45,46,47,48,49,50,51,52,53,54,55,32,57,58,59,36],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,1,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,31,53,54,55,56,57,58,59,60]])
 
-chevieset(:E7, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:E7, :classinfo, Dict{Symbol, Any}(
   :classtext => chevieget(:E7, :WordsClassRepresentatives),
   :classnames => chevieget(:E7, :ClassNames),
   :classparams => chevieget(:E7, :ClassNames),
@@ -60,14 +60,14 @@ chevieset(:E7, :ClassInfo, Dict{Symbol, Any}(
   :orders => [1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6, 6, 6, 6, 6, 7, 8, 8, 9, 10, 12, 12, 12, 15, 2, 2, 2, 2, 2, 6, 6, 6, 4, 4, 4, 4, 4, 10, 6, 6, 6, 6, 6, 6, 6, 14, 8, 8, 18, 10, 12, 12, 12, 30],
   :classes => [1, 63, 315, 945, 3780, 672, 2240, 13440, 3780, 7560, 7560, 11340, 45360, 48384, 10080, 10080, 20160, 30240, 40320, 40320, 120960, 207360, 90720, 90720, 161280, 145152, 60480, 60480, 120960, 96768, 1, 63, 315, 945, 3780, 672, 2240, 13440, 3780, 7560, 7560, 11340, 45360, 48384, 10080, 10080, 20160, 30240, 40320, 40320, 120960, 207360, 90720, 90720, 161280, 145152, 60480, 60480, 120960, 96768]))
 
-chevieset(:E7, :ParabolicRepresentatives,s->
+chevieset(:E7, :parabolic_reps,s->
   [[Int[]],[[1]],[[1,2],[1,3]],[1:3,[1,2,5],[1,3,4],[2,5,7]],[1:4,[1,2,3,5],
    [1,2,4,5],[1,2,5,7],[1,3,5,6],[2,3,4,5],[2,4,5,7]],[1:5,[1,2,3,4,6],
    [1,2,3,5,6],[1,2,3,5,7],[1,2,4,5,7],[1,3,4,5,6],[1,3,4,6,7],[2,3,4,5,7],
    [2,4,5,6,7]],[1:6,[1,2,3,4,5,7],[1,2,3,4,6,7],[1,2,3,5,6,7],[1,2,4,5,6,7],
    [1,3,4,5,6,7],[2,3,4,5,6,7]],[1:7]][s+1])
 
-chevieset(:E7, :CharInfo, function ()
+chevieset(:E7, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,63],[7,46],[7,1],[15,28],[15,7],
     [21,6],[21,33],[21,36],[21,3],[27,2],[27,37],[35,22],[35,13],[35,4],
     [35,31],[56,30],[56,3],[70,18],[70,9],[84,12],[84,15],[105,26],[105,5],
@@ -116,7 +116,7 @@ chevieset(:E7, :generators, [
   perm"(5,12)(6,69)(7,13)(11,18)(16,23)(17,24)(21,27)(22,29)(26,33)(28,35)(32,38)(37,42)(45,49)(48,52)(51,55)(54,57)(56,58)(68,75)(70,76)(74,81)(79,86)(80,87)(84,90)(85,92)(89,96)(91,98)(95,101)(100,105)(108,112)(111,115)(114,118)(117,120)(119,121)", 
   perm"(6,13)(7,70)(12,19)(18,25)(23,30)(24,31)(27,34)(29,36)(33,39)(35,41)(38,44)(40,45)(42,47)(43,48)(46,51)(50,54)(53,56)(69,76)(75,82)(81,88)(86,93)(87,94)(90,97)(92,99)(96,102)(98,104)(101,107)(103,108)(105,110)(106,111)(109,114)(113,117)(116,119)"])
 
-chevieset(:E7, :CartanMat, 
+chevieset(:E7, :cartan, 
   [[2, 0, -1, 0, 0, 0, 0], 
    [0, 2, 0, -1, 0, 0, 0], 
    [-1, 0, 2, -1, 0, 0, 0], 
@@ -707,10 +707,10 @@ chevieset(:E7, :HeckeCharTable, function (para, rootpara)
   end
   tbl=Dict{Symbol, Any}(:identifier => "H(E7)",
     :text=>"origin: Meinolf Geck, July 1992",
-    :cartan=>chevieget(:E7, :CartanMat),
+    :cartan=>chevieget(:E7, :cartan),
     :parameter=>para, :rootparameter=>rootpara, :size=>2903040)
-  merge!(tbl, chevieget(:E7, :ClassInfo))
-  merge!(tbl, chevieget(:E7, :CharInfo)())
+  merge!(tbl, chevieget(:E7, :classinfo))
+  merge!(tbl, chevieget(:E7, :charinfo)())
   cl=tbl[:classtext]
   vpol=chevieget(:E7,:vpolheckeirreducibles)
   tbl[:irreducibles]=map(enumerate(vpol))do (i,p)
@@ -729,8 +729,7 @@ chevieset(:E7, :HeckeCharTable, function (para, rootpara)
   AdjustHeckeCharTable(tbl, para)
 end)
 
-# The W-graphs  for E7  were sent in  december 2003  by Bob
-# Howlett (joint work of him with Yunchuan Yin).
+# The W-graphs  for E7  were sent in  december 2003  by Bob Howlett, see [hy09].
 chevieset(:E7,:WGraphs,
 Any[Vector{Any}[[Int[]], []], 1, 4, Vector{Vector{Any}}[[[1], [2], [3], [4],
  [5], [6], [7]], [[1, [[1, 3], [2, 4], [3, 4], [4, 5], [5, 6], [6, 7]]]]], 6,

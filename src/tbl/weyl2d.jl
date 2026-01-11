@@ -6,9 +6,6 @@
 chevieset("2D",:ClassParams,
   n->filter(a->isodd(length(a[2])),chevieget(:B,:ClassParams)(n)))
 
-chevieset("2D",:WordsClassRepresentatives,n->
-  chevieget("2D",:ClassInfo)(n)[:classtext])
-
 # We  parametrize the  F-conjugacy classes  by the  classes in  the coset
 # Bn-Dn.  If n is  odd, since F  is inner acting  as w0, it would also be
 # possible  to  parametrize  them  by  the  classes  in  Dn  (you get the
@@ -18,8 +15,8 @@ chevieset("2D",:WordsClassRepresentatives,n->
 # and let [c,d] be the double partition for w.w0Bn in Bn. Then c contains
 # the  even entries of a and the odd entries of b and d contains the even
 # entries of b and the odd entries of a.
-chevieset("2D", :ClassInfo, function(n)
-  B=chevieget(:B, :ClassInfo)(n)
+chevieset("2D", :classinfo, function(n)
+  B=chevieget(:B, :classinfo)(n)
   l=filter(i->isodd(length(B[:classparams][i][2])),1:length(B[:classtext]))
   Dict{Symbol, Any}(:classnames =>B[:classnames][l],
                     :classparams=>B[:classparams][l],
@@ -40,14 +37,14 @@ chevieset("2D", :ClassInfo, function(n)
                   end)
 end)
 
-chevieset("2D", :NrConjugacyClasses, function(n)
+chevieset("2D", :nconjugacy_classes, function(n)
   if isodd(n) div(npartition_tuples(n,2),2)
   else div(npartition_tuples(n,2)-npartitions(div(n,2)),2)
   end
 end)
 
 # test if a character of W(B) corresponds to the preferred extension
-# for ^2D, see [CS,17.2] and [Lusztig-book,4.4,4.18]:
+# for ^2D, see [CS,17.2] and [4.4,4.18, lus85]:
 chevieset("2D", :IsPreferred, function(pp)
   p1,p2=Symbol_partition_tuple(pp,0).S
   p1>p2
@@ -65,7 +62,7 @@ function Defect0to2(S::CharSymbol)
   CharSymbol(length(S1)>length(S2) ? [S1,S2] : [S2,S1])
 end
 
-chevieset("2D", :CharInfo, function (n)
+chevieset("2D", :charinfo, function (n)
   res=Dict{Symbol, Any}(:charparams=>chevieget("2D",:CharParams)(n))
   res[:extRefl]=map(i->[fill(1,i),[n-i]],0:n-2)
   append!(res[:extRefl],[[[1],fill(1,n-1)],[Int[],fill(1,n)]])
@@ -91,11 +88,11 @@ chevieset("2D",:FakeDegree,(n,c,q)->
 
 chevieset("2D",:PhiFactors,n->vcat(fill(1,n-1),-1))
 
-# This function returns the part of the character table the Coxeter group
-# of  type B_l on classes  outside a reflection subgroup  of type D_l for
-# the characters which remain irreducible on restriction to this subgroup
-# and which correspond to the *preferred* extensions defined in [CS,17.2,
-# case D_l].
+# This  function returns the part of  the character table the Coxeter group
+# of  type B_l on classes outside a reflection subgroup of type D_l for the
+# characters  which remain irreducible on  restriction to this subgroup and
+# which correspond to the *preferred* extensions defined in 
+# [17.2, case D_l, lu85].
 #
 # Alternatively  you can get the  *good* extension instead of *preferred*
 # extension by defining testchar appropriately.
@@ -112,7 +109,7 @@ function (l,param,sqrtpara)
                        :centralizers=>div.(hi[:centralizers][lst],2),
                        :classes=>hi[:classes][lst],
 	   :text=>"extracted from generic character table of HeckeB")
-  merge!(tbl,chevieget("2D",:ClassInfo)(l))
+  merge!(tbl,chevieget("2D",:classinfo)(l))
   para=chevieget("2D",:CharParams)(l)
   tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
       :charname=>string_partition_tuple(para[i])),eachindex(para))
@@ -134,7 +131,7 @@ chevieset("2D", :UnipotentCharacters, function(rank)
     r=div(d^2,4)
     s=Dict{Symbol, Any}(:relativeType=>
      TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
-      :eigenvalue=>1,# see Geck-malle
+      :eigenvalue=>1,# see Geck-Malle
       :parameterExponents=>vcat(d,fill(1,max(0,rank-1-r))))
     s[:cuspidalName]="{}^2D"*stringind(rio(TeX=true),r)
     push!(uc[:harishChandra],s)
@@ -161,7 +158,7 @@ chevieset("2D", :UnipotentCharacters, function(rank)
     if d==0
       # order differs from Symbols.Symbolsshape(n,[d,0]) for d=0
       symbols=map(x->Symbol_partition_tuple(x,d),
-         chevieget(:imp,:CharInfo)(2,2,rank)[:charparams])
+         chevieget(:imp,:charinfo)(2,2,rank)[:charparams])
     else symbols=Symbols.Symbolsshape(rank,[d,0])
     end
     if isodd(div(d+1,4)) 
@@ -195,7 +192,7 @@ chevieset("2D", :UnipotentCharacters, function(rank)
       res[:fourierMat][:,16]=-res[:fourierMat][:,16]
     end
     res[:eigenvalues]=fill(1,length(res[:charNumbers]))
-    res[:sh]=fill(1,length(res[:charNumbers]))# is that correct for Geck-Malle?
+    res[:sh]=fill(1,length(res[:charNumbers]))# is that correct for [gm03]?
     if length(res[:eigenvalues])==1
       res[:charLabels]=[""]
       res[:special]=1
@@ -266,8 +263,8 @@ chevieset("2D", :ClassParameter, function (n, w)
 end)
 
 chevieset("2D", :HeckeRepresentation, function(n,para,sqpara,i)
-   phi=chevieget("2D",:CharInfo)(n)[:charparams][i]
-   bno=findfirst(==(phi),chevieget(:B,:CharInfo)(n)[:charparams])
+   phi=chevieget("2D",:charinfo)(n)[:charparams][i]
+   bno=findfirst(==(phi),chevieget(:B,:charinfo)(n)[:charparams])
    parab=copy(para);parab[1]=[1,-1]
    r=chevieget(:B,:HeckeRepresentation)(n,parab,[],bno)
    if all(x->x==[1,-1],para) u=r[1] else u=inv(r[1]*1//1) end

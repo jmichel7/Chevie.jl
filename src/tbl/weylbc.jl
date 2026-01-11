@@ -11,50 +11,51 @@
 #  other  values  happen  for  root  systems  which  occur  inside complex
 #  reflection groups.
 
-chevieset(:B, :CartanMat, function(n,ct=2)
-  a=chevieget(:A, :CartanMat)(n)//one(ct)
+chevieset(:B, :cartan, function(n,cartanType=2)
+  a=chevieget(:A, :cartan)(n)//one(cartanType)
   if n>=2
-    a[1][2]=-ct
-    a[2][1]=-2//ct
+    a[1][2]=-cartanType
+    a[2][1]=-2//cartanType
   end
   improve_type(a)
 end)
 
-chevieset(:B, :Auname, function(r,option,cartantype=2)
-  if cartantype==2
+chevieset(:B, :Auname, function(r,option,cartanType=2)
+  if cartanType==2
     if haskey(option,:TeX) "D_8"
     else "D8"
     end
   end
 end)
 
-chevieset(:B,:simpleroots, function(l,type_)
+chevieset(:B,:simpleroots, function(l,cartanType)
   rts=fill(0,l,l)
   for i in 1:l-1 rts[i,i:i+1]=[1,-1] end
-  rts[l,l]=2//type_
+  rts[l,l]=2//cartanType
   reverse(rts,dims=1)
 end)
 
-chevieset(:B,:ParabolicRepresentatives,(l,s)->
-  chevieget(:imp, :ParabolicRepresentatives)(2, 1, l, s))
+chevieset(:B,:parabolic_reps,(l,s)->chevieget(:imp,:parabolic_reps)(2,1,l,s))
 
 chevieset(:B,:ReflectionDegrees,n->2:2:2n)
 
-chevieset(:B,:NrConjugacyClasses,(r,arg...)->npartition_tuples(r,2))
+chevieset(:B,:nconjugacy_classes,(r,arg...)->npartition_tuples(r,2))
 
-chevieset(:B,:WeightInfo,function(n,type_)
+chevieset(:B,:WeightInfo,function(n,cartanType)
   M=Array(Int.(I(n)))
-  if type_ == 2
-    Dict{Symbol, Any}(:minusculeWeights => [1], :minusculeCoweights => [n], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
+  if cartanType == 2
+    Dict{Symbol, Any}(:minusculeWeights => [1], :minusculeCoweights => [n],
+          :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
   else
     for i in 1:n-1
       M[i,n]=-mod(n+i-1,2)
     end
-    Dict{Symbol, Any}(:minusculeWeights => [n], :minusculeCoweights => [1], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
+    Dict{Symbol, Any}(:minusculeWeights => [n], :minusculeCoweights => [1],
+      :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
   end
 end)
 
-# returns a very good representative in the sense of [Geck-Michel]
+# returns a very good representative in the sense of [gm97]
 chevieset(:B,:WordClass, function(pi)
   w=Int[]
   i=1
@@ -72,8 +73,8 @@ chevieset(:B,:WordClass, function(pi)
   w
 end)
 
-chevieset(:B,:ClassInfo, function(n)
-  res=chevieget(:imp,:ClassInfo)(2,1,n)
+chevieset(:B,:classinfo, function(n)
+  res=chevieget(:imp,:classinfo)(2,1,n)
   res[:classtext]=map(chevieget(:B,:WordClass),res[:classparams])
   res[:classes]=div.(res[:centralizers][1],res[:centralizers])
   res
@@ -87,7 +88,7 @@ chevieset(:B,:b,function(p)
   2res+sum(pp[2])-div(m*(m-1)*(4m+1),6)
 end)
 
-chevieset(:B,:CharInfo,n->chevieget(:imp, :CharInfo)(2,1,n))
+chevieset(:B,:charinfo,n->chevieget(:imp, :charinfo)(2,1,n))
 
 chevieset(:B,:PoincarePolynomial,function(n,para)
   q1=-para[1][1]//para[1][2]
@@ -95,7 +96,7 @@ chevieset(:B,:PoincarePolynomial,function(n,para)
   prod(i->(q2^i*q1+1)*sum(k->q2^k,0:i),0:n-1)
 end)
 
-# we cannot do as below because the .classtext is not the same
+# we cannot do as below for Hecke algebra because the .classtext is not the same
 #chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
 #chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
 
@@ -175,8 +176,8 @@ end
 chevieset(:B,:HeckeCharTable,function(n,para,rt)
   Q=improve_type(-para[1][1]//para[1][2])
   q=improve_type(-para[2][1]//para[2][2])
-  ci=chevieget(:B,:CharInfo)(n)
-  cl=chevieget(:B,:ClassInfo)(n)
+  ci=chevieget(:B,:charinfo)(n)
+  cl=chevieget(:B,:classinfo)(n)
   tbl=Dict{Symbol, Any}(:identifier=>"H(B_{$n})",:size=>2^n*factorial(n))
   merge!(tbl, cl)
   merge!(tbl, ci)
@@ -197,16 +198,15 @@ chevieset(:B,:CharTable,function(n)
 end)
 
 chevieset(:B,:SchurElement,(arg...)->
-  chevieget(:imp, :SchurElement)(2,1,arg[1],arg[2],arg[3],[]))
+           chevieget(:imp, :SchurElement)(2,1,arg[1:3]...,[]))
 
 chevieset(:B,:FactorizedSchurElement,(arg...)->
-  chevieget(:imp, :FactorizedSchurElement)(2, 1, arg[1], arg[2], arg[3], []))
+  chevieget(:imp,:FactorizedSchurElement)(2,1,arg[1:3]...,[]))
 
 chevieset(:B,:HeckeRepresentation,(arg...)->
-  chevieget(:imp, :HeckeRepresentation)(2, 1, arg[1], arg[2], [], arg[4]))
+  chevieget(:imp, :HeckeRepresentation)(2,1,arg[1],arg[2],[],arg[4]))
 
-chevieset(:B,:Representation,(n,i)->
-  chevieget(:imp, :Representation)(2, 1, n, i))
+chevieset(:B,:Representation,(n,i)->chevieget(:imp,:Representation)(2,1,n,i))
 
 chevieset(:B,:FakeDegree,(n,c,q)->fakedegree(Symbol_partition_tuple(c,1))(q))
 
@@ -261,30 +261,21 @@ chevieset(:B, :Ennola, function(n)
   end)
 end)
 
-chevieset(:B,:Invariants,function(n,type_)
-  m=fill(1,n);m[1]=2//type_
+chevieset(:B,:Invariants,function(n,cartanType)
+  m=fill(1,n);m[1]=2//cartanType
   m=Diagonal(m)*chevieget(:imp,:simpleroots)(2,1,n)
   map(f->(arg...)->f(transpose(collect(arg))*m...),CHEVIE.imp[:Invariants](2,1,n))
 end)
 
-# References:
-# [Lu]   G.Lusztig,   Character   sheaves   on   disconnected   groups,  II
-# Representation Theory 8 (2004) 72--124
+# References: [lus04], [gm00], [spalt82]
 #
-# [GM]  M.Geck and G.Malle, On the existence of a unipotent support for the
-# irreducible  characters of  a finite  group of  Lie type,  Trans. AMS 352
-# (1999) 429--456
-# 
-# [S]   N.Spaltenstein,  Classes  unipotentes  et  sous-groupes  de  Borel,
-# Springer LNM 946 (1982)
-#
-#  The function is called with ctype=1 for type C and ctype=2 for type B
-#
-chevieset(:B,:UnipotentClasses,function(r,char,ctype)
+#  The function is called with cartanType=1 for type C and 
+#                              cartanType=2 for type B
+chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
   function part2dynkin(part) # partition -> Dynkin-Richardson diagram
     p=sort(reduce(vcat,map(d->1-d:2:d-1, part)))
     p=p[div(3+length(p),2):end]
-    res= ctype==1 ? [2*p[1]] : [p[1]]
+    res= cartanType==1 ? [2*p[1]] : [p[1]]
     append!(res,p[2:end]-p[1:end-1])
   end
   function addSpringer1(s,cc)
@@ -298,11 +289,11 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     ss[:locsys][p]=[length(uc[:classes]), 
     findfirst(==(map(x->x ? [1,1] : [2], s.Au)),charinfo(cc[:Au]).charparams)]
   end
-  if ctype==root(2)  #treat 2B2 as B2; make sure char=2
-    ctype=2
+  if cartanType==root(2)  #treat 2B2 as B2; make sure char=2
+    cartanType=2
     char=2
   end
-  ss=char==2 ? XSP(4,2,r) : ctype==1 ? XSP(2,1,r) : XSP(2,0,r)
+  ss=char==2 ? XSP(4,2,r) : cartanType==1 ? XSP(2,1,r) : XSP(2,0,r)
   l=union(map(c->map(x->[defectsymbol(x.symbol), sum(sum,x.sp)], c), ss)...)
   sort!(l,by=x->[abs(x[1]),-sign(x[1])])
   uc=Dict{Symbol, Any}(:classes=>[])
@@ -310,7 +301,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     res=Dict(:relgroup=>coxgroup(:C,d[2]),:defect=>d[1],:levi=>1:r-d[2])
     res[:locsys]=fill([0, 0],nconjugacy_classes(res[:relgroup]))
     if char==2 res[:Z]=[1]
-    elseif ctype==1 res[:Z]=[(-1)^(r-d[2])]
+    elseif cartanType==1 res[:Z]=[(-1)^(r-d[2])]
     elseif conductor(root(2*(r-d[2])+1))==1 res[:Z]=[1]
     else res[:Z]=[-1]
     end
@@ -320,7 +311,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     c=sort(reduce(vcat,S))
     i=1
     part=Int[]
-    if char==2 # Invert [GM] 2.7
+    if char==2 # Invert [2.7, gm00]
       ex=Int[]
       while i<=length(c)
         l=2*(c[i]-2*(i-1))
@@ -337,8 +328,8 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
         end
       end
       [reverse(filter(y->y!=0,sort(part))), ex]
-    else  # Invert [GM] 2.6 and 2.10
-      d=mod(ctype,2)
+    else  # Invert [2.6 and 2.10, gm00]
+      d=mod(cartanType,2)
       while i<=length(c)
         l=2*(c[i]-(i-1))-d
         if i==length(c) || c[i+1]>c[i]
@@ -352,7 +343,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       reverse(filter(!iszero,sort(part)))
     end
   end
-  if char==2 ctype=1 end
+  if char==2 cartanType=1 end
   for cl in ss
     cc = Dict{Symbol, Any}(:parameter => symbol2para(cl[1].symbol))
     v=cl[1].Au
@@ -361,7 +352,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       cc[:dynkin] = part2dynkin(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
     else
-      ctype = 1
+      cartanType = 1
       cc[:dimBu] = cl[1].dimBu
       cc[:name] = join(map(function(x)
         res=joindigits(fill(0,max(0,x[2])).+x[1],"[]")
@@ -374,7 +365,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     else j=cc[:parameter]
     end
     for j in tally(j)
-      if mod(j[1],2)==mod(ctype,2) cc[:red]*=coxgroup(:C, div(j[2],2))
+      if mod(j[1],2)==mod(cartanType,2) cc[:red]*=coxgroup(:C, div(j[2],2))
       elseif mod(j[2],2)!=0
         if j[2]>1 cc[:red]*=coxgroup(:B, div(j[2]-1,2)) end
       elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
@@ -386,7 +377,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   end
   uc[:orderClasses]=hasse(Poset(map(x->x[:parameter],uc[:classes]))do x,y
     if char!=2 return dominates(y, x) end
-    # cf. [S] 2.10 page 24
+    # cf. [2.10 page 24, spalt82]
     m=max(x[1][1], y[1][1])
     f=x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
     fx=f(x[1])
@@ -400,8 +391,8 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     end
     return true
   end)
-  if char!=2 && ctype==2
-    function LuSpin(p) # cf [Lu] 14.2
+  if char!=2 && cartanType==2
+    function LuSpin(p) # cf [14.2, lus04]
       sort!(p)
       a=Int[]
       b=Int[]

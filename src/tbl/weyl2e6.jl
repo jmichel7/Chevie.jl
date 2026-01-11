@@ -1,14 +1,14 @@
 #  tbl/weyl2e6.jl    Chevie library           Frank Luebeck and Jean Michel
 #  Copyright (C) 1994 - 2001  The Chevie Team
 
-chevieset("2E6", :NrConjugacyClasses, 25)
+chevieset("2E6", :nconjugacy_classes, 25)
 
 ## these minimal length representatives were found by
 #  W=coxgroup(:E,6)
 #  short=map(conjugacy_classes(W))do c
 #    word(W,argmin(x->length(W,x),elements(c).*longest(W)))
 #  end
-chevieset("2E6", :ClassInfo, function ()
+chevieset("2E6", :classinfo, function ()
   res=Dict{Symbol,Any}(:classtext=>[
     [1,2,3,1,4,2,3,1,4,3,5,4,2,3,1,4,3,5,4,2,6,5,4,2,3,1,4,3,5,4,2,6,5,4,3,1],
     Int[],[3,4,3,5,4,3],[1,2,4,3,1,5,4,3,6,5,4,3],
@@ -27,8 +27,8 @@ chevieset("2E6", :ClassInfo, function ()
   res
 end)
 
-chevieset("2E6", :CharInfo, function ()
-  res=copy(chevieget(:E6, :CharInfo)())
+chevieset("2E6", :charinfo, function ()
+  res=copy(chevieget(:E6, :charinfo)())
   res[:a]=[0,36,7,1,25,7,3,15,3,15,2,20,6,12,3,15,7,7,7,5,11,4,13,6,10]
   res[:A]=[0,36,29,11,35,29,21,33,21,33,16,34,24,30,21,33,29,29,29,25,31,23,
            32,26,30]
@@ -55,7 +55,7 @@ chevieset("2E6", :generators, [
 
 chevieset("2E6", :phi, perm"(1,42)(2,38)(3,41)(4,40)(5,39)(6,37)(7,47)(8,44)(9,46)(10,45)(11,43)(12,52)(13,50)(14,49)(15,51)(16,48)(17,56)(18,57)(19,55)(20,53)(21,54)(22,61)(23,59)(24,60)(25,58)(26,64)(27,63)(28,62)(29,67)(30,66)(31,65)(32,69)(33,68)(34,70)(35,71)(36,72)")
 
-chevieset("2E6", :CartanMat, 
+chevieset("2E6", :cartan, 
   [2 0 -1 0 0 0;0 2 0 -1 0 0;-1 0 2 -1 0 0;0 -1 -1 2 -1 0;0 0 0 -1 2 -1;
    0 0 0 0 -1 2])
 
@@ -216,7 +216,7 @@ Vector{Pol{Int64}}[[Pol([1],72), Pol([1]), Pol([1],12), Pol([1],24), Pol([1],
 
 chevieset("2E6", :FakeDegree, function (p, q)
   sgns=[1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,1]
-  sgns[findfirst(==(p),chevieget(:E6, :CharInfo)()[:charparams])]*
+  sgns[findfirst(==(p),chevieget(:E6, :charinfo)()[:charparams])]*
     chevieget(:E6,:FakeDegree)(p,-q)
 end)
 
@@ -231,8 +231,7 @@ if false
 function getHeckeCharTable2E6(v)
   W=coxgroup(:E,6)
 # Some characters of W(E_6)*w_0 will be changed by sign according to
-# the preferred extension, see [Lusztig-book, 4.1 and 4.11] and
-# [CS, 17.2(b)]
+# the preferred extension, see [4.1 and 4.11, lus85] and [17.2(b), lu85]
   aE=map(x->(-1)^x,chevieget(:E6,:a)())
   qE=central_monomials(hecke(W,v))
 # q_E is the square root which deforms to 1 of the eigenvalue of T_{w_0}
@@ -242,7 +241,7 @@ function getHeckeCharTable2E6(v)
 # where \overline means q->q^-1
   H=hecke(W,v^-2)
   tbl=copy(CharTable(H))
-  merge!(tbl,chevieget("2E6",:ClassInfo)())
+  merge!(tbl,chevieget("2E6",:classinfo)())
   tbl.identifier="H(^2E6)"
   cl=map(x->W(x...)*longest(W),tbl.classtext)
   tbl.irreducibles=transpose(map(x->char_values(Tbasis(H)(x)),cl))
@@ -253,7 +252,7 @@ function getHeckeCharTable2E6(v)
 end
 end
 
-# We give the values of the *preferred* extensions defined in [CS,17.2 (b)].
+# We give the values of the *preferred* extensions defined in [17.2(b), lu85].
 chevieset("2E6", :HeckeCharTable, function (param, rootparam)
   q=-param[1][1]//param[1][2]
   v=ismissing(rootparam[1]) ? root(q) : rootparam[1]
@@ -261,11 +260,11 @@ chevieset("2E6", :HeckeCharTable, function (param, rootparam)
     :text => "origin: Jean Michel, June 1996",
     :parameter=>map(i->[q,-1],1:6),
     :sqrtParameter=>fill(v,6),:size=>51840,
-    :cartan=>chevieget("2E6", :CartanMat),
+    :cartan=>chevieget("2E6", :cartan),
     :irreducibles=>map(i->map(j->j(v),i),
       chevieget("2E6",:vpolheckeirreducibles)),
     :irredinfo=>chevieget("2E6", :IrredInfo))
-  merge!(tbl,chevieget("2E6",:ClassInfo)())
+  merge!(tbl,chevieget("2E6",:classinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)
@@ -275,7 +274,7 @@ chevieset("2E6",:HeckeRepresentation,function(param,sqrtparam,i)
   H=hecke(W,-param[1][1]//param[1][2])
   gens=chevieget(:E6, :HeckeRepresentation)(param, sqrtparam, i)
   F=prod(gens[[1,4,6,3,2,5]])^6
-  F*=(-1)^chevieget("2E6",:CharInfo)()[:a][i]
+  F*=(-1)^chevieget("2E6",:charinfo)()[:a][i]
   F=Matrix(F)
   F*=1//root(central_monomials(H)[i])
   (gens=gens,F=F)

@@ -1,7 +1,6 @@
-# Mostly translated from weyla.g Jean Michel & Goetz Pfeiffer (C) 1994--2001
-# Data for W(A_n)
+# Data for W(A_n) from weyla.g Jean Michel & Goetz Pfeiffer (C) 1994--2001
 
-chevieset(:A, :CartanMat, n->Weyl.cartanmats[:A](n))
+chevieset(:A, :cartan, n->Weyl.cartanmats[:A](n))
 
 chevieset(:A, :ReflectionDegrees, n->2:n+1)
 
@@ -14,15 +13,15 @@ chevieset(:A, :simpleroots, function(n)
   r
 end)
 
-chevieset(:A, :ParabolicRepresentatives,function(n,s)
-  filter(x->!(n+1 in x),chevieget(:imp, :ParabolicRepresentatives)(1,1,n+1,s))
+chevieset(:A, :parabolic_reps,function(n,s)
+  filter(x->!(n+1 in x),chevieget(:imp, :parabolic_reps)(1,1,n+1,s))
 end)
 
-# very good representative for partition pi in the sense of [Geck-Michel]
-chevieset(:A,:WordClass,function(pi)
+# very good representative for partition λ in the sense of [gm97]
+chevieset(:A,:WordClass,function(λ)
   w=Int[]
   i=0
-  for l in pi
+  for l in λ
     r=mod(l,2)
     append!(w,i.+vcat(1:2:l-1-r,2:2:l+r-2))
     i+=l
@@ -30,7 +29,8 @@ chevieset(:A,:WordClass,function(pi)
   w
 end)
 
-chevieset(:A,:centralizer,function(n,partition)
+# centralizer in symmetric group of an element of class given by partition
+chevieset(:A,:centralizer,function(partition)
   res=k=1;last=0
   for p in partition
     res*=p
@@ -42,31 +42,19 @@ chevieset(:A,:centralizer,function(n,partition)
   res
 end)
 
-chevieset(:A,:ClassInfo,function(n)
-  res=chevieget(:imp,:ClassInfo)(1,1,n+1)
-  pp=partitions(n+1)
-  res[:classparams]=pp
-  res[:classtext]=map(chevieget(:A,:WordClass),pp)
+chevieset(:A,:classinfo,function(n)
+  res=chevieget(:imp,:classinfo)(1,1,n+1)
+  res[:classparams]=first.(res[:classparams])
+  res[:classtext]=chevieget(:A,:WordClass).(res[:classparams])
   res
 end)
 
-chevieset(:A,:NrConjugacyClasses,n->npartitions(n+1))
+chevieset(:A,:nconjugacy_classes,n->npartitions(n+1))
 
-chevieset(:A,:CharTable,function(n)
-  ct=chevieget(:imp,:CharTable)(1,1,n+1)
-  ct[:charnames]=chevieget(:A,:CharInfo)(n)[:charnames]
-  ct
-end)
+chevieset(:A,:CharTable,n->chevieget(:imp,:CharTable)(1,1,n+1))
 
-chevieset(:A,:HeckeCharTable,
-function(n,para,root)
-  if n==1 Dict(:irreducibles=>[1 para[1][2];1 para[1][1]],
-               :charnames=>["11","2"],
-               :classnames=>["11","2"],
-               :centralizers=>[2,2],
-               :identifier=>"H(A_1)")
-  else  chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root)
-  end
+chevieset(:A,:HeckeCharTable,function(n,para,root)
+  chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root)
 end)
 
 chevieset(:A,:FakeDegree,(n,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
@@ -87,7 +75,7 @@ chevieset(:A,:b,p->dot(p,0:length(p)-1))
 
 chevieset(:A,:B,p->binomial(sum(p),2)-sum(i->binomial(i,2),p))
 
-chevieset(:A, :CharInfo, function(n)
+chevieset(:A, :charinfo, function(n)
   pp=partitions(n+1)
   res=Dict{Symbol, Any}(:charparams=>pp,
     :charnames=>joindigits.(pp),
@@ -100,10 +88,11 @@ chevieset(:A, :CharInfo, function(n)
 end)
 
 chevieset(:A, :PoincarePolynomial,function(n,param)
-  prod(i->sum(k->(-param[1][1]//param[1][2])^k,0:i),1:n)
+  q=-param[1][1]//param[1][2]
+  prod(i->sum(k->q^k,0:i),1:n)
 end)
 
-# Reference: Carter II, 13.5, p. 446.
+# Reference: [13.5, p. 446, car85]
 chevieset(:A, :SchurElement, function (n, alpha, param, sqrtparam)
   q=-param[1][1]//param[1][2]
   lambda=βset(alpha)
@@ -158,7 +147,7 @@ chevieset(:A, :DecompositionMatrix, function(n,p)
 end)
 
 chevieset(:A, :UnipotentCharacters,function(n)
-  ci=chevieget(:A,:CharInfo)(n)
+  ci=chevieget(:A,:charinfo)(n)
   pp=ci[:charparams]
   Dict{Symbol,Any}(:harishChandra =>[Dict{Symbol, Any}(:levi=>Int[],
     :relativeType=>TypeIrred(;series=:A,indices=1:n,rank=n), 
@@ -202,11 +191,11 @@ chevieset(:A, :UnipotentClasses, function (n, p)
     res
   end
   for i in 1:length(uc[:classes])
-    cl = uc[:classes][i]
-    p = cl[:parameter]
-    d = gcd(p)
-    cl[:name] = joindigits(p)
-    cl[:Au] = crg(d, 1, 1)
+    cl=uc[:classes][i]
+    p=cl[:parameter]
+    d=gcd(p)
+    cl[:name]=joindigits(p)
+    cl[:Au]=crg(d, 1, 1)
     cl[:balacarter]=vcat(map(i->sum(p[1:i-1]).+(1:p[i]-1),1:length(p))...)
     p=vcat(map(x->1-x:2:x-1,p)...)
     sort!(p)

@@ -8,7 +8,7 @@ chevieset(:G29, :AltPres, [Dict{Symbol, Any}(
      [[3, 4, 3], [4, 3, 4]], [[2, 3, 2], [3, 2, 3]], [[1, 3], [3, 1]],
      [[1, 4], [4, 1]], [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
 # Our G29 is equal to reflection_subgroup(G31,[234,13,3,5])
-# This is also the subgroup which leaves invariant the Φ₁ of Maschke
+# This is also the subgroup which leaves invariant the Φ₁ of [ma1887]
 
 chevieset(:G29, :simpleroots, [0 0 0 -2;
                                -E(4) E(4) 1 1;
@@ -23,9 +23,9 @@ chevieset(:G29, :BraidRelations, [[[1, 2, 1], [2, 1, 2]], [[2, 4,2], [4, 2, 4]],
 
 chevieset(:G29, :ReflectionDegrees, [4, 8, 12, 20])
 
-chevieset(:G29, :NrConjugacyClasses, 37)
+chevieset(:G29, :nconjugacy_classes, 37)
 
-chevieset(:G29, :ParabolicRepresentatives,s->[[Int[]],[[1]],[[1,2],[1,3],[2,3]],
+chevieset(:G29, :parabolic_reps,s->[[Int[]],[[1]],[[1,2],[1,3],[2,3]],
   [1:3,[1,2,4],[1,3,4],[1,3,9],2:4],[1:4]][s+1])
 
 chevieset(:G29, :ClassNames, [".", "1", "12", "23", "31", "234", "341", "123",
@@ -39,7 +39,7 @@ chevieset(:G29, :WordsClassRepresentatives, map(x->
 
 chevieset(:G29, :PowerMaps, [nothing, [1, 1, 3, 11, 1, 21, 3, 3, 22, 5, 1, 19, 19, 5, 11, 11, 26, 31, 29, 26, 11, 11, 26, 26, 1, 3, 21, 22, 29, 37, 37, 37, 37, 11, 37, 37, 1], [1, 2, 1, 4, 5, 9, 2, 25, 6, 10, 11, 13, 12, 14, 15, 16, 35, 18, 19, 36, 22, 21, 32, 33, 25, 37, 28, 27, 29, 30, 31, 33, 32, 34, 36, 35, 37], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 35, 36, 14, 15, 16, 17, 18, 37, 20, 21, 22, 23, 24, 25, 26, 27, 28, 1, 30, 31, 32, 33, 34, 35, 36, 37], nothing, [1, 2, 3, 4, 5, 9, 7, 8, 6, 10, 11, 13, 12, 14, 15, 16, 20, 18, 19, 17, 22, 21, 24, 23, 25, 26, 28, 27, 29, 30, 31, 33, 32, 34, 36, 35, 37], nothing, nothing, nothing, [1, 2, 3, 4, 5, 9, 7, 8, 6, 10, 11, 13, 12, 14, 15, 16, 20, 18, 19, 17, 22, 21, 24, 23, 25, 26, 28, 27, 29, 30, 31, 33, 32, 34, 36, 35, 37], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37], nothing, nothing, nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37], nothing, [1, 2, 3, 4, 5, 9, 7, 8, 6, 10, 11, 13, 12, 14, 15, 16, 20, 18, 19, 17, 22, 21, 24, 23, 25, 26, 28, 27, 29, 30, 31, 33, 32, 34, 36, 35, 37]])
 
-chevieset(:G29, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G29, :classinfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G29, :WordsClassRepresentatives),
   :classnames => chevieget(:G29, :ClassNames),
   :classparams => chevieget(:G29, :ClassNames),
@@ -49,7 +49,7 @@ chevieset(:G29, :ClassInfo, Dict{Symbol, Any}(
   :classes=>[1,40,320,60,120,240,320,320,240,480,30,384,384,480,240,240,320,
           480,384,320,60,60,320,320,40,320,240,240,384,120,30,40,40,60,1,1,1]))
 
-chevieset(:G29, :CharInfo, function ()
+chevieset(:G29, :charinfo, function ()
   res=Dict{Symbol, Any}(:charparams => [[1, 0], [1, 40], [4, 4], [4, 24],
     [4, 1], [4, 21], [4, 3], [4, 23], [5, 8], [5, 16], [6, 12], [6, 10, 1],
     [6, 10, 2], [6, 10, 3], [6, 10, 4], [10, 18], [10, 2], [10, 14], [10, 6],
@@ -131,8 +131,8 @@ end)
 # By Schur relations a=0 and b=1.
 chevieset(:G29, :HeckeCharTable, function (para, rootpara)
   tbl = Dict{Symbol, Any}(:identifier=>"H(G29)", :size => 7680,:order=>7680)
-  merge!(tbl, chevieget(:G29, :ClassInfo))
-  merge!(tbl, chevieget(:G29, :CharInfo)())
+  merge!(tbl, chevieget(:G29, :classinfo))
+  merge!(tbl, chevieget(:G29, :charinfo)())
   f3(x,y)=[4, 3x+y, 2x^2+x*y, 2x^2+2x*y, 2x^2+2x*y, x^3+x^2*y,
     x^3+2x^2*y, x^3+2x^2*y, x^3+x^2*y, x^3+x^2*y, 2x^4+2x^2*y^2, x^3*y, x^9*y^3,
     -x^18*y^5-x^17*y^6, x^5-x^4*y, x^5+x^3*y^2, -2x^47*y^15-x^46*y^16,
@@ -244,7 +244,7 @@ end)
 
 chevieset(:G29,:galomorphisms,perm"(6,9)(12,13)(17,20)(21,22)(23,24)(27,28)(32,33)(35,36)")
 
-# Completed JM dec. 2014 using Marin-Pfeiffer
+# Completed JM dec. 2014 using [mp17]
 chevieset(:G29, :HeckeRepresentation, function (para, rootpara, i)
   f1(x)=[[x;;],[x;;],[x;;],[x;;]]
   f3(x,y)=WGraph2Representation([[[1,2,3],[1,2,4],[1,3,4],[2,3,4]],
@@ -793,7 +793,7 @@ chevieset(:G29, :UnipotentCharacters,
   Family(:C1, [2])], 
   :a => [0, 40, 1, 21, 1, 21, 1, 21, 4, 12, 6, 6, 6, 6, 6, 18, 2, 12, 4, 4, 4, 12, 12, 13, 3, 13, 3, 5, 9, 9, 5, 9, 5, 6, 6, 6, 6, 1, 1, 1, 3, 3, 4, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 9, 9, 12, 13, 13, 21, 21, 21], :A => [0, 40, 19, 39, 19, 39, 19, 39, 28, 36, 34, 34, 34, 34, 34, 38, 22, 36, 28, 28, 28, 36, 36, 37, 27, 37, 27, 31, 35, 35, 31, 35, 31, 34, 34, 34, 34, 19, 19, 19, 27, 27, 28, 31, 31, 31, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 36, 37, 37, 39, 39, 39]))
 
-# The first invariant (cf. Orlik and Terao) is Φ₁ of Maschke.
+# The first invariant (cf. [ot92]) is Φ₁ of [ma1887].
 # Then we choose for F8 (-1/20736)det(Hessian(Φ₁))=(4*F8-Φ₁²)/3.
 # We do not choose F12 but the simpler ((Φ₁³-3*Φ₁*F8)/2+F12)/108.
 # As for G31 we do not choose F20 but the simpler (F20-F8*F12)/1296.

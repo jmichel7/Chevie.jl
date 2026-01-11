@@ -12,14 +12,14 @@ chevieset("3D4", :generators, [
 
 chevieset("3D4",:phi,perm"(1,2,4)(5,6,7)(8,10,9)(13,14,16)(17,18,19)(20,22,21)")
 
-chevieset("3D4",:CartanMat,[2 0 -1 0;0 2 -1 0;-1 -1 2 -1;0 0 -1 2])
+chevieset("3D4",:cartan,[2 0 -1 0;0 2 -1 0;-1 -1 2 -1;0 0 -1 2])
 
 chevieset("3D4",:positionclass,function(x)
   findfirst(==(tally(cycletype(x*chevieget("3D4",:phi)))),
               chevieget("3D4", :cyclestructure))
 end)
 
-chevieset("3D4",:ClassInfo,function()
+chevieset("3D4",:classinfo,function()
   res=Dict{Symbol, Any}(
     :classtext=>[[1],Int[],[1,2,3,1,2,3],[3],[1,3],[1,2,3,1,2,4,3,2],[1,2,3,2]],
     :classnames=>["C_3","\\tilde A_2","C_3+A_1","\\tilde A_2+A_1","F_4",
@@ -29,9 +29,9 @@ chevieset("3D4",:ClassInfo,function()
   res
 end)
 
-chevieset("3D4",:NrConjugacyClasses,7)
+chevieset("3D4",:nconjugacy_classes,7)
 
-chevieset("3D4",:CharInfo,function()
+chevieset("3D4",:charinfo,function()
   res=Dict{Symbol, Any}(:extRefl=>[1, 5, 4, 6, 2],
     :charparams=>[[Int[],[4]],[Int[],[1,1,1,1]],[Int[],[2,2]],[[1,1],[2]],
                   [[1],[3]],[[1],[1,1,1]],[[1],[2,1]]],
@@ -44,7 +44,7 @@ end)
 chevieset("3D4", :HeckeCharTable, function (param, rootpara)
            q=improve_type(-param[1][1]//param[1][2])
   tbl=Dict{Symbol, Any}(:identifier => "H(3D4)", :parameter=>[q,q,q,q],
-    :sqrtparameter=>[],:cartan=>chevieget("3D4",:CartanMat),:size=>192,
+    :sqrtparameter=>[],:cartan=>chevieget("3D4",:cartan),:size=>192,
     :irreducibles=> 
     [q 1 q^6 q q^2 q^8 q^4; 
      -1 1 1 -1 1 1 1; 
@@ -54,7 +54,7 @@ chevieset("3D4", :HeckeCharTable, function (param, rootpara)
      -1 1 -2*q^2+q q 0 -2*q^2 2q; 
      q-1 2 -q^4-q^2 q-1 0 2*q^4 -2*q^2],
     :irredinfo => chevieget("3D4", :IrredInfo))
-  merge!(tbl,chevieget("3D4",:ClassInfo)())
+  merge!(tbl,chevieget("3D4",:classinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)

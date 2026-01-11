@@ -2,14 +2,12 @@
 # (C) Jean Michel, Frank Luebeck, Goetz Pfeiffer 1994-2001
 # Data for type D
 
-chevieset(:D,:CartanMat,n->cartan(:D,n))
+chevieset(:D,:cartan,n->cartan(:D,n))
 
-chevieset(:D, :simpleroots, function (l)
-  r=fill(0,l,l)
-  for i in 1:l-1
-    r[i,i:i+1]=[1,-1]
-  end
-  r[l,l-1:l]=[1,1]
+chevieset(:D, :simpleroots, function (n)
+  r=Matrix(1I,n,n)
+  for i in 1:n-1 r[i,i+1]=-1 end
+  r[n,n-1]=1
   reverse(r,dims=1)
 end)
 
@@ -31,48 +29,37 @@ chevieset(:D, :WeightInfo,function(n)
   end
 end)
 
-chevieset(:D, :ParabolicRepresentatives,(l, s)->
-  chevieget(:imp, :ParabolicRepresentatives)(2,2,l,s))
+chevieset(:D, :parabolic_reps,(l, s)->
+  chevieget(:imp, :parabolic_reps)(2,2,l,s))
 
-chevieset(:D, :WordsClassRepresentatives,function(n,param=partition_tuples(n,2))
-  res=Vector{Int}[]
-  for pi in param
-    if ((pi[2] isa AbstractVector) && isodd(length(pi[2]))) || pi[2]=='-'
-      continue
-    end
-    w=Int[]
-    i=1
-    if pi[2]!='+'
-      for l in reverse(pi[2])
-        if i==1 append!(w,2:l)
-        else
-          append!(w,i:-1:3)
-          append!(w,1:i+l-1)
-        end
-        i+=l
+chevieset(:D, :WordClass,function(n,pi)
+  w=Int[]
+  i=1
+  if !(pi[2] in "+-")
+    for l in reverse(pi[2])
+      if i==1 append!(w,2:l)
+      else
+        append!(w,i:-1:3)
+        append!(w,1:i+l-1)
       end
-    end
-    for l in pi[1]
-      r=mod(l,2)
-      append!(w,i.+vcat(1:2:l-1-r, 2:2:l+r-2))
       i+=l
     end
-    if !isempty(w) && w[1]==2 w[1]=1 end # cosmetics for lexicographics.
-    # classes are labelled with '+', if they have representatives
-    # in parabolic subgroup of type A_{l-1}, given by {1,3,4,..}
-    if (isempty(pi[2]) || pi[2]=='+') && all(iseven,pi[1])
-      push!(res,w)
-      w=copy(w)
-      w[1]=2
-    end
-    push!(res, w)
   end
-  res
+  for l in pi[1]
+    r=mod(l,2)
+    append!(w,i.+vcat(1:2:l-1-r, 2:2:l+r-2))
+    i+=l
+  end
+  if !isempty(w) && w[1]==2 w[1]=1 end # cosmetics for lexicographics.
+  # classes are labelled with '+', if they have representatives
+  # in parabolic subgroup of type A_{l-1}, given by {1,3,4,..}
+  if pi[2]=='-' w[1]=2 end
+  w
 end)
 
 using Primes: primes
-chevieset(:D, :ClassInfo, function (n)
-  res=chevieget(:imp,:ClassInfo)(2,2,n)
+chevieset(:D, :classinfo, function (n)
+  res=chevieget(:imp,:classinfo)(2,2,n)
   l=maximum(res[:orders])
   pmaps=Vector{Any}(fill(nothing,l))
   pp=res[:classparams]
@@ -87,25 +74,24 @@ chevieset(:D, :ClassInfo, function (n)
   res[:powermaps]=pmaps
   res[:classparams]=map(x->x[end] isa Number ? [x[1],x[end]==0 ? '+' : '-'] : x,
                         res[:classparams])
-  res[:classtext]=chevieget(:D,:WordsClassRepresentatives)(n,res[:classparams])
+  res[:classtext]=chevieget(:D,:WordClass).(n,res[:classparams])
   res
 end)
 
-chevieset(:D, :NrConjugacyClasses,n->
+chevieset(:D, :nconjugacy_classes,n->
   if isodd(n) div(npartition_tuples(n,2),2)
   else div(npartition_tuples(n,2)+3*npartitions(div(n,2)),2)
 end)
 
-chevieset(:D, :CharInfo, n->chevieget(:imp, :CharInfo)(2, 2, n))
+chevieset(:D, :charinfo, n->chevieget(:imp, :charinfo)(2, 2, n))
 
 #  If l is even then some of the classes  and restrictions split into two
 #  classes or  characters, respectively. Their  values  are given by  the
 #  character  values    for W(B_l) and   those  for  the  symmetric group
-#  S_(l/2). This is described in [Pfeiffer, G., Character Tables of  Weyl
-#  Groups in GAP]. 
+#  S_(l/2). This is described in [p94].
 chevieset(:D,:HeckeCharTable,function(n,para,root)
-   ci=chevieget(:D,:ClassInfo)(n)
-   cl=chevieget(:D,:CharInfo)(n)
+   ci=chevieget(:D,:classinfo)(n)
+   cl=chevieget(:D,:charinfo)(n)
    chp=cl[:charparams]
    q=-para[1][1]//para[1][2]
    tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
@@ -120,7 +106,7 @@ function chard(n,q)
   end
   BHk=isone(q) ? chevieget(:B,:CharTable)(n) :
       chevieget(:B,:HeckeCharTable)(n,vcat([[1,-1]],fill([q,-1],n)),[])
-  pB=chevieget(:B,:CharInfo)(n)[:charparams]
+  pB=chevieget(:B,:charinfo)(n)[:charparams]
   Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB),findfirst(==(y),pB)]
   function value(lambda,mu)
     if length(lambda)>2
@@ -144,7 +130,7 @@ function chard(n,q)
 end
   tbl[:irreducibles]=chard(n,q)
   tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
-#  tbl[:irredinfo]=List(chevieget(:D,:CharInfo)(n).charparams,p->
+#  tbl[:irredinfo]=List(chevieget(:D,:charinfo)(n).charparams,p->
 #     rec(charparam:=p,charname:=string_partition_tuple(p)));
   merge!(tbl,ci)
   merge!(tbl,cl)
@@ -162,12 +148,12 @@ chevieset(:D,:SchurElement, function (n, phi, para, sqrtparam)
 end)
 
 chevieset(:D,:FactorizedSchurElement, function (n,p,arg...)
-  if p[2] in "+-" p = [p[1], p[1]] end
+  if p[2] in "+-" p=[p[1], p[1]] end
   chevieget(:imp, :FactorizedSchurElement)(2, 2, n, p, arg[1], [])
 end)
 
 chevieset(:D,:HeckeRepresentation, function (n,para,rt,i,arg...)
-  p=chevieget(:D, :CharInfo)(n)[:charparams][i]
+  p=chevieget(:D, :charinfo)(n)[:charparams][i]
   if p[end]==0 i+=1
   elseif p[end]==1 i-=1
   end
@@ -175,7 +161,7 @@ chevieset(:D,:HeckeRepresentation, function (n,para,rt,i,arg...)
 end)
 
 chevieset(:D,:Representation, function (n, i)
-  p=chevieget(:D, :CharInfo)(n)[:charparams][i]
+  p=chevieget(:D, :charinfo)(n)[:charparams][i]
   if p[end]==0 i+=1
   elseif p[end]==1 i-=1
   end
@@ -215,7 +201,7 @@ chevieset(:D,:UnipotentCharacters,function(rank)
     if d==0
       # order differs from Symbols.Symbolsshape(n,[d,0]) for d=0
       symbols=map(x->Symbol_partition_tuple(x,d),
-        chevieget(:imp,:CharInfo)(2,2,rank)[:charparams])
+        chevieget(:imp,:charinfo)(2,2,rank)[:charparams])
     else symbols=Symbols.Symbolsshape(rank,[d,0])
     end
     s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])
@@ -241,17 +227,7 @@ chevieset(:D,:Ennola,function(n)
   end, 1:length(l)))
 end)
 
-# References for unipotent classes:
-# [Lu] G.Lusztig, Character sheaves on disconnected groups, II 
-#   Representation Theory 8 (2004) 72--124
-#
-# [GM]  M.Geck and G.Malle, On the existence of a unipotent support for the
-# irreducible  characters of  a finite  group of  Lie type,  Trans. AMS 352
-# (1999) 429--456
-# 
-# [S]  N.Spaltenstein,  Classes  unipotentes  et  sous-groupes  de
-# Borel, Springer LNM 946 (1982)
-# 
+# References for unipotent classes: [lus04], [gm00], [spalt82]
 chevieset(:D,:UnipotentClasses,function(n,char)
   function addSpringer(s, i, cc)
     ss=first(x for x in uc[:springerSeries] 
@@ -270,11 +246,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   if char==2
     ss=XSP(4, 0, n, 1)
-    symbol2partition=function(S) # see [GM] 2.17
+    symbol2partition=function(S) # see [2.17, gm00]
       c=sort(reduce(vcat,S))
-      i = 1
-      part = Int[]
-      ex = Int[]
+      i=1
+      part=Int[]
+      ex=Int[]
       while i <= length(c)
         l=2(c[i]-2(i-1))
         if i==length(c) || c[i+1]-c[i]>1
@@ -291,19 +267,19 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       end
       [reverse(filter(!iszero,sort(part))), ex]
     end
-  else # see [GM] 2.10
+   else # see [2.10, gm00]
     ss=XSP(2, 0, n, 1)
     symbol2partition=function(S)
       c=sort(reduce(vcat,S))
-      i = 1
-      part = Int[]
+      i=1
+      part=Int[]
       while i <= length(c)
-        l = 2 * (c[i]-(i-1))
+        l=2 * (c[i]-(i-1))
         if i == length(c) || c[i+1]-c[i]>0
           push!(part, l+1)
           i+=1
         else
-          part = append!(part, [l, l])
+          part=append!(part, [l, l])
           i+=2
         end
       end
@@ -313,8 +289,8 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   l=union(map(c->map(x->[defectsymbol(x.symbol),
                          sum(sum,fullsymbol(x.sp))],c),ss)...)
   sort!(l, by=x->[abs(x[1]), -sign(x[1])])
-  uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
-      res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
+  uc=Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
+      res=Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
       if mod(n-d[2],4)==0 || char==2 res[:Z]=mod(n,2)==0  ? [1, 1] : [1]
       else   res[:Z]=mod(n,2)==0  ? [-1,1] : [-1]
       end
@@ -323,24 +299,23 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       res
   end, l))
   for cl in ss
-    cc = Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1].symbol))
+    cc=Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1].symbol))
     if char==2
-      cc[:dimBu] = cl[1].dimBu
-      cc[:name] = join(map(reverse(tally(cc[:parameter][1])))do x
+      cc[:dimBu]=cl[1].dimBu
+      cc[:name]=join(map(reverse(tally(cc[:parameter][1])))do x
         res=joindigits(fill(x[1], max(0, x[2])), "[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
         res
       end)
     else
       cc[:dynkin]=partition2DR(cc[:parameter])
-      cc[:name] = joindigits(cc[:parameter])
+      cc[:name]=joindigits(cc[:parameter])
     end
-    cc[:Au] = isempty(cl[1].Au) ? coxgroup() : 
+    cc[:Au]=isempty(cl[1].Au) ? coxgroup() : 
        prod(coxgroup(:A,1) for i in eachindex(cl[1].Au))
     if char != 2
-      cc[:red] = coxgroup()
-      j = cc[:parameter]
-      for j = tally(j)
+      cc[:red]=coxgroup()
+      for j in tally(cc[:parameter])
         if mod(j[1], 2) == 0
           cc[:red]*=coxgroup(:C, div(j[2],2))
         elseif mod(j[2], 2) != 0
@@ -365,7 +340,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       for s in cl addSpringer(s, length(uc[:classes]), cc) end
     end
   end
-  if char==2 # see [Spaltenstein] 2.10 page 24
+  if char==2 # see [2.10 page 24, spalt82]
     uc[:orderClasses]=hasse(Poset(uc[:classes])do x,y
       xp=x[:parameter] 
       yp=y[:parameter] 
@@ -390,38 +365,38 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end)
   end
   if char!=2
-    d = 0
+    d=0
     while 4*d^2-d <= n
-     i = 4*d^2-d
+     i=4*d^2-d
      if mod(n-d,2)==0
        l=vcat(1:i,i+2:2:n)
        s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
-       if mod(n, 2) == 0 s[:Z]=[-1,-1] else s[:Z] = [E(4)] end
+       if mod(n, 2) == 0 s[:Z]=[-1,-1] else s[:Z]=[E(4)] end
        s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        if d==0 l=vcat([1], 4:2:n) end
        s=Dict(:relgroup => coxgroup(:B, div(n-i,2)),:levi=>l)
-       if mod(n,2)==0 s[:Z] = [1,-1]
-       else s[:Z] = [-(E(4))]
+       if mod(n,2)==0 s[:Z]=[1,-1]
+       else s[:Z]=[-(E(4))]
        end
        s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        i=4d^2+d
        if d != 0 && i <= n
-         l = vcat(1:i, i+2:2:n)
-         s = Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
+         l=vcat(1:i, i+2:2:n)
+         s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
          if mod(n,2)==0 s[:Z]=[-1,-1] else s[:Z]=[E(4)] end
          s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
          s=Dict(:relgroup=>coxgroup(:B,div(n-i,2)),:levi=>l)
-         if mod(n, 2) == 0 s[:Z] = [1, 1] else s[:Z] = [-(E(4))] end
+         if mod(n, 2) == 0 s[:Z]=[1, 1] else s[:Z]=[-(E(4))] end
          s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
        end
      end
      d+=1
   end
-  function LuSpin(p) # see [Lusztig] 14.2
+  function LuSpin(p) # see [14.2, lus04]
     sort!(p)
     a=Int[]
     b=Int[]
@@ -450,11 +425,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   function addSpringer1(f, i, s, k)
     ss=first(x for x in uc[:springerSeries] if f(x))
-    if s in [[Int[], [1]], [Int[], Int[]]] p = 1
-    elseif s == [[1], Int[]] p = 2
-    else p = findfirst(==([s]),charinfo(ss[:relgroup]).charparams)
+    if s in [[Int[], [1]], [Int[], Int[]]] p=1
+    elseif s == [[1], Int[]] p=2
+    else p=findfirst(==([s]),charinfo(ss[:relgroup]).charparams)
     end
-    ss[:locsys][p] = [i, k]
+    ss[:locsys][p]=[i, k]
   end
   function trspringer(i, new)
     for ss in uc[:springerSeries]
@@ -467,17 +442,17 @@ chevieset(:D,:UnipotentClasses,function(n,char)
      cl=uc[:classes][i]
      s=LuSpin(cl[:parameter])
      if length(cl[:Au]) == 1
-       cl[:Au] = coxgroup(:A, 1)
+       cl[:Au]=coxgroup(:A, 1)
        trspringer(i, [2])
-       k = [1, 1]
+       k=[1, 1]
      elseif length(cl[:Au]) == 2
-       cl[:Au] = coxgroup(:A, 1)*coxgroup(:A,1)
+       cl[:Au]=coxgroup(:A, 1)*coxgroup(:A,1)
        trspringer(i, [2, 4])
-       k = [1, 3]
+       k=[1, 3]
      elseif length(cl[:Au]) == 8
-       cl[:Au] = coxgroup(:A,1)*coxgroup(:B,2)
+       cl[:Au]=coxgroup(:A,1)*coxgroup(:B,2)
        trspringer(i, [1, 6, 8, 5, 10, 3, 4, 9])
-       k = [2, 7]
+       k=[2, 7]
      else
        error("Au non-commutative of order ",length(cl[:Au])*2,"  ! implemented")
      end
@@ -503,7 +478,7 @@ function decode(l)
   tally(res)
 end
 
-# Used by 'ClassParamD' for distinguishing classes with '+' or '-' in label;
+# Used by `D.ClassParameter` for separating classes with `+` or `-` in label;
 # precomputed for D_n with n=4,6,8
 chevieset(:D, :gensMODA,Dict(4=>[[perm"(1,2)(7,8)", perm"(3,4)(5,6)", perm"(2,3)(6,7)", perm"(3,5)(4,6)"],[[2 => 4], [4 => 2]], [[2 => 2], [2 => 1, 4 => 1]]],
 6=>[[perm"(1,2)(8,11)(12,14)(15,17)(16,18)(19,21)(22,25)(31,32)", 
