@@ -21,7 +21,7 @@ chevieset(:E6, :WeightInfo, function ()
                     :moduli => [3], :chosenAdaptedBasis => M)
 end)
 
-chevieset(:E6, :NrConjugacyClasses, 25)
+chevieset(:E6, :nconjugacy_classes, 25)
 
 chevieset(:E6, :ClassNames, ["A_0", "4A_1", "2A_1", "3A_2", "A_2", "2A_2",
   "D_4(a_1)", "A_3+A_1", "A_4", "E_6(a_2)", "D_4", "A_5+A_1", "A_2+2A_1",
@@ -35,7 +35,7 @@ chevieset(:E6,:PowerMaps,[nothing,
   [1,2,3,4,5,6,7,8,1,10,11,12,13,14,15,16,17,18,19,20,21,22,23,16,25],
   nothing,1:25,nothing,nothing,nothing,1:25])
 
-chevieset(:E6, :ClassInfo, Dict{Symbol, Any}(:classtext => [Int[],
+chevieset(:E6, :classinfo, Dict{Symbol, Any}(:classtext => [Int[],
   [3, 4, 3, 2, 4, 3, 5, 4, 3, 2, 4, 5], [1, 4],
   [1, 3, 1, 4, 3, 1, 2, 4, 5, 4, 3, 1, 2, 4, 3, 5, 6, 5, 4, 3, 2, 4, 5, 6],
   [1, 3], [1, 3, 5, 6], [3, 4, 3, 2, 4, 5], [1, 4, 3, 6], [1, 4, 3, 2],
@@ -52,12 +52,12 @@ chevieset(:E6, :ClassInfo, Dict{Symbol, Any}(:classtext => [Int[],
   :classes=>[1,45,270,80,240,480,540,3240,5184,720,1440,1440,2160,5760,4320,
              36, 540, 540, 1620, 1440, 1440, 4320, 6480, 5184, 4320]))
 
-chevieset(:E6, :ParabolicRepresentatives, s->
+chevieset(:E6, :parabolic_reps, s->
   [[Int[]], [[1]], [[1, 2], [1, 3]], [1:3, [1, 2, 5], [1, 3, 4]],
    [1:4, [1, 2, 3, 5], [1, 2, 4, 5], [1, 3, 5, 6], 2:5],
    [1:5, [1, 3, 4, 5, 6], [1, 2, 3, 4, 6], [1, 2, 3, 5, 6]], [1:6]][s+1])
 
-chevieset(:E6, :CharInfo, function ()
+chevieset(:E6, :charinfo, function ()
   res=Dict{Symbol, Any}(:charparams => [[1, 0], [1, 36], [10, 9], [6, 1],
     [6, 25], [20, 10], [15, 5], [15, 17], [15, 4], [15, 16], [20, 2], [20, 20],
     [24, 6], [24, 12], [30, 3], [30, 15], [60, 8], [80, 7], [90, 8], [60, 5], 
@@ -87,7 +87,7 @@ chevieset(:E6, :generators, [
   perm"( 4,10)( 5,41)( 6,11)( 8,14)( 9,15)(12,18)(13,19)(17,22)(28,31)(30,33)(32,34)(40,46)(42,47)(44,50)(45,51)(48,54)(49,55)(53,58)(64,67)(66,69)(68,70)", 
   perm"( 5,11)( 6,42)(10,16)(14,20)(15,21)(18,23)(19,25)(22,27)(24,28)(26,30)(29,32)(41,47)(46,52)(50,56)(51,57)(54,59)(55,61)(58,63)(60,64)(62,66)(65,68)"])
 
-chevieset(:E6, :CartanMat,
+chevieset(:E6, :cartan,
           [2 0 -1 0 0 0;
            0 2 0 -1 0 0;
            -1 0 2 -1 0 0;
@@ -312,10 +312,10 @@ chevieset(:E6, :HeckeCharTable, function (param, rootpara)
   q=-param[1][1]//param[1][2]
   tbl=Dict(:identifier=>"H(E6)",:text=>"origin: Meinolf Geck, April 1992",
     :parameter=>param,:rootparameter=>rootpara,
-    :cartan=>chevieget(:E6, :CartanMat), :size => 51840,
+    :cartan=>chevieget(:E6, :cartan), :size => 51840,
     :irreducibles=>map(i->map(j->j(q),i),chevieget(:E6,:vpolheckeirreducibles)))
-  merge!(tbl,chevieget(:E6, :ClassInfo))
-  merge!(tbl,chevieget(:E6, :CharInfo)())
+  merge!(tbl,chevieget(:E6, :classinfo))
+  merge!(tbl,chevieget(:E6, :charinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)
@@ -445,7 +445,7 @@ Dict{Symbol, Any}(:a => [0, 36, 7, 1, 25, 7, 3, 15, 3, 15, 2, 20, 6, 12, 3,
 chevieset(:E6, :Ennola, SPerm())
 
 chevieset(:E6, :Invariants, function ()
-  C=chevieget(:E6, :CartanMat)
+  C=chevieget(:E6, :cartan)
   r=map(x->C'*x,roots(C))
   [function(arg...) return sum(a->sum(collect(arg).*a)^2,r) end,
    function (a, b, c, d, e, f)

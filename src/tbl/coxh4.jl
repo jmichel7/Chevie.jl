@@ -3,8 +3,8 @@
 
 chevieset(:H4, :ReflectionDegrees, [2, 12, 20, 30])
 
+# from [2.13, hum90]
 let a=-E(5,2)-E(5,3)
-# from Humphreys, "Reflection Groups and Coxeter Groups", 2.13
 chevieset(:H4, :simpleroots,
   [ a -1  a-1 0;
    -a  1  a-1 0;
@@ -31,10 +31,10 @@ chevieset(:H4, :InvariantModel, Dict{Symbol, Any}(
 # usual matgens^conj=invariant matgens
 
 let a=E(5,2)+E(5,3)
-chevieset(:H4, :CartanMat, [2  a  0  0;
-                            a  2 -1  0;
-                            0 -1  2 -1;
-                            0  0 -1  2])
+chevieset(:H4, :cartan, [2  a  0  0;
+                         a  2 -1  0;
+                         0 -1  2 -1;
+                         0  0 -1  2])
 end
 
 chevieset(:H4,:words,[[],[1],[1,2],[1,3],[2,3],[1,2,3],[1,2,4],[1,3,4],[2,4,3],
@@ -52,27 +52,26 @@ chevieset(:H4,:words,[[],[1],[1,2],[1,3],[2,3],[1,2,3],[1,2,4],[1,3,4],[2,4,3],
 chevieset(:H4, :WordsClassRepresentatives,
           map(x->Replace(x,[0],1:4), chevieget(:H4, :words)))
 
-chevieset(:H4, :NrConjugacyClasses, 34)
+chevieset(:H4, :nconjugacy_classes, 34)
 
-chevieset(:H4, :ParabolicRepresentatives,s->
+chevieset(:H4, :parabolic_reps,s->
   [[Int[]],[[1]],[[1,2],[1,3],[2,3]],[[1,2,3],[1,2,4],[1,3,4],[2,3,4]],
    [1:4]][s+1])
 
 chevieset(:H4, :PowerMaps, [nothing, [1, 1, 10, 1, 5, 3, 10, 5, 4, 3, 15, 5, 3, 18, 22, 10, 24, 26, 27, 1, 3, 15, 30, 32, 5, 33, 27, 22, 34, 33, 10, 32, 26, 1], [1, 2, 10, 4, 1, 16, 13, 2, 9, 3, 18, 20, 7, 23, 26, 6, 29, 30, 19, 20, 31, 33, 14, 34, 34, 33, 27, 30, 29, 18, 21, 1, 26, 34], nothing, [1, 2, 1, 4, 5, 20, 2, 8, 9, 1, 24, 12, 2, 29, 32, 20, 17, 34, 34, 20, 34, 32, 29, 24, 25, 1, 1, 24, 29, 34, 34, 32, 1, 34], nothing, [1, 2, 10, 4, 5, 16, 13, 8, 9, 3, 28, 12, 7, 23, 22, 6, 17, 30, 19, 20, 31, 15, 14, 24, 25, 33, 27, 11, 29, 18, 21, 32, 26, 34], nothing, nothing, nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34], nothing, [1, 2, 10, 4, 5, 16, 13, 8, 9, 3, 28, 12, 7, 23, 22, 6, 17, 30, 19, 20, 31, 15, 14, 24, 25, 33, 27, 11, 29, 18, 21, 32, 26, 34], nothing, nothing, nothing, [1, 2, 10, 4, 5, 16, 13, 8, 9, 3, 28, 12, 7, 23, 22, 6, 17, 30, 19, 20, 31, 15, 14, 24, 25, 33, 27, 11, 29, 18, 21, 32, 26, 34], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34], nothing, nothing, nothing, [1, 2, 10, 4, 5, 16, 13, 8, 9, 3, 28, 12, 7, 23, 22, 6, 17, 30, 19, 20, 31, 15, 14, 24, 25, 33, 27, 11, 29, 18, 21, 32, 26, 34], nothing, nothing, nothing, nothing, nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]])
 
-chevieset(:H4, :ClassInfo, function ()
+chevieset(:H4, :classinfo, function ()
   res=Dict{Symbol, Any}(:classtext=>chevieget(:H4, :WordsClassRepresentatives),
     :orders => [1, 2, 5, 2, 3, 10, 10, 6, 4, 5, 30, 6, 10, 20, 15, 10, 12, 10, 10, 2, 10, 15, 20, 6, 6, 5, 5, 30, 4, 10, 10, 3, 5, 2],
     :classes => [1, 60, 144, 450, 400, 720, 720, 1200, 1800, 144, 480, 1200, 720, 720, 480, 720, 1200, 24, 288, 60, 144, 480, 720, 40, 400, 24, 288, 480, 60, 24, 144, 40, 24, 1])
-  res[:classnames]=joindigits.(chevieget(:H4, :words))
-  res[:classnames]=map(x->replace(x, "0"=>"c"),res[:classnames])
+  res[:classnames]=map(x->replace(joindigits(x),"0"=>"c"),chevieget(:H4,:words))
   res[:classnames][1]="."
   res[:classparams]=res[:classnames]
   res[:powermaps]=chevieget(:H4,:PowerMaps)
   res
 end)
 
-chevieset(:H4, :CharInfo, function ()
+chevieset(:H4, :charinfo, function ()
   res=Dict{Symbol, Any}(:charparams => [[1, 0], [1, 60], [4, 1], [4, 31],
     [4, 7], [4, 37], [6, 12], [6, 20], [8, 12], [8, 13], [9, 2], [9, 22],
     [9, 6], [9, 26], [10, 12], [16, 11], [16, 13], [16, 3], [16, 21], [16, 6],
@@ -688,10 +687,10 @@ chevieset(:H4, :HeckeCharTable, function(param, rootpara)
   tbl=Dict{Symbol, Any}(:identifier => "H(H4)",
   :text=>"the ordering of the characters is that of Alvis-Lusztig(1982)",
   :parameter=>[v^2,v^2,v^2,v^2],
-  :cartan => chevieget(:H4, :CartanMat), :size => 14400,
+  :cartan => chevieget(:H4, :cartan), :size => 14400,
   :irreducibles=>map(i->map(j->j(v),i),chevieget(:H4,:vpolheckeirreducibles)))
-  merge!(tbl, chevieget(:H4, :ClassInfo)())
-  merge!(tbl, chevieget(:H4, :CharInfo)())
+  merge!(tbl, chevieget(:H4, :classinfo)())
+  merge!(tbl, chevieget(:H4, :charinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)
 end)

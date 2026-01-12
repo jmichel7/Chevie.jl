@@ -619,7 +619,7 @@ function cartan(W::PermRootGroup{T,T1})where {T,T1}
 end
 
 function cartan(t::TypeIrred;permute=false)
-  if t.series==:ST return chevieget(t,:CartanMat) end
+  if t.series==:ST return chevieget(t,:cartan) end
   C=haskey(t,:bond) ? haskey(t,:cartanType) ? 
      cartan(t.series,rank(t),t.bond,t.cartanType) : 
      cartan(t.series,rank(t),t.bond) : 
@@ -1417,7 +1417,7 @@ julia> parabolic_reps(complex_reflection_group(3,3,3),2)
 """
 parabolic_reps(W)=vcat(parabolic_reps.(Ref(W),0:semisimplerank(W))...)
 
-parabolic_reps(t::TypeIrred,s)=chevieget(t,:ParabolicRepresentatives,s)
+parabolic_reps(t::TypeIrred,s)=chevieget(t,:parabolic_reps,s)
 
 function recompute_parabolic_reps(W) # W irreducible
   by=1+ngens(W)-semisimplerank(W)

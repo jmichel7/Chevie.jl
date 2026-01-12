@@ -916,8 +916,12 @@ function coxsym(d::UnitRange,n=d.stop)
   gens=map(i->Perm(i,i+1;degree=n),d.start:d.stop-1)
   inversions=[(i,i+k) for k in 1:length(d)-1 for i in d.start:d.stop-k]
   refs=[Perm(r...;degree=n) for r in inversions]
+  nref=length(refs)
   append!(refs,refs)
-  CoxSym(Group(gens,one(prod(gens))),inversions,refs,d,Dict{Symbol,Any}())
+  G=Group(gens,one(prod(gens)))
+  G.classreps=map(x->G(chevieget(:A,:WordClass)(x)...),partitions(length(d)))
+  CoxSym(G,inversions,refs,d,Dict{Symbol,Any}(:unique_refls=>collect(1:nref),
+                                              :simple_reps=>fill(1,2nref)))
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -934,20 +938,10 @@ PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
 end
 
 PermRoot.inclusiongens(W::CoxSym)=W.d[1:end-1]
-function Groups.classreps(W::CoxSym)
-  get!(W,:classreps)do
-    map(x->W(x...),classinfo(W).classtext)
-   end::Vector{eltype(W)}
-end
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=length(W.inversions)
-function PermRoot.simple_reps(W::CoxSym)
-  get!(W,:simple_reps)do
-    W.unique_refls=collect(1:nref(W))
-    fill(1,length(W.refls))
-  end::Vector{Int}
-end
 PermRoot.refls(W::CoxSym)=W.refls
+PermRoot.simple_reps(W::CoxSym)=W.simple_reps
 Symbols.rank(W::CoxSym)=ngens(W)+1
 PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.d.stop)
 PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),W.d.stop)
@@ -1040,7 +1034,9 @@ function coxeter_hyperoctaedral_group(n::Int)
   for i in 2:n-1 append!(roots,map(j->(j,j+i),1:n-i)) end
   for i in 1:n-1 append!(roots,map(j->(j,-j-i),1:n-i)) end
   append!(roots,roots)
-  CoxHyp{Int8}(hyperoctaedral_group(n),roots,n,Dict{Symbol,Any}())
+  G=hyperoctaedral_group(n)
+  G.classreps=map(x->G(chevieget(:B,:WordClass)(x)...),partition_tuples(n,2))
+  CoxHyp{Int8}(G,roots,n,Dict{Symbol,Any}())
 end
 
 const coxhyp=coxeter_hyperoctaedral_group

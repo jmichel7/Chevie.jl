@@ -2,7 +2,7 @@
 #  Copyright (C) 1992 - 2004  The Chevie Team
 chevieset(:H3, :ReflectionDegrees, [2, 6, 10])
 
-# from Humphreys, "Reflection Groups and Coxeter Groups"
+# from [hum90]
 let a=-E(5,2)-E(5,3)
 chevieset(:H3, :simpleroots,
           [a -1 a-1;
@@ -19,19 +19,19 @@ chevieset(:H3, :InvariantModel, Dict{Symbol, Any}(
   :conj=>[[(5-root(5))//2,-root(5),-1+root(5)],[-2root(5),1,0],[2root(5),1,0]]))
 # usual matgens^conj=invariant matgens
 
-chevieset(:H3, :NrConjugacyClasses, 10)
+chevieset(:H3, :nconjugacy_classes, 10)
 
-chevieset(:H3,:CartanMat,[2 -(1+root(5))//2 0;-(1+root(5))//2 2 -1;0 -1 2])
+chevieset(:H3,:cartan,[2 -(1+root(5))//2 0;-(1+root(5))//2 2 -1;0 -1 2])
 
 chevieset(:H3, :PowerMaps, [nothing, [1, 1, 7, 1, 5, 3, 3, 5, 7, 1], [1, 2, 7, 4, 1, 9, 3, 10, 6, 10], nothing, [1, 2, 1, 4, 5, 10, 1, 8, 10, 10], nothing, [1, 2, 7, 4, 5, 9, 3, 8, 6, 10]])
 
 chevieset(:H3, :WordsClassRepresentatives, [Int[],[1],[1,2],[1,3],[2,3],[1,2,3],
   [1,2,1,2],[1,2,1,2,3],[1,2,1,2,3,2,1,2,3],[1,2,1,2,1,3,2,1,2,1,3,2,1,2,3]])
 
-chevieset(:H3, :ParabolicRepresentatives, s->
+chevieset(:H3, :parabolic_reps, s->
   [[Int[]],[[1]],[[1,2],[1,3],[2,3]],[1:3]][s+1])
 
-chevieset(:H3, :ClassInfo, function ()
+chevieset(:H3, :classinfo, function ()
   res=Dict{Symbol,Any}(:classtext=>chevieget(:H3,:WordsClassRepresentatives),
     :orders => [1, 2, 5, 2, 3, 10, 5, 6, 10, 2],
     :classes => [1, 15, 12, 15, 20, 12, 12, 20, 12, 1])
@@ -42,7 +42,7 @@ chevieset(:H3, :ClassInfo, function ()
   res
 end)
 
-chevieset(:H3, :CharInfo, function ()
+chevieset(:H3, :charinfo, function ()
   res=Dict(
     :charparams=>[[1,15],[1,0],[5,5],[5,2],[3,6],[3,8],[3,1],[3,3],[4,3],[4,4]],
     :gp=>["1_r'","1_r","5_r'","5_r","3_s","\\overline{3}_s","3_s'","\\overline{3}_s'","4_r'","4_r"],
@@ -102,7 +102,7 @@ chevieset(:H3, :HeckeCharTable, function (param, rootpara)
   v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(H3)",
     :text=>"the representing matrices are those of Lusztig(1981)",
-    :parameter => [q, q, q], :cartan => chevieget(:H3, :CartanMat),
+    :parameter => [q, q, q], :cartan => chevieget(:H3, :cartan),
     :size => 120, :order => 120, 
     :irreducibles => map(i->map(function(j)
                 res=evalpoly(q,j.c)
@@ -111,8 +111,8 @@ chevieset(:H3, :HeckeCharTable, function (param, rootpara)
                 end
                 return res
             end,i), chevieget(:H3, :vpolheckeirreducibles)))
-  merge!(tbl,chevieget(:H3, :ClassInfo)())
-  merge!(tbl,chevieget(:H3, :CharInfo)())
+  merge!(tbl,chevieget(:H3, :classinfo)())
+  merge!(tbl,chevieget(:H3, :charinfo)())
   tbl[:irreducibles]=improve_type(tbl[:irreducibles])
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, param)

@@ -2,7 +2,7 @@
 # (C) 1992-2010  Meinolf Geck & Jean Michel
 # Data for W(I_m)
 #
-chevieset(:I,:CartanMat,function(bond,cartantype=iseven(bond) ? 1 : E(2bond)+E(2bond,-1))
+chevieset(:I,:cartan,function(bond,cartantype=iseven(bond) ? 1 : E(2bond)+E(2bond,-1))
   m=[2*E(1) 0;0 2]
   if bond==2 return m end
   m[1,2]=-cartantype
@@ -25,15 +25,15 @@ chevieset(:I,:ordergens,m->fill(2,2))
 
 chevieset(:I,:ReflectionDegrees,m->[2,m])
 
-chevieset(:I,:NrConjugacyClasses,m->div(m+3,2)+mod(m+1,2)*2)
+chevieset(:I,:nconjugacy_classes,m->div(m+3,2)+mod(m+1,2)*2)
 
-chevieset(:I,:ParabolicRepresentatives, function (m, s)
-  chevieget(:imp, :ParabolicRepresentatives)(m, m, 2, s)
+chevieset(:I,:parabolic_reps, function (m, s)
+  chevieget(:imp, :parabolic_reps)(m, m, 2, s)
 end)
 
 using Primes: primes
-chevieset(:I, :ClassInfo, function (m)
-  res=chevieget(:imp,:ClassInfo)(m,m,2)
+chevieset(:I, :classinfo, function (m)
+  res=chevieget(:imp,:classinfo)(m,m,2)
   res[:classtext][end]=[1]
   l=length(res[:orders])
   l=iseven(m) ? vcat([1,l,l-1],2:l-2) : l=vcat([1,l],2:l-1)
@@ -69,7 +69,7 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
     append!(ct,[[u,-u^0],[-v^0,v]])
   end
   push!(ct,[-v^0,-v^0])
-  cl=chevieget(:I,:ClassInfo)(m)
+  cl=chevieget(:I,:classinfo)(m)
   r=cl[:classtext]
   ct=map(i->map(x->prod(i[x]),r),ct)*E(1)
   append!(ct, map(1:div(m-1,2))do j
@@ -85,7 +85,7 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
     :cartan=>cartan(:I,2,m),:size=>2m,
    :parameter=>[u,v],:irreducibles=>ct*v^0)
   merge!(tbl, cl)
-  merge!(tbl, chevieget(:I, :CharInfo)(m))
+  merge!(tbl, chevieget(:I, :charinfo)(m))
   tbl[:centralizers]= div.(tbl[:size],tbl[:classes])
   AdjustHeckeCharTable(tbl, para)
 end)
@@ -95,7 +95,7 @@ end)
 #  when  m is  even, there  are two  characters with [d,b]=[1,m/2]. The one
 #  which  maps the generators to [1,-1]  is denoted [1,m/2,1] and the one
 #  which maps them to [-1,1] is denoted [1,m/2,2].
-chevieset(:I, :CharInfo, function(m)
+chevieset(:I, :charinfo, function(m)
   res=Dict{Symbol, Any}()
   charparams=[[1,0]]
   if iseven(m)
@@ -167,7 +167,7 @@ end)
 
 chevieset(:I,:SchurElement, function (m,phi,para,rootpara)
   if isodd(m)
-    ci=chevieget(:I,:CharInfo)(m)
+    ci=chevieget(:I,:charinfo)(m)
     ci=ci[:malleParams][findfirst(==(phi),ci[:charparams])]
     return chevieget(:imp,:SchurElement)(m,1,2,ci,[E.(m,0:m-1),para[2]],[])//m
   end
@@ -200,7 +200,7 @@ chevieset(:I,:CharTable,function(m)
 end)
 
 chevieset(:I, :FactorizedSchurElement, function(bond,phi,arg...)
-  ci=chevieget(:I, :CharInfo)(bond)
+  ci=chevieget(:I, :charinfo)(bond)
   ci=ci[:malleParams][findfirst(==(phi),ci[:charparams])]
   chevieget(:imp, :FactorizedSchurElement)(bond,bond,2,ci,arg[1],1)
 end)
@@ -228,7 +228,7 @@ chevieset(:I, :SymbolToParameter, function (S)
   end
 end)
 
-# The symbols returned are rotations of those given by Gunter.
+# The symbols returned are rotations of those given by [mal95].
 # They are reduced in the sense of symbols(e,2,0)
 chevieset(:I,:ParameterToSymbol,function(e,p)
   if p==[0]

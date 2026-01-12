@@ -1,31 +1,28 @@
 #  weylg2.jl   Chevie library         Meinolf Geck, Jean Michel
-chevieset(:G2, :CartanMat,(type_=1)->[2 -type_;-3//type_ 2])
+chevieset(:G2, :cartan,(type_=1)->[2 -type_;-3//type_ 2])
 
-chevieset(:G2, :ParabolicRepresentatives, s->
-  chevieget(:imp,:ParabolicRepresentatives)(6,6,2,s))
+chevieset(:G2, :parabolic_reps, s->
+  chevieget(:imp,:parabolic_reps)(6,6,2,s))
 
-# in dim 3, as in Bourbaki
-chevieset(:G2, :simpleroots, [1 -1 0;-2 1 1])
+chevieset(:G2, :simpleroots, [1 -1 0;-2 1 1]) # in dim 3, as in Bourbaki
 
 chevieset(:G2, :HyperplaneRepresentatives, [1, 2])
 
 chevieset(:G2, :ReflectionDegrees, [2, 6])
 
-chevieset(:G2, :NrConjugacyClasses, 6)
+chevieset(:G2, :nconjugacy_classes, 6)
 
-chevieset(:G2, :CharInfo, function ()
+chevieset(:G2, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,6],[1,3,1],[1,3,2],[2,1],[2,2]],
                        :extRefl=>[1,5,2],:a=>[0,6,1,1,1,1],:A=>[0,6,5,5,5,5])
   res[:b]=map(x->x[2],res[:charparams])
   res[:B]=[0,6,3,3,5,4]
-  # charnames in Spaltenstein's "Sous-groupes de Borel et classes unipotentes"
   res[:spaltenstein]=["1","\\varepsilon","\\varepsilon_l","\\varepsilon_c",
-                      "\\theta'","\\theta''"]
-  # charnames in Lusztig's orange book
+                      "\\theta'","\\theta''"] # charnames in [spalt82]
   res[:lusztig]=["1","\\varepsilon","\\varepsilon'","\\varepsilon''",
-                 "\\theta'","\\theta''"]
+                 "\\theta'","\\theta''"] # charnames in [lus85]
   res[:charnames]=exceptioCharName.(res[:charparams])
-  res[:charSymbols]= # for imprimitive group G(6,6,2)
+  res[:charSymbols]= # see [mal95]
     [CharSymbol([[0],[0],[0],[0],[0],[2]]),
      CharSymbol([[0,1],[0,1],[0,1],[0,1],[0,1],[1,2]]),
      CharSymbol([[0],[0],[1],[0],[0],[1]],2,0),
@@ -40,7 +37,7 @@ chevieset(:G2,:ClassNames,["A_0","\\tilde A_1","A_1","G_2","A_2","A_1+\\tilde A_
 chevieset(:G2, :PowerMaps,
           [nothing,[1,1,1,5,5,1],[1,2,3,6,1,6],nothing,[1,2,3,4,5,6]])
 
-chevieset(:G2, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G2, :classinfo, Dict{Symbol, Any}(
   :classtext =>[[],[2],[1],[1,2],[1,2,1,2],[1,2,1,2,1,2]],
   :classnames => chevieget(:G2, :ClassNames),
   :classparams => chevieget(:G2, :ClassNames),
@@ -76,8 +73,8 @@ chevieset(:G2, :HeckeCharTable, function (para, rootpara)
   tbl=Dict{Symbol,Any}(:identifier=>"H(G2)",:parameter=>[[x,y],[z,t]],:size=>12,
     :irreducibles=>
       toM([f1(x,z),f1(y,t),f1(y,z),f1(x,t),f2(x,y,z,t,1),f2(x,y,z,t,-1)]))
-  merge!(tbl,chevieget(:G2,:ClassInfo))
-  merge!(tbl,chevieget(:G2,:CharInfo)())
+  merge!(tbl,chevieget(:G2,:classinfo))
+  merge!(tbl,chevieget(:G2,:charinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   tbl
 end)

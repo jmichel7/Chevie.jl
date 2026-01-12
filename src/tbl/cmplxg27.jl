@@ -10,7 +10,7 @@ chevieset(:G27,:AltPres,[
 
 #[[1,3,-1],[1],[2]]
 chevieset(:G27,:BraidRelations,[[[2,1,2],[1,2,1]],[[3,1,3],[1,3,1]],[[3,2,3,2],[2,3,2,3]],[[3,2,3,1,2,3,1,2,3,1,2,3],[2,3,1,2,3,1,2,3,1,2,3,2]]])
-# Third presentation of Bessis-Michel
+# Third presentation of [bm03]
 
 chevieset(:G27,:simpleroots,[
    -root(5)//5  (-E(15,14)+E(15,13)+E(15,11)-E(15,8)-E(15,7)-E(15,4)+E(15,2)+E(15))//5  (4*E(15,14)-4*E(15,11)+2*E(15,4)-2*E(15))//15;
@@ -26,9 +26,9 @@ chevieset(:G27,:ordergens,fill(2,3))
 
 chevieset(:G27, :ReflectionDegrees, [6, 12, 30])
 
-chevieset(:G27, :NrConjugacyClasses, 34)
+chevieset(:G27, :nconjugacy_classes, 34)
 
-chevieset(:G27, :ParabolicRepresentatives, s->
+chevieset(:G27, :parabolic_reps, s->
   [[Int[]],[[1]],[[1,2],[1,3],[2,3],[1,8]],[1:3]][s+1])
 
 chevieset(:G27, :ClassNames, [".", "2", "12", "c2", "23", "132", "c", "2c2c",
@@ -42,7 +42,7 @@ chevieset(:G27, :WordsClassRepresentatives, map(x->
 
 chevieset(:G27,:PowerMaps,[nothing,[1,1,3,8,10,14,15,4,9,1,22,4,23,26,27,9,22,23,27,26,3,32,33,32,33,14,15,8,10,32,33,33,32,1],[1,2,1,8,5,12,12,4,1,10,29,28,29,4,4,34,5,5,28,28,34,10,10,2,2,8,8,12,29,34,34,1,1,34],nothing,[1,2,3,1,5,31,30,1,9,10,13,34,11,33,32,16,18,17,31,30,21,23,22,25,24,32,33,34,29,31,30,33,32,34],nothing,[1,2,3,8,5,19,20,4,9,10,11,28,13,27,26,16,17,18,6,7,21,22,23,24,25,15,14,12,29,30,31,32,33,34],nothing,nothing,nothing,[1,2,3,4,5,7,6,8,9,10,13,12,11,15,14,16,18,17,20,19,21,23,22,25,24,27,26,28,29,31,30,33,32,34],nothing,[1,2,3,8,5,19,20,4,9,10,11,28,13,27,26,16,17,18,6,7,21,22,23,24,25,15,14,12,29,30,31,32,33,34],nothing,nothing,nothing,[1,2,3,8,5,20,19,4,9,10,13,28,11,26,27,16,18,17,7,6,21,23,22,25,24,14,15,12,29,31,30,33,32,34],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34],nothing,nothing,nothing,[1,2,3,8,5,20,19,4,9,10,13,28,11,26,27,16,18,17,7,6,21,23,22,25,24,14,15,12,29,31,30,33,32,34],nothing,nothing,nothing,nothing,nothing,[1,2,3,4,5,7,6,8,9,10,13,12,11,15,14,16,18,17,20,19,21,23,22,25,24,27,26,28,29,31,30,33,32,34]])
 
-chevieset(:G27, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G27, :classinfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G27, :WordsClassRepresentatives), 
   :classnames => chevieget(:G27, :ClassNames), 
   :classparams => chevieget(:G27, :ClassNames), 
@@ -50,7 +50,7 @@ chevieset(:G27, :ClassInfo, Dict{Symbol, Any}(
   :orders => [1, 2, 3, 5, 4, 30, 30, 5, 3, 2, 12, 10, 12, 15, 15, 6, 12, 12, 30, 30, 6, 6, 6, 6, 6, 15, 15, 10, 4, 6, 6, 3, 3, 2], 
   :classes => [1, 45, 120, 72, 90, 72, 72, 72, 120, 45, 90, 72, 90, 72, 72, 120, 90, 90, 72, 72, 120, 45, 45, 45, 45, 72, 72, 72, 90, 1, 1, 1, 1, 1]))
 
-chevieset(:G27, :CharInfo, function ()
+chevieset(:G27, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,45],[3,7],[3,22],[3,1],[3,16],[3,5,1],[3,20,1],[3,5,2],[3,20,2],[5,6,2],[5,6,1],[5,15,2],[5,15,1],[6,19],[6,4],[6,17],[6,2],[8,6],[8,9,1],[8,12],[8,9,2],[9,6],[9,9],[9,13],[9,4],[9,11],[9,8],[10,12],[10,3],[15,7],[15,10],[15,5],[15,8]],
 # The labelling is determined as follows:
 # phi{5,6}' and phi{5,15}' occur with multiplicity one in the induced
@@ -117,8 +117,8 @@ chevieset(:G27,:sparseFakeDegrees,[[1,0],[1,45],[1,7,1,13,1,25],
 chevieset(:G27, :HeckeCharTable, function (para, rootpara)
   r,p=para[1]
   tbl= Dict{Symbol, Any}(:identifier => "H(G27)", :size => 2160, :order => 2160)
-  merge!(tbl, chevieget(:G27, :ClassInfo))
-  merge!(tbl, chevieget(:G27, :CharInfo)())
+  merge!(tbl, chevieget(:G27, :classinfo))
+  merge!(tbl, chevieget(:G27, :charinfo)())
   f1(r)=map(x->r^length(x),tbl[:classtext])
   f3(r, p, j, d)=
 [3,p+2r,p*r+r^2,(-1+(j*(1-d))//2)*p*r^3+(-2+(1-d)*(1+j))//2*p^2*r^2,r^2,-p*r^2+(((-1+j)-d)-j*d)//2*p^2*r,((1-d)*j)//2*p*r^2,((3//2-3//2*j)+1//2*d+1//2*d*j)*p^2*r^6+((1-j)+d+j*d)*p^3*r^5+(j//2+d+(j*d)//2)*p^4*r^4,p*r+r^2,-2*p^2*r^2+r^4,-j*p^2*r^5,(1+d)//2*p^3*r^6,j^2*p^5*r^12,(j//2+d+(j*d)//2)*r^2*p^4+((1-j)+d+j*d)*p^3*r^3+3*r^4*p^2+((2+j)-j*d)*r^5*p,((1+d)*j^2)//2*p^2*r^4,j^2*p^5*r^12+j^2*p^6*r^11,(1+d)//2*p^3*r^7+(1//2+j+d//2)*p^4*r^6,j^2*p^20*r^42,((-1+d)*j^2)//2*p^3*r^8+j^2*p^5*r^6,((1+d)*j)//2*p^7*r^14,j^2*p^5*r^12+j^2*p^6*r^11,2*j^2*p^5*r^11+j^2*p^6*r^10,j*p^10*r^24-2*j*p^12*r^22,j^2*p^5*r^14-2*j^2*p^7*r^12,2*j*p^10*r^21+j*p^11*r^20,((1-d)*j^2)//2*p^14*r^28,((1-d)*j)//2*p^4*r^8,(1-d)//2*p^9*r^18,p^15*r^32,3*j^2*p^5*r^10,3*j*p^25*r^50,3*j*p^10*r^20,3*j^2*p^20*r^40,3*p^15*r^30]

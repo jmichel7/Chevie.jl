@@ -15,9 +15,9 @@ chevieset(:G24,:ordergens,fill(2,3))
 chevieset(:G24,:BraidRelations, [[[1, 2, 1], [2, 1, 2]],[[1, 3, 1], [3, 1, 3]],
   [[3, 2, 3, 2], [2, 3, 2, 3]],
   [[2, 3, 1, 2, 3, 1, 2, 3, 1], [3, 2, 3, 1, 2, 3, 1, 2, 3]]])
-# 14/1/2009 JM: changed generators to get presentation no.2 of  Bessis-Michel
+# 14/1/2009 JM: changed generators to get presentation no.2 of  [bm03]
 
-# of interest are the alternate presentations  (1,3 of Bessis-Michel)
+# of interest are the alternate presentations  (1,3 of [bm03])
 chevieset(:G24, :AltPres, [Dict{Symbol, Any}(:gens => [[1], [2, 3, -2], [2]],
 :rels => [[[1, 2, 1, 2], [2, 1, 2, 1]], [[2, 3, 2, 3], [3, 2, 3, 2]],
       [[1, 3, 1], [3, 1, 3]], [[2, 1, 2, 3, 1, 2, 3], [1, 2, 3, 1, 2, 3, 1]]]),
@@ -29,9 +29,9 @@ chevieset(:G24, :AltPres, [Dict{Symbol, Any}(:gens => [[1], [2, 3, -2], [2]],
 
 chevieset(:G24, :ReflectionDegrees, [4, 6, 14])
 
-chevieset(:G24, :NrConjugacyClasses, 12)
+chevieset(:G24, :nconjugacy_classes, 12)
 
-chevieset(:G24, :ParabolicRepresentatives, s->
+chevieset(:G24, :parabolic_reps, s->
        [[[]], [[1]], [[1, 2], [2, 3]], [1:3]][s+1])
 
 chevieset(:G24, :ClassNames, [".", "1", "23", "13", "ccc", "c", "2323", "cc1",
@@ -44,7 +44,7 @@ chevieset(:G24, :WordsClassRepresentatives, map(x->
 
 chevieset(:G24, :PowerMaps, [nothing, [1, 1, 7, 4, 9, 10, 1, 4, 9, 10, 7, 1], [1, 2, 3, 1, 6, 5, 7, 12, 10, 9, 11, 12], nothing, [1, 2, 3, 4, 6, 5, 7, 8, 10, 9, 11, 12], nothing, [1, 2, 3, 4, 12, 12, 7, 8, 1, 1, 11, 12], nothing, nothing, nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], nothing, [1, 2, 3, 4, 6, 5, 7, 8, 10, 9, 11, 12]])
 
-chevieset(:G24, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G24, :classinfo, Dict{Symbol, Any}(
   :classtext=>chevieget(:G24, :WordsClassRepresentatives),
   :classnames => chevieget(:G24, :ClassNames),
   :classparams => chevieget(:G24, :ClassNames),
@@ -52,7 +52,7 @@ chevieset(:G24, :ClassInfo, Dict{Symbol, Any}(
   :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1],
   :powermaps=>chevieget(:G24,:PowerMaps)))
 
-chevieset(:G24, :CharInfo, function ()
+chevieset(:G24, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,21],[3,8],[3,1],[3,10],[3,3],
                                      [6,2],[6,9],[7,6],[7,3],[8,4],[8,5]],
    :hgal => perm"(11,12)", :extRefl => [1, 4, 5, 2])
@@ -108,8 +108,8 @@ chevieset(:G24, :HeckeCharTable, function (para,rootpara)
     f3(p,r,b), f3(r,p,b), f3(p,r,conj(b)), f3(r,p,conj(b)),
     f6(r,p),f6(p,r),f7(p,r),f7(r,p),f8(p,r,u),f8(p,r,-u)]),
            :galomorphisms=>Group(perm"(5,6)(9,10)"))
-  merge!(tbl, chevieget(:G24, :ClassInfo))
-  merge!(tbl, chevieget(:G24, :CharInfo)())
+  merge!(tbl, chevieget(:G24, :classinfo))
+  merge!(tbl, chevieget(:G24, :charinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   tbl
 end)

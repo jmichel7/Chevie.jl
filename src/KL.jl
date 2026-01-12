@@ -715,7 +715,7 @@ function LeftCellRepresentatives(W)
   end
   if isempty(res) return res end
   if nothing in res return nothing end
-  n=chevieget.(refltype(W),:NrConjugacyClasses)
+  n=chevieget.(refltype(W),:nconjugacy_classes)
   return map(tcartesian(res...)) do l
     duflo=W(vcat(map(x->x[:duflo],l)...)...)
     reps=map(v->W(vcat(v...)...),tcartesian(map(x->x[:reps],l)...))

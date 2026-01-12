@@ -5,10 +5,7 @@ chevieset(:G31,:BraidRelations,[[[1,4,1],[4,1,4]],[[2,4,2],[4,2,4]],
   [[5,3,5],[3,5,3]],[[2,5,2],[5,2,5]],[[2,3,1],[1,2,3]],[[2,3,1],[3,1,2]],
   [[1,5],[5,1]],[[3,4],[4,3]],[[5,4],[4,5]]])
 
-# For the data relative to this group see
-# H.Maschke ``Ueber die quaternäre, endliche, lineare Substitutionsgruppe der
-# Borchardt'schen Moduln'', Math. Ann. 30 (1887) 496--515
-
+# For the data relative to this group see [ma1887]
 # The group <T,U> described by Maschke where
 # U=Diagonal([E(4),E(4),1,1])//E(8)
 # T=[-1 1  E(4) -E(4);
@@ -29,10 +26,10 @@ chevieset(:G31,:ReflectionCoDegrees, [0, 12, 16, 28])
 
 chevieset(:G31,:ReflectionDegrees, [8, 12, 20, 24])
 
-chevieset(:G31,:ParabolicRepresentatives, s->
+chevieset(:G31,:parabolic_reps, s->
   [[Int[]],[[1]],[[1,4],[1,5],1:3],[[1,4,5],[2,4,5],1:4],[1:5]][s+1])
 
-chevieset(:G31, :NrConjugacyClasses, 59)
+chevieset(:G31, :nconjugacy_classes, 59)
 
 # c=12345 is a 24-th root of π; c1 is a 20-th root of π
 # class 33=ccc4 has square z45 in BW, which gives up to sign its eigenvalues.
@@ -53,7 +50,7 @@ chevieset(:G31, :WordsClassRepresentatives, map(x->
 
 chevieset(:G31,:PowerMaps,[nothing,[1,1,1,18,5,3,18,27,18,5,5,25,29,34,25,27,29,1,41,40,41,18,38,50,18,39,18,39,48,18,39,39,47,56,41,1,41,34,5,34,56,25,57,58,27,27,59,48,25,59,59,59,18,18,18,56,59,59,1],[1,2,3,4,1,6,9,12,7,36,2,8,17,50,16,15,13,18,54,44,55,22,43,24,27,58,25,57,29,30,52,51,33,59,9,36,7,57,59,58,18,45,44,43,42,49,47,48,46,50,52,51,53,55,54,1,58,57,59],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,58,14,15,16,57,18,19,20,21,22,23,24,25,26,27,28,59,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,1,49,50,51,52,53,54,55,56,57,58,59],nothing,[1,2,3,4,5,6,9,12,7,10,11,8,17,14,16,15,13,18,21,23,19,22,20,24,27,28,25,26,29,30,32,31,33,34,37,36,35,40,39,38,41,45,44,43,42,49,47,48,46,50,52,51,53,55,54,56,58,57,59],nothing,nothing,nothing,[1,2,3,4,5,6,9,12,7,10,11,8,17,14,16,15,13,18,21,23,19,22,20,24,27,28,25,26,29,30,32,31,33,34,37,36,35,40,39,38,41,45,44,43,42,49,47,48,46,50,52,51,53,55,54,56,58,57,59],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59],nothing,nothing,nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59],nothing,[1,2,3,4,5,6,9,12,7,10,11,8,17,14,16,15,13,18,21,23,19,22,20,24,27,28,25,26,29,30,32,31,33,34,37,36,35,40,39,38,41,45,44,43,42,49,47,48,46,50,52,51,53,55,54,56,58,57,59],nothing,nothing,nothing,[1,2,3,4,5,6,9,12,7,10,11,8,17,14,16,15,13,18,21,23,19,22,20,24,27,28,25,26,29,30,32,31,33,34,37,36,35,40,39,38,41,45,44,43,42,49,47,48,46,50,52,51,53,55,54,56,58,57,59]])
 
-chevieset(:G31,:ClassInfo,Dict{Symbol,Any}(
+chevieset(:G31,:classinfo,Dict{Symbol,Any}(
   :classtext=>chevieget(:G31,:WordsClassRepresentatives),
   :classnames=>chevieget(:G31,:ClassNames),
   :classparams=>chevieget(:G31,:ClassNames),
@@ -65,7 +62,7 @@ chevieset(:G31,:ClassInfo,Dict{Symbol,Any}(
         2880,160,960,60,960,160,640,160,960,720,240,240,720,720,360,2304,720,
         30,60,60,180,30,30,160,1,1,1]))
 
-chevieset(:G31, :CharInfo,function()
+chevieset(:G31, :charinfo,function()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,60],[4,37],[4,1],[4,31],[4,7],
     [5,12],[5,24],[5,40],[5,4],[6,14],[6,18],[9,28],[9,8],[10,24],[10,12],
     [10,30],[10,6],[10,26],[10,2],[15,20,1],[15,8,2],[15,8,1],[15,20,2],
@@ -215,7 +212,7 @@ chevieset(:G31,:root,function(para,rootpara)
 end)
       
 chevieset(:G31, :SchurElement, function (p, para, rootpara)
-  ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
+  ci=findfirst(==(p),chevieget(:G31, :charinfo)()[:charparams])
   data=chevieget(:G31,:SchurData)[ci]
   r=chevieget(:G31,:SchurModels)[Symbol(data[:name])]
   x,y=para[1][data[:order]]
@@ -227,7 +224,7 @@ chevieset(:G31, :SchurElement, function (p, para, rootpara)
 end)
 
 chevieset(:G31, :FactorizedSchurElement, function (p, para, rootpara)
-  ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
+  ci=findfirst(==(p),chevieget(:G31, :charinfo)()[:charparams])
   data=chevieget(:G31, :SchurData)[ci]
   r=chevieget(:G31, :SchurModels)[Symbol(data[:name])]
   x,y=para[1][data[:order]]
@@ -241,13 +238,12 @@ chevieset(:G31, :FactorizedSchurElement, function (p, para, rootpara)
           map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), res[:vcyc])))
 end)
 
-# Computed JM  2006, 2012, 2025; columns 14,19,21,,, for rows 39,40,41
-# contain  unknown entries
+# Computed JM  2006, 2012, 2025
 chevieset(:G31, :HeckeCharTable, function (para,rootpara)
   r,p=para[1]
   tbl=Dict{Symbol, Any}(:identifier => "H(G31)", :size => 46080,:order=>46080)
-  merge!(tbl, chevieget(:G31, :ClassInfo))
-  merge!(tbl, chevieget(:G31, :CharInfo)())
+  merge!(tbl, chevieget(:G31, :classinfo))
+  merge!(tbl, chevieget(:G31, :charinfo)())
   f1(r)=map(x->r^length(x),tbl[:classtext])
   adj(p,x)=x.*f1(-p)
   function f6(x,y,v)
@@ -2349,8 +2345,8 @@ end)
 # f(42)=kron.(f(3),f(13))
 # f(57)=exterior_power.(f(17),2)
 
-# The following invariants differ from those suggested by Orlik-Terao p.285
-# The first two are F8, F12 of Maschke but the third is the
+# The following invariants differ from those suggested by [p.285, ot92]
+# The first two are F8, F12 of [ma1887] but the third is the
 # simpler (F20-F8*F12)/1296;  the fourth is still det(Hessian(F8))/265531392
 chevieset(:G31, :Invariants, [
   (x,y,z,t)->168*t^2*x^2*y^2*z^2+14*t^4*x^4+14*t^4*y^4+14*t^4*z^4+

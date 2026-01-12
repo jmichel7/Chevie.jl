@@ -15,9 +15,9 @@ chevieset(:G26,:BraidRelations,[[[1,2,1,2],[2,1,2,1]],[[1,3],[3,1]],
 
 chevieset(:G26, :ReflectionDegrees, [6, 12, 18])
 
-chevieset(:G26, :NrConjugacyClasses, 48)
+chevieset(:G26, :nconjugacy_classes, 48)
 
-chevieset(:G26, :ParabolicRepresentatives, function (s,)
+chevieset(:G26, :parabolic_reps, function (s,)
   [[Int[]], [[1], [2]], [[1, 2], [1, 3], [2, 3]], [1:3]][s + 1]
 end)
 
@@ -34,7 +34,7 @@ chevieset(:G26, :WordsClassRepresentatives, map(x->
 
 chevieset(:G26, :PowerMaps, [nothing, [1, 1, 8, 19, 21, 7, 8, 7, 11, 28, 32, 8, 11, 15, 17, 19, 15, 17, 21, 1, 19, 21, 34, 7, 11, 28, 32, 34, 29, 29, 7, 11, 34, 28, 32, 34, 28, 32, 8, 1, 19, 21, 40, 42, 4, 40, 42, 4], [1, 2, 2, 40, 2, 2, 1, 1, 20, 20, 1, 20, 40, 16, 19, 20, 21, 22, 1, 20, 1, 20, 2, 40, 2, 2, 40, 1, 1, 20, 20, 1, 20, 1, 20, 40, 40, 2, 40, 40, 2, 40, 43, 46, 43, 46, 43, 46], nothing, [1, 2, 6, 42, 41, 3, 8, 7, 35, 33, 32, 31, 27, 18, 17, 22, 15, 14, 21, 20, 19, 16, 26, 39, 38, 23, 13, 34, 29, 30, 12, 11, 10, 28, 9, 37, 36, 25, 24, 40, 5, 4, 43, 48, 47, 46, 45, 44], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48], nothing, nothing, nothing, [1, 2, 6, 42, 41, 3, 8, 7, 35, 33, 32, 31, 27, 18, 17, 22, 15, 14, 21, 20, 19, 16, 26, 39, 38, 23, 13, 34, 29, 30, 12, 11, 10, 28, 9, 37, 36, 25, 24, 40, 5, 4, 43, 48, 47, 46, 45, 44], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48], nothing, nothing, nothing, [1, 2, 6, 42, 41, 3, 8, 7, 35, 33, 32, 31, 27, 18, 17, 22, 15, 14, 21, 20, 19, 16, 26, 39, 38, 23, 13, 34, 29, 30, 12, 11, 10, 28, 9, 37, 36, 25, 24, 40, 5, 4, 43, 48, 47, 46, 45, 44]])
 
-chevieset(:G26, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G26, :classinfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G26, :WordsClassRepresentatives),
   :classnames => chevieget(:G26, :ClassNames),
   :classparams => chevieget(:G26, :ClassNames),
@@ -44,7 +44,7 @@ chevieset(:G26, :ClassInfo, Dict{Symbol, Any}(
   :classes=>[1,9,36,9,9,36,12,12,12,12,12,12,36,72,72,1,72,72,1,1,1,1,36,36,36,
            36,36,12,24,24,12,12,12,12,12,36,36,36,36,9,9,9,54,54,54,54,54,54]))
 
-chevieset(:G26, :CharInfo, function ()
+chevieset(:G26, :charinfo, function ()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,9],[1,33],[1,21],[1,24],[1,12],
     [2,24],[2,15],[2,12],[2,3],[2,18],[2,9],[3,6],[3,15],[3,8,2],[3,5,2],
     [3,8,1],[3,5,1],[3,20],[3,17],[3,16,2],[3,13,2],[3,4],[3,1],[3,16,1],
@@ -72,8 +72,8 @@ chevieset(:G26, :HeckeCharTable, function (para, rt)
   res = Dict{Symbol, Any}(:size => 1296, :order => 1296, :identifier => "G26",
    :name => "G26",
    :parameter=>para[[1,2]],:dim=>3)
-  merge!(res, chevieget(:G26, :ClassInfo))
-  merge!(res, chevieget(:G26, :CharInfo)())
+  merge!(res, chevieget(:G26, :classinfo))
+  merge!(res, chevieget(:G26, :charinfo)())
   res[:centralizers]=div.(res[:order],res[:classes])
   f10(r,u)=[1,r,r*u^2,r^2*u^6,r^3*u^9,r*u,r^2*u^2,r^4*u^4,r*u^4,r^5*u^8,r^2*u^8,
     r^11*u^20,r^4*u^7,r*u^2,r^2*u^4,r^3*u^6,r^4*u^8,r^5*u^10,r^6*u^12,r^9*u^18,

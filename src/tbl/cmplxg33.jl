@@ -23,8 +23,8 @@ chevieset(:G33,:AltPres,[Dict{Symbol,Any}(
 # and 4  from ReflectionSubGroup(G34,[1..5]). If  one replaces the  2 in
 # the  5th  root  by  ER(2),  one  obtains  orthogonal  roots  (but  the
 # definition field and invariants become worse).
-# The  group thus  defined agrees  with Burkhardt,  Math. Annalen  38 pp
-# 208--209 up to an interchange of x and z.
+# The  group thus  defined agrees  with [bu1891]
+# up to an interchange of x and z.
 chevieset(:G33, :simpleroots, 
  [root(-3) -root(-3) 0 0 0; 
   0 root(-3) 0 0 -root(-3); 
@@ -43,9 +43,9 @@ chevieset(:G33,:ordergens,fill(2,5))
 
 chevieset(:G33,:ReflectionDegrees, [4, 6, 10, 12, 18])
 
-chevieset(:G33,:NrConjugacyClasses, 40)
+chevieset(:G33,:nconjugacy_classes, 40)
 
-chevieset(:G33,:ParabolicRepresentatives, s->
+chevieset(:G33,:parabolic_reps, s->
   [[Int[]],[[1]],[[1,2],[1,3]],[1:3,[1,3,5],[1,3,4],2:4],[[1,2,3,5],[1,3,5,10],1:4,[1,2,4,5]],[1:5]][s+1])
 
 chevieset(:G33, :ClassNames, [".", "1", "31", "12", "123", "234", "243", "341", "531", "1245", "1234", "1243", "5123", "ccccc", "c", "125z", "342312", "342342", "432432", "c4213", "5432412", "3452412", "3423412", "2431243", "34523412", "52431243", "453423121", "3124512342", "5342312432", "5423124321", "423124123121", "3245124324524", "32451243245124", "23452412345241", "z342342", "345243124532412", "ccc", "12z", "1z", "z"])
@@ -56,7 +56,7 @@ chevieset(:G33, :WordsClassRepresentatives,map(x->
 
 chevieset(:G33, :PowerMaps, [nothing, [1, 1, 1, 4, 3, 18, 19, 4, 1, 10, 12, 11, 3, 12, 11, 4, 31, 19, 18, 10, 33, 34, 31, 31, 34, 33, 31, 31, 39, 31, 31, 31, 19, 18, 19, 39, 18, 4, 1, 1], [1, 2, 3, 1, 5, 2, 2, 2, 9, 10, 18, 19, 13, 35, 37, 39, 3, 1, 1, 20, 36, 36, 2, 2, 29, 29, 40, 39, 29, 39, 1, 9, 39, 39, 40, 36, 40, 40, 39, 40], nothing, [1, 2, 3, 4, 5, 7, 6, 8, 9, 1, 12, 11, 13, 15, 14, 16, 17, 19, 18, 40, 22, 21, 24, 23, 26, 25, 27, 30, 29, 28, 31, 32, 34, 33, 37, 36, 35, 38, 39, 40], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40], nothing, nothing, nothing, [1, 2, 3, 4, 5, 7, 6, 8, 9, 10, 12, 11, 13, 15, 14, 16, 17, 19, 18, 20, 22, 21, 24, 23, 26, 25, 27, 30, 29, 28, 31, 32, 34, 33, 37, 36, 35, 38, 39, 40], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40], nothing, nothing, nothing, [1, 2, 3, 4, 5, 7, 6, 8, 9, 10, 12, 11, 13, 15, 14, 16, 17, 19, 18, 20, 22, 21, 24, 23, 26, 25, 27, 30, 29, 28, 31, 32, 34, 33, 37, 36, 35, 38, 39, 40]])
 
-chevieset(:G33, :ClassInfo, Dict{Symbol, Any}(
+chevieset(:G33, :classinfo, Dict{Symbol, Any}(
   :classtext => chevieget(:G33, :WordsClassRepresentatives),
   :classnames => chevieget(:G33, :ClassNames),
   :classparams => chevieget(:G33, :ClassNames),
@@ -64,7 +64,7 @@ chevieset(:G33, :ClassInfo, Dict{Symbol, Any}(
   :orders => [1, 2, 2, 3, 4, 6, 6, 6, 2, 5, 9, 9, 4, 18, 18, 6, 6, 3, 3, 10, 12, 12, 6, 6, 12, 12, 6, 6, 4, 6, 3, 6, 6, 6, 6, 4, 6, 6, 2, 2], 
   :classes => [1, 45, 270, 480, 3240, 360, 360, 1440, 270, 5184, 2880, 2880, 3240, 2880, 2880, 1440, 2160, 40, 40, 5184, 2160, 2160, 720, 720, 2160, 2160, 240, 720, 540, 720, 240, 2160, 360, 360, 40, 540, 40, 480, 45, 1]))
 
-chevieset(:G33, :CharInfo,function()
+chevieset(:G33, :charinfo,function()
   res=Dict{Symbol,Any}(:charparams => [[1, 0], [1, 45], [5, 28], [5, 1],
    [5, 30], [5, 3], [6, 20], [6, 5], [10, 8, 2], [10, 17, 2], [10, 8, 1], 
    [10, 17, 1], [15, 12], [15, 9], [15, 2], [15, 23], [20, 6], [20, 15], 
@@ -160,11 +160,11 @@ chevieset(:G33,:root,function(para,rootpara)
   if ismissing(rootpara[1]) root(-prod(para[1])) else rootpara[1] end
 end)
 
-# Computed JM may 2009; completed using Marin-Pfeiffer 2015
+# Computed JM may 2009; completed using [mp17]
 chevieset(:G33, :HeckeCharTable, function (para, rootpara)
   tbl=Dict{Symbol, Any}(:identifier => "H(G33)", :size => 51840,:order=>51840)
-  merge!(tbl, chevieget(:G33, :ClassInfo))
-  merge!(tbl, chevieget(:G33, :CharInfo)())
+  merge!(tbl, chevieget(:G33, :classinfo))
+  merge!(tbl, chevieget(:G33, :charinfo)())
   f1(x)=[1,x,x^2,x^2,x^3,x^3,x^3,x^3,x^3,x^4,x^4,x^4,x^4,x^25,x^5,x^48,x^6,
          x^6,x^6,x^9,x^7,x^7,x^7,x^7,x^8,x^8,x^9,x^10,x^10,x^10,x^12,x^13,
          x^14,x^14,x^51,x^15,x^15,x^47,x^46,x^45]
@@ -2540,9 +2540,7 @@ chevieset(:G33, :UnipotentCharacters, function ()
   :curtis => [2, 1, 6, 5, 4, 3, 8, 7, 12, 11, 10, 9, 14, 13, 16, 15, 18, 17, 20, 19, 22, 21, 26, 25, 24, 23, 30, 29, 28, 27, 34, 33, 32, 31, 36, 35, 38, 37, 40, 39, -64, 63, -56, -55, -58, -57, -59, 61, 60, -62, -54, -53, -52, -51, -44, -43, -46, -45, -47, 49, 48, -50, 42, -41])
 end)
 
-# for the following see
-# Burkhardt, Math. Annalen 38 pp 208--209
-# and Orlik, Contemporary mathematics vol. 90 (1989) pp 223--226
+# for the following see [bu1891] and [o89]
 # here we have interchanged the x and z of Burkhardt
 chevieset(:G33, :Invariants, [
   function (x, y, z, t, u)

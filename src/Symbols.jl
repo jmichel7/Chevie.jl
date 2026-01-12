@@ -596,8 +596,27 @@ function Base.show(io::IO,S::CharSymbol)
   end
 end
 
-# Malledefect of a symbol of shape s
-function Malledefect(s::Vector{Int})
+# should exist as Iterators.circshift
+Iterators_circshift(s,i)=(s[mod1(j-i,length(s))] for j in eachindex(s))
+
+# should exist as Iterators.cmp
+function Iterators_cmp(s,t)
+  is=iterate(s)
+  it=iterate(t)
+  while true
+   if isnothing(is) return isnothing(it) ? 0 : -1
+   elseif isnothing(it) return 1 end
+   vs,states=is
+   vt,statet=it
+   c=cmp(vs,vt)
+   if c!=0 return c end
+   is=iterate(s,states)
+   it=iterate(t,statet)
+  end
+end
+
+# Malledefect of a shape s of a symbol
+function Malledefect(s)
   e=length(s)
   mod(binomial(e,2)*div(sum(s),e)-dot(0:e-1,s),e)
 end
@@ -608,7 +627,7 @@ end
 Malle-defect of `S`. This is an invariant by shift but not in general under
 cyclic permutations.
 """
-Malledefect(S::CharSymbol)=Malledefect(length.(S.S))
+Malledefect(S::CharSymbol)=Malledefect(length(x) for x in S.S)
 
 """
 `shapesSymbols(e,r,c=1,def=0)`
@@ -644,22 +663,10 @@ function shapesSymbols(e,r,c=1,def=0)
   res=reduce(vcat,arrangements.(res,e))
   # for symbols of content 1 only one circshift of the shape has Malledefect=0
   filter(s->Malledefect(s)==def &&
-     all(x->Malledefect(x)!=def || x<=s,circshift.(Ref(s),1:length(s)-1)),res)
-end
-
-function cmpIterators(s,t)
-  is=iterate(s)
-  it=iterate(t)
-  while true
-   if isnothing(is) return isnothing(it) ? 0 : -1
-   elseif isnothing(it) return 1 end
-   vs,states=is
-   vt,statet=it
-   c=cmp(vs,vt)
-   if c!=0 return c end
-   is=iterate(s,states)
-   it=iterate(t,statet)
-  end
+    all(1:length(s)-1)do i
+      x=Iterators_circshift(s,i)
+      Malledefect(x)!=def || Iterators_cmp(s,x)!=-1
+    end,res)
 end
 
 """
@@ -669,18 +676,16 @@ A symbol is smaller than another if the shape is lexicographically smaller,
 or the shape is the same and the vector of βsets is lexicographically bigger.
 """
 function Base.isless(s::CharSymbol,t::CharSymbol)
-  c=cmpIterators((length(x) for x in s.S),length(x) for x in t.S)
+  c=Iterators_cmp((length(x) for x in s.S),length(x) for x in t.S)
   c==-1 || (c==0 && t.S<s.S)
 end
-
-circshiftIterator(s,i)=(s[mod1(j-i,length(s))] for j in eachindex(s))
 
 # s is reduced if >= to all its circshifts
 function isreduced(s::CharSymbol)
   !any(1:length(s.S)-1)do i
-    c=cmpIterators((length(x) for x in s.S),
-                   (length(x) for x in circshiftIterator(s.S,i)))
-    c==-1 || (c==0 && cmpIterators(circshiftIterator(s.S,i),s.S)==-1)
+    c=Iterators_cmp((length(x) for x in s.S),
+                   (length(x) for x in Iterators_circshift(s.S,i)))
+    c==-1 || (c==0 && Iterators_cmp(Iterators_circshift(s.S,i),s.S)==-1)
   end
 end
 
@@ -693,10 +698,10 @@ function Symbolsshape(r,s)
   if !iszero(Malledefect(s)) return S end
   res=CharSymbol[]
   for s in S
-    p=findfirst(i->cmpIterators(s.S,circshiftIterator(s.S,1-i))==0,2:length(s))
+    p=findfirst(i->Iterators_cmp(s.S,Iterators_circshift(s.S,1-i))==0,2:length(s))
     if p===nothing push!(res,s)
     else repeats=div(length(s),p)
-      append!(res,map(i->CharSymbol(s.S,repeats,i),0:repeats-1))
+      for i in 0:repeats-1 push!(res,CharSymbol(s.S,repeats,i)) end
     end
   end
   res

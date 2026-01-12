@@ -540,7 +540,7 @@ end
 charnumbers(d::Dict)=d[:charNumbers]
 
 function charinfo(t::TypeIrred)
-  c=CharInfo(copy(chevieget(t,:CharInfo)))
+  c=CharInfo(copy(chevieget(t,:charinfo)))
   c.positionId=c.extRefl[1]
   c.positionDet=c.extRefl[end]
   if !haskey(c,:charnames) error("charnames(",t,") missing") end
@@ -858,7 +858,7 @@ end
 end
 
 function classinfo(t::TypeIrred)
-  cl=copy(convert(Dict{Symbol,Any},chevieget(t,:ClassInfo)))
+  cl=copy(convert(Dict{Symbol,Any},chevieget(t,:classinfo)))
   if haskey(t,:orbit)
      l=length(t.orbit)
      t=t.orbit[1]
@@ -875,7 +875,7 @@ function classinfo(t::TypeIrred)
   ClassInfo(cl)
 end
 
-Groups.nconjugacy_classes(t::TypeIrred)=chevieget(t,:NrConjugacyClasses)
+Groups.nconjugacy_classes(t::TypeIrred)=chevieget(t,:nconjugacy_classes)
 
 """
 `classinfo(W)`
@@ -1387,7 +1387,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   tt=refltype(W)
   if isempty(tt) return Matrix{Int}[] end
   if length(tt)==1 return chevieget(tt[1],:Representation,i) end
-  v=lin2cart(chevieget.(tt,:NrConjugacyClasses),i)
+  v=lin2cart(chevieget.(tt,:nconjugacy_classes),i)
   mm=chevieget.(tt,:Representation,v)
   if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
@@ -1636,7 +1636,7 @@ charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 charnames(t::TypeIrred;opt...)=charnames(IOContext(stdout,opt...),t)
 
 function charnames(io::IO,t::TypeIrred)
-  ci=chevieget(t,:CharInfo)
+  ci=chevieget(t,:charinfo)
   cn=ci[:charnames]
   for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
     if get(io,k,false) && haskey(ci,k) cn=string.(ci[k]) end
@@ -1940,7 +1940,7 @@ function decomposition_matrix(t::TypeIrred,p)
   if m==false
     error("decomposition_matrix(",t,",",p,") not implemented")
   end
-  n=chevieget(t,:NrConjugacyClasses)
+  n=chevieget(t,:nconjugacy_classes)
   append!(m,map(i->[[i],[[1]]],setdiff(1:n,union(first.(m)))))
   res=cat(map(x->toM(x[2]),m)...;dims=(1,2))
   res[sortperm(vcat(first.(m)...)),:]

@@ -243,9 +243,9 @@ const needcartantype=Set([:Invariants,
                           :PrintDiagram,
                           :UnipotentClasses,
                           :WeightInfo,
-                          :CartanMat])
+                          :cartan])
 
-debug::Bool=false # time each call
+debug::Bool=false # if true time each call
 
 "`chevieget(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
 function chevieget(t::TypeIrred,f::Symbol,extra...)

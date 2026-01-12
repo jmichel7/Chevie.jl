@@ -1243,7 +1243,7 @@ function Groups.position_class(W::FiniteCoxeterGroup,w)
     chevieget(t,:ClassParameter,v)
   end
   if any(isnothing,iw) return position_class(W.G,w) end
-  findfirst(==(iw),map(x->x.param,conjugacy_classes(W)))
+  findfirst(x->iw==x.param,conjugacy_classes(W))
 end
 
 #------------------------- Affine Weyl groups ----------------------------

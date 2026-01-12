@@ -1,7 +1,7 @@
 #  tbl/cox2i.g         Chevie library         Meinolf Geck and Jean Michel
 #  Copyright (C) 1992 - 2001  The Chevie Team
 
-chevieset("2I", :NrConjugacyClasses,m->div(m+3,2))
+chevieset("2I", :nconjugacy_classes,m->div(m+3,2))
 
 chevieset("2I", :WordsClassRepresentatives, function (m)
   r=[Int[]]
@@ -13,7 +13,7 @@ chevieset("2I", :WordsClassRepresentatives, function (m)
   r
 end)
 
-chevieset("2I", :ClassInfo, function(m)
+chevieset("2I", :classinfo, function(m)
   res=Dict{Symbol,Any}(:classtext=>chevieget("2I",:WordsClassRepresentatives)(m))
   res[:classnames]=joindigits.(res[:classtext])
   res[:classparams]=res[:classnames]
@@ -32,7 +32,7 @@ chevieset("2I", :ClassParameter, function (m, w)
   w[1]==2 ? joindigits(vcat(w[2:end],1)) : joindigits(w)
 end)
 
-chevieset("2I", :CharInfo, function(m)
+chevieset("2I", :charinfo, function(m)
   res = Dict{Symbol, Any}(:extRefl => [1, 3, 2])
   if m==4
     res[:charparams] = [[[2], []], [[], [1, 1]], [[1], [1]]]
@@ -49,7 +49,7 @@ chevieset("2I", :CharInfo, function(m)
 end)
 
 chevieset("2I", :FakeDegree, function (m, phi, q)
-  i=findfirst(==(phi),chevieget("2I",:CharInfo)(m)[:charparams])
+  i=findfirst(==(phi),chevieget("2I",:charinfo)(m)[:charparams])
   if i==1 q^0
   elseif i==2 q^m
   else q^(m+2-i)-q^(i-2)
@@ -65,7 +65,7 @@ chevieset("2I", :HeckeCharTable, function (m, param, rootpara)
   ident=string(ident,"(",m,")")
   if q!=1 ident=string("H(", ident, ")") end
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
-  cl=chevieget("2I",:ClassInfo)(m)
+  cl=chevieget("2I",:classinfo)(m)
   cos(i)=E(2m,i)+E(2m,-i)
   ct=map(i->map(j->cos(1)*0*v,cl[:classtext]), cl[:classtext])
   ct[1]=map(i->q^length(i),cl[:classtext])
@@ -75,7 +75,7 @@ chevieset("2I", :HeckeCharTable, function (m, param, rootpara)
       ct[i+2][j+1]=-v^(2j-1)*cos(i*(2j-1))
     end
   end
-  ci=chevieget("2I", :CharInfo)(m)
+  ci=chevieget("2I", :charinfo)(m)
   tbl=Dict{Symbol, Any}(:identifier=>ident,:name=>ident,
     :cartan=>[2 -cos(1);-cos(1) 2], :size => 2m, :parameter => [q, q],
     :sqrtparameter=>[v,v],:irreducibles=>ct*v^0,
@@ -106,10 +106,9 @@ end)
 
 ###########################################################################
 #  Symbols, unipotent degrees, Fourier matrix, Frobenius eigenvalues
-#  as in: G. Malle, "Unipotente Grade...", J. Algebra 177 (1995)
-#  and: M. Geck, G.M. "Fourier transforms...", J. Algebra 260 (2003)
-#  for non-trivial family of twisted dihedral group {^e}G(e,e,2)
-#                                                               GM 05.12.01
+#  as in [mal95] and [gm03] for the non-trivial family of the twisted
+#  dihedral group {^e}G(e,e,2)
+#                                                             GM 05-12-2001
 # There are 3 families: Is, St and a big one M.
 #  M has principal series almost characters R(0,j) where 0<j<e/2
 #    with fake degree q^{e-j}-q^j.
@@ -182,7 +181,7 @@ chevieset("2I", :UnipotentCharacters,function(e)
         string("G2[",xrepr(eig[i];TeX=true),"]")
     end
   end
-  uc[:charParams]=vcat(chevieget(:I, :CharInfo)(e)[:charparams][1:2],ac)
+  uc[:charParams]=vcat(chevieget(:I, :charinfo)(e)[:charparams][1:2],ac)
   uc[:almostCharSymbols]=vcat(CharSymbol.([map(x->[0],1:e),
                                            map(x->[0,1],1:e)]),map(ac)do s
     S=map(i->[0],1:e)
@@ -222,8 +221,8 @@ chevieset("2I", :UnipotentCharacters,function(e)
   uc[:A]=vcat([0,e],map(x->e-1,ac))
   if e==5
 # Modified 25-8-2004 to fit with H3, H4
-# Asterisque, Geck-Malle, H4 in Duke are like the old version
-# 'Unipotente Grade' and I2, imprimitive, current H3 H4 agree with new version
+# [lus93], [gm03], H4 in [lus94] are like the old version
+# [mal95] and I2, imprimitive, current H3 H4 agree with new version
     uc[:families][3]=galois(uc[:families][3],13)
     for c in uc[:harishChandra]
       c[:eigenvalue]=galois(c[:eigenvalue],13)

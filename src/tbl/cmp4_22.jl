@@ -2,11 +2,7 @@
 # Translated from cmp4_22.g (C) 1998 - 2025  Gunter Malle & Jean Michel
 #
 # The data for classes, characters and Schur elements of Hecke algebras
-# comes from
-# G.Malle, ``Degres relatifs des algebres de Hecke cyclotomiques associees aux
-#  groupes de reflexions complexes de dimension 2'',  in
-# ``Finite  reductive groups'', Progress in  math. n0 141, Birkhauser 1997
-# to which should be added the following info:
+# comes from [mal96] to which should be added the following info:
 # -- the subalgebra H' is generated as described by the list "Embed"
 # -- there is a misprint in the numerator of the relative degrees of
 #    2-dimensional characters of G7: it should read
@@ -23,7 +19,7 @@ CheckIndexChars::Bool=false
 
 function G4_22FetchIndexChars(ST, para)
   if !CheckIndexChars
-    return chevieget(:G4_22, :CharInfo)(ST)[:indexchars]
+    return chevieget(:G4_22, :charinfo)(ST)[:indexchars]
   end
   get!(G4_22IndexChars_dict[ST],para)do
     chevieget(:G4_22, :HeckeCharTable)(ST, para,[])[:indexchars]
@@ -116,7 +112,7 @@ const Data4_22=(simpleroots=
  [(-2E(5,4)+E(5,3)-E(5,2)+2E(5))//5//E(4)+1 (-E(5,4)-2E(5,3)+2E(5,2)+E(5))//5//E(4);
   (-4E(20,17)-E(20,16)-E(20,13)+3E(20,12)-3E(20,9)+2E(20,8)+E(20,4)-2E(20))//5 (-2E(20,17)-3E(20,16)+2*E(20,13)-E(20,12)+E(20,9)+E(20,8)-2E(20,4)-E(20))//5;
   (-E(20,17)-E(20,16)-4E(20,13)-2E(20,12)-2E(20,9)-3E(20,8)+E(20,4)-3E(20))//5 (2E(20,17)+2E(20,16)-2E(20,13)-E(20,12)-E(20,9)+E(20,8)+3E(20,4)+E(20))//5]],
-# for the braid relations see Bessis-Bonnafe-Rouquier
+# for the braid relations see [bbr02]
   BraidRelations=[[[[1,2,1],[2,1,2]]],
   [[[1,2,1,2],[2,1,2,1]]],
   [[[1,2,1,2,1,2],[2,1,2,1,2,1]]],
@@ -1421,9 +1417,9 @@ chevieset(:G4_22, :ReflectionDegrees,ST->Data4_22.ReflectionDegrees[ST-3])
 
 chevieset(:G4_22, :FakeDegree,(ST,phi,q)->
   sum(q.^Data4_22.sparse_fakedegrees[ST-3][findfirst(==(phi),
-     chevieget(:G4_22,:CharInfo)(ST)[:charparams])]))
+     chevieget(:G4_22,:charinfo)(ST)[:charparams])]))
 
-chevieset(:G4_22, :CharInfo, function(ST)
+chevieset(:G4_22, :charinfo, function(ST)
   res=Data4_22.CharInfo[ST-3]
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
@@ -1440,20 +1436,20 @@ chevieset(:G4_22,:B,ST->last.(Data4_22.sparse_fakedegrees[ST-3]))
 
 chevieset(:G4_22, :SemisimpleRank, 2)
 
-chevieset(:G4_22,:NrConjugacyClasses,ST->
+chevieset(:G4_22,:nconjugacy_classes,ST->
   [7,21,14,42,16,32,48,96,8,16,24,48,45,90,135,270,27,54,18][ST-3])
 
-chevieset(:G4_22, :CartanMat,ST->Data4_22.simplecoroots[ST-3]*
+chevieset(:G4_22, :cartan,ST->Data4_22.simplecoroots[ST-3]*
                        transpose(Data4_22.simpleroots[ST-3]))
 
 chevieset(:G4_22,:ReflectionCoDegrees,ST->[0,
   [2,6,8,12,4,16,12,24,10,16,18,24,10,40,30,60,18,48,28][ST-3]])
 
-chevieset(:G4_22, :ParabolicRepresentatives, function (ST, s)
+chevieset(:G4_22, :parabolic_reps, function (ST, s)
   if s==0 
     [Int[]]
   elseif s==1
-    filter(x->length(x)==1,chevieget(:G4_22,:ClassInfo)(ST)[:classtext])
+    filter(x->length(x)==1,chevieget(:G4_22,:classinfo)(ST)[:classtext])
   else [1:size(Data4_22.simpleroots[ST-3],1)]
   end
 end)
@@ -1551,12 +1547,12 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
   end
   res=Dict{Symbol, Any}(:name=>string("H(G",ST,")"),:ST=>ST,:parameter=>
     para,:dim=>2,:reflclasses =>[3])
-  merge!(res, chevieget(:G4_22, :ClassInfo)(ST))
+  merge!(res, chevieget(:G4_22, :classinfo)(ST))
   res[:size] = prod(chevieget(:G4_22,:ReflectionDegrees)(ST))
   res[:order] = res[:size]
   res[:identifier] = res[:name]
   res[:centralizers] = div.(res[:size],res[:classes])
-  merge!(res,chevieget(:G4_22,:CharInfo)(ST))
+  merge!(res,chevieget(:G4_22,:charinfo)(ST))
   classes=chevieget(:G4_22, :malleclasses)(ST)[res[:indexclasses]]
   rows=map(chevieget(:G4_22, :mallechars)(ST))do char
     if char[1]==1 l=[1,X[char[2]],Y[char[3]],Z[char[4]]]
@@ -1978,7 +1974,7 @@ chevieset(:G4_22,:index,ST->
 
 chevieset(:G4_22,:FactorizedSchurElement,function(ST,charpara,para,rootpara)
   Y=vcat(chevieget(:G4_22,:ParamSpecialization)(ST,para)...)
-  ci=chevieget(:G4_22,:CharInfo)(ST)
+  ci=chevieget(:G4_22,:charinfo)(ST)
   ind=G4_22FetchIndexChars(ST,para)[findfirst(==(charpara),ci[:charparams])]
   data=chevieget(:G4_22,:SchurData)(ST)[ind]
   model=chevieget(:G4_22,:SchurModels)(ST)[charpara[1]]
@@ -1987,7 +1983,7 @@ end)
 
 chevieset(:G4_22,:SchurElement,function(ST,charpara,para,rootpara)
   Y=vcat(chevieget(:G4_22,:ParamSpecialization)(ST,para)...)
-  ci=chevieget(:G4_22,:CharInfo)(ST)
+  ci=chevieget(:G4_22,:charinfo)(ST)
   ind=G4_22FetchIndexChars(ST,para)[findfirst(==(charpara),ci[:charparams])]
   data=chevieget(:G4_22,:SchurData)(ST)[ind]
   model=chevieget(:G4_22,:SchurModels)(ST)[charpara[1]]
@@ -2027,7 +2023,7 @@ chevieset(:G4_22, :indexclasses, function(ST)
   end
 end)
 
-chevieset(:G4_22, :ClassInfo, function(ST)
+chevieset(:G4_22, :classinfo, function(ST)
   p=chevieget(:G4_22, :malleclasses)(ST)
   res=Dict{Symbol, Any}()
   res[:indexclasses]=chevieget(:G4_22,:indexclasses)(ST)
@@ -2126,8 +2122,8 @@ end)
 
 #------------------------------- 2G5 ------------------------------------
 chevieset("2G5", :PhiFactors, [1, -1])
-chevieset("2G5", :NrConjugacyClasses, 9)
-chevieset("2G5", :ClassInfo, function()
+chevieset("2G5", :nconjugacy_classes, 9)
+chevieset("2G5", :classinfo, function()
   res=Dict{Symbol,Any}(:classtext=>[Int[],[1,2,2,1,2,2,1],[1,2,2,1,2,2,1,1],
     [1],[1,1,2,1,1],[1,1,2,2,1,1],[1,2],[1,2,1],[2,1,2,1]],
     :classes=>[12,6,6,6,12,6,6,6,12],:orders=>[2,24,24,24,6,8,24,8,6])
@@ -2135,7 +2131,7 @@ chevieset("2G5", :ClassInfo, function()
   res
 end)
 
-chevieset("2G5", :CharInfo, function()
+chevieset("2G5", :charinfo, function()
   res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,8,2],[1,16],[2,9],[2,5,2],[2,1],
     [3,2],[3,4],[3,6]],:extRefl=>[1,6,2],:b=>[0,8,16,9,5,1,2,4,12],
     :B=>[0,8,16,15,11,7,14,4,12],:charRestrictions=>[1,5,9,10,14,18,20,19,21],
