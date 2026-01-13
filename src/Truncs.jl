@@ -43,6 +43,9 @@ Trunc(4): 1+0q+0q²+0q³
 
 julia> tp+Pol()^5 # ok here
 Trunc(4): 2q⁵+5q⁶+10q⁷+10q⁸
+
+julia> tp-Trunc(Pol()^5,4) # true loss of precision
+Trunc(3): 5q⁵+10q⁶+10q⁷
 ```
 As for `Pol`s, indexing gets the term of a given degree
 ```julia-repl
@@ -101,6 +104,7 @@ export Trunc
 varname::Symbol=LaurentPolynomials.varname
 
 Base.length(p::Trunc)=length(p.c)
+Base.iszero(p::Trunc)=iszero(p.c)[1]
 
 function Base.:*(p::Trunc,q::Trunc)
   l=min(length(p),length(q))
@@ -114,7 +118,12 @@ Base.:*(a::T,p::Trunc{T}) where T =p*a
 function Base.:+(p::Trunc,q::Trunc)
   if p.v>q.v p,q=q,p end
   l=min(length(p),length(q)+q.v-p.v)
-  Trunc(map(i->p[i]+q[i],p.v:p.v+l-1),p.v)
+  res=Trunc(map(i->p[i]+q[i],p.v:p.v+l-1),p.v)
+  i=1
+  while i<=length(res) && iszero(res.c[i]) i+=1 end
+  if i==1 return res end
+  i=min(i,length(res))
+  Trunc(res.c[i:end],res.v+i-1)
 end
 Base.:+(p::Trunc,q::Pol)=p+Trunc(q,length(p))
 Base.:+(q::Pol,p::Trunc)=p+q
@@ -139,7 +148,7 @@ julia> Trunc(p,4)
 Trunc(4): 2x⁻¹+0+x+0x²
 ```
 """
-Trunc(p::Pol,i::Integer)=Trunc(p[p.v:p.v+i-1],p.v)
+Trunc(p::Pol,i::Integer)=i<1 ? error("series must have ≥1 terms") : Trunc(p[p.v:p.v+i-1],p.v)
 LaurentPolynomials.Pol(p::Trunc)=Pol(p.c,p.v)
 
 @inbounds Base.getindex(p::Trunc,i::Integer)=
@@ -148,10 +157,12 @@ LaurentPolynomials.Pol(p::Trunc)=Pol(p.c,p.v)
 Base.:^(a::Trunc, n::Integer)=Base.power_by_squaring(a,n)
 Base.:-(p::Trunc)=Trunc(-p.c,p.v)
 Base.one(p::Trunc)=Trunc(vcat(1,fill(0,length(p)-1)),0)
+Base.zero(p::Trunc)=Trunc(zero(p.c),p.v)
 Base.copy(p::Trunc)=Trunc(copy(p.c),p.v)
 
 function Base.inv(q::Trunc)
   v=q.v
+  if iszero(q) error("inv(0)") end
   c=1//q[v]
   q1=Trunc(-c*q.c[2:end],1)
   Trunc((c*(Trunc(Pol(1),length(q))+sum(j->q1^j,1:length(q)))).c,-v)
