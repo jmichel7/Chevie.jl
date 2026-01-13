@@ -37,6 +37,7 @@ but may eventually become separate packages:
   * factorizing polynomials over finite fields (module `FFfac`)
   * factorizing polynomials over the rationals (module `Fact`)
   * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
+  * Truncated Laurent series (module [`Truncs`](@ref))
 
 For permutation groups I have often replaced GAP's sophisticated algorithms
 with  naive  but  easy-to-write  methods  that  are only suitable for small
@@ -126,6 +127,7 @@ include("Format.jl");@reexport using .Format
 include("Util.jl");@reexport using .Util
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
+include("Truncs.jl");@reexport using .Truncs
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
 include("Symbols.jl");@reexport using .Symbols

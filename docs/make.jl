@@ -20,7 +20,8 @@ makedocs(sitename="Chevie.jl documentation",
     "Infrastructure"=>[
     "format.md",
     "symbols.md",
-    "nf.md"],
+    "nf.md",
+    "truncs.md"],
     "Reflection groups"=>[
     "permroot.md",
     "coxgroups.md",
