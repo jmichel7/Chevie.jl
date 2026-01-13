@@ -157,6 +157,9 @@ function Base.inv(q::Trunc)
   Trunc((c*(Trunc(Pol(1),length(q))+sum(j->q1^j,1:length(q)))).c,-v)
 end
 
+Base.:*(a::Frac{<:Mvp}, b::Trunc)=Trunc(a.*b.c,b.v)
+Base.:*(b::Trunc,a::Frac{<:Mvp})=Trunc(a.*b.c,b.v)
+
 Trunc(Q::Frac{<:Pol},i)=Trunc(numerator(Q),i)*inv(Trunc(denominator(Q),i))
 
 Trunc(p::Mvp,i,var::Symbol)=Trunc(Pol(p,var),i)
