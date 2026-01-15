@@ -2,4 +2,5 @@
 ```@docs
 Truncs
 Trunc
+pade
 ```

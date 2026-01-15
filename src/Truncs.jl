@@ -90,6 +90,14 @@ Trunc(4): -1-2y⁻¹x-2y⁻²x²-2y⁻³x³
 julia> tden*tfrac
 Trunc(4): y+x+0x²+0x³
 ```
+We also have Padé approximants:
+```julia-repl
+ulia> pade(inv(Trunc(p,9)))
+Frac{Pol{Rational{Int64}}}: ((1//70)x⁴+(-1//14)x³+(3//14)x²+(-1//2)x+1)/((9//5)x⁹+6x⁸+(54//7)x⁷+(9//2)x⁶+x⁵)
+
+julia> pade(inv(Trunc(p,10)))
+Frac{Pol{Rational{Int64}}}: 1/(x¹⁰+5x⁹+10x⁸+10x⁷+5x⁶+x⁵)
+```
 """
 module Truncs
 struct Trunc{T}
@@ -99,12 +107,13 @@ end
 
 using LaurentPolynomials, PuiseuxPolynomials
 
-export Trunc
+export Trunc, pade
 
 varname::Symbol=LaurentPolynomials.varname
 
 Base.length(p::Trunc)=length(p.c)
 Base.iszero(p::Trunc)=iszero(p.c)[1]
+Base.eltype(p::Trunc{T}) where T =T
 
 function Base.:*(p::Trunc,q::Trunc)
   l=min(length(p),length(q))
@@ -118,13 +127,13 @@ Base.:*(a::T,p::Trunc{T}) where T =p*a
 function Base.:+(p::Trunc,q::Trunc)
   if p.v>q.v p,q=q,p end
   l=min(length(p),length(q)+q.v-p.v)
-  res=Trunc(map(i->p[i]+q[i],p.v:p.v+l-1),p.v)
-  i=1
-  while i<=length(res) && iszero(res.c[i]) i+=1 end
-  if i==1 return res end
-  i=min(i,length(res))
-  Trunc(res.c[i:end],res.v+i-1)
+  vv=fill(zero(p.c[1]+q.c[1]),l)
+  for i in p.v:p.v+l-1 vv[i-p.v+1]=p[i]+q[i] end
+  i=findfirst(!iszero,vv)
+  if isnothing(i) i=length(vv) end
+  i==1 ? Trunc(vv,p.v) : Trunc(vv[i:end],p.v+i-1)
 end
+
 Base.:+(p::Trunc,q::Pol)=p+Trunc(q,length(p))
 Base.:+(q::Pol,p::Trunc)=p+q
 Base.:+(p::Trunc,q::Number)=p+Pol(q)
@@ -150,6 +159,7 @@ Trunc(4): 2x⁻¹+0+x+0x²
 """
 Trunc(p::Pol,i::Integer)=i<1 ? error("series must have ≥1 terms") : Trunc(p[p.v:p.v+i-1],p.v)
 LaurentPolynomials.Pol(p::Trunc)=Pol(p.c,p.v)
+Trunc(j::Number,i::Integer)=Trunc(Pol(j),i)
 
 @inbounds Base.getindex(p::Trunc,i::Integer)=
   i in p.v:p.v+length(p.c)-1 ? p.c[i-p.v+1] : zero(p.c[1])
@@ -160,12 +170,26 @@ Base.one(p::Trunc)=Trunc(vcat(1,fill(0,length(p)-1)),0)
 Base.zero(p::Trunc)=Trunc(zero(p.c),p.v)
 Base.copy(p::Trunc)=Trunc(copy(p.c),p.v)
 
+function Trunc(a::Trunc,i)
+  la=length(a)
+  if i!=la resize!(a.c,i)
+    if i>la for j in la+1:i a.c[j]=0 end end
+  end
+  a
+end
+
+# Newton's algorithm see [p.136; gcl92]
 function Base.inv(q::Trunc)
-  v=q.v
   if iszero(q) error("inv(0)") end
-  c=1//q[v]
-  q1=Trunc(-c*q.c[2:end],1)
-  Trunc((c*(Trunc(Pol(1),length(q))+sum(j->q1^j,1:length(q)))).c,-v)
+  y=Trunc([1//first(q.c)],-q.v)
+  two=Trunc(2,length(q))
+  k=1
+  while true
+    if k>=length(q) return y end
+    k*=2
+    y=Trunc(y,k)
+    y*=two-y*q
+  end
 end
 
 Base.:*(a::Frac{<:Mvp}, b::Trunc)=Trunc(a.*b.c,b.v)
@@ -192,7 +216,7 @@ end
 using LaurentPolynomials: format_coefficient, stringexp
 function Base.show(io::IO,p::Trunc{T})where T
   if !get(io,:limit,false) && !get(io,:TeX,false) && !get(io,:naive,false)
-    if ismonomial(p) && isone(p.c[1]) && p.v==1 && T==Int print(io,"Trunc()")
+    if length(p)==1 && isone(p.c[1]) && p.v==1 && T==Int print(io,"Trunc()")
     else print(io,"Trunc(",p.c)
       if !iszero(p.v) print(io,",",p.v) end
       print(io,")")
@@ -210,4 +234,73 @@ function Base.show(io::IO,p::Trunc{T})where T
     end
   end
 end
+
+"""
+`continued_fraction(f::Trunc,i=length(f))`
+
+transforms `f` into a continued fraction `p₁/(1-p₂/(1-p₃/...))` where the
+`pᵢ` are monomials  `aᵢxⁱ`. Returns `[p₁,p₂,…]`.
+```julia-repl
+julia> @Pol x
+Pol{Int64}: x
+
+julia> f=inv(Trunc(x^3+2x+1,6))
+Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵
+
+julia> Truncs.continued_fraction(f)
+4-element Vector{Pol{Rational{Int64}}}:
+ 1
+ -2x
+ (1//2)x²
+ (-1//2)x²
+```
+Follows [sokal23; refined algorithm 2.7](@cite).
+"""
+function continued_fraction(f::Trunc,i=length(f))
+  p=[Pol([f.c[1]],f.v)]
+  prevf=Trunc(Pol(1),i)
+  if i<length(f) v=view(f.c,1:i)
+  else v=f.c
+  end
+  f=Trunc(v//f.c[1],0)
+  while true
+    pow=findfirst(i->f.c[i]!=prevf.c[i],1:length(f))
+    if isnothing(pow) return p end
+    c=(f.c[pow]-prevf.c[pow])
+    push!(p,Pol([c],pow-1))
+    f,prevf=Trunc((@views(f.c[pow:length(f)].-prevf.c[pow:length(f)]).//c),0),f
+  end  
+end
+
+# expand into a rational fraction continued fraction p
+function Fracfromcf(p)
+  den=Pol(1);num=Pol(1)
+  for i in length(p):-1:2
+    num,den=num-p[i]*den,num
+  end
+  p[1]*den//num
+end
+
+"""
+`pade(f::Trunc,i=length(f))` Padé approximant
+
+returns  the Padé  approximant rational  fraction for  `f`. If `i` is given
+then uses only the `i` first terms of `f`.
+```julia-repl
+julia> @Pol x
+Pol{Int64}: x
+
+julia> f=inv(Trunc(x^3+2x+1,6))
+Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵
+
+julia> pade(f)
+Frac{Pol{Rational{Int64}}}: 1/(x³+2x+1)
+```
+The algorithm is based on [sokal23; refined algorithm 2.7](@cite).
+"""
+function pade(f::Trunc,i=length(f))
+  p=continued_fraction(f,i)
+  Fracfromcf(p)
+end
+
 end
