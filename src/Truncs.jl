@@ -123,6 +123,8 @@ Base.:*(p::Trunc,a::Number)=Trunc(a*p.c,p.v)
 Base.:*(a::Number,p::Trunc)=p*a
 Base.:*(p::Trunc{T},a::T) where T =Trunc(a*p.c,p.v)
 Base.:*(a::T,p::Trunc{T}) where T =p*a
+Base.:*(p::Trunc,a::Pol)=p*Trunc(a,length(p))
+Base.:*(a::Pol,p::Trunc)=p*a
 
 function Base.:+(p::Trunc,q::Trunc)
   if p.v>q.v p,q=q,p end
@@ -138,11 +140,11 @@ Base.:+(p::Trunc,q::Pol)=p+Trunc(q,length(p))
 Base.:+(q::Pol,p::Trunc)=p+q
 Base.:+(p::Trunc,q::Number)=p+Pol(q)
 Base.:+(q::Number,p::Trunc)=p+q
+
 Base.:-(p::Trunc,q::Pol)=p-Trunc(q,length(p))
 Base.:-(q::Pol,p::Trunc)=-p+q
 Base.:-(p::Trunc,q::Number)=p-Pol(q)
 Base.:-(q::Number,p::Trunc)=-p+q
-
 Base.:-(p::Trunc,q::Trunc)=p+(-q)
 
 """
@@ -166,7 +168,7 @@ Trunc(j::Number,i::Integer)=Trunc(Pol(j),i)
 
 Base.:^(a::Trunc, n::Integer)=Base.power_by_squaring(a,n)
 Base.:-(p::Trunc)=Trunc(-p.c,p.v)
-Base.one(p::Trunc)=Trunc(vcat(1,fill(0,length(p)-1)),0)
+Base.one(p::Trunc)=Trunc(vcat(one(p.c[1]),fill(0,length(p)-1)),0)
 Base.zero(p::Trunc)=Trunc(zero(p.c),p.v)
 Base.copy(p::Trunc)=Trunc(copy(p.c),p.v)
 
@@ -262,7 +264,7 @@ function continued_fraction(f::Trunc,i=length(f))
   if i<length(f) v=view(f.c,1:i)
   else v=f.c
   end
-  f=Trunc(v//f.c[1],0)
+  f=Trunc(v.//f.c[1],0)
   while true
     pow=findfirst(i->f.c[i]!=prevf.c[i],1:length(f))
     if isnothing(pow) return p end
@@ -274,11 +276,11 @@ end
 
 # expand into a rational fraction continued fraction p
 function Fracfromcf(p)
-  den=Pol(1);num=Pol(1)
+  den=one(p[1]);num=one(p[1])
   for i in length(p):-1:2
     num,den=num-p[i]*den,num
   end
-  p[1]*den//num
+  Frac(p[1]*den,num)
 end
 
 """
