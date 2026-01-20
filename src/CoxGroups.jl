@@ -870,16 +870,17 @@ Base.isfinite(W::FiniteCoxeterGroup)=true
   G::PermGroup{T}
   inversions::Vector{Tuple{Int,Int}}
   refls::Vector{Perm{T}}
-  d::UnitRange{Int}
+  d::Vector{Int} # permuted ints
+  n::Int  # degree of elements
 end
 
 """
-`coxeter_symmetric_group(n::Integer)` or `coxeter_symmetric_group(m:n)` or
-`coxsym(n)` or `coxsym(m:n)`
+`coxeter_symmetric_group(n::Integer)` or `coxeter_symmetric_group(v::AbstractVector{<:Integer})` or
+`coxsym(n)` or `coxsym(v::AbstractVector{<:Integer})`
 
-The  symmetric group on the  letters `1:n` (or if  a `m≤n` is given, on the
-letters  `m:n`)  as  a  Coxeter  group.  The  Coxeter  generators  are  the
-`Perm(i,i+1)` for `i` in `m:n-1`.
+The  symmetric group  on the  numbers `1:n`  (or if  a `v` is given, on the
+numbers  in `v`, assumed to be positive and increasing) as a Coxeter group.
+The Coxeter generators are the `Perm(v[i],v[i+1])` for `i` in `1:length(v)-1`.
 ```julia-repl
 julia> W=coxsym(3)
 𝔖 ₃
@@ -898,7 +899,7 @@ julia> e=elements(W)
  (1,2,3)
  (1,3)
 
-julia> length.(Ref(W),e) # length in the genrators of the elements
+julia> length.(Ref(W),e) # length in the generators of the elements
 6-element Vector{Int64}:
  0
  1
@@ -912,20 +913,23 @@ coxeter_symmetric_group(n::Int)=coxeter_symmetric_group(1:n)
 
 const coxsym=coxeter_symmetric_group
 
-function coxsym(d::UnitRange,n=d.stop)
-  gens=map(i->Perm(i,i+1;degree=n),d.start:d.stop-1)
-  inversions=[(i,i+k) for k in 1:length(d)-1 for i in d.start:d.stop-k]
+function coxsym(d::AbstractVector{<:Integer},n=maximum(d))
+  if !(issorted(d) && d[1]>=1) error(d," should be increasing and positive") end
+  gens=map(i->Perm(d[i],d[i+1];degree=n),1:length(d)-1)
+  inversions=[(d[i],d[i+k]) for k in 1:length(d)-1 for i in 1:length(d)-k]
   refs=[Perm(r...;degree=n) for r in inversions]
   nref=length(refs)
   append!(refs,refs)
   G=Group(gens,one(prod(gens)))
   G.classreps=map(x->G(chevieget(:A,:WordClass)(x)...),partitions(length(d)))
-  CoxSym(G,inversions,refs,d,Dict{Symbol,Any}(:unique_refls=>collect(1:nref),
-                                              :simple_reps=>fill(1,2nref)))
+  CoxSym(G,inversions,refs,collect(d),n,
+   Dict{Symbol,Any}(:unique_refls=>collect(1:nref),:simple_reps=>fill(1,2nref)))
 end
 
 function Base.show(io::IO, W::CoxSym)
-  if W.d.start==1 n=string(W.d.stop) else n=string(W.d) end
+  if W.d==W.d[1]:W.d[end] 
+    n= W.d[1]==1 ? string(W.d[end]) : string(W.d[1]:W.d[end])
+  else n= hasdecor(io) ? joindigits(W.d) : string(W.d) end
   if hasdecor(io) printTeX(io,"\\mathfrak S_{$n}")
   else print(io,"coxsym($n)")
   end
@@ -943,8 +947,8 @@ PermRoot.nref(W::CoxSym)=length(W.inversions)
 PermRoot.refls(W::CoxSym)=W.refls
 PermRoot.simple_reps(W::CoxSym)=W.simple_reps
 Symbols.rank(W::CoxSym)=ngens(W)+1
-PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.d.stop)
-PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),W.d.stop)
+PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.n)
+PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),W.n)
 PermRoot.reflrep(W::CoxSym)=reflrep.(Ref(W),1:ngens(W))
 
 """
@@ -993,9 +997,10 @@ The  only reflection subgroups defined for  `coxsym(n)` are for `I=a:b` for
 `1≤a≤b≤n`
 """
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
-  if I!=minimum(I):maximum(I) error(I," should be a:b for some a,b") end
-  if W.d.start+maximum(I)>W.d.stop error("range too large") end
-  coxsym(W.d.start.+(minimum(I)-1:maximum(I)),W.d.stop)
+  if !(issorted(I) && I[end]<=length(W.d)-1 && I==I[1]:I[end])
+    error(I," should be a condecutive subset of ",1:length(W.d))
+  end
+  coxsym(W.d[I[1]:I[end]+1],W.n)
 end
 #------------ Example II: HyperOctaedral groups as Coxeter groups
 

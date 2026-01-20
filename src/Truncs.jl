@@ -12,19 +12,19 @@ julia> p=(x+x^2)^5
 Pol{Int64}: x¹⁰+5x⁹+10x⁸+10x⁷+5x⁶+x⁵
 
 julia> tp=Trunc(p,4)
-Trunc(4): x⁵+5x⁶+10x⁷+10x⁸
+Trunc(4): x⁵+5x⁶+10x⁷+10x⁸+O(x⁹)
 ```
 The result here is a truncated series with 4 terms.
 You can do various operations with series
 ```julia-repl
 julia> inv(tp)
-Trunc(4): x⁻⁵-5x⁻⁴+15x⁻³-35x⁻²
+Trunc(4): x⁻⁵-5x⁻⁴+15x⁻³-35x⁻²+O(x⁻¹)
 
 julia> inv(tp)*tp
-Trunc(4): 1+0x+0x²+0x³
+Trunc(4): 1+O(x⁴)
 
 julia> tp*2
-Trunc(4): 2x⁵+10x⁶+20x⁷+20x⁸
+Trunc(4): 2x⁵+10x⁶+20x⁷+20x⁸+O(x⁹)
 ```
 By default the variable name to print `Trunc`s is the same as for `Pol`s.
 You can change that:
@@ -33,19 +33,19 @@ julia> Truncs.varname=:q
 :q
 
 julia> tp
-Trunc(4): q⁵+5q⁶+10q⁷+10q⁸
+Trunc(4): q⁵+5q⁶+10q⁷+10q⁸+O(q⁹)
 
 julia> length(tp) # the number of terms
 4
 
 julia> tp+1  # "loss of precision"
-Trunc(4): 1+0q+0q²+0q³
+Trunc(4): 1+O(q⁴)
 
 julia> tp+Pol()^5 # ok here
-Trunc(4): 2q⁵+5q⁶+10q⁷+10q⁸
+Trunc(4): 2q⁵+5q⁶+10q⁷+10q⁸+O(q⁹)
 
 julia> tp-Trunc(Pol()^5,4) # true loss of precision
-Trunc(3): 5q⁵+10q⁶+10q⁷
+Trunc(3): 5q⁶+10q⁷+10q⁸+O(q⁹)
 ```
 As for `Pol`s, indexing gets the term of a given degree
 ```julia-repl
@@ -62,10 +62,10 @@ julia> a=(3Pol()^-2+1)/p
 Frac{Pol{Int64}}: (x²+3)/(x¹²+5x¹¹+10x¹⁰+10x⁹+5x⁸+x⁷)
 
 julia> Trunc(a,4)
-Trunc(4): 3q⁻⁷-15q⁻⁶+46q⁻⁵-110q⁻⁴
+Trunc(4): 3q⁻⁷-15q⁻⁶+46q⁻⁵-110q⁻⁴+O(q⁻³)
 
 julia> Trunc(a,4)*tp
-Trunc(4): 3q⁻²+0q⁻¹+1+0q
+Trunc(4): 3q⁻²+1+O(q²)
 ```
 
 We provide also convenience functions for `Mvp`s.
@@ -82,13 +82,13 @@ julia> Truncs.varname=:x
 :x
 
 julia> tden=Trunc(den,4,:x) # convenience for Trunc(Pol(den,:x),4)
-Trunc(4): -y+x+0x²+0x³
+Trunc(4): -y+x+O(x⁴)
 
 julia> tfrac=Trunc(frac,4,:x)
-Trunc(4): -1-2y⁻¹x-2y⁻²x²-2y⁻³x³
+Trunc(4): -1-2y⁻¹x-2y⁻²x²-2y⁻³x³+O(x⁴)
 
 julia> tden*tfrac
-Trunc(4): y+x+0x²+0x³
+Trunc(4): y+x+O(x⁴)
 ```
 We also have Padé approximants:
 ```julia-repl
@@ -119,6 +119,9 @@ function Base.:*(p::Trunc,q::Trunc)
   l=min(length(p),length(q))
   Trunc(map(j->sum(k->p[k+p.v]*q[j-k+q.v],0:j),0:l-1),p.v+q.v)
 end
+
+(p::Trunc)(x)=evalpoly(x,p.c)*x^p.v
+
 Base.:*(p::Trunc,a::Number)=Trunc(a*p.c,p.v)
 Base.:*(a::Number,p::Trunc)=p*a
 Base.:*(p::Trunc{T},a::T) where T =Trunc(a*p.c,p.v)
@@ -156,7 +159,7 @@ julia> p=Pol([2,0,1],-1)
 Pol{Int64}: x+2x⁻¹
 
 julia> Trunc(p,4)
-Trunc(4): 2x⁻¹+0+x+0x²
+Trunc(4): 2x⁻¹+x+O(x³)
 ```
 """
 Trunc(p::Pol,i::Integer)=i<1 ? error("series must have ≥1 terms") : Trunc(p[p.v:p.v+i-1],p.v)
@@ -226,6 +229,7 @@ function Base.show(io::IO,p::Trunc{T})where T
   else
     for deg in p.v:p.v+length(p)-1
       c=p[deg]
+      if iszero(c) continue end
       c=repr(c; context=IOContext(io,:typeinfo=>typeof(c)))
       if !iszero(deg)
         c=format_coefficient(c,prod=get(io,:prod,false))*string(varname)
@@ -234,6 +238,7 @@ function Base.show(io::IO,p::Trunc{T})where T
       if c[1]!='-' && deg!=p.v c="+"*c end
       print(io,c)
     end
+    print(io,"+O(",string(varname),stringexp(get(io,:naive,false) ? stdout : io,p.v+length(p)),")")
   end
 end
 
@@ -305,4 +310,10 @@ function pade(f::Trunc,i=length(f))
   Fracfromcf(p)
 end
 
+Trunc(f::typeof(sin),n)=Trunc(map(i->
+                      iseven(i) ? 0//1 : (-1)^div(i,2)//factorial(i),0:n-1),0)
+Trunc(f::typeof(cos),n)=Trunc(map(i->
+                      isodd(i) ? 0//1 : (-1)^div(i,2)//factorial(i),0:n-1),0)
+Trunc(f::typeof(exp),n)=Trunc(map(i->1//factorial(i),0:n-1),0)
+Trunc{T}(f::typeof(exp),n) where T=Trunc(map(i->1//factorial(T(i)),0:n-1),0)
 end
