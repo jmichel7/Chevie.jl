@@ -49,8 +49,10 @@ of the reflection and of the order of the center of `W`.
 
 The following methods are defined for finite complex reflection groups:
 
-  - `gens(W)`: the (distinguished) reflections which generate `W`, given as
-    permutations of the roots. `reflrep(W)` gives them as matrices.
+  - `generators(W)`, abbreviated `gens`: the (distinguished) reflections which
+    generate `W`, given as permutations of the roots.
+    [`reflection_representation`](@ref)`(W)`  (abbreviated `reflrep`) gives
+    them as matrices.
 
   - [`roots`](@ref)`(W)`: the list of roots of `W`.
 
@@ -59,9 +61,9 @@ The following methods are defined for finite complex reflection groups:
   - [`refls`](@ref)`(W)`: a list of distinguished reflections of `W`, as
     permutations.  This list is of same length as the roots, and its `i`-th
     element is the distinguished reflection for the `i`-th root, so it will
-    have repetitions. [`unique_refls`](@ref)`(W)` returns a sublist of
+    have  repetitions.  [`unique_refls`](@ref)`(W)`  returns  a  sublist of
     `1:length(roots(W))` such that the distinguished reflections around the
-    corresponding  roots reach one time  only each distinguished reflection
+    corresponding roots are in bijection with the distinguished reflections
     of `W`.
 
 The  lists `roots`, `coroots` and `refls` starts with those attached to the
@@ -70,7 +72,7 @@ reflections.
 
   - [`simpleroots`](@ref)`(W)`:  the simple roots as a matrix.
 
-  - [`simplecoroots`](@ref)(W)`:  the simple coroots as a matrix.
+  - [`simplecoroots`](@ref)`(W)`:  the simple coroots as a matrix.
 
   - [`reflections`](@ref)`(W)` gives a list without repetitions of all 
     reflections  of `W`  (not only  the distinguished  ones), as objects of
@@ -80,23 +82,48 @@ reflections.
 
 The  finite irreducible complex  reflection groups have  been classified in
 [st54](@cite). They consist of one infinite family `G(de,e,r)` depending on
-3  parameters (which includes the infinite families of Weyl groups), and 34
-exceptional  groups which have been given  by Shephard and Todd names which
-range  from `G₄` to `G₃₇`. These exceptional groups include the exceptional
-Weyl groups, e.g., `coxgroup(:E,8)` is the same as `G₃₇`.
+3  parameters, and 34 exceptional groups  which have been given by Shephard
+and Todd names which range from `G₄` to `G₃₇`. The function
+[`complex_reflection_group`](@ref),    abbreviated   `crg`,    returns   an
+irreducible complex reflection group in terms of the classification. In the
+context  of  finite  Coxeter  groups  groups,  one  wants  to  describe the
+particular  root  system  chosen  in  term  of  the  classification of root
+systems.  This is done  via calls to  the function [`coxeter_group`](@ref),
+abbreviated `coxgroup` (see the module [`Weyl`](@ref)).
 
-We provide functions to build any finite reflection group, either by giving
-a  list of simple roots and simple coroots (see [`PRG`](@ref)), or in terms
-of   the   classification   (see  [`complex_reflection_group`](@ref)).  The
-non-irreducible  one  can  be  obtained  by  the  `*`  operation (they also
-naturally  appear as  reflection subgroups).  In the  context e.g.  of Weyl
-groups,  one wants to describe the particular root system chosen in term of
-the  traditional classification  of crystallographic  root systems. This is
-done  via  calls  to  the  function [`coxeter_group`](@ref) (see the module
-[`Weyl`](@ref)).  There is not yet  a general theory on  how to construct a
-nice  set of roots for  a non-real reflection group;  the roots chosen here
-where  obtained  case-by-case;  however,  they  satisfy  several  important
-properties:
+The  group  `G(de,e,r)`  consists  of  the  `r×r`  monomial  matrices whose
+non-zero  coefficients  are  `de`-th  roots  of  unity and whose product of
+coefficients  is a `d`-th root of unity. We have the following isomorphisms
+with infinite families of finite Coxeter groups:
+```
+crg(1,1,r)  coxgroup(:A,r-1)
+crg(2,1,r)  coxgroup(:B,r)
+crg(2,2,r)  coxgroup(:D,r)
+crg(e,e,2)  coxgroup(:I,2,e)
+```
+The  exceptional groups include  the exceptional finite  Coxeter groups; we
+have the following isomorphisms:
+```
+crg(23)     coxgroup(:H,3)
+crg(28)     coxgroup(:F,4)
+crg(30)     coxgroup(:H,4)
+crg(35)     coxgroup(:E,6)
+crg(36)     coxgroup(:E,7)
+crg(37)     coxgroup(:E,8)
+```
+We  can also build any  finite reflection group by  giving a list of simple
+roots  and simple coroots  (see [`PRG`](@ref)). We  can get non-irreducible
+groups  by  the  `*`  operation  (they  also naturally appear as reflection
+subgroups).
+
+An irreducible complex reflection group in rank `r` can always be generated
+by   `r+1`  reflections,  but   is  often  generated   by  `r`  reflections
+("well-generated").  The  non  well-generated  groups  are `G(de,e,r)` when
+`d≠1` and `e≠1`, and `G₇, G₁₁, G₁₂, G₁₃, G₁₅, G₁₉, G₂₂, G₃₁`.
+
+There  is not yet a general theory on  how to construct a nice set of roots
+for  a  non-real  reflection  group;  the  roots chosen here where obtained
+case-by-case; however, they satisfy several important properties:
 
   - The simple reflections  satisfy braid relations  which present the
     braid group associated to `W` (see [`diagram`](@ref)).
@@ -123,7 +150,7 @@ julia> gens(W) # as permutations of the 24 roots
  (1,3,9)(2,4,7)(5,10,18)(6,11,16)(8,12,19)(13,15,20)(14,17,21)(22,23,24)
  (1,5,13)(2,6,10)(3,7,14)(4,8,15)(9,16,22)(11,12,17)(18,19,23)(20,21,24)
 
-julia> length(unique(refls(W)))
+julia> length(unique(refls(W))) # the number of distinguished reflections
 4
 
 julia> length(refls(W)) # 24=4*(number of roots of unity in ℚ (ζ₃))
@@ -146,15 +173,15 @@ reflection representation over `K`) are not globally invariant (but one can
 get invariant ones by `chevieget(:H4,:InvariantModel)`).
 
 ```julia-repl
-julia> braid_relations(W) # as tuples of equal words in the generators
+julia> braid_relations(W) # as pairs of equal words in the generators
 1-element Vector{Tuple{Vector{Int64}, Vector{Int64}}}:
  ([1, 2, 1], [2, 1, 2])
 
-julia> diagram(W) # the same in pictures
+julia> diagram(W) # presentation of W in pictures
 ③ ——③ G₄
 1   2
 
-julia> cartan(W)
+julia> cartan(W)  # Cartan matrix of W
 2×2 Matrix{Cyc{Rational{Int64}}}:
  ζ₃²√-3     ζ₃²
    -ζ₃²  ζ₃²√-3
@@ -192,7 +219,7 @@ julia> degrees(W)
  4
  6
 
-julia> fakedegrees(W,Pol(:x))
+julia> fakedegrees(W)
 7-element Vector{Pol{Int64}}:
  1
  x⁴
@@ -923,11 +950,12 @@ end
 
 returns the `Vector{TypeIrred}` which classifies `W` (see
 [`TypeIrred`](@ref)).  The  `refltype`  is  used  for displaying `W` at the
-repl. The function `indices` on the result of `refltype`or on a `TypeIrred`
-tells  the index in `gens(W)` of each standard generator of the irreducible
-component  s. In the  REPL display of  `W`, these indices  are omitted when
-they  are the  expected ones  (the component  is in  order at  the expected
-indices).
+repl,  and to  compute information  on `W`  from data on irreducible groups
+(for  example the  `CharTable`). The  function `indices`  on the  result of
+`refltype`or on a `TypeIrred` tells the index in `gens(W)` of each standard
+generator of the irreducible components. In the REPL display of `W`, these
+indices  are omitted when they  are the expected ones  (the component is in
+order at the expected indices).
 ```julia-repl
 julia> W=coxgroup(:D,3) # a D₃ is an A₃ in disorder
 A₃₍₁₃₂₎

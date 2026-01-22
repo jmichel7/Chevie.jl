@@ -371,7 +371,7 @@ end
 """
 `coxeter_matrix(type, rank [,bond])` or `coxmat`
 
-Like `cartan`, the function `coxmat` can be defined from the type and rank
+Like `cartan`, the function `coxmat` can be determined from the type and rank
 of a finite Coxeter group.
 """
 CoxGroups.coxeter_matrix(t::Symbol,r::Integer,b::Integer=0)=coxeter_matrix(cartan(t,r,b))

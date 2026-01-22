@@ -12,7 +12,7 @@ PRG
 TypeIrred
 TypeIrred(::PermRootGroup)
 refltype
-rank
+rank(::PermRootGroup)
 semisimplerank
 number_of_reflections
 number_of_hyperplanes

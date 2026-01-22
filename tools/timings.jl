@@ -93,7 +93,7 @@ test_kl2:=function(W)local el; el:=Elements(W);
 end;
 """
 
-#julia> @b test_b(coxsym(21))
+#julia> @b coxsym(21) test_b(_)
 #1.1    316.423 μs (9542 allocations: 583.91 KiB)
 #1.3    319.098 μs (9696 allocations: 597.78 KiB)
 #1.5    342.150 μs (8880 allocations: 623.09 KiB)

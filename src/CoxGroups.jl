@@ -53,9 +53,8 @@ implements it must define a function
    the left descent set of `w`.
 
 the other functions needed in an instance of a Coxeter group are
-- `gens(W)` which returns the set `S` (the list of *Coxeter generators*)
-- `nref(W)` which  returns the  number of  reflections of  `W`, if  `W` is
-   finite or `nothing` if `W` is infinite.
+  - `generators(W)`, abbreviated `gens`, which returns the set `S` (the list of *Coxeter generators*)
+  - [`number_of_reflections`](@ref)`(W)`, abbreviated `nref`, which  returns the  number of  reflections of  `W`, if  `W` is finite or `nothing` if `W` is infinite.
 
 It  should  be  noted  that  a  Coxeter  group  can  be *any* kind of group
 implementing the above functions.
@@ -63,7 +62,7 @@ implementing the above functions.
 Because  of the  easy solution  of the  word problem  in Coxeter  groups, a
 convenient  way  to  represent  their  elements  is as words in the Coxeter
 generators,  that  is  lists  of  integers  in `1:length(S)`. The functions
-'word'  and 'W(...)' do the conversion between Coxeter words and elements
+`word`  and `W(...)` do the conversion between Coxeter words and elements
 of the group.
 
 # Examples
@@ -85,7 +84,7 @@ julia> word(W,p)
 We  notice that the word we started with and the one that we ended up with,
 are  not the same, even though they  represent the same element of `W`. The
 reason  is that there are several reduced  words for an element of `W`. The
-function 'word' calculates a lexicographically smallest word for `w`. Below
+function `word` calculates a lexicographically smallest word for `w`. Below
 are some other possible computations using the same Coxeter group:
 
 ```julia-repl

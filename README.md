@@ -4,9 +4,12 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jmichel7.github.io/Chevie.jl/dev/)
 [![Build Status](https://github.com/jmichel7/Chevie.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jmichel7/Chevie.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-This  is the current version of the `Chevie` package. It started in 2018 as
-a  port to Julia of the `GAP3` package with the same name. New developments
-are now done in this version.
+This  is the current version of the `Chevie` package. It began life in 2018
+as  a port  to Julia  of the  `GAP3` package  with the  same name.  All new
+developments  are  now  carried  out  in  this  version.  If  you are using
+`Chevie.jl`   in  a  paper  and  wish  to  acknowledge  it,  you  can  cite
+
+  - Michel, J.(2015). *The development version of the CHEVIE package of GAP3.* J. of Algebra **435**, 308--336.
 
 The  package has  no yet  reached version  1, thus  some function  names or
 interfaces may yet change. Pull requests and issues are welcomed.
@@ -34,13 +37,14 @@ In other words, `Chevie` is a meta-package for the following packages:
   * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose several packages)
 
 Have  a look at the  documentation of the above  packages to see how to use
-their   features.  
+their features.
 
 Some  other implemented infrastructure which  currently resides in `Chevie`
 but may eventually become separate packages:
   * factorizing polynomials over finite fields (module `FFfac`)
   * factorizing polynomials over the rationals (module `Fact`)
   * Number fields which are subfields of the Cyclotomics (module `Nf`)
+  * Truncated Laurent series (module `Truncs`)
 
 For permutation groups I have often replaced GAP's sophisticated algorithms
 with  naive  but  easy-to-write  methods  suitable  only  for  small groups

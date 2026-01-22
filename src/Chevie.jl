@@ -1,7 +1,9 @@
 """
-This  is the current version of the `Chevie` package. It started in 2018 as
-a  port to Julia of the `GAP3` package with the same name. New developments
-are now done in this version.
+This  is the current version of the `Chevie` package. It began life in 2018
+as  a port  to Julia  of the  `GAP3` package  with the  same name.  All new
+developments  are  now  carried  out  in  this  version.  If  you are using
+`Chevie.jl`   in  a  paper  and  wish  to  acknowledge  it,  you  can  cite
+[mi15](@cite).
 
 The  package has  no yet  reached version  1, thus  some function  names or
 interfaces may yet change. Pull requests and issues are welcomed.
