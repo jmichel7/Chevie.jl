@@ -671,8 +671,9 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
   fd
 end
 
+using LaTeXStrings
 function Base.show(io::IO,::MIME"text/html", uc::UnipotentCharacters)
-  show(IOContext(io,:TeX=>true),"text/plain",uc)
+  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
 end
 
 function Base.show(io::IO,uc::UnipotentCharacters)

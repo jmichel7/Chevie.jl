@@ -2970,7 +2970,7 @@ chevieset(:E8, :HeckeRepresentation, function (para, rootpara, i)
     if y!=-1 v//=-y end
   else v=root(q)
   end
-  -y*WGraphToRepresentation(8,chevieget(:E8,:WGraph)(i),v)
+  (-y*one(v))*WGraphToRepresentation(8,chevieget(:E8,:WGraph)(i),v)
 end)
 
 chevieset(:families,:S5,Family(;

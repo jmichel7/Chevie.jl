@@ -8,7 +8,8 @@ function mytest(file::String,cmd::String,man::String)
   exec=replace(exec,r"^\s*"=>"")
   if exec==man return true end
   inds=collect(eachindex(exec))
-  i=inds[findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)]
+  i=findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)
+  if i==nothing i=ncodeunits(man)+1 else i=inds[i] end
   print("exec=$(repr(exec[i:end]))\nmanl=$(repr(man[i:end]))\n")
   false
 end
@@ -607,7 +608,7 @@ end
 @test mytest("PermRoot.jl","simpleroots(W)","2×2 Matrix{Cyc{Rational{Int64}}}:\n    0  ζ₃²√-3\n 2ζ₃²     ζ₃²")
 @test mytest("PermRoot.jl","simplecoroots(W)","2×2 Matrix{Cyc{Rational{Int64}}}:\n     0      1\n √-3/3  √-3/3")
 @test mytest("PermRoot.jl","degrees(W)","2-element Vector{Int64}:\n 4\n 6")
-@test mytest("PermRoot.jl","fakedegrees(W,Pol(:x))","7-element Vector{Pol{Int64}}:\n 1\n x⁴\n x⁸\n x⁷+x⁵\n x⁵+x³\n x³+x\n x⁶+x⁴+x²")
+@test mytest("PermRoot.jl","fakedegrees(W)","7-element Vector{Pol{Int64}}:\n 1\n x⁴\n x⁸\n x⁷+x⁵\n x⁵+x³\n x³+x\n x⁶+x⁴+x²")
 @test mytest("PermRoot.jl","reflectionMatrix([1,0,-E(3,2)])","3×3 Matrix{Cyc{Rational{Int64}}}:\n  0  0  ζ₃²\n  0  1    0\n ζ₃  0    0")
 @test mytest("PermRoot.jl","asreflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Rational{Int64}[1, -1//2, 0], eig = -1, isunitary = false)")
 @test mytest("PermRoot.jl","asreflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2, -1, 0], eig = -1, isunitary = false)")
@@ -795,7 +796,7 @@ end
 @test mytest("Truncs.jl","tp[6]","5")
 @test mytest("Truncs.jl","a=(3Pol()^-2+1)/p","Frac{Pol{Int64}}: (x²+3)/(x¹²+5x¹¹+10x¹⁰+10x⁹+5x⁸+x⁷)")
 @test mytest("Truncs.jl","Trunc(a,4)","Trunc(4): 3q⁻⁷-15q⁻⁶+46q⁻⁵-110q⁻⁴+O(q⁻³)")
-@test mytest("Truncs.jl","Trunc(a,4)*tp","runc(4): 3q⁻²+1+O(q²)")
+@test mytest("Truncs.jl","Trunc(a,4)*tp","Trunc(4): 3q⁻²+1+O(q²)")
 @test mytest("Truncs.jl","@Mvp x,y","nothing")
 @test mytest("Truncs.jl","den=x-y","Mvp{Int64}: x-y")
 @test mytest("Truncs.jl","frac=(x+y)/den","Frac{Mvp{Int64, Int64}}: (x+y)/(x-y)")
@@ -805,12 +806,12 @@ end
 @test mytest("Truncs.jl","tden*tfrac","Trunc(4): y+x+O(x⁴)")
 @test mytest("Truncs.jl","pade(inv(Trunc(p,10)))","Frac{Pol{Rational{Int64}}}: 1/(x¹⁰+5x⁹+10x⁸+10x⁷+5x⁶+x⁵)")
 @test mytest("Truncs.jl","p=Pol([2,0,1],-1)","Pol{Int64}: x+2x⁻¹")
-@test mytest("Truncs.jl","Trunc(p,4)","Trunc(4): 2x⁻¹+0+x+0x²")
+@test mytest("Truncs.jl","Trunc(p,4)","Trunc(4): 2x⁻¹+x+O(x³)")
 @test mytest("Truncs.jl","@Pol x","Pol{Int64}: x")
-@test mytest("Truncs.jl","f=inv(Trunc(x^3+2x+1,6))","Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵")
+@test mytest("Truncs.jl","f=inv(Trunc(x^3+2x+1,6))","Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵+O(x⁶)")
 @test mytest("Truncs.jl","Truncs.continued_fraction(f)","4-element Vector{Pol{Rational{Int64}}}:\n 1\n -2x\n (1//2)x²\n (-1//2)x²")
 @test mytest("Truncs.jl","@Pol x","Pol{Int64}: x")
-@test mytest("Truncs.jl","f=inv(Trunc(x^3+2x+1,6))","Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵")
+@test mytest("Truncs.jl","f=inv(Trunc(x^3+2x+1,6))","Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵+O(x⁶)")
 @test mytest("Truncs.jl","pade(f)","Frac{Pol{Rational{Int64}}}: 1/(x³+2x+1)")
 end
 @testset "Uch.jl" begin

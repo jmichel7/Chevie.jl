@@ -102,8 +102,9 @@ function generic_decomposition_matrix(t::TypeIrred,d::Integer)
   mat
 end
 
+using LaTeXStrings
 function Base.show(io::IO, ::MIME"text/html", m::ΦDecMat)
-  show(IOContext(io,:TeX=>true),"text/plain",m)
+  print(io,latexstring(xrepr(MIME("text/plain"),m,TeX=true)))
 end
 
 function Base.show(io::IO,m::ΦDecMat)
@@ -169,7 +170,7 @@ function InducedDecompositionMatrix(R,W,d::Integer)
 end
 
 function Base.show(io::IO, ::MIME"text/html", m::InducedDecompositionMatrix)
-  show(IOContext(io,:TeX=>true),"text/plain",m)
+  print(io,latexstring(xrepr(MIME("text/plain"),m,TeX=true)))
 end
 
 function Base.show(io::IO,m::InducedDecompositionMatrix)

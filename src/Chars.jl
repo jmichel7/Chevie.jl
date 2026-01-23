@@ -770,8 +770,9 @@ end
 
 charinfo(W::Weyl.FC)=charinfo(W.G)
 
+using LaTeXStrings
 function Base.show(io::IO, ::MIME"text/html", ci::CharInfo)
-  show(IOContext(io,:TeX=>true), "text/plain",ci)
+  print(io,latexstring(xrepr(MIME("text/plain"),ci,TeX=true)))
 end
 
 function Base.show(io::IO,t::CharInfo)
@@ -972,7 +973,7 @@ end
 @forward Weyl.FC.G classinfo, charinfo
 
 function Base.show(io::IO, ::MIME"text/html", ci::ClassInfo)
-  show(IOContext(io,:TeX=>true), "text/plain",ci)
+  print(io,latexstring(xrepr(MIME("text/plain"),ci,TeX=true)))
 end
 
 function Base.show(io::IO,t::ClassInfo)
@@ -1122,7 +1123,7 @@ end
 """ CharTable
 
 function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
-  show(IOContext(io,:TeX=>true), "text/plain",ct)
+  print(io,latexstring(xrepr(MIME("text/plain"),ct,TeX=true)))
 end
 
 function Base.show(io::IO,t::CharTable)
@@ -1794,7 +1795,7 @@ function induction_table(u,g)
 end
 
 function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
-  show(IOContext(io,:TeX=>true),"text/plain",t)
+  print(io,latexstring(xrepr(MIME("text/plain"),t,TeX=true)))
 end
 
 function Base.show(io::IO,t::InductionTable)

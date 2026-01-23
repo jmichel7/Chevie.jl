@@ -13,7 +13,8 @@ function mytest(file::String,cmd::String,man::String)
   exec=replace(exec,r"^\\s*"=>"")
   if exec==man return true end
   inds=collect(eachindex(exec))
-  i=inds[findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)]
+  i=findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)
+  if i==nothing i=ncodeunits(man)+1 else i=inds[i] end
   print("exec=\$(repr(exec[i:end]))\\nmanl=\$(repr(man[i:end]))\\n")
   false
 end

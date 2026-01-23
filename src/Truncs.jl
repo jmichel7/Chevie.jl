@@ -252,7 +252,7 @@ julia> @Pol x
 Pol{Int64}: x
 
 julia> f=inv(Trunc(x^3+2x+1,6))
-Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵
+Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵+O(x⁶)
 
 julia> Truncs.continued_fraction(f)
 4-element Vector{Pol{Rational{Int64}}}:
@@ -298,7 +298,7 @@ julia> @Pol x
 Pol{Int64}: x
 
 julia> f=inv(Trunc(x^3+2x+1,6))
-Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵
+Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵+O(x⁶)
 
 julia> pade(f)
 Frac{Pol{Rational{Int64}}}: 1/(x³+2x+1)

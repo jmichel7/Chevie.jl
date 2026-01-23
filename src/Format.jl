@@ -97,8 +97,10 @@ xprintln(x...;p...)=println(rio(;p...),x...)
 xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
 "`xrepr(x;p...)` is `repr` using as context `stdout` enriched by `p...`"
 xrepr(x;p...)=repr(x;context=IOContext(stdout,p...))
+xrepr(m::MIME,x;p...)=repr(m,x;context=IOContext(stdout,p...))
 "`xrepr(io::IO,x;p...)` is `repr` using as context `io` enriched by `p...`"
 xrepr(io::IO,x;p...)=repr(x;context=IOContext(io,p...))
+xrepr(io::IO,m::MIME,x;p...)=repr(m,x;context=IOContext(io,p...))
 function hdisplay(x;p...) # for use in IJulia, Pluto
   Docs.HTML()do io
     show(IOContext(io,p...),"text/html",x)
@@ -213,8 +215,9 @@ end
 
 Table(m;kw...)=Table(m,Dict(kw...))
 
+using LaTeXStrings
 function Base.show(io::IO, ::MIME"text/html", t::Table)
-  show(IOContext(io,:TeX=>true),"text/plain",t)
+  print(io,latexstring(xrepr(MIME("text/plain"),t,TeX=true)))
 end
 
 function cpad(s,n)

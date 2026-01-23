@@ -7,8 +7,9 @@ struct Diagram
   t::TypeIrred
 end
 
+using LaTeXStrings
 function Base.show(io::IO, ::MIME"text/html", v::Vector{Diagram})
-  show(IOContext(io,:TeX=>true), "text/plain",v)
+  print(io,latexstring(xrepr(MIME("text/plain"),v,TeX=true)))
 end
 
 Base.show(io::IO,::MIME"text/plain",v::Vector{Diagram})=show(io,v)

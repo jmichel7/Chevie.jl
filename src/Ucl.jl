@@ -1000,8 +1000,9 @@ function showcentralizer(io::IO,u)
   c
 end
 
+using LaTeXStrings
 function Base.show(io::IO, ::MIME"text/html", uc::UnipotentClasses)
-  show(IOContext(io,:TeX=>true),"text/plain",uc)
+  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
 end
 
 function Base.show(io::IO,uc::UnipotentClasses)
@@ -1234,7 +1235,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
 end
 
 function Base.show(io::IO, ::MIME"text/html", x::ICCTable)
-  show(IOContext(io,:TeX=>true),"text/plain",x)
+  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
 end
 
 Base.show(io::IO,x::ICCTable)=print(io,"ICCTable(",x.uc,",",x.series,")")
@@ -1389,7 +1390,7 @@ end
 #@test haskey(t,:cardClass)
 
 function Base.show(io::IO, ::MIME"text/html", x::XTable)
-  show(IOContext(io,:TeX=>true),"text/plain",x)
+  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
 end
 
 Base.show(io::IO,x::XTable)=print(io,"XTable(",x.uc,",q=",x.q,",classes=$(x.class))")
@@ -1503,7 +1504,7 @@ function GreenTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
 end
 
 function Base.show(io::IO, ::MIME"text/html", x::GreenTable)
-  show(IOContext(io,:TeX=>true),"text/plain",x)
+  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
 end
 
 Base.show(io::IO,x::GreenTable)=print(io,"GreenTable(",x.uc,",q=",x.q,")")
@@ -1672,7 +1673,7 @@ function TwoVarGreen(W,L)
 end
 
 function Base.show(io::IO, ::MIME"text/html", x::TwoVarGreenTable)
-  show(IOContext(io,:TeX=>true),"text/plain",x)
+  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
 end
 
 Base.show(io::IO,x::TwoVarGreenTable)=print(io,"TwoVarGreenTable(",x.W,",",x.L,")")
