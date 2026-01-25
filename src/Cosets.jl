@@ -569,8 +569,6 @@ end
 Groups.NormalCoset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
-Base.parent(W::Spets)=get!(()->W,W,:parent)
-
 """
 `spets(W::ComplexReflectionGroup, F₀::Matrix=I(rank(W)))`
 

@@ -102,16 +102,13 @@ function generic_decomposition_matrix(t::TypeIrred,d::Integer)
   mat
 end
 
-using LaTeXStrings
-function Base.show(io::IO, ::MIME"text/html", m::ΦDecMat)
-  print(io,latexstring(xrepr(MIME("text/plain"),m,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", m::ΦDecMat)=print(io,TeXs(m))
 
 function Base.show(io::IO,m::ΦDecMat)
   if !hasdecor(io)
     print(io,"generic_decomposition_matrix(",m.W,",",m.d,")")
   else
-    printTeX(io,"\\Phi_{",m.d,"}-decomposition matrix for ",m.W)
+    printTeX(io,"\$\\Phi_{",m.d,"}\$-decomposition matrix for "*TeXs(m.W))
   end
 end
 
@@ -169,15 +166,14 @@ function InducedDecompositionMatrix(R,W,d::Integer)
   InducedDecompositionMatrix(t.scalar*m.scalar,m.colnames,W,R,d)
 end
 
-function Base.show(io::IO, ::MIME"text/html", m::InducedDecompositionMatrix)
-  print(io,latexstring(xrepr(MIME("text/plain"),m,TeX=true)))
-end
+Base.show(io::IO,::MIME"text/latex",m::InducedDecompositionMatrix)=
+  print(io,TeXs(m))
 
 function Base.show(io::IO,m::InducedDecompositionMatrix)
   if !hasdecor(io)
     print(io,"InducedDecompositionMatrix(",m.R,",",m.W,",",m.d,")")
   else
-    printTeX(io,"Induced \\Phi_{",m.d,"}-decomposition matrix from ",
+    printTeX(io,"Induced \$\\Phi_{",m.d,"}\$-decomposition matrix from ",
           m.R," to ",m.W,"\n")
   end
 end

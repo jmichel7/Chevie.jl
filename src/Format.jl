@@ -39,7 +39,7 @@ julia> xrepr(2E(5,2)+2E(5,3);quadratic=false)
 Most  objects in Chevie use  TeX for printing when  given the `IO` property
 `:TeX=true`. This is used as the default display in `IJulia` and `Pluto` by
 giving the property `:TeX` when defining `Base.show(io::IO,
-::MIME"text/html", ...)` for these objects. Continuing the above example:
+::MIME"text/latex", ...)` for these objects. Continuing the above example:
 
 ```julia-rep1
 julia> xprint(p;TeX=true)
@@ -96,15 +96,14 @@ xprintln(x...;p...)=println(rio(;p...),x...)
 "`xdisplay(x...;p...)` is like `display` but uses the enriched io `rio(;p...)`"
 xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
 "`xrepr(x;p...)` is `repr` using as context `stdout` enriched by `p...`"
+xdisplay(m::MIME,x;p...)=display(TextDisplay(rio(;p...)),m,x)
 xrepr(x;p...)=repr(x;context=IOContext(stdout,p...))
 xrepr(m::MIME,x;p...)=repr(m,x;context=IOContext(stdout,p...))
 "`xrepr(io::IO,x;p...)` is `repr` using as context `io` enriched by `p...`"
 xrepr(io::IO,x;p...)=repr(x;context=IOContext(io,p...))
 xrepr(io::IO,m::MIME,x;p...)=repr(m,x;context=IOContext(io,p...))
 function hdisplay(x;p...) # for use in IJulia, Pluto
-  Docs.HTML()do io
-    show(IOContext(io,p...),"text/html",x)
-  end
+  Docs.HTML(io->show(io,TeXs(x;p...)))
 end
 
 const supchars  =
@@ -215,10 +214,7 @@ end
 
 Table(m;kw...)=Table(m,Dict(kw...))
 
-using LaTeXStrings
-function Base.show(io::IO, ::MIME"text/html", t::Table)
-  print(io,latexstring(xrepr(MIME("text/plain"),t,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", t::Table)=print(io,TeXs(t))
 
 function cpad(s,n)
   ls=n-textwidth(s)
@@ -530,7 +526,9 @@ end
 
 cut(s::AbstractString;k...)=cut(stdout,s;k...)
 
-TeXs(x;p...)=repr("text/plain",x;context=IOContext(stdout,:TeX=>true,p...))
+using LaTeXStrings
+TeXs(x;p...)=latexstring(repr(MIME("text/plain"),x;
+                       context=IOContext(stdout,:TeX=>true,p...)))
 
 function TeX(y...;p...)
   s=tempname(".")

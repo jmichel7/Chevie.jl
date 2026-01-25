@@ -23,6 +23,7 @@ FiniteFields.FFE{p}(Cyc)where p
 abelian_gens
 abelian_invariants
 Combinat.blocks(::Group,::Integer)
+Base.parent(::Group)
 ```
 #### Extensions to linear algebra
 ```@docs

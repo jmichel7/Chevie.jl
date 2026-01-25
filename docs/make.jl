@@ -1,10 +1,15 @@
-using Documenter, Chevie, DocumenterCitations
+using Documenter, Chevie, DocumenterCitations, DocumenterInterLinks
 
 DocMeta.setdocmeta!(Chevie, :DocTestSetup, :(using Chevie); recursive=true)
 
 bib = CitationBibliography(
     joinpath(@__DIR__, "src", "refs.bib");
     style=:authoryear
+)
+
+links = InterLinks(
+   "PermGroups" => "https://jmichel7.github.io/PermGroups.jl/dev/objects.inv",
+   "CyclotomicNumbers" => "https://jmichel7.github.io/CyclotomicNumbers.jl/dev/objects.inv"
 )
 
 makedocs(sitename="Chevie.jl documentation",
@@ -48,7 +53,7 @@ makedocs(sitename="Chevie.jl documentation",
     "gendec.md",
     "references.md",
     "dict.md" ],
-  plugins=[bib],
+  plugins=[bib,links],
   warnonly=:missing_docs,
 )
 

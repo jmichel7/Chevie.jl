@@ -770,14 +770,9 @@ end
 
 charinfo(W::Weyl.FC)=charinfo(W.G)
 
-using LaTeXStrings
-function Base.show(io::IO, ::MIME"text/html", ci::CharInfo)
-  print(io,latexstring(xrepr(MIME("text/plain"),ci,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", ci::CharInfo)=print(io,TeXs(ci))
 
-function Base.show(io::IO,t::CharInfo)
-  print(io,"CharInfo(",t.prop,")")
-end
+Base.show(io::IO,t::CharInfo)=print(io,"CharInfo(",t.prop,")")
 
 function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   if !hasdecor(io)
@@ -972,13 +967,9 @@ end
 
 @forward Weyl.FC.G classinfo, charinfo
 
-function Base.show(io::IO, ::MIME"text/html", ci::ClassInfo)
-  print(io,latexstring(xrepr(MIME("text/plain"),ci,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", ci::ClassInfo)=print(io,TeXs(ci))
 
-function Base.show(io::IO,t::ClassInfo)
-  print(io,"ClassInfo(",t.prop,")")
-end
+Base.show(io::IO,t::ClassInfo)=print(io,"ClassInfo(",t.prop,")")
 
 function limitto(s,sz)
   if length(s)<sz || sz<=1 return s end
@@ -1122,9 +1113,7 @@ end
  algebras
 """ CharTable
 
-function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
-  print(io,latexstring(xrepr(MIME("text/plain"),ct,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", ct::CharTable)=print(io,TeXs(ct))
 
 function Base.show(io::IO,t::CharTable)
   if hasdecor(io) || !haskey(t,:repr)
@@ -1790,13 +1779,11 @@ function induction_table(u,g)
   cl=myexactdiv.(length(u),tu.centralizers)
   sc=myexactdiv.(tu.irr*Diagonal(cl)*tg.irr[:,f]',length(u))
   InductionTable(permutedims(sc),tg.charnames,tu.charnames,
-  "Induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  "Induction table from "*TeXs(u)*" to "*TeXs(g),
   Dict{Symbol,Any}(:repr=>string("induction_table(",u,",",g,")")))
 end
 
-function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
-  print(io,latexstring(xrepr(MIME("text/plain"),t,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", t::InductionTable)=print(io,TeXs(t))
 
 function Base.show(io::IO,t::InductionTable)
   if !hasdecor(io) && haskey(t,:repr) print(io,t.repr)
@@ -1855,7 +1842,7 @@ function j_induction_table(u,g)
     if bi!=bj t[j,i]=0 end
   end
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
-  "j-induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  "j-induction table from "*TeXs(u)*" to "*TeXs(g),
   Dict{Symbol,Any}(:repr=>string("j_induction_table(",u,",",g,")")))
 end
 
@@ -1905,7 +1892,7 @@ function J_induction_table(u,g)
     if bi!=bj t[j,i]=0 end
   end
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
-  "J-induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  "J-induction table from "*TeXs(u)*" to "*TeXs(g),
   Dict{Symbol,Any}(:repr=>string("J_induction_table(",u,",",g,")")))
 end
 

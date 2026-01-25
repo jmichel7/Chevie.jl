@@ -6,7 +6,7 @@ using ModuleElts
 using PuiseuxPolynomials
 using Combinat: tally
 using PermGroups: Group, Groups, gens, word, PermGroup, elements,
-         minimal_words, isabelian, ordergens
+         minimal_words, isabelian, ordergens, Coset
 using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor, Root1, num
 using ..FiniteFields: FiniteFields, FFE, Z
@@ -186,5 +186,12 @@ function Base.intersect(G::PermGroup, H::PermGroup)
     m.intersect(G,H)
   end
 end
+"""
+`parent(W::Group)`
 
+If `W` is a subgroup of a group `H`, return `H`. Otherwise return `W`.
+"""
+@inline function Base.parent(W::Union{Group,Coset})
+  get!(()->W,W,:parent)
+end
 end

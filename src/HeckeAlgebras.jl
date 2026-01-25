@@ -806,6 +806,8 @@ Base.values(a::HeckeElt)=values(a.d)
 # HeckeElts are scalars for broadcasting
 Base.broadcastable(h::HeckeElt)=Ref(h)
 
+Base.show(io::IO, ::MIME"text/latex", h::HeckeElt)=print(io,TeXs(h))
+
 function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
     w=word(h.H.W,e)

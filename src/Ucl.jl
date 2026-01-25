@@ -1000,10 +1000,7 @@ function showcentralizer(io::IO,u)
   c
 end
 
-using LaTeXStrings
-function Base.show(io::IO, ::MIME"text/html", uc::UnipotentClasses)
-  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", uc::UnipotentClasses)=print(io,TeXs(uc))
 
 function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
@@ -1234,9 +1231,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   res
 end
 
-function Base.show(io::IO, ::MIME"text/html", x::ICCTable)
-  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex", x::ICCTable)=print(io,TeXs(x))
 
 Base.show(io::IO,x::ICCTable)=print(io,"ICCTable(",x.uc,",",x.series,")")
 
@@ -1389,11 +1384,10 @@ end
 #@test haskey(t,:centClass)
 #@test haskey(t,:cardClass)
 
-function Base.show(io::IO, ::MIME"text/html", x::XTable)
-  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex",x::XTable)=print(io,TeXs(x))
 
-Base.show(io::IO,x::XTable)=print(io,"XTable(",x.uc,",q=",x.q,",classes=$(x.class))")
+Base.show(io::IO,x::XTable)=
+  print(io,"XTable(",x.uc,",q=",x.q,",classes=$(x.class))")
 
 function Base.show(io::IO,::MIME"text/plain",x::XTable)
   printTeX(io,"Values of character sheaves \$\\tilde X_\\chi\$ of \$",x.uc.spets,"\$ on")
@@ -1503,9 +1497,7 @@ function GreenTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   t
 end
 
-function Base.show(io::IO, ::MIME"text/html", x::GreenTable)
-  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex",x::GreenTable)=print(io,TeXs(x))
 
 Base.show(io::IO,x::GreenTable)=print(io,"GreenTable(",x.uc,",q=",x.q,")")
 
@@ -1672,11 +1664,10 @@ function TwoVarGreen(W,L)
   res
 end
 
-function Base.show(io::IO, ::MIME"text/html", x::TwoVarGreenTable)
-  print(io,latexstring(xrepr(MIME("text/plain"),uc,TeX=true)))
-end
+Base.show(io::IO,::MIME"text/latex",x::TwoVarGreenTable)=print(io,TeXs(x))
 
-Base.show(io::IO,x::TwoVarGreenTable)=print(io,"TwoVarGreenTable(",x.W,",",x.L,")")
+Base.show(io::IO,x::TwoVarGreenTable)=
+  print(io,"TwoVarGreenTable(",x.W,",",x.L,")")
 
 function Base.show(io::IO,::MIME"text/plain",x::TwoVarGreenTable)
   print(io,"Values of two-variable Green functions for \$",x.W,"\$ and \$",

@@ -133,6 +133,11 @@ function Primes.factor(f::Pol{FFE{p}},
   facs
 end
 
+using LaTeXStrings
+function Base.show(io::IO, ::MIME"text/latex",f::Primes.Factorization{<:Pol})
+  print(io,latexstring(xrepr(MIME("text/plain"),ci,TeX=true)))
+end
+
 function Base.show(io::IO, ::MIME{Symbol("text/plain")}, 
   f::Primes.Factorization{<:Pol})
   function s(p)

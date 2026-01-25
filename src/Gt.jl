@@ -18,14 +18,17 @@ function RationalUnipotentClasses(WF,p::Int=0)
     classno=t.classes[i][1], AuNo=t.classes[i][2]), eachindex(t.classes)))
 end
 
+Base.show(io::IO,::MIME"text/latex",c::RationalUnipotentClasses)=
+  print(io,TeXs(c))
+
 Base.show(io::IO,cl::RationalUnipotentClasses)=
- print(io,"RationalUnipotentClasses(",cl.WF,",",cl.p,")")
+  print(io,"RationalUnipotentClasses(",cl.WF,",",cl.p,")")
 
 function Base.show(io::IO,::MIME"text/plain",cl::RationalUnipotentClasses)
-  printTeX(io,"Rational unipotent classes of ",cl.WF," in char.",cl.p,"\n")
+  printTeX(io,"Rational unipotent classes of "*TeXs(cl.WF)*" in char.",cl.p,"\n")
   ow=CycPol(generic_order(cl.WF))
   cards=map(x->xrepr(io,ow/x.card),cl.l)
-  cl=map(x->fromTeX(io,name(x.class)*"_{"*classnames(x.class.Au)[x.AuNo]*"}"),cl.l)
+  cl=map(x->"{"*fromTeX(io,name(x.class,TeX=true)*"}_{"*classnames(x.class.Au)[x.AuNo]*"}"),cl.l)
   showtable(io,reshape(cards,:,1);rows_label="classes",row_labels=cl,
                                                   col_labels=["centralizer"])
 end
@@ -274,6 +277,8 @@ end
 
 bracket_if_needed(v)=occursin(r"[-+*/]",v[nextind(v,0,2):end]) ? "("*v*")" : v
 
+Base.show(io::IO, ::MIME"text/latex", r::ClassTypes)=print(io,TeXs(r))
+ 
 function Base.show(io::IO,r::ClassTypes)
   res=string("ClassTypes(\$",TeX(io,r.WF),"\$")
   if r.p==0 res*=",good characteristic)"

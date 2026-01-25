@@ -774,7 +774,6 @@ Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 dimension(W::FiniteCoxeterGroup)=2*nref(W)+rank(W)
 const dim=dimension
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
-@inline Base.parent(W::FiniteCoxeterGroup)=W
 Base.in(w,W::FiniteCoxeterGroup)=w in W.G
 PermRoot.nhyp(W::FiniteCoxeterGroup)=nref(W)
 
@@ -1060,8 +1059,6 @@ end
 
 CoxGroups.nref(W::FCSG)=W.N
 
-Base.parent(W::FCSG)=W.parent
-
 # if I are the positive roots or all roots of a subsystem find the simple ones
 function simpleroots_subsystem(W,I)
   N=nref(W)
@@ -1168,12 +1165,12 @@ function PermRoot.reflection_subgroup(W::FCG,I::AbstractVector{<:Integer})
   if isempty(inclusion) prop[:rank]=rank(W) end
   gens=isempty(I) ? eltype(W)[] : refls(W,I)
   G=PRSG(gens,one(W.G),inclusion,restriction,W.G,prop)
-  FCSG(G,rootdec,div(length(inclusion),2),W,Dict{Symbol,Any}())
+  FCSG(G,rootdec,div(length(inclusion),2),W,Dict{Symbol,Any}(:parent=>W))
   end
 end
 
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
-  reflection_subgroup(W.parent,inclusion(W)[I])
+ reflection_subgroup(parent(W),inclusion(W)[I])
 
 CoxGroups.isleftdescent(W::FCSG,w,i::Integer)=inclusion(W,i)^w>nref(parent(W))
 # next is 25% slower

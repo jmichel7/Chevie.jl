@@ -200,16 +200,16 @@ function LusztigInductionPieces(LF,WF)
       LFGL=subspets(WFGL,Vector{Int}(rh),w)
 #     xprintln("LFGL=",LFGL)
     end
-    lu=xrepr(LF;TeX=true)
-    lg=xrepr(WF;TeX=true)
+    lu=xrepr(LF,TeX=true)
+    lg=xrepr(WF,TeX=true)
     ind="("*joindigits(h[:levi])*","*h[:cuspidalName]*")"
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(induction_table(LFGL,WFGL).scalar),
                    almostcharnames(rio(TeX=true),uW)[charnumbers(ser)],
                    almostcharnames(rio(TeX=true),uL)[charnumbers(h)],
                    isempty(h[:levi]) ? "piece from \$$lu\$ to \$$lg\$" :
-     "piece from \$W_{$lu}$ind\$="*xrepr(LFGL;TeX=true)*
-     "to \$W_{$lg}$ind\$="*xrepr(WFGL;TeX=true),
+     "piece from \$W_{$lu}$ind\$="*TeXs(LFGL)*
+     "to \$W_{$lg}$ind\$="*TeXs(WFGL),
     Dict{Symbol,Any}(:repr=>"piece($(repr(LF)),$(repr(WF)))",
                      :wnum=>charnumbers(ser), :hnum=>charnumbers(h)))
   end
@@ -261,11 +261,9 @@ function lusztig_induction_table(LF,WF;check=true)
   uW=UnipotentCharacters(WF)
   uL=UnipotentCharacters(LF)
   if isnothing(uL)||isnothing(uW) return nothing end
-  lu=xrepr(LF;TeX=true)
-  lg=xrepr(WF;TeX=true)
   res=InductionTable(fill(0,length(uW),length(uL)),
                      charnames(uW;TeX=true), charnames(uL;TeX=true),
-    "Lusztig induction from \$$lu\$ to \$$lg\$",
+                     "Lusztig induction from "*TeXs(LF)*" to "*TeXs(WF),
   Dict{Symbol,Any}(:repr=>"lusztig_induction_table($(repr(LF)),$(repr(WF)))"))
 # res=CHEVIE.GetCached(uW, "LusztigInductionMaps", res,
 #       x->[inclusion(Group(x[:u]))[1:ngens(Group(x[:u]))],
@@ -324,11 +322,9 @@ function harish_chandra_induction_table(HF, WF)
   uh=UnipotentCharacters(HF)
   H=Group(HF)
   if !isparabolic(H) ChevieErr(H," is not parabolic!!") end
-  lu=xrepr(HF;TeX=true)
-  lg=xrepr(WF;TeX=true)
   res = InductionTable(fill(0, length(uw),length(uh)),
     charnames(uw;TeX=true), charnames(uh;TeX=true),
-    "Harish-Chandra induction from \$$lu\$ to \$$lg\$",
+    "Harish-Chandra induction from "*TeXs(HF)*" to "*TeXs(WF),
   Dict{Symbol,Any}(:repr=>"hc_induction_table($(repr(HF)),$(repr(WF)))"))
 # res = CHEVIE.GetCached(uw, "HCInductionMaps", res, (x->begin
 #  Group(x[:u])[:rootInclusion][Group(x[:u])[:generatingReflections]] end))
@@ -382,12 +378,10 @@ function harish_chandra_induction_table(HF, WF)
       else Hi=getHi()
       end
     end
-    lu=xrepr(Hi;TeX=true)
-    lg=xrepr(Wi;TeX=true)
     piece = InductionTable(induction_table(Hi, Wi).scalar, 
                            charnames(uw;TeX=true)[charnumbers(ser)], 
                            charnames(uh;TeX=true)[charnumbers(h)],
-    "HCInduction piece from \$$lu\$ to \$$lg\$",
+                           "HCInduction piece from "*TeXs(Hi)*" to "*TeXs(Wi),
     Dict{Symbol,Any}())
     res.scalar[charnumbers(ser),charnumbers(h)]=piece.scalar
     piece

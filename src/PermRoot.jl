@@ -1,7 +1,7 @@
 """
 Let  `V` be a vector  space over a subfield  `K` of the complex numbers (in
 Julia  the elements  of `K`  will be  usually represented by `Rational`s or
-`Cyc`s).
+[`Cyc`](@extref CyclotomicNumbers :jl:type:`CyclotomicNumbers.Cyc`)s).
 
 A *complex reflection* is an element `s∈ GL(V)` of finite order whose fixed
 point  set is  a hyperplane,  the *reflecting  hyperplane* `Hₛ` of `s`.
@@ -49,7 +49,8 @@ of the reflection and of the order of the center of `W`.
 
 The following methods are defined for finite complex reflection groups:
 
-  - `generators(W)`, abbreviated `gens`: the (distinguished) reflections which
+  - [`generators`](@extref PermGroups :jl:function:`PermGroups.Groups.generators`)`(W)`, 
+    abbreviated `gens`: the (distinguished) reflections which
     generate `W`, given as permutations of the roots.
     [`reflection_representation`](@ref)`(W)`  (abbreviated `reflrep`) gives
     them as matrices.
@@ -219,7 +220,7 @@ julia> degrees(W)
  4
  6
 
-julia> fakedegrees(W)
+julia> fakedegrees(W,Pol(:x))
 7-element Vector{Pol{Int64}}:
  1
  x⁴
@@ -335,15 +336,15 @@ and  its  inverse).  The  function  returns  `nothing`  if  `s` if is not a
 reflection  (resp. not a reflection with root `r`), and otherwise returns a
 named tuple with four fields:
 
-`.root`:   the root of the reflection `s` (equal to `r` if given)
+  - `root`:   the root of the reflection `s` (equal to `r` if given)
 
-`.coroot`:  the coroot of `s`
+  - `coroot`:  the coroot of `s`
 
-`.eigenvalue`:  the non-trivial eigenvalue of `s`
+  - `eigenvalue`:  the non-trivial eigenvalue of `s`
 
-`.isunitary`: a boolean which is `true` if and only if `s` is unitary
-  with  respect to the usual scalar product  (then `s` is determined by the
-  root and the eigenvalue as `reflectionMatrix(.root,.eigenvalue)`)
+  - `isunitary`: a boolean which is `true` if and only if `s` is unitary
+    with respect to the usual scalar product (then `s` is determined by the
+    root and the eigenvalue as `reflectionMatrix(.root,.eigenvalue)`)
 
 ```julia-repl
 julia> asreflection([-1 0 0;1 1 0;0 0 1])
@@ -453,13 +454,13 @@ abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 """
 `inclusion(W::ComplexReflectionGroup)`
 
-the indices of `simpleroots(W)` in the roots of `parent(W)`.
+the indices of `simpleroots(W)` in the roots of [`parent`](@ref)`(W)`.
 """
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 """
 `inclusion(W::ComplexReflectionGroup)`
 
-the indices of the roots of `W` in the roots of `parent(W)`.
+the indices of the roots of `W` in the roots of [`parent`](@ref)`(W)`.
 
 `inclusion(W::PermRootGroup,i::Integer)`
 `inclusion(W::PermRootGroup,v::AbstractVector{<:Integer})`
@@ -1025,8 +1026,8 @@ const reflection_type=refltype
 `bipartite_decomposition(W)`
 
 Returns  a bipartite decomposition `[L,R]` of the indices of the generators
-of  the  reflection  group  `W`,  such  that `reflection_subgroup(W,L)` and
-`reflection_subgroup(W,R)` are abelian subgroups, and
+of the reflection group `W`, such that [`reflection_subgroup`](@ref)`(W,L)`
+and `reflection_subgroup(W,R)` are abelian subgroups, and
 `W=reflection_subgroup(W,   vcat(L,R))`.   Gives   an   error  if  no  such
 decomposition is possible.
 
@@ -1175,8 +1176,9 @@ end
 returns  as a  polynomial in  `q` the  toric order  of the `i`-th conjugacy
 class  of `W`. This is the characteristic  polynomial of an element of that
 class  on  the  reflection  representation  of  `W`.  It is the same as the
-generic  order of the reflection subcoset `torus(W,i)` of `W` determined by
-the trivial subgroup and a representative of the `i`-th conjugacy class.
+generic  order  of  the  reflection  subcoset [`torus`](@ref)`(W,i)` of `W`
+determined  by  the  trivial  subgroup  and  a representative of the `i`-th
+conjugacy class.
 
 ```julia-repr
 julia> W=complex_reflection_group(4)
@@ -1315,11 +1317,10 @@ end
 `PermX(W::ComplexReflectionGroup,M::AbstractMatrix)`
 
 Let `M` be an invertible linear map of the reflection representation of `W`
-which  preserves the set  of roots of  `parent(W)`, and normalizes `W` (for
-the  action of  matrices on  the right).  `PermX` returns the corresponding
-permutation  of the roots of `parent(W)`;  it returns `nothing` if `M` does
-not normalize the set of roots of `parent(W)`.
-
+which  preserves the set of  roots of [`parent`](@ref)`(W)`, and normalizes
+`W`  (for  the  action  of  matrices  on  the  right).  `PermX` returns the
+corresponding permutation of the roots of `parent(W)`; it returns `nothing`
+if `M` does not normalize the set of roots of `parent(W)`.
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
@@ -1524,8 +1525,8 @@ linear  transformation of `V` which acts trivially on the orthogonal of the
 coroots  and has same effect as `w` on the simple roots. The function makes
 sense  more generally for a permutation of  the roots induced by an element
 of  `GL(V)` which stabilizes the roots (thus in particular normalizes `W`);
-thus  it works for reflection cosets.  For a `rootdatum` corresponding to a
-coset `Wσ` we get the action of `Wσ` on `X(𝐓)`.
+thus   it   works   for   reflection   cosets.  For  a  [`rootdatum`](@ref)
+corresponding to a coset `Wσ` we get the action of `Wσ` on `X(𝐓)`.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
@@ -1588,12 +1589,11 @@ YMatrix(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 `PermY(W::ComplexReflectionGroup,M::AbstractMatrix)`
 
 Let  `M`  be  an  invertible  linear  map  on  the  dual  of the reflection
-representation  of `W` which  preserves the set  of coroots of `parent(W)`,
-and  normalizes  `W`  (for  the  action  of matrices on the right). `PermY`
-returns  the corresponding  permutation of  the coroots  of `parent(W)`; it
-returns  `nothing`  if  `M`  does  not  normalize  the  set  of  coroots of
-`parent(W)`.
-
+representation of `W` which preserves the set of coroots of
+[`parent`](@ref)`(W)`,  and normalizes `W`  (for the action  of matrices on
+the right). `PermY` returns the corresponding permutation of the coroots of
+`parent(W)`;  it returns  `nothing` if  `M` does  not normalize  the set of
+coroots of `parent(W)`.
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
@@ -1607,7 +1607,8 @@ PermY(W::PermRootGroup,m)=inv(PermX(W,transpose(m)))
 """
 `isparabolic(W)`
 
-whether the reflection subgroup `W` is a parabolic subgroup of `parent(W)`.
+whether   the  reflection   subgroup  `W`   is  a   parabolic  subgroup  of
+[`parent`](@ref)`(W)`.
 ```julia-repl
 julia> W=complex_reflection_group(7)
 G₇
@@ -1779,7 +1780,6 @@ inclusion(W::PRG,i::Integer)=i
 inclusion(W::PRG,i::AbstractVector)=collect(i) # we do not want ranges
 inclusion(W::PRG)=inclusion(W,eachindex(W.roots))
 restriction(W::PRG,i=eachindex(W.roots))=i
-Base.parent(W::PRG)=W
 action(W::PRG,i,p)=i^p
 
 "`coroots(W,i)` same as but better than `coroots(W)[i]`"
@@ -1824,17 +1824,18 @@ reflection_representation(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflre
   one::Perm{T1}
   inclusion::Vector{Int}
   restriction::Vector{Int}
-  parent::PRG{T,T1}
+  parent::PRG{T,T1} # to speed up things set as a field
 end
 
+Base.parent(W::PRSG)=W.parent 
 inclusion(W::PRSG)=W.inclusion
 inclusion(W::PRSG,i::Integer)=W.inclusion[i]
 inclusion(W::PRSG,i::AbstractVector)=W.inclusion[i]
 """
 `restriction(W::PermRootGroup)`
 
-A  list for each root of `parent(W)`, which  holds `0` if the root is not a
-root of `W` and `i` if the root is the `i`-th root of `W`.
+A  list for each root of [`parent`](@ref)`(W)`, which holds `0` if the root
+is not a root of `W` and `i` if the root is the `i`-th root of `W`.
 
 `restriction(W::PermRootGroup,i::Integer)`
 `restriction(W::PermRootGroup,v::AbstractVector{<:Integer})`
@@ -1853,16 +1854,16 @@ end
 coroots(W::PRSG)=coroots(parent(W),inclusion(W))
 coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))
 simplecoroots(W::PRSG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(coroots(parent(W),inclusiongens(W)))
-Base.parent(W::PRSG)=W.parent
 """
 `action(W::ComplexReflectionGroup,i::Integer,p::Perm)`
 
-The elements of a `PermRootGroup` permute the roots of `parent(W)`, that is
-are  permutations on  `eachindex(roots(parent(W)))`. The  function `action`
-translates  this action of `p∈W` to `eachindex(roots(W))`. For a reflection
-subgroup we have `action(W,i,p)==restriction(W,inclusion(W,i)^p)` and for a
-parent  group `action(W,i,p)==i^p`. The first formula is always valid since
-for a parent group `restriction(W)==inclusion(W)==eachindex(roots(W))`.
+The elements of a `PermRootGroup` permute the roots of
+[`parent`](@ref)`(W)`, that is are permutations on
+`eachindex(roots(parent(W)))`. The function `action` translates this action
+of  `p∈W`  to  `eachindex(roots(W))`.  For  a  reflection  subgroup we have
+`action(W,i,p)==restriction(W,inclusion(W,i)^p)`  and  for  a  parent group
+`action(W,i,p)==i^p`.  The first formula is always valid since for a parent
+group `restriction(W)==inclusion(W)==eachindex(roots(W))`.
 """
 action(W::PRSG,i,p)=restriction(W,inclusion(W,i)^p)
 
@@ -1876,27 +1877,27 @@ end
 `reflection_subgroup(W,r)`
     
 returns  the  reflection  subgroup  of  the  complex  reflection  group `W`
-generated by `refls(W,r)`.
+generated by [`refls`](@ref)`(W,r)`.
 
 A  reflection subgroup `H` of  `W` is a permutation  subgroup with the same
 additional  information as  `W`, and  some new  one added which express the
-relationship with the parent `W`:
+relationship with `parent(W)`:
 
-`inclusion(H)`:   the indices of the roots of `H` in the roots of `W`
+  - `inclusion(H)`:   the indices of the roots of `H` in the roots of `W`
 
-`parent(H)`:  is set to `W`.
+  - `parent(H)`:  is set to `W`.
 
-`restriction(H)`:  a list of length `length(roots(W))` with non-zero entries
-   in positions `inclusion(H)` bound to `eachindex(roots(H))`.
+  - `restriction(H)`:  a list of length `length(roots(W))` with non-zero entries
+    in positions `inclusion(H)` bound to `eachindex(roots(H))`.
 
 A  reflection  group  which  is  not  a  subgroup  actually  also  has this
 information, set to the trivial values:
-`inclusion(W)==restriction(W)==eachindex(roots(W))`,   and   `parent()==W`.
+`inclusion(W)==restriction(W)==eachindex(roots(W))`,   and  `parent(W)==W`.
 This  allows a lot of code to be  written in the same way for parent groups
 or reflection subgroups.
 
 `reflection_subgroup(R)` where `R` is itself a reflection subgroup returns a 
-reflection subgroup of the parent of `R`.
+reflection subgroup of `parent(R)`.
 
 ```julia_repl
 julia> W=coxgroup(:F,4)
@@ -1954,13 +1955,13 @@ reflection_subgroup(W::PRSG,I::AbstractVector{Int};u...)=
 function Base.show(io::IO, W::PRSG)
   I=inclusiongens(W)
   if !hasdecor(io)
-    print(io,"reflection_subgroup(",W.parent,",",I,")")
+    print(io,"reflection_subgroup(",parent(W),",",I,")")
     return
   end
 # n=inclusion(W,indices(refltype(W)))
   n=inclusiongens(W)
-  if n!=eachindex(gens(W.parent)) && get(io,:parent,true)
-    printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
+  if n!=eachindex(gens(parent(W))) && get(io,:parent,true)
+    printTeX(io,"{",parent(W),"}_{"*joindigits(n;always=true)*"}=")
   end
   show(io,refltype(W))
   showtorus(io,W)
@@ -2000,7 +2001,7 @@ julia> catalan(complex_reflection_group(7),2)
 
 `catalan(W;q=1)`, resp. `catalan(W,i;q=1)`
 
-for  `q`  a  variable  (like  `Pol()`  or an `Mvp`) returns the `q`-Catalan
+for  `q`  a  variable,  like  `Pol()`  or an `Mvp`, returns the `q`-Catalan
 number  (resp.  the  `i`-th  `q`-Fuss  Catalan  number)  of  `W`. Again the
 definitions in general are in [gg12](@cite).
 
@@ -2078,11 +2079,11 @@ end
 """
 `generic_order(W,q=Pol())`
 
-returns  the generic  order of  `W` as  a polynomial  in `q` (the "compact"
-order  of the  Spets). This  is ``q^{Nₕ}Πᵢ(q^{dᵢ}-1)``  where `dᵢ`  are the
-reflection  degrees and  `Nₕ` the  number of  reflecting hyperplanes. For a
-Weyl  group, it is the order  of the associated semisimple finite reductive
-group over the field with `q` elements.
+returns  the  generic  order  of  the  reflection  group  or coset `W` as a
+polynomial  in `q` (the order of the associated semisimple finite reductive
+group  over the filed with  `q` elements for a  rootdatum, or the "compact"
+order  of the Spets in general).  This is ``q^{Nₕ}Πᵢ(q^{dᵢ}-1)`` where `dᵢ`
+are the reflection degrees and `Nₕ` the number of reflecting hyperplanes.
 
 ```julia-repl
 julia> PermRoot.generic_order(complex_reflection_group(4),Pol(:q))
@@ -2182,18 +2183,17 @@ reflection  group `W`. If `o` is the named tuple for such an orbit, and `s`
 is  the first  element of  `gens(W)` whose  hyperplane is  in the orbit, it
 contains the following fields
 
- `.s`:     index of `s` in `gens(W)`
+  - `s`:     index of `s` in `gens(W)`
 
- `.order`: order of s
+  - `order`: order of s
 
- `.cl_s`:  for i in `1:order-1`, `position_class(W,W(s)^i)`
+  - `cl_s`:  for i in `1:order-1`, `position_class(W,W(s)^i)`
 
- `.N_s`:    size of hyperplane orbit
+  - `N_s`:    size of hyperplane orbit
 
- `.det_s`:  for i in `1:order-1`, position in `CharTable(W)` of `detₛⁱ`, where
-   `detₛ` is the linear character taking the value `det(reflrep(W,s))` on `s`
-   and `1` on non-conjugate reflections.
-
+  - `det_s`:  for i in `1:order-1`, position in `CharTable(W)` of `detₛⁱ`, where
+    `detₛ`  is the linear character taking the value `det(reflrep(W,s))` on
+    `s` and `1` on non-conjugate reflections.
 ```julia-repl
 julia> W=coxgroup(:B,2)
 B₂

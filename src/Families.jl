@@ -33,13 +33,13 @@ Family(D(𝔖 ₃)) Drinfeld double of 𝔖 ₃, Lusztig′s version
 │label   │no eigen                                               │
 ├────────┼───────────────────────────────────────────────────────┤
 │(1,1)*  │ 5     1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3│
-│(g₂,1)  │ 6     1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1│
-│(g₃,1)  │ 4     1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3│
-│(1,ρ)   │ 3     1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3│
+│(g₂,1)  │ 6     1 1//2  1//2     .     . -1//2 -1//2     .     .│
+│(g₃,1)  │ 4     1 1//3     .  2//3 -1//3  1//3     . -1//3 -1//3│
+│(1,ρ)   │ 3     1 1//3     . -1//3  2//3  1//3     . -1//3 -1//3│
 │(1,ε)-e │ 8     1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3│
-│(g₂,ε)  │ 7    -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1│
-│(g₃,ζ₃) │ 9    ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3│
-│(g₃,ζ₃²)│10   ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3│
+│(g₂,ε)  │ 7    -1 1//2 -1//2     .     . -1//2  1//2     .     .│
+│(g₃,ζ₃) │ 9    ζ₃ 1//3     . -1//3 -1//3  1//3     .  2//3 -1//3│
+│(g₃,ζ₃²)│10   ζ₃² 1//3     . -1//3 -1//3  1//3     . -1//3  2//3│
 └────────┴───────────────────────────────────────────────────────┘
 
 julia> charnames(uc)[uc.families[1].charNumbers]
@@ -1054,10 +1054,7 @@ function FamiliesClassical(sym)
   end
 end
 
-using LaTeXStrings
-function Base.show(io::IO, ::MIME"text/html",f::Family)
-  print(io,latexstring(xrepr(MIME("text/plain"),f,TeX=true)))
-end
+Base.show(io::IO, ::MIME"text/latex",f::Family)=print(io,TeXs(f))
 
 function Base.show(io::IO,f::Family)
   if hasdecor(io) # || !haskey(f,:group)
@@ -1072,7 +1069,7 @@ function Base.show(io::IO,f::Family)
   if haskey(f,:cospecial) || haskey(f,:ennola) || 
      (haskey(f,:signs) && !all(>(0),f.signs))
     d=Dict{Symbol,Any}()
-    if haskey(f,:cospecial) d[:cospecial]=f.cospecial end
+    if haskey(f,:cospecial) && cospecial(f)!=special(f) d[:cospecial]=f.cospecial end
     if haskey(f,:ennola) d[:ennola]=f.ennola end
     if haskey(f,:signs) && !all(>(0),f.signs) d[:signs]=f.signs end
     for k in keys(d) print(io,",$k=",d[k]) end
@@ -1085,10 +1082,11 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
   TeX=get(io,:TeX,false)
   name=haskey(f,:name) ? f.name : "???"
   printTeX(io,"Family(\$",name,"\$) ")
-  if TeX println(io,"\\break") end
+  if TeX println(io,"  ") end
   if haskey(f,:explanation) # && f.explanation!=name
-    printTeX(io,f.explanation,"\n")
+    printTeX(io,f.explanation)
   end
+  println(io)
   row_labels=haskey(f,:charLabels) ? copy(f.charLabels) : string.(1:length(f))
   row_labels[special(f)]*=TeX ? "{}^*" : "*"
   if cospecial(f)!=special(f) row_labels[cospecial(f)]*=TeX ? "{}^\\#" : "#" end
@@ -1110,9 +1108,9 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
     push!(col_labels,"\\mbox{signs}")
   end
   function foo(x)
-    s=xrepr(io,x)
-    if get(io,:dotzero,true) && s=="0"  s="." end
-    s
+    if get(io,:dotzero,true) && iszero(x) "."
+    else xrepr(io,x)
+    end
   end
   append!(t,toL(foo.(fourier(f))))
   if maximum(length.(row_labels))<=4 append!(col_labels,row_labels)
