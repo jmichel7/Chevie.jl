@@ -89,9 +89,9 @@ end
 
 clone(h::SymFun,d)=SymFun(d,h.A,h.b)
 
-Base.:+(a::SymFun,b::SymFun)=clone(a,a.d+basis(a.A,a.b,b).d)
+Base.:+(a::SymFun,b::SymFun)=clone(a,a.d+basis(a.b,b).d)
 Base.:-(a::SymFun)=clone(a,-a.d)
-Base.:-(a::SymFun, b::SymFun)=clone(a,a.d-basis(a.A,a.b,b).d)
+Base.:-(a::SymFun, b::SymFun)=clone(a,a.d-basis(a.b,b).d)
 
 Base.:*(a::SymFun, b::Union{Number,Pol,Mvp})=clone(a,a.d*b)
 Base.:(//)(a::SymFun, b::Union{Number,Pol,Mvp})=clone(a,a.d//b)
@@ -127,19 +127,42 @@ function basis(H::SymFunAlgebra,t::Symbol,h::SymFun)
     else error(":P=>:h not done")
     end
   elseif h.b==:h
-    if t==:S error(":h=>:S not done")
+    if t==:S basis(:S,basis(:P,h))
     else
       sum(h.d)do (p,c)
-        prod(i->basis(h.A,:P,Sbasis(h.A)(i)),p.l)*c
+        prod(i->basis(:P,Sbasis(h.A)(i)),p.l)*c
       end
     end
   end
 end
 
+basis(t::Symbol,h::SymFun)=basis(h.A,t,h)
+
+Base.getindex(a::SymFun,p::Partition)=a.d[p]
+Base.getindex(a::SymFun,x::Vararg{Int})=a.d[Partition(collect(x))]
+
 function Base.:*(a::SymFun,b::SymFun)
   H=a.A
-  a1=basis(H,:P,a)
-  b1=basis(H,:P,b)
-  basis(H,a.b,SymFun(ModuleElt([p*q=>c*c1 for (p,c) in a1.d for (q,c1) in b1.d]),
+  a1=basis(:P,a)
+  b1=basis(:P,b)
+  basis(a.b,SymFun(ModuleElt([p*q=>c*c1 for (p,c) in a1.d for (q,c1) in b1.d]),
                      H,:P))
+end
+
+function PuiseuxPolynomials.Mvp(a::SymFun,n=length(last(a.d.d)[1]))
+  f=basis(:P,a)
+  sum(a.d)do (l,c)
+    prod(i->sum(j->Mvp(Symbol("x",stringind(rio(),j)))^i,1:n),l.l)*c
+  end
+end
+
+function scalarproduct(a::SymFun,b::SymFun)
+  b=basis(a.b,b)
+  if a.b==:S
+    sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d)))
+  elseif a.b==:P
+   sum(((p,c),)->centralizer(a.A,p)*c,
+        ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d))
+  else scalarproduct(basis(:P,a),basis(:P,b))
+  end
 end
