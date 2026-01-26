@@ -23,6 +23,13 @@ function best_eltype(m::AbstractArray)
   end
 end
 
+function best_eltype(m::ModuleElt{P,C})where {P,C}
+  if isempty(m) C
+  else reduce(promote_type,best_type.(values(m)))
+  end
+end
+best_type(m::ModuleElt{P,C}) where {P,C}=ModuleElt{P,best_eltype(m)}
+
 best_eltype(m)=reduce(promote_type,best_type.(m)) # an iterator?
 
 best_type(x)=typeof(x)
