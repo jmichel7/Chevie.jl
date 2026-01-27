@@ -4,12 +4,12 @@ Pages=["symbols.md"]
 ```
 ```@docs
 Symbols
+Partition
 shiftβ
 βset
 partβ
 string_partition_tuple
-ecore
-equotient
+quotient
 CharSymbol
 rank(::CharSymbol)
 defect(::CharSymbol)
