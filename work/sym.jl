@@ -41,7 +41,8 @@ function Base.show(io::IO,A::SymFunAlgebra)
 end
 
 SymFunAlgebra(n)=SymFunAlgebra(n,
-   Dict{Pair{Partition,Partition},Int}(),Dict{Partition,Int}(),
+   Dict{Pair{Partition,Partition},Int}((Partition()=>Partition())=>1),
+   Dict{Partition,Int}(Partition()=>1),
    Dict{Int,Vector{Partition}}())
                                  
 struct SymFun{b,TS,C}# b=:S,:P or :h depending on the basis
@@ -72,7 +73,7 @@ Base.:*(b::Union{Number,Pol,Mvp}, a::SymFun)=a*b
 
 Base.:^(a::SymFun, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
-
+Base.one(a::SymFun{b})where b=clone(a,ModuleElt(Partition()=>1))
 Sbasis(H::SymFunAlgebra)=(x...)->basis(H,Val(:S),x...)
 Pbasis(H::SymFunAlgebra)=(x...)->basis(H,Val(:P),x...)
 hbasis(H::SymFunAlgebra)=(x...)->basis(H,Val(:h),x...)
@@ -101,7 +102,7 @@ Algebras.basis(H::SymFunAlgebra,::Val{:S},h::SymFun{:P})=
 Algebras.basis(H::SymFunAlgebra,::Val{:P},h::SymFun{:P})=h
 Algebras.basis(H::SymFunAlgebra,::Val{:S},h::SymFun{:h})=basis(Val(:S),basis(Val(:P),h))
 Algebras.basis(H::SymFunAlgebra,::Val{:P},h::SymFun{:h})=
- sum(((p,c),)->reduce(⊗,map(i->basis(Val(:P),basis(H,Val(:S),i)),p.l))*c,h.d)
+sum(((p,c),)->reduce(⊗,map(i->basis(Val(:P),basis(H,Val(:S),i)),p.l);init=Pbasis(H)())*c,h.d)
 Algebras.basis(H::SymFunAlgebra,::Val{:h},h::SymFun{:h})=h
 function Algebras.basis(H::SymFunAlgebra,::Val{:h},h::SymFun{:P})
   function Ptoh(n)
@@ -110,7 +111,7 @@ function Algebras.basis(H::SymFunAlgebra,::Val{:h},h::SymFun{:P})
       prod(i->factorial(i[2]),tally(p.l))
      end),H)
   end
-  sum(((p,c),)->reduce(⊗,map(Ptoh,p.l))*c,h.d)
+  sum(((p,c),)->reduce(⊗,map(Ptoh,p.l);init=hbasis(H)())*c,h.d)
 end
 Algebras.basis(H::SymFunAlgebra,::Val{:h},h::SymFun{:S})=basis(Val(:h),basis(Val(:P),h))
 
