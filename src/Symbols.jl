@@ -5,8 +5,10 @@ The  combinatorial objects  in this  module are  *partitions*, *β-sets* and
 A  partition is a non-increasing  list of nonnegative integers `p₁≥p₂≥…pₙ`,
 represented as a `Vector{Int}`, which is *normalized* if it has no trailing
 zeroes. The functions for partitions in this module are
-  - [`ecore`](@ref)`(μ,e)` which returns the `e`-core of `μ`.
-  - [`equotient`](@ref)`(μ,e)` which returns the `e`-quotient of `μ`.
+  - [`Partition`](@ref)`(p₁,…,pₙ)` or `Partition([p₁,…,pₙ])` makes a `Partition`
+    object from the list `p₁,…,pₙ`.
+  - [`core`](@ref)`(μ::Partition,e)` which returns the `e`-core of `μ`.
+  - [`quotient`](@ref)`(μ::Partition,e)` which returns the `e`-quotient of `μ`.
 
 A  *β-set* is a strictly increasing `Vector` of nonnegative integers, up to
 *shift*,  the  equivalence  relation  generated  by the *elementary shifts*
@@ -126,7 +128,7 @@ Spaltenstein  which  parametrize  local  systems  on  unipotent classes for
 classical reductive groups.
 """
 module Symbols
-using ..Format: joindigits, rio, xrepr
+using ..Format: joindigits, rio, xrepr, hasdecor
 using Combinat: arrangements, partition_tuples, collectby, conjugate_partition
 using CyclotomicNumbers: E
 using CycPols: CycPol, subs
@@ -136,8 +138,123 @@ using ModuleElts: ModuleElt
 export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
 gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg,
 fakedegree, defectsymbol,   fullsymbol,
-Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola, ecore,
-equotient, core
+Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola,
+quotient, core, Partition
+
+""" 
+A  `Partition` object  is formed  from a  non-increasing of integers ending
+with  a  number>0.  The  following  two  forms  are equivalent for making a
+`Partition` object:
+
+```julia-repl
+julia> Partition([3,2,1])
+Partition: 321
+
+julia> Partition(3,2,1)
+Partition: 321
+```
+"""
+struct Partition
+  l::Vector{Int}
+  function Partition(l::Vector{<:Integer})
+    if length(l)>0 
+      if !all(i->l[i]≥l[i+1],1:length(l)-1)
+        error(l," not a partition: parts should be non-increasing")
+      elseif l[end]<=0
+        error(l," not a partition: parts should be positive")
+      end
+    end
+    new(l)
+  end
+end
+
+Base.hash(p::Partition,k::UInt)=hash(p.l,k)
+Base.:(==)(a::Partition,b::Partition)=a.l==b.l
+Base.:+(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
+Partition(a...)=Partition(collect(a))
+Base.size(p::Partition)=sum(p.l)
+Base.length(p::Partition)=length(p.l)
+Base.isless(a::Partition,b::Partition)=size(a)<size(b) || a.l<b.l
+
+function Base.show(io::IO,::MIME"text/plain", p::Partition)
+  if get(io,:typeinfo,Any)!=Partition print(io,"Partition: ") end
+  print(io,p)
+end
+
+function Base.show(io::IO, p::Partition)
+  if hasdecor(io)
+    print(io,isempty(p.l) ? "." : joindigits(p.l))
+  else print(io,"Partition(",join(p.l,","),")")
+  end
+end
+
+"""
+`core(μ::Partition,e)` the  `e`-core of the partition `μ`.
+
+It  is the partition left after removing recursively all possible `e`-hooks
+from the young diagram of `μ`.
+```julia-repl
+julia> core(Partition(3,3,1),3)
+Partition: 211
+```
+"""
+function core(μ::Partition,e)
+  β=βset(μ.l,mod(-length(μ.l),e))
+  cnt=map(i->count(j->mod(j,e)==i,β),0:e-1)
+  cnt.-=minimum(cnt)
+  if maximum(cnt)==0 return Int[] end
+  core=[j for i in 1:e for j in (i-1).+e.*(0:cnt[i]-1)]
+  Partition(partβ(sort!(core)))
+end
+
+"""
+`quotient(μ::Partition,e)` the `e`-quotient of the partition `μ`.
+
+The  `e`-quotient is best described  in terms of βsets.  Divide the βset of
+`μ`  in `e` sets  `S₀,…,Sₑ₋₁` according to  the congruence mod `e`. Replace
+`Sᵢ` by `S'ᵢ={(x-i)/e∣x∈Sᵢ}`. Then each `S'ᵢ` can be interpreted in turn as
+the  βset  of  a  partition.  The  resulting `e`-tuple of partitions is the
+`e`-quotient of `mu`.
+```julia-repl
+julia> quotient(Partition(3,3,1),3)
+3-element Vector{Vector{Int64}}:
+ []
+ []
+ [1]
+```
+"""
+function quotient(μ::Partition,e)
+  λ=conjugate_partition(μ.l)
+  q=[Int[] for i in 1:e]
+  for (i,m) in enumerate(μ.l)
+    qj=mod(m-i,e)
+    x=count(j->mod(j-λ[j]-1,e)==qj,1:m)
+    if x!=0 push!(q[qj+1], x) end
+  end
+  q
+end
+
+"""
+`βset(p)` normalized β-set of partition `p`
+
+```julia-repl
+julia> βset([3,3,1])
+3-element Vector{Int64}:
+ 1
+ 4
+ 5
+```
+"""
+function βset(p,s=0)
+#  simpler code but 2 more allocations:
+#  p=prepend!(fill(0,s),p); reverse!(p).+(0:length(p)-1)
+  res=Vector{Int}(undef,s+length(p))
+@inbounds  for i in 1:s res[i]=i-1 end
+@inbounds  for i in eachindex(p) res[s+i]=s+i-1+p[end-i+1] end
+  res
+end
+
+βset(p::Partition,s=0)=βset(p.l,s)
 
 struct CharSymbol
   S::Vector{Vector{Int}}
@@ -250,26 +367,6 @@ function shiftβ(β)
 end
 
 """
-`βset(p)` normalized β-set of partition `p`
-
-```julia-repl
-julia> βset([3,3,1])
-3-element Vector{Int64}:
- 1
- 4
- 5
-```
-"""
-function βset(p,s=0)
-#  simpler code but 2 more allocations:
-#  p=prepend!(fill(0,s),p); reverse!(p).+(0:length(p)-1)
-  res=Vector{Int}(undef,s+length(p))
-@inbounds  for i in 1:s res[i]=i-1 end
-@inbounds  for i in eachindex(p) res[s+i]=s+i-1+p[end-i+1] end
-  res
-end
-
-"""
 `partβ(β)` partition defined by β-set `β`
 
 ```julia-repl
@@ -280,55 +377,6 @@ julia> partβ([0,4,5])
 ```
 """
 partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
-
-"""
-`ecore(μ,e)` the  `e`-core of the partition `μ`.
-
-It  is the partition left after removing recursively all possible `e`-hooks
-from the young diagram of `μ`.
-```julia-repl
-julia> ecore([3,3,1],3)
-3-element Vector{Int64}:
- 2
- 1
- 1
-```
-"""
-function ecore(μ,e)
-  β=βset(μ,mod(-length(μ),e))
-  cnt=map(i->count(j->mod(j,e)==i,β),0:e-1)
-  cnt.-=minimum(cnt)
-  if maximum(cnt)==0 return Int[] end
-  core=[j for i in 1:e for j in (i-1).+e.*(0:cnt[i]-1)]
-  partβ(sort!(core))
-end
-
-"""
-`equotient(μ,e)` the `e`-quotient of the partition `μ`.
-
-The  `e`-quotient is best described  in terms of βsets.  Divide the βset of
-`μ`  in `e` sets  `S₀,…,Sₑ₋₁` according to  the congruence mod `e`. Replace
-`Sᵢ` by `S'ᵢ={(x-i)/e∣x∈Sᵢ}`. Then each `S'ᵢ` can be interpreted in turn as
-the  βset  of  a  partition.  The  resulting `e`-tuple of partitions is the
-`e`-quotient of `mu`.
-```julia-repl
-julia> equotient([3,3,1],3)
-3-element Vector{Vector{Int64}}:
- []
- []
- [1]
-```
-"""
-function equotient(μ,e)
-  λ=conjugate_partition(μ)
-  q=[Int[] for i in 1:e]
-  for (i,m) in enumerate(μ)
-    qj=mod(m-i,e)
-    x=count(j->mod(j-λ[j]-1,e)==qj,1:m)
-    if x!=0 push!(q[qj+1], x) end
-  end
-  q
-end
 
 # rank of partition_tuple described by symbol S
 relative_rank(S::CharSymbol)=sum(x->sum(x)-div(length(x)*(length(x)-1),2),S.S)
