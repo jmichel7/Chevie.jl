@@ -145,14 +145,37 @@ quotient, core, Partition
 A  `Partition` object  is formed  from a  non-increasing of integers ending
 with  a  number>0.  The  following  two  forms  are equivalent for making a
 `Partition` object:
-
 ```julia-repl
-julia> Partition([3,2,1])
-Partition: 321
+julia> Partition([2,1,1])
+Partition: 211
 
-julia> Partition(3,2,1)
-Partition: 321
+julia> p=Partition(2,1,1)
+Partition: 211
+
+julia> length(p) # how many parts
+3
+
+julia> size(p) # the sum of the parts
+4
 ```
+some basic operations on partitions is the union and the conjugate partition
+```julia-repl
+julia> union(p,p)
+Partition: 221111
+
+julia> p'
+Partition: 31
+```
+we  get the `i`-th part by indexing with the convention that we get `0` for
+large `i`.
+```julia-repl
+julia> p[1]
+2
+
+julia> p[4]
+0
+```
+The partitions are ordered by size, and then lexicographically.
 """
 struct Partition
   l::Vector{Int}
@@ -170,11 +193,13 @@ end
 
 Base.hash(p::Partition,k::UInt)=hash(p.l,k)
 Base.:(==)(a::Partition,b::Partition)=a.l==b.l
-Base.:+(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
+Base.:union(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
 Partition(a...)=Partition(collect(a))
 Base.size(p::Partition)=sum(p.l)
 Base.length(p::Partition)=length(p.l)
 Base.isless(a::Partition,b::Partition)=size(a)<size(b) || a.l<b.l
+Base.:adjoint(a::Partition)=Partition(conjugate_partition(a.l))
+Base.getindex(a::Partition,i)=i>length(a) ? 0 : a.l[i]
 
 function Base.show(io::IO,::MIME"text/plain", p::Partition)
   if get(io,:typeinfo,Any)!=Partition print(io,"Partition: ") end

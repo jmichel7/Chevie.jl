@@ -1,0 +1,235 @@
+"""
+This  module  deals  with  symmetric  functions.  The  main  object  is the
+(truncated) algebra of symmetric functions, and the bases `p` (power sums),
+`h` (complete symmetric functions) and `s` (Schur functions). Each of these
+basies in degree `n` is indexed by the partitions of `n`.
+
+A typical session would begin by defining the symmetric functions and these
+bases:
+```julia-repl
+julia> A=SymFuncAlgebra(10) # truncated in degree >10
+SymFuncAlgebra(10)
+
+julia> p=pbasis(A);h=hbasis(A);s=sbasis(A);
+```
+Then making elements in one of these bases. The following forms are equivalent:
+```julia-repl
+julia> p(Partition(3,2,1))
+p₃₂₁
+
+julia> p([3,2,1])
+p₃₂₁
+
+julia> p(3,2,1)
+p₃₂₁
+```
+The functions can be used to convert between bases:
+```julia-repl
+julia> s(p(3,2,1))
+-s₁₁₁₁₁₁-s₂₂₂+s₃₁₁₁+s₃₃-s₄₁₁+s₆
+
+julia> h(p(3,2,1))
+-h₁₁₁₁₁₁+5h₂₁₁₁₁-6h₂₂₁₁-3h₃₁₁₁+6h₃₂₁
+```
+The following operations are defined on symmetric functions, in addition to
+`+` and `-`:
+```julia-repl
+julia> s(2,1)*s(2,1) # product
+s₂₂₁₁+s₂₂₂+s₃₁₁₁+2s₃₂₁+s₃₃+s₄₁₁+s₄₂
+
+julia> s(2,1)⊗s(2,1) # inner product
+s₁₁₁+s₂₁+s₃
+
+julia> SymFuncs.plethysm(p(2,1),s(2,1))
+(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃
+
+julia> scalarproduct(p(1,1,1),s(2,1))
+2//1
+```
+One can mix bases in these operations. The basis of the left argument wins:
+```julia-repl
+julia> s(2,1)+p(3)
+s₁₁₁+s₃
+```
+finally one can convert a symmetric function to a symmetric polynomial.
+The number of variables is the highest degree in the function.
+```julia-repl
+julia> Mvp(p(2)+p(3))
+Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²
+```
+"""
+module SymFuncs
+using ..Chevie
+export SymFuncAlgebra, sbasis, pbasis, hbasis
+
+struct SymFuncAlgebra
+  n::Int
+  charvalues::Dict{Pair{Partition,Partition},Int}
+  centralizers::Dict{Partition,Int}
+  partitions::Dict{Int,Vector{Partition}}
+end
+
+function charvalue(A::SymFuncAlgebra,p::Pair{Partition,Partition})
+  l=size(p[1])
+  if l!=size(p[2]) || l>A.n return 0 end
+  get!(A.charvalues,p)do 
+    ct=CharTable(coxsym(l))
+    pp=Partitions(A,l)
+    for x in eachindex(pp), y in eachindex(pp) 
+      A.charvalues[pp[x]=>pp[y]]=ct.irr[x,y]
+    end
+    for x in eachindex(pp) A.centralizers[pp[x]]=ct.centralizers[x] end
+    A.charvalues[p]
+  end
+end
+
+function Groups.centralizer(A::SymFuncAlgebra,p::Partition)
+  if size(p)>A.n return 0 end
+  get!(A.centralizers,p)do 
+    charvalue(A,p=>p)
+    A.centralizers[p]
+  end
+end
+
+function Combinat.Partitions(A::SymFuncAlgebra,n)
+  if n>A.n return Partition[] end
+  get!(A.partitions,n)do
+    Partition.(partitions(n))
+  end
+end
+
+function Base.show(io::IO,A::SymFuncAlgebra)
+  print(io,"SymFuncAlgebra(",A.n,")")
+end
+
+"`SymFuncAlgebra(n)` the algebra of symmetric functions truncated in `degree>n`"
+SymFuncAlgebra(n)=SymFuncAlgebra(n,
+   Dict{Pair{Partition,Partition},Int}((Partition()=>Partition())=>1),
+   Dict{Partition,Int}(Partition()=>1),
+   Dict{Int,Vector{Partition}}())
+                                 
+struct SymFunc{b,TS,C}# b=:s,:p or :h depending on the basis
+  d::ModuleElt{Partition,C}
+  A::TS
+  SymFunc{b}(m,A)where b =new{b,typeof(A),valtype(m)}(m,A)
+end
+
+function Base.show(io::IO, h::SymFunc{b})where b
+  function showbasis(io::IO,w)
+    res=string(b)
+    if hasdecor(io) && !get(io,:naive,false) res*="_{"*xrepr(io,w)*"}"
+    else  res*="("*xrepr(io,w)*")"
+    end
+    fromTeX(io,res)
+  end
+  show(rio(io,limit=true,showbasis=showbasis),improve_type(h.d))
+end
+
+clone(h::SymFunc{b},d) where b=SymFunc{b}(d,h.A)
+
+Base.:+(a::SymFunc{ba},b::SymFunc) where ba=clone(a,a.d+basis(Val(ba),b).d)
+Base.:+(a::SymFunc, b::Union{Number,Pol,Mvp})=a+one(a)*b
+Base.:-(a::SymFunc)=clone(a,-a.d)
+Base.:-(a::SymFunc{ba},b::SymFunc) where ba=clone(a,a.d-basis(Val(ba),b).d)
+Base.:*(a::SymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d*b)
+Base.:(//)(a::SymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d//b)
+Base.:*(b::Union{Number,Pol,Mvp}, a::SymFunc)=a*b
+
+Base.:^(a::SymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                      Base.power_by_squaring(inv(a),-n)
+Base.one(a::SymFunc{b})where b=clone(a,ModuleElt(Partition()=>1))
+sbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:s),x...)
+pbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:p),x...)
+hbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:h),x...)
+
+Algebras.basis(h::SymFunc{b})where b=b
+Algebras.basis(H::SymFuncAlgebra,::Val{b},p::Partition)where b=
+  SymFunc{b}(ModuleElt(p=>1),H)
+Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vector{<:Integer})where b=
+  basis(H,Val(b),Partition(w))
+Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vararg{Integer})where b=
+  basis(H,Val(b),collect(w))
+Algebras.basis(::Val{b},h::SymFunc)where b=basis(h.A,Val(b),h)
+sbasis(h::SymFunc)=basis(h.A,Val(:s),h)
+pbasis(h::SymFunc)=basis(h.A,Val(:p),h)
+hbasis(h::SymFunc)=basis(h.A,Val(:h),h)
+
+function Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:s})
+   sum(h.d)do (p,c)
+       SymFunc{:p}(ModuleElt(l=>charvalue(H,p=>l)*c//centralizer(H,l)
+            for l in Partitions(H,size(p))),H)
+   end
+end
+Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:s})=h
+Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:p})=
+  sum(h.d)do (p,c)
+    SymFunc{:s}(ModuleElt(l=>charvalue(H,l=>p)*c for l in
+                     Partitions(H,size(p))),H)
+  end
+Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:p})=h
+Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:h})=sbasis(pbasis(h))
+Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:h})=sum(((p,c),)->
+         prod(i->pbasis(basis(H,Val(:s),i)),p.l;init=pbasis(H)())*c,h.d)
+Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:h})=h
+function Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:p})
+  function Ptoh(n)
+    SymFunc{:h}(ModuleElt(map(Partitions(H,n))do p
+      p=>n*(-1)^(length(p)-1)*factorial(length(p)-1)//
+      prod(i->factorial(i[2]),tally(p.l))
+     end),H)
+  end
+  sum(((p,c),)->prod(Ptoh,p.l;init=hbasis(H)())*c,h.d)
+end
+Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:s})=hbasis(pbasis(h))
+
+Base.getindex(a::SymFunc,p::Partition)=a.d[p]
+Base.getindex(a::SymFunc,x::Vararg{Int})=a.d[Partition(collect(x))]
+
+function Base.:*(a::SymFunc{ba},b::SymFunc)where ba
+  b=basis(Val(ba),b)
+  if ba in (:p,:h)
+   clone(a,ModuleElt([union(p,q)=>c*c1 for (p,c) in a.d for (q,c1) in b.d]))
+  else basis(Val(ba),pbasis(a)*pbasis(b))
+  end
+end
+
+"`a⊗b` the inner product of the symmetric functions `a` and `b`"
+function FinitePosets.:⊗(a::SymFunc{ba},b::SymFunc)where ba
+  H=a.A
+  a1=pbasis(a)
+  b1=pbasis(b)
+  m=ModuleElts.merge2((x,y)->x*y,a1.d,b1.d)
+  m=ModuleElt(p=>c*centralizer(H,p) for (p,c) in m)
+  basis(Val(ba),SymFunc{:p}(m,H))
+end
+
+function PuiseuxPolynomials.Mvp(a::SymFunc,n=size(last(a.d.d)[1]))
+  f=pbasis(a)
+  sum(f.d)do (l,c)
+    prod(i->sum(j->Mvp(Symbol("x",stringind(rio(),j)))^i,1:n),l.l)*c
+  end
+end
+
+"`scalarproduct(a,b)` the scalar product of the symmetric functions `a` and `b`"
+function Chars.scalarproduct(a::SymFunc{ab},b::SymFunc)where ab
+  b=basis(Val(ab),b)
+  if ab==:s
+    sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d)))
+  elseif ab==:p
+    sum(((p,c),)->centralizer(a.A,p)*c,
+        ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d))
+  else scalarproduct(pbasis(a),pbasis(b))
+  end
+end
+
+function plethysm(a::SymFunc{ab},b::SymFunc)where ab
+  a=pbasis(a)
+  b=pbasis(b)
+  basis(Val(ab),sum(a.d)do (p,c)
+    prod(p.l)do i
+     SymFunc{:p}(ModuleElt(Partition(i*p1.l)=>c*c1 for (p1,c1) in b.d),a.A)
+     end
+    end)
+end
+
+end

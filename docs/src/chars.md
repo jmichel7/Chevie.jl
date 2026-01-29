@@ -6,6 +6,7 @@ Pages=["chars.md"]
 Chars
 CharTable
 decompose(::CharTable,::AbstractVector)
+scalarproduct(::CharTable,::AbstractVector,::AbstractVector)
 on_chars
 charinfo
 charnames(io::IO, W::Union{Coset, Group})

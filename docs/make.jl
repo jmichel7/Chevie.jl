@@ -25,6 +25,7 @@ makedocs(sitename="Chevie.jl documentation",
     "Infrastructure"=>[
     "format.md",
     "symbols.md",
+    "symfuncs.md",
     "nf.md",
     "truncs.md"],
     "Reflection groups"=>[

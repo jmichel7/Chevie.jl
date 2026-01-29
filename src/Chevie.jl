@@ -144,6 +144,7 @@ include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
+include("SymFuncs.jl");@reexport using .SymFuncs
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Garside.jl");@reexport using .Garside
