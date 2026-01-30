@@ -576,6 +576,10 @@ end
 @test mytest("Lusztig.jl","lusztig_induction_table(t[2],W)","Lusztig induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃\n┌─────┬───────────────────────┐\n│     │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2│\n├─────┼───────────────────────┤\n│111. │     1    -1    -1    .│\n│11.1 │    -1     .     1   -1│\n│1.11 │     .     .    -1    .│\n│.111 │    -1     .     .    .│\n│21.  │     .     .     .    .│\n│1.2  │     1    -1     .    1│\n│2.1  │     .     1     .    .│\n│.21  │     .     .     .    .│\n│3.   │     .     .     .    1│\n│.3   │     .     1     1   -1│\n│B₂:2 │     .     .     1   -1│\n│B₂:11│     1    -1     .    .│\n└─────┴───────────────────────┘")
 end
 @testset "Murphy.jl" begin
+@test mytest("Murphy.jl","W=coxgroup(:A,2)","A₂")
+@test mytest("Murphy.jl","H=hecke(W,Pol())","hecke(A₂,x)")
+@test mytest("Murphy.jl","l=Tbasis(H).(elements(W))","6-element Vector{HeckeTElt{HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Pol{Int64}, Perm{Int16}}}:\n T.\n T₁\n T₂\n T₁₂\n T₂₁\n T₁₂₁")
+@test mytest("Murphy.jl","Murphybasis(H).(l)","#I Initialized Murphy basis\n6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n M(1/2/3,1/2/3)\n -M(1/2/3,1/2/3)+M(12/3,12/3)\n -M(1/2/3,1/2/3)+x⁻¹M(12/3,12/3)+x⁻¹M(12/3,13/2)+x⁻¹M(13/2,12/3)+x⁻¹M(13/2,13/2)-x⁻¹M(123,123)\n M(1/2/3,1/2/3)-x⁻¹M(12/3,12/3)+(1-x⁻¹)M(12/3,13/2)-x⁻¹M(13/2,12/3)-x⁻¹M(13/2,13/2)+x⁻¹M(123,123)\n M(1/2/3,1/2/3)-x⁻¹M(12/3,12/3)-x⁻¹M(12/3,13/2)+(1-x⁻¹)M(13/2,12/3)-x⁻¹M(13/2,13/2)+x⁻¹M(123,123)\n -M(1/2/3,1/2/3)+(-1+x⁻¹)M(12/3,12/3)+(-1+x⁻¹)M(12/3,13/2)+(-1+x⁻¹)M(13/2,12/3)+x⁻¹M(13/2,13/2)+(1-x⁻¹)M(123,123)")
 end
 @testset "Nf.jl" begin
 @test mytest("Nf.jl","F=NF(E(5))","CF(5)")
@@ -742,7 +746,7 @@ end
 end
 @testset "SymFuncs.jl" begin
 @test mytest("SymFuncs.jl","A=SymFuncAlgebra(10)","SymFuncAlgebra(10)")
-@test mytest("SymFuncs.jl","p=pbasis(A);h=hbasis(A);s=sbasis(A);lia-repl","nothing")
+@test mytest("SymFuncs.jl","p=pbasis(A);h=hbasis(A);s=sbasis(A);","nothing")
 @test mytest("SymFuncs.jl","p(Partition(3,2,1))","p₃₂₁")
 @test mytest("SymFuncs.jl","p([3,2,1])","p₃₂₁")
 @test mytest("SymFuncs.jl","p(3,2,1)","p₃₂₁")
@@ -750,7 +754,7 @@ end
 @test mytest("SymFuncs.jl","h(p(3,2,1))","-h₁₁₁₁₁₁+5h₂₁₁₁₁-6h₂₂₁₁-3h₃₁₁₁+6h₃₂₁")
 @test mytest("SymFuncs.jl","s(2,1)*s(2,1)","s₂₂₁₁+s₂₂₂+s₃₁₁₁+2s₃₂₁+s₃₃+s₄₁₁+s₄₂")
 @test mytest("SymFuncs.jl","s(2,1)⊗s(2,1)","s₁₁₁+s₂₁+s₃")
-@test mytest("SymFuncs.jl","SymFuncs.plethysm(p(2,1),s(2,1))","(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃")
+@test mytest("SymFuncs.jl","plethysm(p(2,1),s(2,1))","(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃")
 @test mytest("SymFuncs.jl","scalarproduct(p(1,1,1),s(2,1))","2//1")
 @test mytest("SymFuncs.jl","s(2,1)+p(3)","s₁₁₁+s₃")
 @test mytest("SymFuncs.jl","Mvp(p(2)+p(3))","Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²")

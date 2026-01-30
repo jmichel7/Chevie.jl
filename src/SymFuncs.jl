@@ -40,7 +40,7 @@ s₂₂₁₁+s₂₂₂+s₃₁₁₁+2s₃₂₁+s₃₃+s₄₁₁+s₄₂
 julia> s(2,1)⊗s(2,1) # inner product
 s₁₁₁+s₂₁+s₃
 
-julia> SymFuncs.plethysm(p(2,1),s(2,1))
+julia> plethysm(p(2,1),s(2,1))
 (1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃
 
 julia> scalarproduct(p(1,1,1),s(2,1))
@@ -60,7 +60,7 @@ Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²
 """
 module SymFuncs
 using ..Chevie
-export SymFuncAlgebra, sbasis, pbasis, hbasis
+export SymFuncAlgebra, sbasis, pbasis, hbasis, plethysm
 
 struct SymFuncAlgebra
   n::Int
@@ -137,7 +137,9 @@ Base.:*(b::Union{Number,Pol,Mvp}, a::SymFunc)=a*b
 
 Base.:^(a::SymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
-Base.one(a::SymFunc{b})where b=clone(a,ModuleElt(Partition()=>1))
+Base.one(a::SymFunc)=clone(a,ModuleElt(Partition()=>1))
+Base.zero(a::SymFunc)=clone(a,zero(a.d))
+Base.zero(b::Symbol,a::SymFunc)=SymFunc{b}(zero(a.d),a.A)
 sbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:s),x...)
 pbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:p),x...)
 hbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:h),x...)
@@ -162,14 +164,14 @@ function Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:s})
 end
 Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:s})=h
 Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:p})=
-  sum(h.d)do (p,c)
+  sum(h.d;init=zero(:s,h))do (p,c)
     SymFunc{:s}(ModuleElt(l=>charvalue(H,l=>p)*c for l in
                      Partitions(H,size(p))),H)
   end
 Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:p})=h
 Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:h})=sbasis(pbasis(h))
 Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:h})=sum(((p,c),)->
-         prod(i->pbasis(basis(H,Val(:s),i)),p.l;init=pbasis(H)())*c,h.d)
+ prod(i->pbasis(basis(H,Val(:s),i)),p.l;init=pbasis(H)())*c,h.d;init=zero(:p,h))
 Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:h})=h
 function Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:p})
   function Ptoh(n)
@@ -178,7 +180,7 @@ function Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:p})
       prod(i->factorial(i[2]),tally(p.l))
      end),H)
   end
-  sum(((p,c),)->prod(Ptoh,p.l;init=hbasis(H)())*c,h.d)
+  sum(((p,c),)->prod(Ptoh,p.l;init=hbasis(H)())*c,h.d,init=zero(:h,h))
 end
 Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:s})=hbasis(pbasis(h))
 
@@ -188,7 +190,8 @@ Base.getindex(a::SymFunc,x::Vararg{Int})=a.d[Partition(collect(x))]
 function Base.:*(a::SymFunc{ba},b::SymFunc)where ba
   b=basis(Val(ba),b)
   if ba in (:p,:h)
-   clone(a,ModuleElt([union(p,q)=>c*c1 for (p,c) in a.d for (q,c1) in b.d]))
+    clone(a,ModuleElt([union(p,q)=>c*c1 for (p,c) in a.d for (q,c1) in b.d
+                       if size(p)+size(q)<=a.A.n]))
   else basis(Val(ba),pbasis(a)*pbasis(b))
   end
 end
@@ -203,10 +206,10 @@ function FinitePosets.:⊗(a::SymFunc{ba},b::SymFunc)where ba
   basis(Val(ba),SymFunc{:p}(m,H))
 end
 
-function PuiseuxPolynomials.Mvp(a::SymFunc,n=size(last(a.d.d)[1]))
-  f=pbasis(a)
-  sum(f.d)do (l,c)
-    prod(i->sum(j->Mvp(Symbol("x",stringind(rio(),j)))^i,1:n),l.l)*c
+function PuiseuxPolynomials.Mvp(a::SymFunc,
+   vars=Mvp.(Symbol("x",stringind(rio(),j)) for j in 1:size(last(a.d.d)[1])))
+  sum(pbasis(a).d)do (l,c)
+    prod(i->sum(vars.^i),l.l)*c
   end
 end
 
@@ -225,11 +228,12 @@ end
 function plethysm(a::SymFunc{ab},b::SymFunc)where ab
   a=pbasis(a)
   b=pbasis(b)
-  basis(Val(ab),sum(a.d)do (p,c)
-    prod(p.l)do i
-     SymFunc{:p}(ModuleElt(Partition(i*p1.l)=>c*c1 for (p1,c1) in b.d),a.A)
+  basis(Val(ab),sum(a.d;init=zero(a))do (p,c)
+    c*prod(p.l)do i
+     SymFunc{:p}(ModuleElt(Partition(i*p1.l)=>c1 for (p1,c1) in b.d if i*size(p1)<=a.A.n),a.A)
      end
     end)
 end
+Base.getindex(a::SymFunc,b::SymFunc)=plethysm(a,b)
 
 end

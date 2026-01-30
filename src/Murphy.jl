@@ -13,14 +13,39 @@ to the Murphy basis since `T_w = M([[1],…,[n]], [[1],…,[n]]) * T_w`; we use
 
 As with the T-basis, Murphy basis elements are implemented by `ModuleElts`.
 Here the keys are standard tableaux pairs. These are represented by a tuple
-`(mu,s,t)` where `mu`, `s` and `t` are all integers and
-`H.Murphy.partitions[mu]` is the associated partition and
-`H.Murphy.tableaux[mu][s]` (resp `t`) is a named tuple describing `s` (this
-tuple is described in the function `initMurphy()` below).
+`(mu,s,t)`  where `mu`,  `s` and  `t` are  integers encoding  the partition
+`H.Murphy.partitions[mu]`  and the  named tuples `H.Murphy.tableaux[mu][s]`
+(resp   `t`)  describing  tableaux  as  explained  in  the  helpstring  for
+[`initMurphy`](@ref).
 
 Throughout memory considerations are thrown to the wind as we cache many of
 the  more horrible expansions as we go along  in order to save time when we
 next need them.
+```julia-repl
+julia> W=coxgroup(:A,2)
+A₂
+
+julia> H=hecke(W,Pol(:q))
+hecke(A₂,q)
+
+julia> l=Tbasis(H).(elements(W))
+6-element Vector{HeckeTElt{HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Pol{Int64}, Perm{Int16}}}:
+ T.
+ T₁
+ T₂
+ T₁₂
+ T₂₁
+ T₁₂₁
+
+julia> Murphybasis(H).(l)
+6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+ M(1/2/3,1/2/3)
+ -M(1/2/3,1/2/3)+M(12/3,12/3)
+ -M(1/2/3,1/2/3)+q⁻¹M(12/3,12/3)+q⁻¹M(12/3,13/2)+q⁻¹M(13/2,12/3)+q⁻¹M(13/2,13/2)-q⁻¹M(123,123)
+ M(1/2/3,1/2/3)-q⁻¹M(12/3,12/3)+(1-q⁻¹)M(12/3,13/2)-q⁻¹M(13/2,12/3)-q⁻¹M(13/2,13/2)+q⁻¹M(123,123)
+ M(1/2/3,1/2/3)-q⁻¹M(12/3,12/3)-q⁻¹M(12/3,13/2)+(1-q⁻¹)M(13/2,12/3)-q⁻¹M(13/2,13/2)+q⁻¹M(123,123)
+ -M(1/2/3,1/2/3)+(-1+q⁻¹)M(12/3,12/3)+(-1+q⁻¹)M(12/3,13/2)+(-1+q⁻¹)M(13/2,12/3)+q⁻¹M(13/2,13/2)+(1-q⁻¹)M(123,123)
+```
 """
 module Murphy
 
@@ -43,7 +68,7 @@ function Permtableaux(s,t)
     push!(w,i)
     x=Perm(i,i+1)*x
   end
-  return w
+  w
 end
 
 function firsttableau(mu) # smallest tableau of shape mu
@@ -72,16 +97,14 @@ end
 istableau(t)=all(x->x==sort(unique(x)),t) && 
              all(x->x==sort(unique(x)),conjugate_tableau(t))
 
-shortTableau(t)=join(joindigits.(t),"/")
-
 #------------------The Murphy basis code proper---------------------
 """
-Set `Murphy.SpechtModules[]=true` to work just inside the Specht modules.
-This makes  computations with  the Murphy  basis inside Specht modules
-modules much faster but also means that `T` to `Murphy` basis conversions
-do not work, even if `Murphy.SpechtModules[]=false` is set later.
+Set  `Murphy.SpechtModules=true` to  work just  inside the  Specht modules.
+This makes computations with the Murphy basis inside Specht modules modules
+much  faster but also means  that `T` to `Murphy`  basis conversions do not
+work, even if `Murphy.SpechtModules=false` is set later.
 """
-const SpechtModules=Ref(false)
+const SpechtModules::Bool=false
 
 struct HeckeMElt{C,TH}<:HeckeElt{TH,C,Tuple{Int,Int,Int}}
   d::ModuleElt{Tuple{Int,Int,Int},C} # has better merge performance than Dict
@@ -93,41 +116,59 @@ Base.zero(::Type{HeckeMElt},H::HeckeAlgebra)=HeckeMElt(zero(ModuleElt{Tuple{Int,
 Base.zero(h::HeckeMElt)=zero(HeckeMElt,h.H)
 HeckeAlgebras.basisname(h::HeckeMElt)="M"
 
-# Create H.Murphy with various components.
-# initMurphy(H) is called the first time that the Murphy basis is used.
+"""
+`initMurphy(H)` for `hecke(coxgroup(:A,n-1),q)`
+
+Called the first time that the Murphy basis is used. Creates H.Murphy with 
+various components.
+
+  - `H.Murphy.partitions` contains the partitions of n
+  - `H.Murphy.Tableaux[mu]` contains the tableaux for `H.Murphy.partitions[mu]`
+  - `H.Murphy.tableaux[mu]` contains a list of namedtuples each of which 
+       contains information for the corresponding element of
+       `H.Murphy.tableaux[mu]`. Their components are:
+  - `ind`: index of tableau in H.Murphy.tableaux[mu]
+  - `mu`: index of tableau's shape in H.Murphy.partitions
+  - `wd`: associated word in S_n (as a Perm)
+          that is Perm such that t=t(mu)*w where t(mu)=firsttableau(mu)
+  - `toT`:MurphyToT 
+  - `Garnir`: will hold the Garnir expansions
+
+Creating  a list  of all  of the  standard tableaux  is a  big overhead for
+Specht  modules of  large dimension  so the  above arrays  work as  a cache
+filled  as  needed.  The  bookkeeping  to  maintain these caches is done in
+`infotableau`.
+"""
 function initMurphy(H)
-  if haskey(H, :Murphy) return end
-  t=refltype(H.W)
-  if length(t)!=1 || t[1].series!=:A
-    error("the Murphy basis is implemented only for irreducible type A")
+  get!(H, :Murphy)do
+    t=refltype(H.W)
+    if length(t)!=1 || t[1].series!=:A
+      error("the Murphy basis is implemented only for irreducible type A")
+    end
+    if ngens(H.W)>0 && H.para[1][2]!=-1
+      error("H must have parameters q and -1")
+    end
+    mu=fill(1,ngens(H.W)+1) # first partition of n
+    Murphy=(partitions=[mu],
+    tableaux=[[(ind=1,mu=1,wd=one(H.W),Garnir=Dict{Int,Any}(),
+                                     toT=Dict{Int,Any}(1=>Tbasis(H)()))]],
+    Tableaux=[[firsttableau(mu)]],
+    TtoMurphy=Dict{Perm,Any}(one(H.W)=>HeckeMElt(ModuleElt((1,1,1)=>
+                                             one(coefftype(H))),H)))
+    # T-basis to Murphy-basis conversions; store as computed.
+    # Start with identity element.
+    InfoChevie("#I Initialized Murphy basis\n")
+    Murphy
   end
-  mu=fill(1,semisimplerank(H.W)+1) # first partition of n
-  H.Murphy=(partitions=[mu],
-  # H.tableaux=[partitions][ (ind = index of tableau in H.Tableaux[mu]
-  #                         mu = index of tableau shape in H.partition
-  #             wd=associated word in S_n (as a CoxeterGroup permutation)
-  #                that is perm such that t=t^mu*w where t^mu=firsttableau(mu)
-  #             toT=MurphyToT 
-  #             Garnir will hold the Garnir expansions) ]
-  # Creating a list of all of the standard tableaux is a big overhead for
-  # Specht modules of large dimension so we create these tableaux records
-  # only as needed, storing them in tableaux[mu][...] with a parallel list
-  # Tableaux[mu][...] containing the list of the corresponding tableaux.
-  # The bookkeeping to maintain and access this list is done by the
-  # function code_tableau().
-  tableaux=[[(ind=1,mu=1,wd=one(H.W),Garnir=Dict{Int,Any}(),
-                                   toT=Dict{Int,Any}(1=>Tbasis(H)()))]],
-  Tableaux=[[firsttableau(mu)]],
-  TtoMurphy=Dict{Perm,Any}(one(H.W)=>HeckeMElt(ModuleElt((1,1,1)=>
-                                           one(coefftype(H))),H)))
-  # T-basis to Murphy-basis conversions; store as computed.
-  # Start with identity element.
-  InfoChevie("#I Initialized Murphy basis\n")
 end
 
-# Given a partition <mu> , which is assumed to be a partition of n, return the 
-# index of <mu> in the list H.partitions, or add <mu> to this list if it is not
-# already there AND initialize the list H.tableaux[mu] and H.Tableaux[...].
+"""
+`code_partition(H::HeckeAlgebra, μ)`
+
+Given a partition `μ⊢n`, return the index `mu` of `μ` in `H.partitions`, or
+add  `μ`  to  this  list  if  it  is  not  already  there  *and* initialize
+`H.tableaux[mu]` and `H.Tableaux[mu]`.
+"""
 function code_partition(H::HeckeAlgebra, mu)
   t=findfirst(==(mu),H.Murphy.partitions)
   if t!==nothing return t end
@@ -142,30 +183,31 @@ end
 # given  a tableau  <tab> ,  which is  assumed to  be standard, return the
 # corresponding  element of <H>.tableau  (a "CoxeterGroup tableau"). Here,
 # <mu> is the index of the shape of <tab> in H.partitions[].
-function code_tableau(H::HeckeAlgebra, mu::Integer, tab)
+function infotableau(H::HeckeAlgebra, mu::Integer, tab)
   tabs=H.Murphy.Tableaux[mu]
   ind=findfirst(==(tab),tabs)
   if ind===nothing
     ind=length(tabs)+1
-    push!(H.Murphy.tableaux[mu],(ind=ind,mu=mu,wd=H.W(Permtableaux(tabs[1],tab)...),
-                                 Garnir=Dict{Int,Any}(),toT=Dict{Int,Any}()))
     push!(tabs,copy.(tab))
+    push!(H.Murphy.tableaux[mu],(ind=length(tabs),mu=mu,
+                                 wd=H.W(Permtableaux(tabs[1],tab)...),
+                                 Garnir=Dict{Int,Any}(),toT=Dict{Int,Any}()))
   end
   H.Murphy.tableaux[mu][ind]
 end
 
-CodedTableau{P}=NamedTuple{(:ind, :mu, :wd, :Garnir, :toT),Tuple{Int64,Int64,P,Dict{Int64,Any},Dict{Int64,Any}}}
+InfoTableau{P}=NamedTuple{(:ind, :mu, :wd, :Garnir, :toT),Tuple{Int64,Int64,P,Dict{Int64,Any},Dict{Int64,Any}}}
 
-firsttableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.tableaux[t.mu][1]
+firsttableau(H::HeckeAlgebra,t::InfoTableau)=H.Murphy.tableaux[t.mu][1]
 
-tableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.tableaux[t.mu][t.ind]
+tableau(H::HeckeAlgebra,t::InfoTableau)=H.Murphy.tableaux[t.mu][t.ind]
 
-firstTableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.Tableaux[t.mu][1]
+firstTableau(H::HeckeAlgebra,t::InfoTableau)=H.Murphy.Tableaux[t.mu][1]
 
-Tableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.Tableaux[t.mu][t.ind]
+Tableau(H::HeckeAlgebra,t::InfoTableau)=H.Murphy.Tableaux[t.mu][t.ind]
 
 # given a tableau <t> return the basis element x_mu*T_<t> in the T-basis
-function Xt(H::HeckeAlgebra,t::CodedTableau)
+function Xt(H::HeckeAlgebra,t::InfoTableau)
   get!(tableau(H,t).toT,1)do
     HeckeTElt(if t.ind==1 
       J=vcat(map(x->x[1:end-1],firstTableau(H,t))...)
@@ -179,7 +221,7 @@ end
 
 # given a pair (s,t) of tableaux, return the basis element 
 # <t>.(<s>.ind)=T_<s>^* x_mu T_<t> in the T-basis.
-function MurphyToT(H::HeckeAlgebra, s::CodedTableau, t::CodedTableau)
+function MurphyToT(H::HeckeAlgebra, s::InfoTableau, t::InfoTableau)
   get!(tableau(H,t).toT,s.ind)do
     if s.ind==1 Xt(H,t)
     elseif t.ind==1 α(Xt(H, s))
@@ -191,7 +233,7 @@ end
 # convert Murphy basis to T-basis
 function HeckeAlgebras.Tbasis(M::HeckeMElt)
   tt=M.H.Murphy.tableaux
-  sum([c*MurphyToT(M.H,tt[i][t1],tt[i][t2]) for ((i,t1,t2),c) in M.d])
+  sum(c*MurphyToT(M.H,tt[i][t1],tt[i][t2]) for ((i,t1,t2),c) in M.d)
 end
 
 # This function recursively expands T_w into a linear combination of
@@ -200,8 +242,8 @@ end
 # As we go along we cache these expansions in the dict H.TtoMurphy
 function TtoMurphy(H::HeckeAlgebra,w)
   get!(H.Murphy.TtoMurphy,w)do
-    if SpechtModules[]
-      println("\n# WARNING: because Murphy.SpechtModules[]==true the answer\n",
+    if SpechtModules
+      println("\n# WARNING: because Murphy.SpechtModules==true the answer\n",
             "# TtoMurphy returns will almost certainly be incorrect.")
     end
     W=H.W
@@ -226,41 +268,46 @@ function Murphybasis(H::HeckeAlgebra)
     mu=length.(s)
     if mu!=length.(t) error("<s> and <t> must have the same shape") end
     imu=code_partition(H, mu)
-    is=code_tableau(H, imu, s)
-    it=code_tableau(H, imu, t)
+    is=infotableau(H, imu, s)
+    it=infotableau(H, imu, t)
     HeckeMElt(ModuleElt((imu,is.ind,it.ind)=>one(coefftype(H))),H)
+  end
+end
+
+function StringTableau(io::IO,t)
+  TeX=get(io,:TeX,false)
+  repl=get(io,:limit,false)
+  if TeX return "\\tab("*join(join.(tab),",")*")"
+  elseif repl return join(joindigits.(t),"/")
+  else "["*join(map(p->"["*join(p,",")*"]",t),",")*"]"
   end
 end
 
 function Base.show(io::IO, h::HeckeMElt)
   function showbasis(io::IO,(mu,s,t))
     TeX=get(io,:TeX,false)
-    repl=get(io,:limit,false)
     H=h.H
     TeXTableau(tab)="\\tab("*join(join.(tab),",")*")"
-    StringTableau(t)=repl ? shortTableau(t) :
-      "["*join(map(p->"["*join(p,",")*"]",t),",")*"]"
-      u=H.Murphy.Tableaux[mu][t]
-    if SpechtModules[] 
-      TeX ? TeXTableau(u)*"\n" : string("S(",StringTableau(u),")")
+    u=H.Murphy.Tableaux[mu][t]
+    t=H.Murphy.Tableaux[mu][s]
+    if SpechtModules 
+      TeX ? StringTableau(io,u)*"\n" : string("S(",StringTableau(io,u),")")
     else 
-     t=H.Murphy.Tableaux[mu][s]
-      if TeX string(HeckeAlgebras.basisname(h),"(",join(TeXTableau.((t,u)),", "),")\n")
-      else string(HeckeAlgebras.basisname(h),"(",StringTableau(t),", ",StringTableau(u),")")
-      end
+      string(HeckeAlgebras.basisname(h),"(",StringTableau(io,t),",",
+                              StringTableau(io,u),")",TeX ? "\n" : "")
     end
   end
   show(IOContext(io,:showbasis=>showbasis),h.d)
 end
 
 # returns the position of the integer <i> in the tableau record <t>.
-function PositionInTableau(H, t::CodedTableau, i)
+function PositionInTableau(H, t::InfoTableau, i)
   tab=Tableau(H,t)
   for row in eachindex(tab)
     col=findfirst(==(i),tab[row])
-    if col!==nothing return (row=row,col=col) end
+    if col!==nothing return (;row,col) end
   end
-  error(i," is not contained in the tableau ",shortTableau(tab))
+  error(i," is not contained in the tableau ",StringTableau(rio(),tab))
 end
 
 function Base.:*(m::HeckeMElt, h::HeckeTElt)
@@ -287,7 +334,7 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
           tabr=copy.(H.Murphy.Tableaux[mu][it])
           tabr[nodeR.row][nodeR.col]=r+1
           tabr[nodeS.row][nodeS.col]=r
-          tr=code_tableau(H, mu, tabr)
+          tr=infotableau(H, mu, tabr)
           if nodeR.row < nodeS.row # up in the Bruhat order
             push!(mr,(mu,is,tr.ind)=>coeff)
           else
@@ -316,7 +363,7 @@ Base.:*(h::HeckeTElt,m::HeckeMElt)=α(α(m)*α(h))
 # whexe  we know  that <t>*(x,x+1)  is not  standard. Once  we know  how to
 # expxess  M_{1,<t>}*T_x in the  Murphy basis we  store this as t.Garnir[x]
 # for future reference.
-function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
+function GarnirExpansion(H::HeckeAlgebra,node,s::InfoTableau,t::InfoTableau)
   rt=Tableau(H,t)[node.row][node.col]
   if !haskey(t.Garnir,rt)
     W = H.W
@@ -344,7 +391,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
     gtab[node.row+1][1:node.col-1]=a:a+node.col-2
     gtab[node.row][node.col]  =a+node.col-1
     gtab[node.row+1][node.col]=a+node.col
-    g=code_tableau(H, t.mu, gtab)
+    g=infotableau(H, t.mu, gtab)
     # w is the permutation such that t=g*w => T_t = T_g*T_w
     w=Permtableaux(gtab,Tableau(H,t))
     rg=Tableau(H,g)[node.row][node.col]
@@ -364,16 +411,16 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
           gtab[node.row][node.col:end]=sort(setdiff(a:b,J))
           # note that we set <s>=t^mu below; this is because we later
           # have to multiply by T_s^*
-          push!(mres,(g.mu,1,code_tableau(H,g.mu,gtab).ind)=>-1)
+          push!(mres,(g.mu,1,infotableau(H,g.mu,gtab).ind)=>-1)
         end
       end
       tableau(H,g).Garnir[rg]=HeckeMElt(ModuleElt(mres),H)
-      # Next, if Murphy.SpechtModules[]=false (in which case we 
+      # Next, if Murphy.SpechtModules=false (in which case we 
       # just work in the Specht module), we look after the right hand term
       # in (*) above. In general it won't correspond to a partition but we
       # can find a partition <nu> and a <d> in <W> such that 
       # T_d<RHS>=<x_nu>T_<d>
-      if SpechtModules[]==false
+      if SpechtModules==false
         tab=gtab[1:node.row-1]
         if node.col > 1 push!(tab, gtab[node.row][1:node.col - 1]) end
         push!(tab,a:b)
@@ -427,17 +474,17 @@ end
 Base.:*(a::HeckeMElt,b::HeckeMElt)=a*Tbasis(a.H)(b)
 
 # This is the anti-isomorphism of the Hecke algebra given by T_i -> T_i;
-# on the Murphy basis we have M_{s,t} -> M_{t,s} (also called * by many)
+# on the Murphy basis we have α(M_{s,t})=M_{t,s} (α also called * by many)
 function Garside.α(h::HeckeMElt)
-  HeckeMElt(ModuleElt([(mu,t,s)=>c for ((mu,s,t),c) in h.d]),h.H)
+  HeckeMElt(ModuleElt((mu,t,s)=>c for ((mu,s,t),c) in h.d),h.H)
 end
 
 # Compute the Gram matrix of a Specht module w.r.t. its Murphy basis.
 function GramMatrix(H, mu)
-  if !SpechtModules[]
+  if !SpechtModules
     print("# WARNING: in the interests of speed, this function has just \n", 
           "#          disabled T-basis to Murphy basis convertions.\n")
-    SpechtModules[]=true
+    SpechtModules=true
   end
   tab=tableaux(mu)
   M = Murphybasis(H)
@@ -469,7 +516,7 @@ function SpechtModule(H, mu)
   if sum(mu)!=length(H.para)+1
     error(mu," must be a partition of ",length(H.para)+1)
   end
-  SpechtModules[]=true
+  SpechtModules=true
   tmu=firsttableau(mu)
   t->Murphybasis(H)(tmu, t)
 end
@@ -499,7 +546,7 @@ function test(n=4,q=Pol())
   W=coxgroup(:A,n-1)
   H=hecke(W, q)
   T=Tbasis(H)
-  SpechtModules[]=false
+  SpechtModules=false
   M=Murphybasis(H)
   xprintln("Testing Murphy functions for ",H)
   for w in sort(words(W), by=a->[length(a), a])
@@ -523,7 +570,7 @@ function test2(n=4,q=Pol())
   H=hecke(W,Pol())
   xprintln("Testing the Murphy basis functions for ",H)
   T=Tbasis(H)
-  SpechtModules[]=false
+  SpechtModules=false
   M=Murphybasis(H)
   for mu in reverse(partitions(n))
     std = tableaux(mu)

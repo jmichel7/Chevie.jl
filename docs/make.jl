@@ -36,6 +36,7 @@ makedocs(sitename="Chevie.jl documentation",
     "Hecke algebras"=>[
     "hecke.md",
     "kl.md",
+    "murphy.md",
     "algebras.md"],
     "garside.md",
     "Reductive groups"=>[
