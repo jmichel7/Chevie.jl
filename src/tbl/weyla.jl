@@ -116,12 +116,8 @@ chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
   -param[1][2]*Spechtmodel(H,partitions(n+1)[i])
 end)
 
-CacheARepresentations=Dict{Tuple{Int,Int},Vector{Matrix{Int}}}()
-
 chevieset(:A, :Representation, function (n, i)
-  get!(CacheARepresentations,(n,i))do
-    chevieget(:A, :HeckeRepresentation)(n,fill([1,-1],n),fill(1,n),i)
-  end
+  chevieget(:A, :HeckeRepresentation)(n,fill([1,-1],n),fill(1,n),i)
 end)
 
 chevieset(:A, :FakeDegree, function (n, p, q)
