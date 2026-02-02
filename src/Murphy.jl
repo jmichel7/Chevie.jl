@@ -37,7 +37,7 @@ julia> l=Tbasis(H).(elements(W))
  T₂₁
  T₁₂₁
 
-julia> Murphy.SpechtModules(H)=false;Murphybasis(H).(l)
+julia> Murphy.SpechtModules(H,false);Murphybasis(H).(l)
 6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  M(1/2/3,1/2/3)
  -M(1/2/3,1/2/3)+M(12/3,12/3)
@@ -101,6 +101,7 @@ faster  but also means that `T` to  `Murphy` basis conversions do not work,
 even if `SpechtModules(H,false)` is set later.
 """
 function SpechtModules(H,t::Bool)
+  initMurphy(H)
   if H.Murphy.SpechtModules[]==t return end
   empty!(H.Murphy.TtoMurphy)
   for i in eachindex(H.Murphy.partitions)
@@ -183,7 +184,7 @@ add  `μ`  to  this  list  if  it  is  not  already  there  *and* initialize
 function code_partition(H::HeckeAlgebra, mu)
   t=findfirst(==(mu),H.Murphy.partitions)
   if t!==nothing return t end
-  push!(H.Murphy.partitions,copy.(mu))
+  push!(H.Murphy.partitions,copy(mu))
   t=length(H.Murphy.partitions)
   push!(H.Murphy.InfoTableaux,
         [InfoTableau(1,t,one(H.W),Dict{Int,Any}(),Dict{Int,Any}())])
@@ -523,10 +524,9 @@ function SpechtModule(H, mu)
   if sum(mu)!=length(H.para)+1
     error(mu," must be a partition of ",length(H.para)+1)
   end
-  M=Murphybasis(H)
   SpechtModules(H,true)
   tmu=firsttableau(mu)
-  t->M(tmu, t)
+  t->Murphybasis(H)(tmu, t)
 end
 
 # Returns the representation of the Hecke algebra H of type A indexed by

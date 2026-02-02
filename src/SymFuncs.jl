@@ -2,7 +2,7 @@
 This  module  deals  with  symmetric  functions.  The  main  object  is the
 (truncated) algebra of symmetric functions, and the bases `p` (power sums),
 `h` (complete symmetric functions) and `s` (Schur functions). Each of these
-basies in degree `n` is indexed by the partitions of `n`.
+bases in degree `n` is indexed by the partitions of `n`.
 
 A typical session would begin by defining the symmetric functions and these
 bases:
@@ -40,9 +40,6 @@ s₂₂₁₁+s₂₂₂+s₃₁₁₁+2s₃₂₁+s₃₃+s₄₁₁+s₄₂
 julia> s(2,1)⊗s(2,1) # inner product
 s₁₁₁+s₂₁+s₃
 
-julia> plethysm(p(2,1),s(2,1))
-(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃
-
 julia> scalarproduct(p(1,1,1),s(2,1))
 2//1
 ```
@@ -51,11 +48,29 @@ One can mix bases in these operations. The basis of the left argument wins:
 julia> s(2,1)+p(3)
 s₁₁₁+s₃
 ```
+The plethysm is implemented with two possible notations:
+
+```julia-repl
+julia> plethysm(p(2,1),s(2,1))
+(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃
+
+julia> p(2,1)[s(2,1)]  # the same thing
+(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃
+
+julia> @Mvp u,v
+
+julia> p(2,1)[u*p(2)+v*p(3)] # plethysm acts on Mvp coefficients
+u²p₄₂+uvp₄₃+uvp₆₂+v²p₆₃
+```
+
 finally one can convert a symmetric function to a symmetric polynomial.
 The number of variables is the highest degree in the function.
 ```julia-repl
 julia> Mvp(p(2)+p(3))
 Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²
+
+julia> Mvp(p(2),[u,v]) # one can choose the variables used
+Mvp{Int64}: u²+v²
 ```
 """
 module SymFuncs
@@ -100,6 +115,13 @@ end
 
 function Base.show(io::IO,A::SymFuncAlgebra)
   print(io,"SymFuncAlgebra(",A.n,")")
+end
+
+function H(lambda,s)
+  n=sum(lambda)
+  t=UnipotentValues(UnipotentClasses(rootdatum(:gl,n));classes=true)
+  i=findfirst(==(lambda),partitions(n))
+  sum(t.scalar[:,i].*s.(partitions(n)))
 end
 
 "`SymFuncAlgebra(n)` the algebra of symmetric functions truncated in `degree>n`"
