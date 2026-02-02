@@ -75,8 +75,12 @@ chevieset(:A,:b,p->dot(p,0:length(p)-1))
 
 chevieset(:A,:B,p->binomial(sum(p),2)-sum(i->binomial(i,2),p))
 
+const partitionsCache=Dict{Int,Vector{Vector{Int}}}()
+
+chevieset(:A,:charparams,n->get!(()->partitions(n+1),partitionsCache,n+1))
+
 chevieset(:A, :charinfo, function(n)
-  pp=partitions(n+1)
+  pp=chevieget(:A,:charparams)(n)
   res=Dict{Symbol, Any}(:charparams=>pp,
     :charnames=>joindigits.(pp),
     :extRefl=>map(i->findfirst(==(pushfirst!(fill(1,i),n+1-i)),pp),0:n),
@@ -112,8 +116,13 @@ chevieset(:A, :FactorizedSchurElement,function(n,alpha,para,arg...)
 end)
 
 chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
+  pp=chevieget(:A,:charparams)(n)
+  if param[1][2]==-1 && haskey(Murphy.Murphycache,(n,param[1][1])) && 
+    haskey(Murphy.Murphycache[(n,param[1][1])].SpechtModels,pp[i])
+    return Murphy.Murphycache[(n,param[1][1])].SpechtModels[pp[i]]
+  end
   H=hecke(coxgroup(:A,n),-param[1][1]//param[1][2])
-  -param[1][2]*Spechtmodel(H,partitions(n+1)[i])
+  -param[1][2]*Spechtmodel(H,pp[i])
 end)
 
 chevieset(:A, :Representation, function (n, i)
@@ -126,7 +135,7 @@ chevieset(:A, :FakeDegree, function (n, p, q)
 end)
 
 chevieset(:A, :KLeftCellRepresentatives,function(n)
-  pp=partitions(n+1)
+  pp=chevieget(:A,:charparams)(n)
   function f(i)
     i=prod(j->Perm(j,j+1),word(W,i);init=Perm())
     p=length.(robinson_schensted((1:n+1).^i)[1])
@@ -167,8 +176,8 @@ chevieset(:A, :Invariants, function(n)
 end)
 
 chevieset(:A, :UnipotentClasses, function (n, p)
-  uc=Dict{Symbol, Any}(
-    :classes=>map(p->Dict{Symbol,Any}(:parameter=>p),partitions(n+1)),
+  uc=Dict{Symbol, Any}(:classes=>
+      map(p->Dict{Symbol,Any}(:parameter=>p),chevieget(:A,:charparams)(n)),
     :springerSeries=>vcat(map(d->map(i->
       Dict{Symbol,Any}(:relgroup =>coxgroup(:A,div(n+1,d)-1),:Z=>[E(d,i)],
         :levi=>filter(i->mod(i,d)!=0,1:n+1),:locsys=>[]),

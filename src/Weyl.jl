@@ -405,8 +405,18 @@ julia> two_tree(cartan(:E,8))
 two_tree=function(m::AbstractMatrix)
   function branch(x)
     while true
-      x=findfirst(i->m[x,i]!=0 && !(i in line),axes(m,2))
-      if !isnothing(x) push!(line,x) else break end
+      found=false
+      for i in axes(m,2)
+        if !iszero(m[x,i]) && !(i in line)
+          x=i
+          push!(line,x)
+          found=true
+          break
+        end
+      end
+      if !found break end
+#     x=findfirst(i->!iszero(m[x,i]) && !(i in line),axes(m,2))
+#     if !isnothing(x) push!(line,x) else break end
     end
   end
   line=[1]
@@ -415,70 +425,72 @@ two_tree=function(m::AbstractMatrix)
   branch(1)
   line=vcat(line[end:-1:l+1],line[1:l])
   l=length(line)
-  if any(i->any(j->m[line[j],line[i]]!=0,1:i-2),1:l) return nothing end
+  for i in 1:l for j in 1:i-2 
+    if !iszero(m[line[j],line[i]]) return nothing end
+  end end
   r=size(m,1)
   if l==r return line end
-  p = findfirst(x->any(i->!(i in line)&&(m[x,i]!=0),1:r),line)
+  p=findfirst(x->any(i->!(i in line)&&(m[x,i]!=0),1:r),line)
   branch(line[p])
   if length(line)!=r return nothing end
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
 
 " TypeIrred or nothing for an indecomposable Cartan matrix"
-function fincoxTypeIrred(m::AbstractMatrix)
+function InitChevie.TypeIrred(m::AbstractMatrix)
   rank=size(m,1)
   if !all(==(2),diag(m)) return nothing end
   s=two_tree(m)
   if isnothing(s) return nothing end
-  t=Dict{Symbol,Any}(:rank=>rank)
+  t=TypeIrred(Dict{Symbol,Any}(:rank=>rank))
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
-    if length(b2)==1 t[:series]=:D
-      t[:indices]=[b1;b2;vertex;b3]::Vector{Int}
-    else t[:series]=:E
-      t[:indices]=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
+    if length(b2)==1 t.series=:D
+      t.indices=[b1;b2;vertex;b3]::Vector{Int}
+    else t.series=:E
+      t.indices=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
     end
   else  # types A,B,C,F,G,H,I
     l=i->m[s[i],s[i+1]]
     r=i->m[s[i+1],s[i]]
-    if rank==1 t[:series]=:A
+    if rank==1 t.series=:A
     elseif rank==2
       bond=l(1)*r(1)
-      if bond==1 t[:series]=:A
-      elseif bond==2 t[:series]=:B
+      if bond==1 t.series=:A
+      elseif bond==2 t.series=:B
         if l(1)==-1 reverse!(s) end # B2 preferred to C2
-        t[:cartanType]=improve_type(-l(1))
-      elseif bond==3 t[:series]=:G
+        t.cartanType=improve_type(-l(1))
+      elseif bond==3 t.series=:G
         if r(1)==-1 reverse!(s) end
-        t[:cartanType]=improve_type(-l(1))
+        t.cartanType=improve_type(-l(1))
       else n=conductor(bond)
         if r(1)==-1 reverse!(s) end
         if bond==2+E(n)+E(n,-1) bond=n else bond=2n end
-        t[:series]=:I
-        if bond%2==0 t[:cartanType]=improve_type(-l(1)) end
-        t[:bond]=bond
+        t.series=:I
+        if bond%2==0 t.cartanType=improve_type(-l(1)) end
+        t.bond=bond
       end
     else
       if l(rank-1)*r(rank-1)!=1 reverse!(s) end
       if l(1)*r(1)==1
-       if l(2)*r(2)==1 t[:series]=:A
-       else t[:series]=:F
+       if l(2)*r(2)==1 t.series=:A
+       else t.series=:F
           if r(2)==-1 reverse!(s) end
-          t[:cartanType]=improve_type(-l(2))
+          t.cartanType=improve_type(-l(2))
         end
       else n=conductor(l(1)*r(1))
-       if n==5 t[:series]=:H
-       else t[:series]=:B
-        t[:cartanType]=improve_type(-l(1))
+       if n==5 t.series=:H
+       else t.series=:B
+        t.cartanType=improve_type(-l(1))
         end
       end
     end
-    t[:indices]=s::Vector{Int}
+    t.indices=s::Vector{Int}
   end
-  ti=TypeIrred(;t...)
+  InitChevie.field(t)
 # println("ti=$ti")
 # println("indices=",ti.indices]," cartan=",cartan(ti)," m=$m")
-  if cartan(ti,permute=true)==m return ti end  # countercheck
+  if cartan(t,permute=true)==m return t end  # countercheck
 end
 
 """
@@ -488,9 +500,9 @@ return a list of `(series=s,indices=[i1,..,in])` for a Cartan matrix `C`.
 """
 function fincox_refltype(m::AbstractMatrix)
   map(diagblocks(m)) do I
-    t=fincoxTypeIrred(m[I,I])
+    t=TypeIrred(@view m[I,I])
     if isnothing(t) return nothing end
-    t[:indices].=I[t[:indices]]
+    t.indices.=I[t.indices]
     t
   end
 end

@@ -103,7 +103,7 @@ chevieset(:imp, :parabolic_reps, function (p, q, r, s)
   end
 end)
 
-chevieset(:imp, :CharParams, function (de, e, r)
+chevieset(:imp, :charparams, function (de, e, r)
   if e==1 return partition_tuples(r,de) end
   charparams=[]
   d = div(de, e)
@@ -427,7 +427,7 @@ chevieset(:imp, :Invariants, function(p,q,r)
 end)
 
 chevieset(:imp, :charinfo, function (de, e, r)
-  res=Dict{Symbol,Any}(:charparams=>chevieget(:imp, :CharParams)(de, e, r))
+  res=Dict{Symbol,Any}(:charparams=>chevieget(:imp, :charparams)(de, e, r))
   d=div(de,e)
   if e==1
     s=fill(0,d)

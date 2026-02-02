@@ -577,9 +577,9 @@ end
 end
 @testset "Murphy.jl" begin
 @test mytest("Murphy.jl","W=coxgroup(:A,2)","A₂")
-@test mytest("Murphy.jl","H=hecke(W,Pol())","hecke(A₂,x)")
+@test mytest("Murphy.jl","H=hecke(W,Pol(:q))","hecke(A₂,q)")
 @test mytest("Murphy.jl","l=Tbasis(H).(elements(W))","6-element Vector{HeckeTElt{HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Pol{Int64}, Perm{Int16}}}:\n T.\n T₁\n T₂\n T₁₂\n T₂₁\n T₁₂₁")
-@test mytest("Murphy.jl","Murphybasis(H).(l)","#I Initialized Murphy basis\n6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n M(1/2/3,1/2/3)\n -M(1/2/3,1/2/3)+M(12/3,12/3)\n -M(1/2/3,1/2/3)+x⁻¹M(12/3,12/3)+x⁻¹M(12/3,13/2)+x⁻¹M(13/2,12/3)+x⁻¹M(13/2,13/2)-x⁻¹M(123,123)\n M(1/2/3,1/2/3)-x⁻¹M(12/3,12/3)+(1-x⁻¹)M(12/3,13/2)-x⁻¹M(13/2,12/3)-x⁻¹M(13/2,13/2)+x⁻¹M(123,123)\n M(1/2/3,1/2/3)-x⁻¹M(12/3,12/3)-x⁻¹M(12/3,13/2)+(1-x⁻¹)M(13/2,12/3)-x⁻¹M(13/2,13/2)+x⁻¹M(123,123)\n -M(1/2/3,1/2/3)+(-1+x⁻¹)M(12/3,12/3)+(-1+x⁻¹)M(12/3,13/2)+(-1+x⁻¹)M(13/2,12/3)+x⁻¹M(13/2,13/2)+(1-x⁻¹)M(123,123)")
+@test mytest("Murphy.jl","Murphybasis(H).(l)","6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n M(1/2/3,1/2/3)\n -M(1/2/3,1/2/3)+M(12/3,12/3)\n -M(1/2/3,1/2/3)+q⁻¹M(12/3,12/3)+q⁻¹M(12/3,13/2)+q⁻¹M(13/2,12/3)+q⁻¹M(13/2,13/2)-q⁻¹M(123,123)\n M(1/2/3,1/2/3)-q⁻¹M(12/3,12/3)+(1-q⁻¹)M(12/3,13/2)-q⁻¹M(13/2,12/3)-q⁻¹M(13/2,13/2)+q⁻¹M(123,123)\n M(1/2/3,1/2/3)-q⁻¹M(12/3,12/3)-q⁻¹M(12/3,13/2)+(1-q⁻¹)M(13/2,12/3)-q⁻¹M(13/2,13/2)+q⁻¹M(123,123)\n -M(1/2/3,1/2/3)+(-1+q⁻¹)M(12/3,12/3)+(-1+q⁻¹)M(12/3,13/2)+(-1+q⁻¹)M(13/2,12/3)+q⁻¹M(13/2,13/2)+(1-q⁻¹)M(123,123)")
 end
 @testset "Nf.jl" begin
 @test mytest("Nf.jl","F=NF(E(5))","CF(5)")

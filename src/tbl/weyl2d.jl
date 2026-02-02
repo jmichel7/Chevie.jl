@@ -50,7 +50,7 @@ chevieset("2D", :IsPreferred, function(pp)
   p1>p2
 end)
 
-chevieset("2D", :CharParams, n->
+chevieset("2D", :charparams, n->
   filter(chevieget("2D",:IsPreferred),partition_tuples(n,2)))
 
 #the map which goes from almost characters to unipotent characters for 2Dn
@@ -63,12 +63,12 @@ function Defect0to2(S::CharSymbol)
 end
 
 chevieset("2D", :charinfo, function (n)
-  res=Dict{Symbol, Any}(:charparams=>chevieget("2D",:CharParams)(n))
+  res=Dict{Symbol, Any}(:charparams=>chevieget("2D",:charparams)(n))
   res[:extRefl]=map(i->[fill(1,i),[n-i]],0:n-2)
   append!(res[:extRefl],[[[1],fill(1,n-1)],[Int[],fill(1,n)]])
   res[:extRefl]=map(x->findfirst(y->y==x || y==reverse(x),res[:charparams]),
                     res[:extRefl])
-  resparams=chevieget(:imp,:CharParams)(2,2,n)
+  resparams=chevieget(:imp,:charparams)(2,2,n)
   res[:charRestrictions]=map(x->findfirst(y->y==x || y==reverse(x),resparams),
                              res[:charparams])
   res[:nrGroupClasses]=length(resparams)
@@ -110,7 +110,7 @@ function (l,param,sqrtpara)
                        :classes=>hi[:classes][lst],
 	   :text=>"extracted from generic character table of HeckeB")
   merge!(tbl,chevieget("2D",:classinfo)(l))
-  para=chevieget("2D",:CharParams)(l)
+  para=chevieget("2D",:charparams)(l)
   tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
       :charname=>string_partition_tuple(para[i])),eachindex(para))
   para=partition_tuples(l,2)
@@ -169,7 +169,7 @@ chevieset("2D", :UnipotentCharacters, function(rank)
       s[:relativeType]=TypeIrred(;orbit=[s[:relativeType]],twist=perm"(1,2)")
       s[:cuspidalName]= ""
       symbols=map(x->Symbol_partition_tuple(x, 0),
-                  chevieget("2D",:CharParams)(rank))
+                  chevieget("2D",:charparams)(rank))
     end
     s[:charNumbers]=map(s->findfirst(==(Defect0to2(s)),uc[:charSymbols]),symbols)
     uc[:almostCharSymbols][s[:charNumbers]]=symbols

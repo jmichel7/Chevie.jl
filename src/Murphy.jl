@@ -37,7 +37,7 @@ julia> l=Tbasis(H).(elements(W))
  T₂₁
  T₁₂₁
 
-julia> Murphybasis(H).(l)
+julia> Murphy.SpechtModules(H)=false;Murphybasis(H).(l)
 6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  M(1/2/3,1/2/3)
  -M(1/2/3,1/2/3)+M(12/3,12/3)

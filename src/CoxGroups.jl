@@ -851,8 +851,8 @@ abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
 # composition.  Thus, implementations  of FiniteCoxeterGroups  have a field
 # .G, a PermGroup, to which we forward the following methods.
 @forward FiniteCoxeterGroup.G Base.iterate, Base.one,
- Groups.gens, Groups.conjugacy_classes,
- PermGroups.classreps
+ Groups.gens, Groups.ordergens, Groups.conjugacy_classes, 
+ Groups.nconjugacy_classes, PermGroups.classreps
 
 Groups.transporting_elt(W::FiniteCoxeterGroup,x,y,F::Function)=
   transporting_elt(W.G,x,y,F)

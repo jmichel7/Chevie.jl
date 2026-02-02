@@ -870,7 +870,7 @@ end
 # try to make cartan(H,p) like C by changing p rotating roots (C indecomposable)
 function fixCartan(H,C,p)
   CH=cartan(H,p)
-  r=Weyl.fincoxTypeIrred(CH)
+  r=TypeIrred(CH)
   if !isnothing(r) return (r,p) end
   d=diagconj_elt(C,CH)
  #if isnothing(d) error("raté") end
@@ -980,7 +980,7 @@ function refltype(W::PermRootGroup;verbose=false)
       d=TypeIrred(R)
       C=cartan(d)
       if C==CR 
-        if d.series!=:ST d=Weyl.fincoxTypeIrred(CR) end
+        if d.series!=:ST d=TypeIrred(CR) end
         d.indices=I
         return d
       end
@@ -1013,7 +1013,7 @@ function refltype(W::PermRootGroup;verbose=false)
           end
         end
       end
-      if d.series!=:ST d=Weyl.fincoxTypeIrred(cartan(R,good)) end
+      if d.series!=:ST d=TypeIrred(cartan(R,good)) end
       d.indices=inclusion(R,W,good)
       d
     end
