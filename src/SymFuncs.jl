@@ -130,10 +130,10 @@ SymFuncAlgebra(n)=SymFuncAlgebra(n,
    Dict{Partition,Int}(Partition()=>1),
    Dict{Int,Vector{Partition}}())
                                  
-struct SymFunc{b,TS,C}# b=:s,:p or :h depending on the basis
+struct SymFunc{b,C,TS}# b=:s,:p or :h depending on the basis
   d::ModuleElt{Partition,C}
   A::TS
-  SymFunc{b}(m,A)where b =new{b,typeof(A),valtype(m)}(m,A)
+  SymFunc{b}(m,A)where b =new{b,valtype(m),typeof(A)}(m,A)
 end
 
 function Base.show(io::IO, h::SymFunc{b})where b
@@ -153,9 +153,9 @@ Base.:+(a::SymFunc{ba},b::SymFunc) where ba=clone(a,a.d+basis(Val(ba),b).d)
 Base.:+(a::SymFunc, b::Union{Number,Pol,Mvp})=a+one(a)*b
 Base.:-(a::SymFunc)=clone(a,-a.d)
 Base.:-(a::SymFunc{ba},b::SymFunc) where ba=clone(a,a.d-basis(Val(ba),b).d)
-Base.:*(a::SymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d*b)
+Base.:*(a::SymFunc, b::Union{Number,Pol,Mvp,Frac})=clone(a,a.d*b)
 Base.:(//)(a::SymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d//b)
-Base.:*(b::Union{Number,Pol,Mvp}, a::SymFunc)=a*b
+Base.:*(b::Union{Number,Pol,Mvp,Frac}, a::SymFunc)=a*b
 
 Base.:^(a::SymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
@@ -247,15 +247,23 @@ function Chars.scalarproduct(a::SymFunc{ab},b::SymFunc)where ab
   end
 end
 
+# raises all variables to rth power
+powr(m::Monomial,r)=Monomial(m.d*r)
+powr(p::Mvp,r)=Mvp(ModuleElt(powr(m,r)=>c for (m,c) in p.d))
+powr(p::Frac{<:Mvp},r)=Frac(powr(p.num,r),powr(p.den,r))
+powr(p,r)=p
+
 function plethysm(a::SymFunc{ab},b::SymFunc)where ab
   a=pbasis(a)
   b=pbasis(b)
   basis(Val(ab),sum(a.d;init=zero(a))do (p,c)
     c*prod(p.l)do i
-     SymFunc{:p}(ModuleElt(Partition(i*p1.l)=>c1 for (p1,c1) in b.d if i*size(p1)<=a.A.n),a.A)
+     SymFunc{:p}(ModuleElt(Partition(i*p1.l)=>powr(c1,i) for (p1,c1) in b.d 
+                           if i*size(p1)<=a.A.n),a.A)
      end
     end)
 end
+
 Base.getindex(a::SymFunc,b::SymFunc)=plethysm(a,b)
 
 end

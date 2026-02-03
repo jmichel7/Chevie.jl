@@ -436,7 +436,13 @@ two_tree=function(m::AbstractMatrix)
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
 
-" TypeIrred or nothing for an indecomposable Cartan matrix"
+"""
+`TypeIrred(m::AbstractMatrix)`
+
+`m`  is assumed to be indecomposable (have a single block). Returns nothing
+unless  `m` is the Cartan matrix of an irreducible finite Coxeter group. In
+this last case, returns the corresponding `TypeIrred`.
+"""
 function InitChevie.TypeIrred(m::AbstractMatrix)
   rank=size(m,1)
   if !all(==(2),diag(m)) return nothing end
