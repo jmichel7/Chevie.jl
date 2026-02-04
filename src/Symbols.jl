@@ -129,7 +129,8 @@ classical reductive groups.
 """
 module Symbols
 using ..Format: joindigits, rio, xrepr, hasdecor
-using Combinat: arrangements, partition_tuples, collectby, conjugate_partition
+using Combinat: Combinat, arrangements, partition_tuples, collectby, 
+  conjugate_partition, dominates
 using CyclotomicNumbers: E
 using CycPols: CycPol, subs
 using LaurentPolynomials
@@ -200,6 +201,7 @@ Base.length(p::Partition)=length(p.l)
 Base.isless(a::Partition,b::Partition)=size(a)<size(b) || a.l<b.l
 Base.:adjoint(a::Partition)=Partition(conjugate_partition(a.l))
 Base.getindex(a::Partition,i)=i>length(a) ? 0 : a.l[i]
+Combinat.dominates(a::Partition,b::Partition)=dominates(a.l,b.l)
 
 function Base.show(io::IO,::MIME"text/plain", p::Partition)
   if get(io,:typeinfo,Any)!=Partition print(io,"Partition: ") end
