@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Truncated Laurent series · Chevie.jl documentation</title><meta name="title" content="Truncated Laurent series · Chevie.jl documentation"/><meta property="og:title" content="Truncated Laurent series · Chevie.jl documentation"/><meta property="twitter:title" content="Truncated Laurent series · Chevie.jl documentation"/><meta name="description" content="Documentation for Chevie.jl documentation."/><meta property="og:description" content="Documentation for Chevie.jl documentation."/><meta property="twitter:description" content="Documentation for Chevie.jl documentation."/><meta property="og:url" content="https://juliadocs.github.io/Chevie.jl/truncs/"/><meta property="twitter:url" content="https://juliadocs.github.io/Chevie.jl/truncs/"/><link rel="canonical" href="https://juliadocs.github.io/Chevie.jl/truncs/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">Chevie.jl documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Chevie</a></li><li><span class="tocitem">Infrastructure</span><ul><li><a class="tocitem" href="../format/">formatting facilities</a></li><li><a class="tocitem" href="../symbols/">Symbols</a></li><li><a class="tocitem" href="../symfuncs/">Symmetric functions</a></li><li><a class="tocitem" href="../nf/">Number fields</a></li><li class="is-active"><a class="tocitem" href>Truncated Laurent series</a></li></ul></li><li><span class="tocitem">Reflection groups</span><ul><li><a class="tocitem" href="../permroot/">Finite reflection groups</a></li><li><a class="tocitem" href="../coxgroups/">Coxeter groups</a></li><li><a class="tocitem" href="../weyl/">Finite Coxeter groups, Weyl groups, crystallographic root systems</a></li><li><a class="tocitem" href="../chars/">Classes/characters of reflection groups</a></li></ul></li><li><span class="tocitem">Hecke algebras</span><ul><li><a class="tocitem" href="../hecke/">Hecke algebras</a></li><li><a class="tocitem" href="../kl/">Kazhdan-Lusztig polynomials and bases</a></li><li><a class="tocitem" href="../murphy/">Murphy basis</a></li><li><a class="tocitem" href="../algebras/">Algebras</a></li></ul></li><li><a class="tocitem" href="../garside/">Garside monoids and groups, braids.</a></li><li><span class="tocitem">Reductive groups</span><ul><li><a class="tocitem" href="../rootdata/">Reductive algebraic groups and root data</a></li><li><a class="tocitem" href="../semisimple/">Semisimple elements</a></li><li><a class="tocitem" href="../cosets/">Reflection cosets and Spets</a></li><li><a class="tocitem" href="../sscoset/">Non-connected reductive groups</a></li><li><a class="tocitem" href="../uch/">Unipotent characters</a></li><li><a class="tocitem" href="../ct/">Classtypes</a></li></ul></li><li><span class="tocitem">Eigenspaces</span><ul><li><a class="tocitem" href="../eigen/">Eigenspaces</a></li><li><a class="tocitem" href="../dseries/">d-Harish-Chandra series</a></li></ul></li><li><span class="tocitem">Unipotent elements</span><ul><li><a class="tocitem" href="../ucl/">Unipotent classes of reductive groups</a></li><li><a class="tocitem" href="../urad/">Unipotent Elements</a></li></ul></li><li><a class="tocitem" href="../gendec/">Decomposition Matrices</a></li><li><a class="tocitem" href="../references/">References</a></li><li><a class="tocitem" href="../dict/">Dictionary from GAP3/Chevie</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Infrastructure</a></li><li class="is-active"><a href>Truncated Laurent series</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Truncated Laurent series</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl/blob/main/docs/src/truncs.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Truncated-Laurent-series"><a class="docs-heading-anchor" href="#Truncated-Laurent-series">Truncated Laurent series</a><a id="Truncated-Laurent-series-1"></a><a class="docs-heading-anchor-permalink" href="#Truncated-Laurent-series" title="Permalink"></a></h1><article><details class="docstring" open="true"><summary id="Chevie.Truncs"><a class="docstring-binding" href="#Chevie.Truncs"><code>Chevie.Truncs</code></a> — <span class="docstring-category">Module</span></summary><section><div><p><code>module Trunc</code>: truncated Laurent series</p><p>This module depends on the package <code>LaurentPolynomials</code>.</p><p>The main function to construct a truncated series is:</p><pre><code class="language-julia-repl hljs">julia&gt; @Pol x
+Pol{Int64}: x
+
+julia&gt; p=(x+x^2)^5
+Pol{Int64}: x¹⁰+5x⁹+10x⁸+10x⁷+5x⁶+x⁵
+
+julia&gt; tp=Trunc(p,4)
+Trunc(4): x⁵+5x⁶+10x⁷+10x⁸+O(x⁹)</code></pre><p>The result here is a truncated series with 4 terms. You can do various operations with series</p><pre><code class="language-julia-repl hljs">julia&gt; inv(tp)
+Trunc(4): x⁻⁵-5x⁻⁴+15x⁻³-35x⁻²+O(x⁻¹)
+
+julia&gt; inv(tp)*tp
+Trunc(4): 1+O(x⁴)
+
+julia&gt; tp*2
+Trunc(4): 2x⁵+10x⁶+20x⁷+20x⁸+O(x⁹)</code></pre><p>By default the variable name to print <code>Trunc</code>s is the same as for <code>Pol</code>s. You can change that:</p><pre><code class="language-julia-repl hljs">julia&gt; Truncs.varname=:q
+:q
+
+julia&gt; tp
+Trunc(4): q⁵+5q⁶+10q⁷+10q⁸+O(q⁹)
+
+julia&gt; length(tp) # the number of terms
+4
+
+julia&gt; tp+1  # &quot;loss of precision&quot;
+Trunc(4): 1+O(q⁴)
+
+julia&gt; tp+Pol()^5 # ok here
+Trunc(4): 2q⁵+5q⁶+10q⁷+10q⁸+O(q⁹)
+
+julia&gt; tp-Trunc(Pol()^5,4) # true loss of precision
+Trunc(3): 5q⁶+10q⁷+10q⁸+O(q⁹)</code></pre><p>As for <code>Pol</code>s, indexing gets the term of a given degree</p><pre><code class="language-julia-repl hljs">julia&gt; tp[1]
+0
+
+julia&gt; tp[6]
+5</code></pre><p>You can convert directly to <code>Trunc</code> a rational fraction:</p><pre><code class="language-julia-repl hljs">julia&gt; a=(3Pol()^-2+1)/p
+Frac{Pol{Int64}}: (x²+3)/(x¹²+5x¹¹+10x¹⁰+10x⁹+5x⁸+x⁷)
+
+julia&gt; Trunc(a,4)
+Trunc(4): 3q⁻⁷-15q⁻⁶+46q⁻⁵-110q⁻⁴+O(q⁻³)
+
+julia&gt; Trunc(a,4)*tp
+Trunc(4): 3q⁻²+1+O(q²)</code></pre><p>We provide also convenience functions for <code>Mvp</code>s.</p><pre><code class="language-julia-repl hljs">julia&gt; @Mvp x,y
+
+julia&gt; den=x-y
+Mvp{Int64}: x-y
+
+julia&gt; frac=(x+y)/den
+Frac{Mvp{Int64, Int64}}: (x+y)/(x-y)
+
+julia&gt; Truncs.varname=:x
+:x
+
+julia&gt; tden=Trunc(den,4,:x) # convenience for Trunc(Pol(den,:x),4)
+Trunc(4): -y+x+O(x⁴)
+
+julia&gt; tfrac=Trunc(frac,4,:x)
+Trunc(4): -1-2y⁻¹x-2y⁻²x²-2y⁻³x³+O(x⁴)
+
+julia&gt; tden*tfrac
+Trunc(4): y+x+O(x⁴)</code></pre><p>We also have Padé approximants:</p><pre><code class="language-julia-repl hljs">ulia&gt; pade(inv(Trunc(p,9)))
+Frac{Pol{Rational{Int64}}}: ((1//70)x⁴+(-1//14)x³+(3//14)x²+(-1//2)x+1)/((9//5)x⁹+6x⁸+(54//7)x⁷+(9//2)x⁶+x⁵)
+
+julia&gt; pade(inv(Trunc(p,10)))
+Frac{Pol{Rational{Int64}}}: 1/(x¹⁰+5x⁹+10x⁸+10x⁷+5x⁶+x⁵)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/bee2f4dfc29ac7c7468df85fa919700dd178f186/src/Truncs.jl#L1-L101">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Truncs.Trunc"><a class="docstring-binding" href="#Chevie.Truncs.Trunc"><code>Chevie.Truncs.Trunc</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>Trunc(p::Pol,i::Integer)</code> </p><p>returns the truncated Laurent series for <code>p</code> with <code>i</code> terms</p><pre><code class="language-julia-repl hljs">julia&gt; p=Pol([2,0,1],-1)
+Pol{Int64}: x+2x⁻¹
+
+julia&gt; Trunc(p,4)
+Trunc(4): 2x⁻¹+x+O(x³)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/bee2f4dfc29ac7c7468df85fa919700dd178f186/src/Truncs.jl#L153-L164">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Truncs.pade"><a class="docstring-binding" href="#Chevie.Truncs.pade"><code>Chevie.Truncs.pade</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>pade(f::Trunc,i=length(f))</code> Padé approximant</p><p>returns  the Padé  approximant rational  fraction for  <code>f</code>. If <code>i</code> is given then uses only the <code>i</code> first terms of <code>f</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; @Pol x
+Pol{Int64}: x
+
+julia&gt; f=inv(Trunc(x^3+2x+1,6))
+Trunc(6): 1-2x+4x²-9x³+20x⁴-44x⁵+O(x⁶)
+
+julia&gt; pade(f)
+Frac{Pol{Rational{Int64}}}: 1/(x³+2x+1)</code></pre><p>The algorithm is based on (<a href="../references/#sokal23">Sokal, 2023</a>; refined algorithm 2.7).</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/bee2f4dfc29ac7c7468df85fa919700dd178f186/src/Truncs.jl#L291-L307">source</a></section></details></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../nf/">« Number fields</a><a class="docs-footer-nextpage" href="../permroot/">Finite reflection groups »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Wednesday 4 February 2026 16:42">Wednesday 4 February 2026</span>. Using Julia version 1.12.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
