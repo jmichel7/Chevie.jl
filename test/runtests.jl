@@ -754,10 +754,14 @@ end
 @test mytest("SymFuncs.jl","h(p(3,2,1))","-h₁₁₁₁₁₁+5h₂₁₁₁₁-6h₂₂₁₁-3h₃₁₁₁+6h₃₂₁")
 @test mytest("SymFuncs.jl","s(2,1)*s(2,1)","s₂₂₁₁+s₂₂₂+s₃₁₁₁+2s₃₂₁+s₃₃+s₄₁₁+s₄₂")
 @test mytest("SymFuncs.jl","s(2,1)⊗s(2,1)","s₁₁₁+s₂₁+s₃")
-@test mytest("SymFuncs.jl","plethysm(p(2,1),s(2,1))","(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃")
 @test mytest("SymFuncs.jl","scalarproduct(p(1,1,1),s(2,1))","2//1")
 @test mytest("SymFuncs.jl","s(2,1)+p(3)","s₁₁₁+s₃")
+@test mytest("SymFuncs.jl","plethysm(p(2,1),s(2,1))","(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃")
+@test mytest("SymFuncs.jl","p(2,1)[s(2,1)]","(1//9)p₂₂₂₁₁₁+(-1//9)p₃₂₂₂+(-1//9)p₆₁₁₁+(1//9)p₆₃")
+@test mytest("SymFuncs.jl","@Mvp u,v","nothing")
+@test mytest("SymFuncs.jl","p(2,1)[u*p(2)+v*p(3)]","u²p₄₂+uvp₄₃+uvp₆₂+v²p₆₃")
 @test mytest("SymFuncs.jl","Mvp(p(2)+p(3))","Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²")
+@test mytest("SymFuncs.jl","Mvp(p(2),[u,v])","Mvp{Int64}: u²+v²")
 end
 @testset "Symbols.jl" begin
 @test mytest("Symbols.jl","symbols(3,3,0)","12-element Vector{CharSymbol}:\n (1+)\n (1ζ₃)\n (1ζ₃²)\n (01,12,02)\n (01,02,12)\n (012,012,123)\n (0,1,2)\n (0,2,1)\n (01,01,13)\n (0,0,3)\n (012,,)\n (012,012,)")

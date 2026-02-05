@@ -140,7 +140,7 @@ export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
 gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg,
 fakedegree, defectsymbol,   fullsymbol,
 Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola,
-quotient, core, Partition
+quotient, core, Partition, partition_core_quotient
 
 """ 
 A  `Partition` object  is formed  from a  non-increasing of integers ending
@@ -229,7 +229,7 @@ function core(μ::Partition,e)
   β=βset(μ.l,mod(-length(μ.l),e))
   cnt=map(i->count(j->mod(j,e)==i,β),0:e-1)
   cnt.-=minimum(cnt)
-  if maximum(cnt)==0 return Int[] end
+  if maximum(cnt)==0 return Partition(Int[]) end
   core=[j for i in 1:e for j in (i-1).+e.*(0:cnt[i]-1)]
   Partition(partβ(sort!(core)))
 end
@@ -260,6 +260,18 @@ function quotient(μ::Partition,e)
   end
   q
 end
+
+function partition_core_quotient(c::Partition,q,e)
+  bq=βset.(q)
+  bc=βset(c.l,mod(-length(c.l),e))
+  cnt=map(i->count(j->mod(j,e)==i,bc),0:e-1)
+  cnt.+=maximum(i->length(bq[i])-cnt[i],1:e)
+  bq=map((x,c)->shiftβ(x,c-length(x)),bq,cnt)
+  bres=[j for i in 1:e for j in (i-1).+e*bq[i]]
+  Partition(partβ(sort(bres)))
+end
+  
+testp(p,e)=partition_core_quotient(core(p,e),quotient(p,e),e)==p.l
 
 """
 `βset(p)` normalized β-set of partition `p`

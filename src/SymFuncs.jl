@@ -60,7 +60,7 @@ julia> p(2,1)[s(2,1)]  # the same thing
 julia> @Mvp u,v
 
 julia> p(2,1)[u*p(2)+v*p(3)] # plethysm acts on Mvp coefficients
-u²p₄₂+uvp₄₃+uvp₆₂+v²p₆₃
+u³p₄₂+u²vp₄₃+uv²p₆₂+v³p₆₃
 ```
 
 finally one can convert a symmetric function to a symmetric polynomial.
