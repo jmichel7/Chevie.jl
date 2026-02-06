@@ -9,6 +9,8 @@ zeroes. The functions for partitions in this module are
     object from the list `p₁,…,pₙ`.
   - [`core`](@ref)`(μ::Partition,e)` which returns the `e`-core of `μ`.
   - [`quotient`](@ref)`(μ::Partition,e)` which returns the `e`-quotient of `μ`.
+  - [`partition_core_quotient`](@ref)`(μ::Partition,q)` which recovers a
+    partition given its `e`-core `μ` and its `e`-quotient `q`.
 
 A  *β-set* is a strictly increasing `Vector` of nonnegative integers, up to
 *shift*,  the  equivalence  relation  generated  by the *elementary shifts*
@@ -196,6 +198,7 @@ Base.hash(p::Partition,k::UInt)=hash(p.l,k)
 Base.:(==)(a::Partition,b::Partition)=a.l==b.l
 Base.:union(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
 Partition(a...)=Partition(collect(a))
+Partition(a::AbstractVector{<:Integer})=Partition(collect(a))
 Base.size(p::Partition)=sum(p.l)
 Base.length(p::Partition)=length(p.l)
 Base.isless(a::Partition,b::Partition)=size(a)<size(b) || a.l<b.l
@@ -226,7 +229,7 @@ Partition: 211
 ```
 """
 function core(μ::Partition,e)
-  β=βset(μ.l,mod(-length(μ.l),e))
+  β=βset(μ,mod(-length(μ),e))
   cnt=map(i->count(j->mod(j,e)==i,β),0:e-1)
   cnt.-=minimum(cnt)
   if maximum(cnt)==0 return Partition(Int[]) end
@@ -261,18 +264,26 @@ function quotient(μ::Partition,e)
   q
 end
 
-function partition_core_quotient(c::Partition,q,e)
-  bq=βset.(q)
-  bc=βset(c.l,mod(-length(c.l),e))
+"""
+`partition_core_quotient(c::Partition,q)` 
+
+given a partition `c` and an `e`-tuple q of partitions, return a partition  `p`
+of `e`-core `c` and `e`-quotient `q`.
+```julia-repl
+julia> partition_core_quotient(Partition(2,1,1),[Int[],Int[],[1]])
+Partition: 331
+```
+"""
+function partition_core_quotient(c::Partition,q)
+  e=length(q)
+  bc=βset(c,mod(-length(c),e))
   cnt=map(i->count(j->mod(j,e)==i,bc),0:e-1)
-  cnt.+=maximum(i->length(bq[i])-cnt[i],1:e)
-  bq=map((x,c)->shiftβ(x,c-length(x)),bq,cnt)
+  cnt.+=maximum(i->length(q[i])-cnt[i],1:e)
+  bq=map((x,c)->βset(x,c-length(x)),q,cnt)
   bres=[j for i in 1:e for j in (i-1).+e*bq[i]]
   Partition(partβ(sort(bres)))
 end
   
-testp(p,e)=partition_core_quotient(core(p,e),quotient(p,e),e)==p.l
-
 """
 `βset(p)` normalized β-set of partition `p`
 

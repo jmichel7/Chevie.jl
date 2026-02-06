@@ -104,6 +104,9 @@ function Symbol2core2quotient(d,p)
   CharSymbol([shiftβ(sort(unique(vcat(x[1].*2,x[2].*2 .+1))))])
 end
 
+Symbol2core2quotient(d,p)=
+   CharSymbol([βset(partition_core_quotient(Partition(d:-1:1),p))])
+
 chevieset("2A", :ClassParameter, function (n, w)
   x=prod(i->Perm(i,i+1),w;init=Perm())*prod(i->Perm(i,n+2-i),1:div(n+1,2))
   cycletype(x,1:n+1)
