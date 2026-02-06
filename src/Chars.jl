@@ -400,7 +400,7 @@ export charinfo, classinfo, fakedegrees, CharTable, representation,
   representations, InductionTable, induction_table, classes, j_induction_table,
   J_induction_table, decompose, on_chars, detPerm, conjPerm,
   classnames, decomposition_matrix, eigen, schur_functor, charnumbers,
-  scalarproduct
+  scalar_product
 
 """
 `schur_functor(mat,λ)`
@@ -1210,21 +1210,21 @@ function classes(ct::CharTable)
 end
 
 """
-`scalarproduct(ct::CharTable,φ₁,φ₂;exact=true)`
+`scalar_product(ct::CharTable,φ₁,φ₂;exact=true)`
 
 scalar  product  of  the  class  functions  `φ₁`  and `φ₂` according to the
-character table `ct`. By default `φ₁` and `φ₂` are expected to be a virtual
-character so the result will be an integer. If one of them is not a virtual
-character give the keyword `exact=false` to get a correct result.
+character  table `ct`. By default `φ₁` and  `φ₂` are expected to be virtual
+characters  so the  result will  be an  integer. If  one of  them is  not a
+virtual character give the keyword `exact=false` to get a correct result.
 
 ```julia-repl
 julia> ct=CharTable(coxsym(4));
 
-julia> scalarproduct(ct,3*ct.irr[2,:],ct.irr[2,:])
+julia> scalar_product(ct,3*ct.irr[2,:],ct.irr[2,:])
 3
 ```
 """
-function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector;exact=true)
+function scalar_product(ct::CharTable,c1::AbstractVector,c2::AbstractVector;exact=true)
   v=c2'*(c1.*classes(ct))
   exact ? exactdiv.(v,ct.order) : improve_type(v//ct.order)
 end

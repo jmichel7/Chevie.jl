@@ -40,7 +40,7 @@ s₂₂₁₁+s₂₂₂+s₃₁₁₁+2s₃₂₁+s₃₃+s₄₁₁+s₄₂
 julia> s(2,1)⊗s(2,1) # inner product
 s₁₁₁+s₂₁+s₃
 
-julia> scalarproduct(p(1,1,1),s(2,1))
+julia> scalar_product(p(1,1,1),s(2,1))
 2//1
 ```
 One can mix bases in these operations. The basis of the left argument wins:
@@ -235,15 +235,15 @@ function PuiseuxPolynomials.Mvp(a::SymFunc,
   end
 end
 
-"`scalarproduct(a,b)` the scalar product of the symmetric functions `a` and `b`"
-function Chars.scalarproduct(a::SymFunc{ab},b::SymFunc)where ab
+"`scalar_product(a,b)` the scalar product of the symmetric functions `a` and `b`"
+function Chars.scalar_product(a::SymFunc{ab},b::SymFunc)where ab
   b=basis(Val(ab),b)
   if ab==:s
     sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d)))
   elseif ab==:p
     sum(((p,c),)->centralizer(a.A,p)*c,
         ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d))
-  else scalarproduct(pbasis(a),pbasis(b))
+  else scalar_product(pbasis(a),pbasis(b))
   end
 end
 

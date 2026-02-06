@@ -364,7 +364,7 @@ ChevieDict::Dict{String,String}=Dict(
 "W.rootRestriction"=>"restriction(W)",
 "Rotation(v,i)"=>"circshift(v,-i)",
 "Rotations(v)"=>"circshift.(Ref(v),length(v):-1:1)",
-"ScalarProduct"=>"Chars.scalarproduct",
+"ScalarProduct"=>"scalar_product",
 "ScalMvp"=>"scalar",
 #SchurElement
 "SchurElements"=>"schur_elements",

@@ -526,21 +526,6 @@ function PermRoot.radical(A::ZeroHecke)
   end
 end
 
-#    subsets:=Combinations([1..W.semisimpleRank]));
-#  A.tbasis:=function(arg) local mot;
-#    if Length(arg)>1 then mot:=arg;
-#    elif IsList(arg[1]) then mot:=arg[1];
-#    elif IsInt(arg[1]) then mot:=Digits(arg[1]);
-#    else mot:=CoxeterWord(W,arg[1]);
-#    fi;
-#    if mot=[] then return A.basis[findfirst(isempty,A.mots)];
-#    else return prod(i->A.basis[findfirst(==([i]),A.mots)],mot);
-#    fi;
-#  end;
-#  A.radical:=TwoSidedIdeal(A,vcat(A.radical...));
-#  A.radicalpowers:=[A.radical];
-#  A.embedding:=function(g) return A.basis[findfirst(==(g),e)];end;
-
 #------------------------  T[q]/p(q)----------------------------------------
 ## The function A.class sends a polynomial to its image in A
 ## An element of A is printed as "Class(polynomial)"
@@ -564,7 +549,7 @@ The quotient of the polynomial algebra with coefficients of type `eltype(p)`
 by the polynomial `p`.
 
 ```julia-repl
-julia> A=PolynomialQuotientAlgebra(Pol()^2+1)
+julia> A=PolynomialQuotientAlgebra(Pol(:x)^2+1)
 Int64[x]/x²+1
 
 julia> basis(A)

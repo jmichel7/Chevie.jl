@@ -768,7 +768,7 @@ function Tcharparams(W)
     for a in bydb
       ch=conj(ct[a,:]).*ct[i,:]
       gb=filter(j->ct[j,1]<=ct[i,1]*ct[a,1],bydb)
-      m=map(x->Chars.scalarproduct(CharTable(W),x,ch),eachrow(ct[gb,:]))
+      m=map(x->scalar_product(CharTable(W),x,ch),eachrow(ct[gb,:]))
       b=findfirst(!iszero,m)
       if b!==nothing return [a,gb[b],m[b]] end
     end

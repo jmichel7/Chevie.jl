@@ -207,7 +207,7 @@ julia> v=deligne_lusztig_character(W,[1,2])
 julia> degree(v)
 Pol{Int64}: q⁶+q⁵-q⁴-2q³-q²+q+1
 
-julia> scalarproduct(v,v)
+julia> scalar_product(v,v)
 6
 ```
 The  last two lines ask  for the degree of  the virtual character `v`, then
@@ -906,7 +906,7 @@ julia> coefficients(u) # so that u==unichar(W,coefficients(u))
 julia> w-2u
 [G₂]:<φ₁‚₀>-<φ″₁‚₃>+<G₂[ζ₃²]>
 
-julia> scalarproduct(w,w)
+julia> scalar_product(w,w)
 7
 
 julia> degree(w)
@@ -982,7 +982,7 @@ function Base.show(io::IO,r::UniChar)
   print(io,res)
 end
 
-Chars.scalarproduct(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
+Chars.scalar_product(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
 Base.:+(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v+u2.v)
 Base.:-(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v-u2.v)
 Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
