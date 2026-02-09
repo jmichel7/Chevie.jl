@@ -645,13 +645,19 @@ end
 
 # unipotent classes for the simply connected quasisimple group of type t
 function UnipotentClasses(t::TypeIrred,p=0)
-  uc=chevieget(t,:UnipotentClasses,p)
-  if uc===nothing error("no UnipotentClasses for ",t) end
+  rankt=rank(t)
+  if t.series==:B && rankt==2 && indices(t)==[2,1] #neutralize locally C2->B2
+    t.cartanType=1
+    uc=chevieget(t,:UnipotentClasses,p)
+    t.cartanType=2
+  else uc=chevieget(t,:UnipotentClasses,p)
+    if uc===nothing error("no UnipotentClasses for ",t) end
+  end
   uc[:orderClasses]=map(uc[:orderClasses])do v
     if v isa String && isempty(v) return Int[] end
     Vector{Int}(v)
   end
-  rankt=rank(t)
+  for c in uc[:classes] c[:dynkin]=c[:dynkin][indices(t)] end
   c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
   rr=toM(roots(c))
   classes=map(uc[:classes])do u # fill omitted fields

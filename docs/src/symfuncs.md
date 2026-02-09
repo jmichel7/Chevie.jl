@@ -6,5 +6,5 @@ Pages=["symfuncs.md"]
 SymFuncs
 SymFuncAlgebra
 ⊗(::SymFuncs.SymFunc,::SymFuncs.SymFunc)
-scalarproduct(::SymFuncs.SymFunc,::SymFuncs.SymFunc)
+scalar_product(::SymFuncs.SymFunc,::SymFuncs.SymFunc)
 ```
