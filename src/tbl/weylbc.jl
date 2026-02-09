@@ -272,6 +272,14 @@ end)
 #  The function is called with cartanType=1 for type C and 
 #                              cartanType=2 for type B
 chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
+  if cartanType==root(2)  #treat 2B2 as B2; make sure char=2
+    cartanType=2
+    if char!=2 
+      error("for cartanType==",root(2)," the characteristic should be 2")
+    end
+  elseif !(cartanType in (1,2))
+    error("cartanType shoud be in ",[1,2,root(2)])
+  end
   function part2dynkin(part) # partition -> Dynkin-Richardson diagram
     p=sort(reduce(vcat,map(d->1-d:2:d-1, part)))
     p=p[div(3+length(p),2):end]
@@ -288,10 +296,6 @@ chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
     end
     ss[:locsys][p]=[length(uc[:classes]), 
     findfirst(==(map(x->x ? [1,1] : [2], s.Au)),charinfo(cc[:Au]).charparams)]
-  end
-  if cartanType==root(2)  #treat 2B2 as B2; make sure char=2
-    cartanType=2
-    char=2
   end
   ss=char==2 ? XSP(4,2,r) : cartanType==1 ? XSP(2,1,r) : XSP(2,0,r)
   l=union(map(c->map(x->[defectsymbol(x.symbol), sum(sum,x.sp)], c), ss)...)

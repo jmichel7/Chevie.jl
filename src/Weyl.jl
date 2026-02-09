@@ -883,9 +883,13 @@ compared to a `PermRootGroup`.
     The  first `nref(W)` roots  are the positive  roots, the last `nref(W)`
     are  the negative of  the first ones.  Moreover, the first `rank` roots
     are  the  simple  roots,  so  these  rows form the identity matrix. The
-    positive roots are ordered by increasing height.
+    positive roots are ordered by increasing height, and for equal height, 
+    lexicographically.
 
-and `roots(W)` is ordered is the same way as `W.rootdec`.
+and  `roots(W)`  is  ordered  is  the  same  way  as `W.rootdec`. Note that
+`roots(W)` is given in a basis of `X(T)`, which is the simple roots for the
+adjoint  root datum (then  it coincides with  `W.rootdec`) but is different
+for other root data.
 
 For  how to  get various  information on  the root  system and  the Coxeter
 group,   see  the  functions   `nref,  coroots,  rootlengths,  simple_reps,
@@ -915,7 +919,7 @@ julia> W.rootdec
  [-1, -3]
  [-2, -3]
 
-julia> reflrep(W)
+julia> reflrep(W) # generators as matrices in the basis `simpleroots(W)`
 2-element Vector{Matrix{Int64}}:
  [-1 0; 1 1]
  [1 3; 0 -1]

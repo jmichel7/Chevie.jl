@@ -1,8 +1,9 @@
 """
 This  module  deals  with  symmetric  functions.  The  main  object  is the
 (truncated) algebra of symmetric functions, and the bases `p` (power sums),
-`h` (complete symmetric functions) and `s` (Schur functions). Each of these
-bases in degree `n` is indexed by the partitions of `n`.
+`h`  (complete symmetric  functions), `e`  (elementary symmetric functions)
+and  `s` (Schur functions). Each of these bases in degree `n` is indexed by
+the partitions of `n`.
 
 A typical session would begin by defining the symmetric functions and these
 bases:
@@ -10,7 +11,7 @@ bases:
 julia> A=SymFuncAlgebra(10) # truncated in degree >10
 SymFuncAlgebra(10)
 
-julia> p=pbasis(A);h=hbasis(A);s=sbasis(A);
+julia> p=pbasis(A);h=hbasis(A);e=ebasis(A);s=sbasis(A);
 ```
 Then making elements in one of these bases. The following forms are equivalent:
 ```julia-repl
@@ -75,7 +76,7 @@ Mvp{Int64}: u²+v²
 """
 module SymFuncs
 using ..Chevie
-export SymFuncAlgebra, sbasis, pbasis, hbasis, plethysm
+export SymFuncAlgebra, sbasis, pbasis, hbasis, ebasis, plethysm
 
 struct SymFuncAlgebra
   n::Int
@@ -165,6 +166,11 @@ Base.zero(b::Symbol,a::SymFunc)=SymFunc{b}(zero(a.d),a.A)
 sbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:s),x...)
 pbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:p),x...)
 hbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:h),x...)
+ebasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:e),x...)
+sbasis(h::SymFunc)=basis(h.A,Val(:s),h)
+pbasis(h::SymFunc)=basis(h.A,Val(:p),h)
+hbasis(h::SymFunc)=basis(h.A,Val(:h),h)
+ebasis(h::SymFunc)=basis(h.A,Val(:e),h)
 
 Algebras.basis(h::SymFunc{b})where b=b
 Algebras.basis(H::SymFuncAlgebra,::Val{b},p::Partition)where b=
@@ -174,9 +180,12 @@ Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vector{<:Integer})where b=
 Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vararg{Integer})where b=
   basis(H,Val(b),collect(w))
 Algebras.basis(::Val{b},h::SymFunc)where b=basis(h.A,Val(b),h)
-sbasis(h::SymFunc)=basis(h.A,Val(:s),h)
-pbasis(h::SymFunc)=basis(h.A,Val(:p),h)
-hbasis(h::SymFunc)=basis(h.A,Val(:h),h)
+
+Algebras.basis(H::SymFuncAlgebra,::Val{b},h::SymFunc{b}) where b =h
+function Algebras.basis(H::SymFuncAlgebra,::Val{b1},h::SymFunc{b}) where {b,b1}
+  if b==:p error(":p to ",b1," not implemented") end
+  basis(h.A,Val(b1),pbasis(h))
+end
 
 function Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:s})
    sum(h.d)do (p,c)
@@ -184,34 +193,37 @@ function Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:s})
             for l in Partitions(H,size(p))),H)
    end
 end
-Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:s})=h
+Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:h})=sum(((p,c),)->
+ prod(i->pbasis(basis(H,Val(:s),i)),p.l;init=pbasis(H)())*c,h.d;init=zero(:p,h))
+Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:e})=sum(((p,c),)->
+   prod(i->pbasis(basis(H,Val(:s),fill(1,i))),p.l;init=pbasis(H)())*c,
+                                                         h.d;init=zero(:p,h))
+
 Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:p})=
   sum(h.d;init=zero(:s,h))do (p,c)
     SymFunc{:s}(ModuleElt(l=>charvalue(H,l=>p)*c for l in
                      Partitions(H,size(p))),H)
   end
-Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:p})=h
-Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:h})=sbasis(pbasis(h))
-Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:h})=sum(((p,c),)->
- prod(i->pbasis(basis(H,Val(:s),i)),p.l;init=pbasis(H)())*c,h.d;init=zero(:p,h))
-Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:h})=h
-function Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:p})
-  function Ptoh(n)
-    SymFunc{:h}(ModuleElt(map(Partitions(H,n))do p
-      p=>n*(-1)^(length(p)-1)*factorial(length(p)-1)//
-      prod(i->factorial(i[2]),tally(p.l))
-     end),H)
-  end
-  sum(((p,c),)->prod(Ptoh,p.l;init=hbasis(H)())*c,h.d,init=zero(:h,h))
+
+function Pto(H,n,b) # p(n) to basis b∈(:e,:h)
+  SymFunc{b}(ModuleElt(map(Partitions(H,n))do p
+    p=>n*(-1)^(length(p)-1)*factorial(length(p)-1)//
+    prod(i->factorial(i[2]),tally(p.l))
+   end),H)*((b==:e && iseven(n)) ? -1 : 1)
 end
-Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:s})=hbasis(pbasis(h))
+function Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:p})
+  sum(((p,c),)->prod(n->Pto(H,n,:h),p.l;init=hbasis(H)())*c,h.d,init=zero(:h,h))
+end
+function Algebras.basis(H::SymFuncAlgebra,::Val{:e},f::SymFunc{:p})
+  sum(((p,c),)->prod(n->Pto(H,n,:e),p.l;init=ebasis(H)())*c,f.d,init=zero(:e,f))
+end
 
 Base.getindex(a::SymFunc,p::Partition)=a.d[p]
 Base.getindex(a::SymFunc,x::Vararg{Int})=a.d[Partition(collect(x))]
 
 function Base.:*(a::SymFunc{ba},b::SymFunc)where ba
   b=basis(Val(ba),b)
-  if ba in (:p,:h)
+  if ba in (:p,:h,:e)
     clone(a,ModuleElt([union(p,q)=>c*c1 for (p,c) in a.d for (q,c1) in b.d
                        if size(p)+size(q)<=a.A.n]))
   else basis(Val(ba),pbasis(a)*pbasis(b))

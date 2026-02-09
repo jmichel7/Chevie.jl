@@ -1759,8 +1759,8 @@ roots(W::PRG)=W.roots
 "`roots(W::PermRootGroup,i)` same as `roots(W)[i]`"
 roots(W::PRG,i)=W.roots[i]
 """
-`simpleroots(W::ComplexReflectionGroup)`  the  simple  roots  of `W` (those
-corresponding to `gens(W)`) as the rows of a matrix.
+`simpleroots(W::ComplexReflectionGroup)` a matrix whose rows are the simple
+roots of `W`, that is `roots(W,1:ngens(W))`.
 """
 function simpleroots(W::PRG{T})where T
   get!(W,:simpleroots) do
@@ -1772,8 +1772,8 @@ end
 coroots(W::PRG)=all(i->isassigned(W.coroots,i),eachindex(W.coroots)) ? 
     W.coroots : coroots(W,eachindex(W.coroots))
 """
-`simplecoroots(W::ComplexReflectionGroup)` the simple coroots of `W` (those
-`corresponding to gens(W)`) as the rows of a matrix.
+`simplecoroots(W::ComplexReflectionGroup)`  a  matrix  whose  rows  are the
+simple coroots of `W`, that is `coroots(W,1:ngens(W))`.
 """
 simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(view(W.coroots,eachindex(gens(W))))
 inclusion(W::PRG,i::Integer)=i

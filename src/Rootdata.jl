@@ -341,24 +341,30 @@ coweights(W)=inv(Rational.(cartan(W)))*simplecoroots(W)
 `fundamental_group(W;full=false)`
 
 This  function returns the fundamental group of the algebraic group defined
-by  the root datum  `W`, that is  the subgroup of  `W` which stabilises the
-extended root basis (the set of simple roots enriched by the lowest root of
-each  irreducible component). Unless the keyword `full=true` is given, this
-is  returned as a group of permutations of  the indices of the roots in the
-extended root basis.
+by  the root datum `W`;  for an adjoint root  datum this is the subgroup of
+`W`  which  stabilises  the  extended  root  basis (the set of simple roots
+enriched  by the  lowest root  of each  irreducible component). By default,
+this  is returned as a group of permutations of the indices of the roots of
+the  extended root basis. If `full=true` is given, then the result is given
+as  a subgroup  of `W`  (thus permuting  other roots  besides those  in the
+extended root basis).
 
-The  definition  we  take  of  the  fundamental group of a (not necessarily
-semisimple)  reductive group is (P∩ Y(𝐓))/Q where P is the coweight lattice
-(the  dual lattice  in Y(𝐓)⊗  ℚ of  the root  lattice) and  Q is the coroot
-latice.  The  bijection  between  elements  of  P/Q and permutations of the
-extended  root basis is explained in  the context of non-irreducible groups
-for example in [bon05; §3.B](@cite).
+For a general root datum the result is a subgroup of the group returned for
+an adjoint root datum. The definition we take of the fundamental group of a
+(not  necessarily semisimple) reductive group is (P∩ Y(𝐓))/Q where P is the
+coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of the root lattice) and Q is
+the  coroot latice. The bijection between  elements of P/Q and permutations
+of  the extended root basis is  explained in the context of non-irreducible
+groups for example in [bon05; §3.B](@cite).
 ```julia-repl
 julia> W=coxgroup(:A,3) # the adjoint group
 A₃
 
 julia> fundamental_group(W) # the 12th root is the lowest one
 Group((1,2,3,12))
+
+julia> fundamental_group(W;full=true)
+Group((1,2,3,12)(4,5,10,11)(6,7,8,9))
 
 julia> W=rootdatum(:sl,4) # the semisimple simply connected group
 sl₄

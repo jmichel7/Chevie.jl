@@ -201,6 +201,7 @@ Partition(a...)=Partition(collect(a))
 Partition(a::AbstractVector{<:Integer})=Partition(collect(a))
 Base.size(p::Partition)=sum(p.l)
 Base.length(p::Partition)=length(p.l)
+Base.sign(p::Partition)=(-1)^(size(p)-length(p))
 Base.isless(a::Partition,b::Partition)=size(a)<size(b) || a.l<b.l
 Base.:adjoint(a::Partition)=Partition(conjugate_partition(a.l))
 Base.getindex(a::Partition,i)=i>length(a) ? 0 : a.l[i]
