@@ -197,7 +197,7 @@ end
 Base.hash(p::Partition,k::UInt)=hash(p.l,k)
 Base.:(==)(a::Partition,b::Partition)=a.l==b.l
 Base.:union(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
-Partition(a...)=Partition(collect(a))
+Partition(a::Integer...)=Partition(collect(a))
 Partition(a::AbstractVector{<:Integer})=Partition(collect(a))
 Base.size(p::Partition)=sum(p.l)
 Base.length(p::Partition)=length(p.l)

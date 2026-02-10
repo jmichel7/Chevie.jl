@@ -1,9 +1,9 @@
 """
-This  module  deals  with  symmetric  functions.  The  main  object  is the
-(truncated) algebra of symmetric functions, and the bases `p` (power sums),
-`h`  (complete symmetric  functions), `e`  (elementary symmetric functions)
-and  `s` (Schur functions). Each of these bases in degree `n` is indexed by
-the partitions of `n`.
+This  module  deals  with  symmetric  functions.  The  main objects are the
+(truncated)  algebra  of  symmetric  functions,  with  its bases `p` (power
+sums),  `h`  (complete  symmetric  functions),  `e`  (elementary  symmetric
+functions),  `m` (monomial symmetric functions)  and `s` (Schur functions).
+Each of these bases in degree `n` is indexed by the partitions of `n`.
 
 A typical session would begin by defining the symmetric functions and these
 bases:
@@ -11,7 +11,7 @@ bases:
 julia> A=SymFuncAlgebra(10) # truncated in degree >10
 SymFuncAlgebra(10)
 
-julia> p=pbasis(A);h=hbasis(A);e=ebasis(A);s=sbasis(A);
+julia> p=pbasis(A);h=hbasis(A);e=ebasis(A);m=mbasis(A);s=sbasis(A);
 ```
 Then making elements in one of these bases. The following forms are equivalent:
 ```julia-repl
@@ -76,7 +76,7 @@ Mvp{Int64}: u²+v²
 """
 module SymFuncs
 using ..Chevie
-export SymFuncAlgebra, sbasis, pbasis, hbasis, ebasis, plethysm
+export SymFuncAlgebra, sbasis, pbasis, hbasis, ebasis, mbasis, plethysm
 
 struct SymFuncAlgebra
   n::Int
@@ -85,6 +85,12 @@ struct SymFuncAlgebra
   partitions::Dict{Int,Vector{Partition}}
 end
 
+"`SymFuncAlgebra(n)` the algebra of symmetric functions truncated in `degree>n`"
+SymFuncAlgebra(n)=SymFuncAlgebra(n,
+   Dict{Pair{Partition,Partition},Int}((Partition()=>Partition())=>1),
+   Dict{Partition,Int}(Partition()=>1),
+   Dict{Int,Vector{Partition}}())
+                                 
 function charvalue(A::SymFuncAlgebra,p::Pair{Partition,Partition})
   l=size(p[1])
   if l!=size(p[2]) || l>A.n return 0 end
@@ -125,12 +131,6 @@ function H(lambda,s)
   sum(t.scalar[:,i].*s.(partitions(n)))
 end
 
-"`SymFuncAlgebra(n)` the algebra of symmetric functions truncated in `degree>n`"
-SymFuncAlgebra(n)=SymFuncAlgebra(n,
-   Dict{Pair{Partition,Partition},Int}((Partition()=>Partition())=>1),
-   Dict{Partition,Int}(Partition()=>1),
-   Dict{Int,Vector{Partition}}())
-                                 
 struct SymFunc{b,C,TS}# b=:s,:p or :h depending on the basis
   d::ModuleElt{Partition,C}
   A::TS
@@ -167,10 +167,12 @@ sbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:s),x...)
 pbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:p),x...)
 hbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:h),x...)
 ebasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:e),x...)
+mbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:m),x...)
 sbasis(h::SymFunc)=basis(h.A,Val(:s),h)
 pbasis(h::SymFunc)=basis(h.A,Val(:p),h)
 hbasis(h::SymFunc)=basis(h.A,Val(:h),h)
 ebasis(h::SymFunc)=basis(h.A,Val(:e),h)
+mbasis(h::SymFunc)=basis(h.A,Val(:m),h)
 
 Algebras.basis(h::SymFunc{b})where b=b
 Algebras.basis(H::SymFuncAlgebra,::Val{b},p::Partition)where b=
@@ -217,6 +219,18 @@ end
 function Algebras.basis(H::SymFuncAlgebra,::Val{:e},f::SymFunc{:p})
   sum(((p,c),)->prod(n->Pto(H,n,:e),p.l;init=ebasis(H)())*c,f.d,init=zero(:e,f))
 end
+function Algebras.basis(H::SymFuncAlgebra,::Val{:s},f::SymFunc{:m})
+ h=hbasis(H);s=sbasis(H)
+ mtos(μ)=SymFunc{:s}(ModuleElt(l=>h(s(l))[μ] for l in Partitions(H,size(μ))),H)
+ sum(((μ,c),)->mtos(μ)*c,f.d)
+end
+function Algebras.basis(H::SymFuncAlgebra,::Val{:m},f::SymFunc{:s})
+ h=hbasis(H);s=sbasis(H)
+ stom(μ)=SymFunc{:m}(ModuleElt(l=>s(h(l))[μ] for l in Partitions(H,size(μ))),H)
+ sum(((μ,c),)->stom(μ)*c,f.d)
+end
+Algebras.basis(H::SymFuncAlgebra,::Val{:m},f::SymFunc{:p})=mbasis(sbasis(f))
+Algebras.basis(H::SymFuncAlgebra,::Val{:p},f::SymFunc{:m})=pbasis(sbasis(f))
 
 Base.getindex(a::SymFunc,p::Partition)=a.d[p]
 Base.getindex(a::SymFunc,x::Vararg{Int})=a.d[Partition(collect(x))]
@@ -242,9 +256,9 @@ end
 
 function PuiseuxPolynomials.Mvp(a::SymFunc,
    vars=Mvp.(Symbol("x",stringind(rio(),j)) for j in 1:size(last(a.d.d)[1])))
-  sum(pbasis(a).d)do (l,c)
+  improve_type(sum(pbasis(a).d)do (l,c)
     prod(i->sum(vars.^i),l.l)*c
-  end
+  end)
 end
 
 "`scalar_product(a,b)` the scalar product of the symmetric functions `a` and `b`"

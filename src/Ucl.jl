@@ -836,6 +836,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
+        if length(v)==1 u.parameter=u.parameter[1] end
         u.Au=prod(x->x.Au,v)
         if all(x->haskey(x,:dimred),v)
           u.dimred=sum(x->x.dimred,v)+rank(W)-semisimplerank(W)
