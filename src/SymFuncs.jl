@@ -70,7 +70,7 @@ The number of variables is the highest degree in the function.
 julia> Mvp(p(2)+p(3))
 Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²
 
-julia> Mvp(p(2),[u,v]) # one can choose the variables used
+julia> Mvp(p(2),[:u,:v]) # one can choose the variables used
 Mvp{Int64}: u²+v²
 ```
 """
@@ -219,18 +219,17 @@ end
 function Algebras.basis(H::SymFuncAlgebra,::Val{:e},f::SymFunc{:p})
   sum(((p,c),)->prod(n->Pto(H,n,:e),p.l;init=ebasis(H)())*c,f.d,init=zero(:e,f))
 end
-function Algebras.basis(H::SymFuncAlgebra,::Val{:s},f::SymFunc{:m})
- h=hbasis(H);s=sbasis(H)
- mtos(μ)=SymFunc{:s}(ModuleElt(l=>h(s(l))[μ] for l in Partitions(H,size(μ))),H)
- sum(((μ,c),)->mtos(μ)*c,f.d)
+function Algebras.basis(H::SymFuncAlgebra,::Val{:p},f::SymFunc{:m})
+ h=hbasis(H);p=pbasis(H)
+ mtop(μ)=SymFunc{:p}(ModuleElt(l=>h(p(l))[μ]//centralizer(H,l) for l in Partitions(H,size(μ))),H)
+ sum(((μ,c),)->mtop(μ)*c,f.d)
 end
-function Algebras.basis(H::SymFuncAlgebra,::Val{:m},f::SymFunc{:s})
- h=hbasis(H);s=sbasis(H)
- stom(μ)=SymFunc{:m}(ModuleElt(l=>s(h(l))[μ] for l in Partitions(H,size(μ))),H)
+function Algebras.basis(H::SymFuncAlgebra,::Val{:m},f::SymFunc{:p})
+ h=hbasis(H);p=pbasis(H)
+ stom(μ)=SymFunc{:m}(ModuleElt(l=>p(h(l))[μ] for l in Partitions(H,size(μ))),H)*
+  centralizer(H,μ)
  sum(((μ,c),)->stom(μ)*c,f.d)
 end
-Algebras.basis(H::SymFuncAlgebra,::Val{:m},f::SymFunc{:p})=mbasis(sbasis(f))
-Algebras.basis(H::SymFuncAlgebra,::Val{:p},f::SymFunc{:m})=pbasis(sbasis(f))
 
 Base.getindex(a::SymFunc,p::Partition)=a.d[p]
 Base.getindex(a::SymFunc,x::Vararg{Int})=a.d[Partition(collect(x))]
@@ -255,9 +254,9 @@ function FinitePosets.:⊗(a::SymFunc{ba},b::SymFunc)where ba
 end
 
 function PuiseuxPolynomials.Mvp(a::SymFunc,
-   vars=Mvp.(Symbol("x",stringind(rio(),j)) for j in 1:size(last(a.d.d)[1])))
+  vars=[Symbol("x",stringind(rio(),j)) for j in 1:size(last(a.d.d)[1])])
   improve_type(sum(pbasis(a).d)do (l,c)
-    prod(i->sum(vars.^i),l.l)*c
+                prod(i->sum(Mvp.(vars).^i),l.l)*c
   end)
 end
 
