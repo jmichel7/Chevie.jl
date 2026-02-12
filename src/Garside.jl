@@ -370,11 +370,14 @@ julia> root(Pi,4)
 module Garside
 using ..Chevie
 export BraidMonoid, shrink, α, δad, DualBraidMonoid, conjcat, fraction,
-centralizer_gens, preferred_prefix, left_divisors, right_divisors, Category,
+centralizer_gens, preferred_prefix,
+left_divisors, right_divisors, Category,
 endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc,
 leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt,
 Brieskorn_normal_form, Monoid, MonoidElt, GarsideMonoid, LocallyGarsideMonoid,
 hurwitz, rightascents
+
+public slide, cycle, decycle
 
 abstract type Monoid end
 
@@ -718,11 +721,11 @@ IntervalStyle(M::LocallyGarsideMonoid)=NoInterval()
 
 Base.one(M::LocallyGarsideMonoid)=one(IntervalStyle(M),M)
 Base.one(::Interval,M)=one(M.W)
-Base.:*(M::LocallyGarsideMonoid,x,y)=*(IntervalStyle(M),M,x,y)
+Base.:*(M::LocallyGarsideMonoid{T},x::T,y::T) where T=*(IntervalStyle(M),M,x,y)
 Base.:*(::Interval,M,x,y)=x*y
-Base.:\(M::LocallyGarsideMonoid,x,y)=\(IntervalStyle(M),M,x,y)
+Base.:\(M::LocallyGarsideMonoid{T},x::T,y::T) where T=\(IntervalStyle(M),M,x,y)
 Base.:\(::Interval,M,x,y)=x\y
-Base.:/(M::LocallyGarsideMonoid,x,y)=/(IntervalStyle(M),M,x,y)
+Base.:/(M::LocallyGarsideMonoid{T},x::T,y::T) where T=/(IntervalStyle(M),M,x,y)
 Base.:/(::Interval,M,x,y)=x/y
 #Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
 #Base.inv(::Interval,M,x)=inv(x)
@@ -744,6 +747,9 @@ Base.reverse(::Interval,M,x)=inv(x)
   atoms::Vector{T}
   W::TW
 end
+
+# this speeds up a lot, using that orderδ=2
+δad(M::BraidMonoid,x,i::Integer)=iseven(i) ? x : x^M.δ
 
 IntervalStyle(M::BraidMonoid)=Interval()
 """
@@ -995,6 +1001,11 @@ Base.:\(a::GarsideElt,b::GarsideElt)=inv(a)*b
 # a\b when b is positive and the result is positive
 Base.:\(a::T,b::LocallyGarsideElt{T}) where T=\(b.M,a,head(b))*tail(b)
 
+function Base.:\(a::T,b::GarsideElt{T}) where T
+  b=leftcomplδ(b.M,a)*b
+  GarsideElt(b.M,b.elm,b.pd-1)
+end
+
 function Base.denominator(b::GarsideElt)
   if b.pd>=0 return one(b) end
   ib=inv(b)
@@ -1204,11 +1215,11 @@ function Base.:*(x::T,b::GarsideElt{T})where T
   res=empty(v)
   pd=0
   x=δad(M,x,b.pd)
-  for i in 1:length(v)
-    a,x=α2(M,x,v[i])
-    if a==M.δ pd+=1 else push!(res,a) end
-    if x==v[i] return GarsideElt(M,append!(res,v[i:end]),pd+b.pd;check=false)
-    elseif isone(M,x) return GarsideElt(M,append!(res,v[i+1:end]),pd+b.pd;check=false)
+  for (i,u) in enumerate(v)
+    a,x=α2(M,x,u)
+    if a==M.δ pd+=1 else push!(res,a) end # if a==M.δ then i==1
+    if x==u return GarsideElt(M,append!(res,@view v[i:end]),pd+b.pd;check=false)
+    elseif isone(M,x) return GarsideElt(M,append!(res,@view v[i+1:end]),pd+b.pd;check=false)
     end
   end
   GarsideElt(M,push!(res,x),pd+b.pd)
@@ -1241,15 +1252,15 @@ function Base.:*(a::GarsideElt{T},x::T)where T
     x,y=α2(M,v[i-1],v[i])
     if isone(M,y) # this implies i==length(v)
       if x==M.δ
-        return GarsideElt(M,δad.(M,v[1:end-2],1),1+a.pd;check=false)
+        return GarsideElt(M,δad.(M,(@view v[1:end-2]),1),1+a.pd;check=false)
       end
       resize!(v,i-1)
       v[i-1]=x
     elseif x==v[i-1] break
     elseif x==M.δ
       v[i]=y
-      v[2:i-1]=δad.(M,v[1:i-2],1)
-      return GarsideElt(M,v[2:end],1+a.pd;check=false)
+      v[2:i-1]=δad.(M,(@view v[1:i-2]),1)
+      return GarsideElt(M,(@view v[2:end]),1+a.pd;check=false)
     else v[i-1]=x;v[i]=y
     end
   end
@@ -1272,7 +1283,6 @@ function Base.:*(a::GarsideElt{T},b::GarsideElt{T})where T
   res
 end
 
-# conjugation of positive b by simple r assuming that r divides b*r
 # About 30% faster than b^b.M(r) for long words
 function Base.:^(b::GarsideElt{T},r::T,F::Function=x->x) where T
   if isone(b.M,r) return b end
@@ -1916,7 +1926,7 @@ function minc(a,x,::Val{:cyc},F::Function=(x,y=1)->x)
 end
 
 # given a Garside element a and a simple x, returns the
-# minimal m such that x≼ m and inf(inv(m)*a*F(m))>=inf(a).
+# minimal m such that x≼m and inf(inv(m)*a*F(m))>=inf(a).
 # Since m=Δ works, m exists and is simple; see algorithm 2 in Franco-Gonzales 1.
 function minc(a,x,::Val{:inf},F::Function=(x,y=1)->x)
   M=a.M
@@ -1959,6 +1969,8 @@ function decycle(b)
   b^w,w
 end
 
+swap(b)=/(reverse(fraction(b))...)
+
 # given a Garside element a assumed to be in SSS(a) and a simple x, 
 # returns the minimal m such that x<m and a^m is in SSS(a). 
 # m is simple. See algorithm 5 in Franco-Gonzales 1
@@ -1978,23 +1990,33 @@ end
 if the normal form of `b` is `Δⁱb₁…bₙ` then 
 `preferred_prefix(b)=inv(bₙ)*α(bₙΔ⁻ⁱ(b₁))`.
 """
-function preferred_prefix(b,F::Function=(x,y=1)->x)
+function preferred_prefix(b::GarsideElt,F::Function=(x,y=1)->x)
   M=b.M
   if isempty(b.elm) return one(M) end
   o=b.elm[end]
   F(\(M,o,α2(M,o,F(δad(M,b.elm[1],-b.pd)))[1]),-1)
 end
 
+"""
+`slide(b)`
+
+`slide(b)=b^preferred_prefix(b)`
+returns `(slide(b),preferred_prefix(b))
+"""
+function slide(b::GarsideElt,F::Function=(x,y=1)->x)
+  r=preferred_prefix(b,F)
+  (^(b,r,F),r)
+end
+
 # representativeSC(b) returns
 # (conj=minimal r such that b^r is in a sliding circuit,
 #  circuit=sliding circuit of b^r)
-function representativeSC(b,F::Function=(x,y=1)->x)
+function representativeSC(b::GarsideElt,F::Function=(x,y=1)->x)
   seen=Set{typeof(b)}()
-  l=[(b,b^0)]
+  l=[(b,one(b))]
   while !(b in seen)
     push!(seen,b)
-    r=preferred_prefix(b,F)
-    b=^(b,r,F) # slide b
+    b,r=slide(b,F)
     push!(l,(b,l[end][2]*b.M(r)))
   end
   t=findfirst(x->x[1]==b,l)
