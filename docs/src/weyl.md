@@ -17,7 +17,6 @@ badprimes
 standard_parabolic(::Weyl.FC,::AbstractVector{<:Integer})
 inversions
 with_inversions
-relative_group
 affine
 rootdatum(::AbstractMatrix)
 rootdatum(::AbstractMatrix,::AbstractMatrix)

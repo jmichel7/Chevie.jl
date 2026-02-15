@@ -686,7 +686,7 @@ parabolic 𝕄 of `W` such that `W_𝕄 (𝕃,λ)=<s>`)
 
 fills also `.WGLdims`:  dimensions of `Irr(s.WGL)`
 """
-function Weyl.relative_group(s::Series)
+function Eigenspaces.relative_group(s::Series)
   get!(s,:WGL) do
   WF=s.spets
   W=Group(WF)

@@ -72,13 +72,12 @@ The types of root data which are understood are
   :gpin, :spin, :E6, :E6sc, :CE6, :E7, :E7sc, :CE7, :E8, :F4, :G2`.
 
 The  group `𝐆` is *semisimple* if the rank is equal to the semisimple rank.
-In  this case, things  are constrained: the  lattice `X` having an integral
-pairing  withe the coroots,  is in the  dual lattice of  the lattice of the
-coroots.  This dual lattice is called  the *weight lattice*. The dual basis
-to  the simple  coroots is  called the  *fundamental weights*. Similarly we
-have the *coweight lattice* and the *fundamental coweights*. In general the
-lattice  `X` is  an intermediate  lattice between  the root  and the weight
-lattices.
+In  this case, things are constrained:  the lattice `X`, having an integral
+pairing  with the coroots,  is in the  dual lattice of  the coroot lattice.
+This  dual lattice is  called the *weight  lattice*. The dual  basis to the
+simple  coroots is called the *fundamental  weights*. Similarly we have the
+*coweight  lattice* and the *fundamental coweights*. In general the lattice
+`X` is an intermediate lattice between the root and the weight lattices.
 
 It  follows  that  the  finite  abelian  group  obtained by quotienting the
 coweight  lattice by the  coroot lattice describes  all possibilities. This
@@ -96,7 +95,9 @@ semisimple group using this.
 
 The fundamental group has another incarnation which can be more convenient.
 
-  - The *extended simple roots* is `Π̃=Π∪{-α₀}` where `α₀` is the highest root.
+  - The  *extended  simple  roots*  for   an  irreducible  root  system  is
+    `Π̃=Π∪{-α₀}` where `α₀` is the highest root. In general it is the union
+    for each irreducible component of the extended simple roots.
 
 Via  the theory  of the  affine Weyl  group (see `affine`), the fundamental
 group  is  isomorphic  to  the  subgroup  of  `W` which stabilizes `Π̃`. We

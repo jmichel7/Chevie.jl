@@ -1,15 +1,16 @@
 ## teste si C_B(b) -> C_W(w) est surjectif
-function test_surjective(W;ss=:sc)
+function test_surjective(W;ss=Val(:sc))
   res=Vector{Int}[]
   B=BraidMonoid(W)
+  ct=CharTable(W)
   for w in elements(W)
     mot=word(W,w)
     # Print(mot,"\n");
     b=B(mot...)
-    Cb=Group(image.(centralizer_gens(b;ss=ss)))
-    Cw=centralizer(W,w)
-    if length(Cw)/length(Cb)>1
-      print(div(length(Cw),length(Cb)),",")
+    Cb=Group(image.(centralizer_gens(b;ss)))
+    lCw=ct.centralizers[position_class(W,w)]
+    if lCw>length(Cb)
+      print(div(lCw,length(Cb)),",")
       push!(res,mot)
     end
   end
@@ -17,4 +18,4 @@ function test_surjective(W;ss=:sc)
   res
 end
 
-minlength(W,w)=length(classinfo(W).classtext[position_class(W,W(w...))])
+shortest(W,w)=classinfo(W).classtext[position_class(W,W(w...))]

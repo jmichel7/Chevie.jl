@@ -400,7 +400,7 @@ Base.broadcastable(M::LocallyGarsideMonoid)=Ref(M)
 """
 `GarsideMonoid{T}`  is the abstract  type of Garside  monoids, where `T` is
 the type of simples. Such a monoid `M` should implement the same methods as
-`LocallyGarsideMonoid`  except  that  `isrightascent(M,a)` is automatically
+`LocallyGarsideMonoid`  except that `isrightascent(M,a,i)` is automatically
 defined as `isleftdescent(M,\\(M,a,M.δ),i)`.
 
 An implementation should have fields `M.δ`, `M.stringδ`
@@ -749,7 +749,7 @@ Base.reverse(::Interval,M,x)=inv(x)
 end
 
 # this speeds up a lot, using that orderδ=2
-δad(M::BraidMonoid,x,i::Integer)=iseven(i) ? x : x^M.δ
+δad(M::BraidMonoid,x,i::Integer=1)=iseven(i) ? x : x^M.δ
 
 IntervalStyle(M::BraidMonoid)=Interval()
 """
@@ -1928,7 +1928,7 @@ end
 # given a Garside element a and a simple x, returns the
 # minimal m such that x≼m and inf(inv(m)*a*F(m))>=inf(a).
 # Since m=Δ works, m exists and is simple; see algorithm 2 in Franco-Gonzales 1.
-function minc(a,x,::Val{:inf},F::Function=(x,y=1)->x)
+function minc(a::GarsideElt{T},x::T,::Val{:inf},F::Function=(x,y=1)->x)where T
   M=a.M
   m=x
   while true
