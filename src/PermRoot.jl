@@ -1272,14 +1272,23 @@ end
 `baseX(W::ComplexReflectionGroup)`
 
 returns  as the rows of a matrix a  particular basis of the space `V` where
-`W` acts: the first `semisimplerank(W)` rows contain the coordinates on the
-basis of `V` of a basis of the root lattice (given by
-`simpleroots(W)[independent_roots(W)]`) and the last
-`rank(W)-semisimplerank(W)` ones contain the same for the orthogonal of the
-coroots.
+`W` acts: the first `semisimplerank(W)` rows are
+`simpleroots(W)[independent_roots(W)]`,  a basis  of the  root lattice, and
+the  last `rank(W)-semisimplerank(W)` rows are a basis of the orthogonal of
+the coroots (the space of fixed points `V^W`).
 
-When `W` represents a rootdatum for a reductive group, the first lines are
-the same as `simpleroots(W)`.
+When `W` is well-generated the first rows are `simpleroots(W)`.
+```julia-repl
+julia> W=rootdatum(:gl,4)
+gl₄
+
+julia> baseX(W)
+4×4 Matrix{Int64}:
+ 1  -1   0   0
+ 0   1  -1   0
+ 0   0   1  -1
+ 1   1   1   1
+```
 """
 function baseX(W::PermRootGroup{T})where T
   get!(W,:baseX) do
@@ -1301,10 +1310,11 @@ function invbaseX(W::PermRootGroup)
 end
 
 """
-`central_action(L::ComplexReflectionGroup,M)`
+`central_action(W::ComplexReflectionGroup,m::AbstractMatrix)`
 
-If `L` is a reflection subgroup and `M̀` a matrix which normalizes `L` in its
-reflection representation, returns the matrix by which `M` acts on `X(Z_L)`.
+If  `W` is a reflection group on  `V` and `m∈GL(V)` normalizes `W`, returns
+the  matrix by which `m` acts on the fixpoints `V^W`, in the restriction to
+`V^W` of the basis `baseX(W)`.
 """
 function central_action(L,m)
   if size(m,2)==0 return m end
@@ -1317,15 +1327,17 @@ end
 `PermX(W::ComplexReflectionGroup,M::AbstractMatrix)`
 
 Let `M` be an invertible linear map of the reflection representation of `W`
-which  preserves the set of  roots of [`parent`](@ref)`(W)`, and normalizes
-`W`  (for  the  action  of  matrices  on  the  right).  `PermX` returns the
-corresponding permutation of the roots of `parent(W)`; it returns `nothing`
-if `M` does not normalize the set of roots of `parent(W)`.
+which  preserves the set of roots of [`parent`](@ref)`(W)`. `PermX` returns
+the  corresponding  permutation  of  the  roots  of `parent(W)`; it returns
+`nothing` if `M` does not normalize the set of roots of `parent(W)`.
 ```julia-repl
-julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
+julia> E7=rootdatum("E7sc")
+E₇sc
+
+julia> W=reflection_subgroup(E7,1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
-julia> PermX(W,reflrep(W,longest(W)))==longest(W)
+julia> PermX(W,reflrep(W,E7(7)))==E7(7)
 true
 ```
 """
@@ -1731,7 +1743,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
     if sort(l)!=eachindex(l)
       InfoChevie("# changing gens to <",join(l,","),"> for ",
                                              t,"<",ngens(W)," refs>\n")
-      save=haskey(W,:fromparent)
+      save=haskey(W,:fromparent) # a relative_group
       if save n=W.fromparent end
       W=PRG(roots(W,l),coroots(W,l))
       if save W.fromparent=n end
@@ -1938,7 +1950,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   if sort(l)!=eachindex(gens(H))
     InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
       ","),"> for ",t,"<",length(inclusion(H))," refs>\n")
-    save=haskey(H,:fromparent)
+    save=haskey(H,:fromparent) # a relative_group
     if save n=H.fromparent end
     H=reflection_subgroup(W,inclusion(H,l);NC=true)
     if save H.fromparent=n end

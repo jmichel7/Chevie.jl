@@ -603,7 +603,7 @@ end
   N::Int
 end
 
-@GapObj struct FCSG{T,T1} <: FiniteCoxeterGroup{Perm{T}}
+@GapObj struct FCSG{T,T1}<:FiniteCoxeterGroup{Perm{T}}
   G::PRSG{T1,T}
   rootdec::Vector{Vector{T1}}
   N::Int

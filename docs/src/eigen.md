@@ -10,5 +10,5 @@ eigenspace_projector
 position_regular_class
 split_levis
 cuspidal
-relative_group
+relative_group(::Chevie.Weyl.FC, ::AbstractVector{<:Integer})
 ```

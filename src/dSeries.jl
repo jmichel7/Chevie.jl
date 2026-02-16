@@ -679,7 +679,7 @@ ChevieErr(x...)=xprint("!!!!!!! ",x...)
 """
 `relative_group(s::Series)`
 
-computes  `s.WGL`  (denoted  `W_𝔾(𝕃,λ)`  in  spetses  2014)  as a relgroup,
+computes  `s.WGL`  (denoted  `W_𝔾(𝕃,λ)`  in  [bmm14](@cite)) as a relgroup,
 containing  function field `.toparent`  (lifting reflections to  elts of W)
 and  field  `.reflists`  (lifting  a  generator  s  to  reflections  of the
 parabolic 𝕄 of `W` such that `W_𝕄 (𝕃,λ)=<s>`)

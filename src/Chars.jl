@@ -1027,6 +1027,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
   showtable(io,permutedims(string.(toM(t)));row_labels=string.(1:n),col_labels=cl,rows_label="n0")
 end
 
+# exclude FCG and FCSG since they forward to PRG/PRSG
 const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyp}
 
 function Groups.conjugacy_classes(W::TW)where TW<:Hastype

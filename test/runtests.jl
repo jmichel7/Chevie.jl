@@ -244,6 +244,8 @@ end
 @test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")
 @test mytest("Eigenspaces.jl","split_levis(W,4,2)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n E₈₍₃₄₂₅₎=D₄₍₁₃₂₄₎Φ₄²\n E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²\n E₈₍₃₅₆₁₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²")
 @test mytest("Eigenspaces.jl","split_levis(complex_reflection_group(5))","4-element Vector{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:\n G₅\n G₅₍₁₎=G₃‚₁‚₁Φ₁\n G₅₍₂₎=G₃‚₁‚₁Φ₁\n G₅₍₎=Φ₁²")
+@test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")
+@test mytest("Eigenspaces.jl","relative_group(W,2:5)","F₄₍₄₃₂₁₎")
 end
 @testset "FFfac.jl" begin
 @test mytest("FFfac.jl","@Pol q","Pol{Int64}: q")
@@ -637,8 +639,11 @@ end
 @test mytest("PermRoot.jl","W=reflection_subgroup(coxgroup(:A,3),[1,3])","A₃₍₁₃₎=A₁×A₁Φ₁")
 @test mytest("PermRoot.jl","semisimplerank(W)","2")
 @test mytest("PermRoot.jl","rank(W)","3")
-@test mytest("PermRoot.jl","W=reflection_subgroup(rootdatum(\"E7sc\"),1:6)","E₇₍₁₂₃₄₅₆₎=E₆Φ₁")
-@test mytest("PermRoot.jl","PermX(W,reflrep(W,longest(W)))==longest(W)","true")
+@test mytest("PermRoot.jl","W=rootdatum(:gl,4)","gl₄")
+@test mytest("PermRoot.jl","baseX(W)","4×4 Matrix{Int64}:\n 1  -1   0   0\n 0   1  -1   0\n 0   0   1  -1\n 1   1   1   1")
+@test mytest("PermRoot.jl","E7=rootdatum(\"E7sc\")","E₇sc")
+@test mytest("PermRoot.jl","W=reflection_subgroup(E7,1:6)","E₇₍₁₂₃₄₅₆₎=E₆Φ₁")
+@test mytest("PermRoot.jl","PermX(W,reflrep(W,E7(7)))==E7(7)","true")
 @test mytest("PermRoot.jl","parabolic_reps(coxgroup(:A,4))","7-element Vector{Vector{Int64}}:\n []\n [1]\n [1, 2]\n [1, 3]\n [1, 2, 3]\n [1, 2, 4]\n [1, 2, 3, 4]")
 @test mytest("PermRoot.jl","parabolic_reps(complex_reflection_group(3,3,3))","7-element Vector{Vector{Int64}}:\n []\n [1]\n [1, 2]\n [1, 3]\n [1, 9]\n [2, 3]\n [1, 2, 3]")
 @test mytest("PermRoot.jl","parabolic_reps(coxgroup(:A,4),2)","2-element Vector{Vector{Int64}}:\n [1, 2]\n [1, 3]")
@@ -682,6 +687,7 @@ end
 @test mytest("Rootdata.jl","weightinfo(coxgroup(:A,2)*coxgroup(:B,2))","Dict{Symbol, Array} with 8 entries:\n  :moduli                  => [3, 2]\n  :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]\n  :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]\n  :highestroot             => [5, 7]\n  :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n  :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]\n  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0, 0], [0, 0…\n  :AdjointFundamentalGroup => [(1,12,2), (4,14)]")
 @test mytest("Rootdata.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Rootdata.jl","fundamental_group(W)","Group((1,2,3,12))")
+@test mytest("Rootdata.jl","fundamental_group(W;full=true)","Group((1,2,3,12)(4,5,10,11)(6,7,8,9))")
 @test mytest("Rootdata.jl","W=rootdatum(:sl,4)","sl₄")
 @test mytest("Rootdata.jl","fundamental_group(W)","Group(Perm{Int16}[])")
 @test mytest("Rootdata.jl","W=coxgroup(:A,3)","A₃")
@@ -746,7 +752,7 @@ end
 end
 @testset "SymFuncs.jl" begin
 @test mytest("SymFuncs.jl","A=SymFuncAlgebra(10)","SymFuncAlgebra(10)")
-@test mytest("SymFuncs.jl","p=pbasis(A);h=hbasis(A);s=sbasis(A);","nothing")
+@test mytest("SymFuncs.jl","p=pbasis(A);h=hbasis(A);e=ebasis(A);m=mbasis(A);s=sbasis(A);","nothing")
 @test mytest("SymFuncs.jl","p(Partition(3,2,1))","p₃₂₁")
 @test mytest("SymFuncs.jl","p([3,2,1])","p₃₂₁")
 @test mytest("SymFuncs.jl","p(3,2,1)","p₃₂₁")
@@ -761,7 +767,7 @@ end
 @test mytest("SymFuncs.jl","@Mvp u,v","nothing")
 @test mytest("SymFuncs.jl","p(2,1)[u*p(2)+v*p(3)]","u³p₄₂+u²vp₄₃+uv²p₆₂+v³p₆₃")
 @test mytest("SymFuncs.jl","Mvp(p(2)+p(3))","Mvp{Int64}: x₁³+x₁²+x₂³+x₂²+x₃³+x₃²")
-@test mytest("SymFuncs.jl","Mvp(p(2),[u,v])","Mvp{Int64}: u²+v²")
+@test mytest("SymFuncs.jl","Mvp(p(2),[:u,:v])","Mvp{Int64}: u²+v²")
 end
 @testset "Symbols.jl" begin
 @test mytest("Symbols.jl","symbols(3,3,0)","12-element Vector{CharSymbol}:\n (1+)\n (1ζ₃)\n (1ζ₃²)\n (01,12,02)\n (01,02,12)\n (012,012,123)\n (0,1,2)\n (0,2,1)\n (01,01,13)\n (0,0,3)\n (012,,)\n (012,012,)")
