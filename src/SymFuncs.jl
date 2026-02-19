@@ -131,10 +131,10 @@ function H(lambda,s)
   sum(t.scalar[:,i].*s.(partitions(n)))
 end
 
-struct SymFunc{b,C,TS}# b=:s,:p or :h depending on the basis
+struct SymFunc{b,C}# b=:s,:p or :h depending on the basis
   d::ModuleElt{Partition,C}
-  A::TS
-  SymFunc{b}(m,A)where b =new{b,valtype(m),typeof(A)}(m,A)
+  A::SymFuncAlgebra
+  SymFunc{b}(m,A)where b =new{b,valtype(m)}(m,A)
 end
 
 function Base.show(io::IO, h::SymFunc{b})where b
@@ -168,43 +168,47 @@ pbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:p),x...)
 hbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:h),x...)
 ebasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:e),x...)
 mbasis(H::SymFuncAlgebra)=(x...)->basis(H,Val(:m),x...)
-sbasis(h::SymFunc)=basis(h.A,Val(:s),h)
-pbasis(h::SymFunc)=basis(h.A,Val(:p),h)
-hbasis(h::SymFunc)=basis(h.A,Val(:h),h)
-ebasis(h::SymFunc)=basis(h.A,Val(:e),h)
-mbasis(h::SymFunc)=basis(h.A,Val(:m),h)
+sbasis(h::SymFunc)=basis(Val(:s),h)
+pbasis(h::SymFunc)=basis(Val(:p),h)
+hbasis(h::SymFunc)=basis(Val(:h),h)
+ebasis(h::SymFunc)=basis(Val(:e),h)
+mbasis(h::SymFunc)=basis(Val(:m),h)
+Algebras.basis(H::SymFuncAlgebra,::Val{b},h::SymFunc)where b=basis(Val(b),h)
 
 Algebras.basis(h::SymFunc{b})where b=b
 Algebras.basis(H::SymFuncAlgebra,::Val{b},p::Partition)where b=
   SymFunc{b}(ModuleElt(p=>1),H)
 Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vector{<:Integer})where b=
   basis(H,Val(b),Partition(w))
-Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vararg{Integer})where b=
-  basis(H,Val(b),collect(w))
-Algebras.basis(::Val{b},h::SymFunc)where b=basis(h.A,Val(b),h)
-
-Algebras.basis(H::SymFuncAlgebra,::Val{b},h::SymFunc{b}) where b =h
-function Algebras.basis(H::SymFuncAlgebra,::Val{b1},h::SymFunc{b}) where {b,b1}
-  if b==:p error(":p to ",b1," not implemented") end
-  basis(h.A,Val(b1),pbasis(h))
+function Algebras.basis(H::SymFuncAlgebra,::Val{b},w::Vararg{<:Integer})where b
+  v=convert(Vector{Int},collect(w))
+  basis(H,Val(b),v)
 end
 
-function Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:s})
+Algebras.basis(::Val{b},h::SymFunc{b}) where b =h
+
+function Algebras.basis(::Val{b1},h::SymFunc{b}) where {b,b1}
+  if b==:p error(":p to ",b1," not implemented") end
+  basis(Val(b1),pbasis(h))
+end
+
+function Algebras.basis(::Val{:p},h::SymFunc{:s})
+   H=h.A
    sum(h.d)do (p,c)
        SymFunc{:p}(ModuleElt(l=>charvalue(H,p=>l)*c//centralizer(H,l)
             for l in Partitions(H,size(p))),H)
    end
 end
-Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:h})=sum(((p,c),)->
- prod(i->pbasis(basis(H,Val(:s),i)),p.l;init=pbasis(H)())*c,h.d;init=zero(:p,h))
-Algebras.basis(H::SymFuncAlgebra,::Val{:p},h::SymFunc{:e})=sum(((p,c),)->
-   prod(i->pbasis(basis(H,Val(:s),fill(1,i))),p.l;init=pbasis(H)())*c,
+Algebras.basis(::Val{:p},h::SymFunc{:h})=sum(((p,c),)->
+ prod(i->pbasis(basis(h.A,Val(:s),i)),p.l;init=pbasis(h.A)())*c,h.d;init=zero(:p,h))
+Algebras.basis(::Val{:p},h::SymFunc{:e})=sum(((p,c),)->
+   prod(i->pbasis(basis(h.A,Val(:s),fill(1,i))),p.l;init=pbasis(h.A)())*c,
                                                          h.d;init=zero(:p,h))
 
-Algebras.basis(H::SymFuncAlgebra,::Val{:s},h::SymFunc{:p})=
+Algebras.basis(::Val{:s},h::SymFunc{:p})=
   sum(h.d;init=zero(:s,h))do (p,c)
-    SymFunc{:s}(ModuleElt(l=>charvalue(H,l=>p)*c for l in
-                     Partitions(H,size(p))),H)
+    SymFunc{:s}(ModuleElt(l=>charvalue(h.A,l=>p)*c for l in
+                     Partitions(h.A,size(p))),h.A)
   end
 
 function Pto(H,n,b) # p(n) to basis b∈(:e,:h)
@@ -213,19 +217,19 @@ function Pto(H,n,b) # p(n) to basis b∈(:e,:h)
     prod(i->factorial(i[2]),tally(p.l))
    end),H)*((b==:e && iseven(n)) ? -1 : 1)
 end
-function Algebras.basis(H::SymFuncAlgebra,::Val{:h},h::SymFunc{:p})
-  sum(((p,c),)->prod(n->Pto(H,n,:h),p.l;init=hbasis(H)())*c,h.d,init=zero(:h,h))
+function Algebras.basis(::Val{:h},h::SymFunc{:p})
+  sum(((p,c),)->prod(n->Pto(h.A,n,:h),p.l;init=hbasis(h.A)())*c,h.d,init=zero(:h,h))
 end
-function Algebras.basis(H::SymFuncAlgebra,::Val{:e},f::SymFunc{:p})
-  sum(((p,c),)->prod(n->Pto(H,n,:e),p.l;init=ebasis(H)())*c,f.d,init=zero(:e,f))
+function Algebras.basis(::Val{:e},f::SymFunc{:p})
+  sum(((p,c),)->prod(n->Pto(f.A,n,:e),p.l;init=ebasis(f.A)())*c,f.d,init=zero(:e,f))
 end
-function Algebras.basis(H::SymFuncAlgebra,::Val{:p},f::SymFunc{:m})
- h=hbasis(H);p=pbasis(H)
+function Algebras.basis(::Val{:p},f::SymFunc{:m})
+ H=f.A;h=hbasis(H);p=pbasis(H)
  mtop(μ)=SymFunc{:p}(ModuleElt(l=>h(p(l))[μ]//centralizer(H,l) for l in Partitions(H,size(μ))),H)
  sum(((μ,c),)->mtop(μ)*c,f.d)
 end
-function Algebras.basis(H::SymFuncAlgebra,::Val{:m},f::SymFunc{:p})
- h=hbasis(H);p=pbasis(H)
+function Algebras.basis(::Val{:m},f::SymFunc{:p})
+ H=f.A;h=hbasis(H);p=pbasis(H)
  stom(μ)=SymFunc{:m}(ModuleElt(l=>p(h(l))[μ] for l in Partitions(H,size(μ))),H)*
   centralizer(H,μ)
  sum(((μ,c),)->stom(μ)*c,f.d)

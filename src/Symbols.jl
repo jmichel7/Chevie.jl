@@ -214,7 +214,7 @@ end
 
 function Base.show(io::IO, p::Partition)
   if hasdecor(io)
-    print(io,isempty(p.l) ? "." : joindigits(p.l))
+    print(io,isempty(p.l) ? "-" : joindigits(p.l))
   else print(io,"Partition(",join(p.l,","),")")
   end
 end
