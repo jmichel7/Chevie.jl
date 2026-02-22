@@ -377,7 +377,7 @@ leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt,
 Brieskorn_normal_form, Monoid, MonoidElt, GarsideMonoid, LocallyGarsideMonoid,
 hurwitz, rightascents
 
-public slide, cycle, decycle
+VERSION >= v"1.11.0" && eval(Meta.parse("public slide, cycle, decycle"))
 
 abstract type Monoid end
 

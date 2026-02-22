@@ -142,11 +142,13 @@ export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
 gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg,
 fakedegree, defectsymbol,   fullsymbol,
 Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola,
-quotient, core, Partition, partition_core_quotient
+quotient, core, Partition, partition_core_quotient, PartitionTuple
+
+VERSION >= v"1.11.0" && eval(Meta.parse("public z"))
 
 """ 
-A  `Partition` object  is formed  from a  non-increasing of integers ending
-with  a  number>0.  The  following  two  forms  are equivalent for making a
+A  `Partition`  object  is  formed  from  a non-increasing list of integers
+ending with a number>0. The following two forms are equivalent for making a
 `Partition` object:
 ```julia-repl
 julia> Partition([2,1,1])
@@ -158,7 +160,7 @@ Partition: 211
 julia> length(p) # how many parts
 3
 
-julia> size(p) # the sum of the parts
+julia> rank(p) # the sum of the parts
 4
 ```
 some basic operations on partitions is the union and the conjugate partition
@@ -178,7 +180,7 @@ julia> p[1]
 julia> p[4]
 0
 ```
-The partitions are ordered by size, and then lexicographically.
+The partitions are ordered by rank, and then lexicographically.
 """
 struct Partition
   l::Vector{Int}
@@ -196,13 +198,13 @@ end
 
 Base.hash(p::Partition,k::UInt)=hash(p.l,k)
 Base.:(==)(a::Partition,b::Partition)=a.l==b.l
-Base.:union(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
+Base.union(a::Partition,b::Partition)=Partition(sort!(vcat(a.l,b.l),rev=true))
 Partition(a::Integer...)=Partition(collect(a))
 Partition(a::AbstractVector{<:Integer})=Partition(collect(a))
-Base.size(p::Partition)=sum(p.l)
+rank(p::Partition)=sum(p.l)
 Base.length(p::Partition)=length(p.l)
-Base.sign(p::Partition)=(-1)^(size(p)-length(p))
-Base.isless(a::Partition,b::Partition)=size(a)<size(b) || a.l<b.l
+Base.sign(p::Partition)=(-1)^(rank(p)-length(p))
+Base.isless(a::Partition,b::Partition)=rank(a)<rank(b) || a.l<b.l
 Base.:adjoint(a::Partition)=Partition(conjugate_partition(a.l))
 Base.getindex(a::Partition,i)=i>length(a) ? 0 : a.l[i]
 Combinat.dominates(a::Partition,b::Partition)=dominates(a.l,b.l)
@@ -307,74 +309,29 @@ end
 
 βset(p::Partition,s=0)=βset(p.l,s)
 
-struct CharSymbol
-  S::Vector{Vector{Int}}
-  repeats::Int
-  no::Int # symbols which are a pattern repeated repeats time have 0≤no<repeats
+function z(l::Vector{<:Integer})
+  prev=0
+  res=1
+  nocc=1 # useless but cannot see otherwise var introduced in for scope
+  for i in l
+    if i==prev
+      nocc+=1
+    else
+      prev=i
+      nocc=1
+    end
+    res*=prev*nocc
+  end
+  res
 end
-
+    
 """
-`CharSymbol(v::Vector{Vector{Int}},repeat::Int=1,no::Int=0)`
+`z(p::Partition)` or `z(l::Vector{<:Integer})`
 
-`CharSymbol` makes a vector of βsets into a symbol. If the vector of βsets
-has a period this is specified by giving a number `repeats` of repetitions
-and a number `0≤no<repat`.
-```julia-repl
-julia> CharSymbol([[1],Int[],[2]])
-(1,,2)
-
-julia> CharSymbol([[1],[1],[1]],3,2)
-(1ζ₃²)
-```
+returns the length of the centralizer in ``𝔖_{rank(p))'' of an element of
+the class parametrized by `p`.
 """
-CharSymbol(v::Vector{<:AbstractVector})=
-      CharSymbol(convert(Vector{Vector{Int}},v),1,0)
-
-Base.:(==)(S::CharSymbol,T::CharSymbol)=S.S==T.S && S.no==T.no && S.repeats==T.repeats
-
-Base.hash(S::CharSymbol,h::UInt64)=hash(S.S,hash(S.repeats,hash(S.no,h)))
-
-"""
-`string_partition_tuple(tuple)`
-
-converts  the partition tuple `tuple` to  a string where the partitions are
-separated by a dot.
-
-```julia-repl
-julia> d=partition_tuples(3,2)
-10-element Vector{Vector{Vector{Int64}}}:
- [[1, 1, 1], []]
- [[1, 1], [1]]
- [[1], [1, 1]]
- [[], [1, 1, 1]]
- [[2, 1], []]
- [[1], [2]]
- [[2], [1]]
- [[], [2, 1]]
- [[3], []]
- [[], [3]]
-
-julia> string_partition_tuple.(d)
-10-element Vector{String}:
- "111."
- "11.1"
- "1.11"
- ".111"
- "21."
- "1.2"
- "2.1"
- ".21"
- "3."
- ".3"
-```
-"""
-function string_partition_tuple(n;opt...)
-  if n[end] isa Vector return join(joindigits.(n),".") end
-  r=xrepr(E(n[end-1],n[end]);opt...)
-  if r=="1" r="+" end
-  if r=="-1" r="-" end
-  join(joindigits.(n[1:end-2]),".")*r
-end
+z(p::Partition)=z(p.l)
 
 """
 `shiftβ( β, n)` shift the β-set `β` by `n`
@@ -428,6 +385,135 @@ julia> partβ([0,4,5])
 ```
 """
 partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
+
+#----------------------------------------------------------
+"""
+A  `PartitionTuple`  is  a  tuple  of  partitions.  The following forms are
+equivalent for making a `PartitionTuple`:
+```julia-repl
+julia> PartitionTuple([[3,1],Int[]])
+PartitionTuple: 31.
+
+julia> PartitionTuple([3,1],Int[])
+PartitionTuple: 31.
+
+julia> PartitionTuple(Partition(3,1),Partition())
+PartitionTuple: 31.
+```
+"""
+struct PartitionTuple
+  P::Vector{Vector{Int}}
+  function PartitionTuple(P::Vector{<:Vector{<:Integer}})
+    for p in P
+      if !all(i->p[i]≥p[i+1],1:length(p)-1)
+        error(p," not a partition: parts should be non-increasing")
+       elseif length(p)>0 && p[end]<=0
+        error(p," not a partition: parts should be positive")
+      end
+    end
+    new(P)
+  end
+end
+
+Base.:(==)(a::PartitionTuple,b::PartitionTuple)=a.P==b.P
+
+PartitionTuple(v::Vector{Partition})=PartitionTuple(map(x->x.l,v))
+
+PartitionTuple(v::Vararg{Vector{<:Integer}})=PartitionTuple(collect(v))
+
+PartitionTuple(v::Vararg{Partition})=PartitionTuple(collect(v))
+
+Base.isless(p1::PartitionTuple,p2::PartitionTuple)=p1.P<p2.P
+function Base.union(a::PartitionTuple,b::PartitionTuple)
+  if length(a.P)!=length(b.P) error("PartitionTuples not of same degree") end
+  PartitionTuple(map((p,q)->sort!(vcat(p,q),rev=true),a.P,b.P))
+end
+
+function Base.show(io::IO,::MIME"text/plain", p::PartitionTuple)
+  if get(io,:typeinfo,Any)!=PartitionTuple print(io,"PartitionTuple: ") end
+  print(io,p)
+end
+
+function Base.show(io::IO,p::PartitionTuple)
+  if hasdecor(io) join(io,map(x->isempty(x) ? "" : joindigits(x),p.P),".")
+  else print(io,"PartitionTuple(",join(repr.(p.P),","),")")
+  end
+end
+
+z(p::PartitionTuple)=prod(z,p.P)*length(p.P)^sum(length,p.P)
+
+rank(p::PartitionTuple)=sum(sum,p.P)
+
+LaurentPolynomials.degree(P::PartitionTuple)=length(P.P)
+
+"""
+`string_partition_tuple(tuple)`
+
+converts  the partition tuple `tuple` to  a string where the partitions are
+separated by a dot.
+
+```julia-repl
+julia> d=partition_tuples(3,2)
+10-element Vector{Vector{Vector{Int64}}}:
+ [[1, 1, 1], []]
+ [[1, 1], [1]]
+ [[1], [1, 1]]
+ [[], [1, 1, 1]]
+ [[2, 1], []]
+ [[1], [2]]
+ [[2], [1]]
+ [[], [2, 1]]
+ [[3], []]
+ [[], [3]]
+
+julia> string_partition_tuple.(d)
+10-element Vector{String}:
+ "111."
+ "11.1"
+ "1.11"
+ ".111"
+ "21."
+ "1.2"
+ "2.1"
+ ".21"
+ "3."
+ ".3"
+```
+"""
+function string_partition_tuple(n;opt...)
+  if n[end] isa Vector return join(joindigits.(n),".") end
+  r=xrepr(E(n[end-1],n[end]);opt...)
+  if r=="1" r="+" end
+  if r=="-1" r="-" end
+  join(joindigits.(n[1:end-2]),".")*r
+end
+#------------------------------------------------------------------------
+struct CharSymbol
+  S::Vector{Vector{Int}}
+  repeats::Int
+  no::Int # symbols which are a pattern repeated repeats time have 0≤no<repeats
+end
+
+"""
+`CharSymbol(v::Vector{Vector{Int}},repeat::Int=1,no::Int=0)`
+
+`CharSymbol` makes a vector of βsets into a symbol. If the vector of βsets
+has a period this is specified by giving a number `repeats` of repetitions
+and a number `0≤no<repat`.
+```julia-repl
+julia> CharSymbol([[1],Int[],[2]])
+(1,,2)
+
+julia> CharSymbol([[1],[1],[1]],3,2)
+(1ζ₃²)
+```
+"""
+CharSymbol(v::Vector{<:AbstractVector})=
+      CharSymbol(convert(Vector{Vector{Int}},v),1,0)
+
+Base.:(==)(S::CharSymbol,T::CharSymbol)=S.S==T.S && S.no==T.no && S.repeats==T.repeats
+
+Base.hash(S::CharSymbol,h::UInt64)=hash(S.S,hash(S.repeats,hash(S.no,h)))
 
 # rank of partition_tuple described by symbol S
 relative_rank(S::CharSymbol)=sum(x->sum(x)-div(length(x)*(length(x)-1),2),S.S)
@@ -841,7 +927,7 @@ julia> symbols(2,4,0,1) # unipotent characters of ²D₄
 """
 symbols(e,r,c=1,def=0)=vcat(Symbolsshape.(r,shapesSymbols(e,r,c,def))...)
 
-# for S β-numbers ∏(x^{ei}-x^{ej}) for i>j, i,j∈S
+"`Δ(S::β-set,e)` is `CycPol(∏(x^{ei}-x^{ej}) for i>j, i,j∈S)`"
 function Δ(S,e)
   l=length(S)
   if l<2 return one(CycPol) end
@@ -850,7 +936,7 @@ function Δ(S,e)
   CycPol(1,v,ModuleElt(p.=>1))
 end
 
-# for S β-numbers ∏(x^{eh}-1) for l in S for h in 1:l
+"`Θ(S::β-set,e)` is `CycPol(∏(x^{eh}-1) for l in S for h in 1:l)`"
 function Θ(S,e)
   if iszero(sum(S)) return one(CycPol) end
   p=[i//(e*h) for l in S for h in 1:l for i in 0:e*h-1]
@@ -881,7 +967,8 @@ function fakedegree(s::CharSymbol,p=0) # See Mal95, 2.11 and 5.7
   else return zero(CycPol)
   end
   res*=prod(S->Δ(S,e)//Θ(S,e),s.S)
-  res//=CycPol(1,sum([div(x*(x-1),2) for x in e.*(1:div(sum(length,s.S),e)-1).+d%2]))
+  res//=CycPol(1,
+           sum([div(x*(x-1),2) for x in e.*(1:div(sum(length,s.S),e)-1).+d%2]))
   if d==1 res*=CycPol(1,sum(((x,y),)->x*sum(y),zip(0:e-1,s.S)))
   else
     rot=circshift.(Ref(s.S),e:-1:1)
@@ -969,7 +1056,7 @@ function xsp(rho,s,n,d)
     [S[1],S[2].+s]
   end
 end
-
+#---------------------------------------------------------------------------
 """
 `XSP(ρ,s,n,even=false)` Lusztig-Spaltenstein symbols.
 
