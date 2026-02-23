@@ -1,5 +1,6 @@
 """
-This  module  deals  with  symmetric  functions.  
+This  module  deals  with  symmetric  functions.  For details look at the books
+[mac15](@cite) or [ze81](@cite).
 
 The  algebra `R` of symmetric functions over the integers is isomorphic to
 the  sum of the Grothendieck groups ``⊕_{n≥0}R[𝔖ₙ]``. The multiplication in
@@ -184,19 +185,27 @@ function cpartitions(n)
   end
 end
 
-const charvaluescache=Dict{Pair{Partition,Partition},Int}((Partition()=>Partition())=>1)
-
-function charvalue(p::Pair{Partition,Partition})
-  l=rank(p[1])
-  if l!=rank(p[2]) error() end
-  get!(charvaluescache,p)do 
-    ct=CharTable(coxsym(l))
-    pp=cpartitions(l)
-    for x in eachindex(pp), y in eachindex(pp) 
-      charvaluescache[pp[x]=>pp[y]]=ct.irr[x,y]
+const mncache=Dict{Pair{Vector{Int},Vector{Int}},Int}((Int[]=>Int[])=>1,
+                                                      ([1]=>[1])=>1)
+# Murnaghan-Nakayama rule: b a betaset p a partition
+function mn(b::AbstractVector,p::AbstractVector)
+  get!(mncache,b=>p)do
+    e=p[1]
+    sum(enumerate(b))do (i,j)
+      if j<e return 0 end
+      r=searchsorted(b,j-e)
+      if !isempty(r) return 0 end
+      sgn=isodd(i-r.start) ? -1 : 1
+      b1=copy(b)
+      for k in i:-1:r.start+1 b1[k]=b1[k-1] end; b1[r.start]=j-e
+      sgn*mn(shiftβ(b1),@view p[2:end])
     end
-    charvaluescache[p]
   end
+end
+
+function charvalue(p::Partition,q::Partition)
+  if rank(p)!=rank(q) error() end
+  mn(βset(p),q.l)
 end
 
 function H(lambda,s)
@@ -270,7 +279,7 @@ end
 
 function Algebras.basis(::Val{:p},h::SymFunc{:s})
    sum(h.d)do (p,c)
-       SymFunc{:p}(ModuleElt(l=>charvalue(p=>l)*c//z(l)
+       SymFunc{:p}(ModuleElt(l=>charvalue(p,l)*c//z(l)
             for l in cpartitions(rank(p))))
    end
 end
@@ -281,7 +290,7 @@ Algebras.basis(::Val{:p},h::SymFunc{:e})=sum(((μ,c),)->
 
 Algebras.basis(::Val{:s},h::SymFunc{:p})=
   sum(h.d;init=zero(:s,h))do (p,c)
-    SymFunc{:s}(ModuleElt(l=>charvalue(l=>p)*c for l in
+    SymFunc{:s}(ModuleElt(l=>charvalue(l,p)*c for l in
                      cpartitions(rank(p))))
   end
 
