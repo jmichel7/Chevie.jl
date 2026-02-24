@@ -383,17 +383,43 @@ julia> p(3)[(u+v^2)p()]
 julia> p(3,2)[(u+v^2)p()]
 (u⁵+u³v⁴+u²v⁶+v¹⁰)p₋
 ```
+We  implement also the plethysm for hyperoctaedral groups, which associates
+to  each element `f` of `R₂` a function `R₂⊗R₂→R₂:(f₀,f₁)↦ f[f₀,f₁])` which
+is defined by the rules:
+  - `(f+f')[f₀,f₁]=f[f₀,f₁]+f'[f₀,f₁]`
+  - `(f*f')[f₀,f₁]=f[f₀,f₁]*f'[f₀,f₁]`
+  - `(pₙ⊠1)[f₀,f₁]=(pₙ⊠1)[f₀,0]`
+  - `(pₙ⊠1)[f₀+f'₀,0]=(pₙ⊠1)[f₀,0]+(pₙ⊠1)[f'₀,0]`
+  - `(pₙ⊠1)[a⊠b,0]=pₙ[a]⊠pₙ[b]`
+  - `(1⊠pₙ)[f₀,f₁]=(1⊠pₙ)[0,f₁]`
+  - `(1⊠pₙ)[0,f₁+f'₁]=(1⊠pₙ)[0,f₁]+(1⊠pₙ)[0,f'₁]`
+  - `(1⊠pₙ)[0,a⊠b]=pₙ[a]⊠pₙ[b]`
 """
 function plethysm(a::SymFunc{ab},b::SymFunc)where ab
   a=p(a);b=p(b)
-  basis(Val(ab),sum(a.d;init=zero(a))do (p,c)
-    c*prod(p.l)do i
+  basis(Val(ab),sum(a.d;init=zero(a))do (P,c)
+    c*prod(P.l;init=p())do i
       SymFunc{:p}(ModuleElt(Partition(i*p1.l)=>pow(c1,i) for (p1,c1) in b.d))
     end
   end)
 end
 
 Base.getindex(a::SymFunc,b::SymFunc)=plethysm(a,b)
+
+function plethysm(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)
+  g=p(g);f0=p(f0);f1=p(f1)
+  basis(Val(basis(g)),(sum(g.d)do (P,c)
+    c*prod(1:2)do i
+      prod(P.P[i];init=p(Int[],Int[]))do n
+        sum(i==1 ? f0.d : f1.d)do (P1,c1)
+          p(n)[p(P1.P[1])*c1]⊠p(n)[p(P1.P[2])]
+        end
+      end
+    end
+  end))
+end
+
+Base.getindex(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)=plethysm(g,f0,f1)
 
 struct WreathSymFunc{b,C}
   d::ModuleElt{PartitionTuple,C}
