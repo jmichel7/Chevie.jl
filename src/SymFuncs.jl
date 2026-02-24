@@ -244,7 +244,7 @@ Base.:*(b::Union{Number,Pol,Mvp,Frac}, a::SymFunc)=a*b
 Base.:^(a::SymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
 Base.one(a::SymFunc)=clone(a,ModuleElt(Partition()=>1))
-Base.zero(a::SymFunc)=clone(a,zero(a.d))
+Base.zero(a::SymFunc)=SymFunc{basis(a)}(zero(a.d))
 Base.zero(b::Symbol,a::SymFunc)=SymFunc{b}(zero(a.d))
 s(x...)=basis(Val(:s),x...)
 p(x...)=basis(Val(:p),x...)
@@ -460,6 +460,8 @@ Base.:-(a::WreathSymFunc{ba},b::WreathSymFunc) where ba=clone(a,a.d-basis(Val(ba
 Base.:*(a::WreathSymFunc, b::Union{Number,Pol,Mvp,Frac})=clone(a,a.d*b)
 Base.:(//)(a::WreathSymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d//b)
 Base.:*(b::Union{Number,Pol,Mvp,Frac}, a::WreathSymFunc)=a*b
+Base.zero(a::WreathSymFunc)=WreathSymFunc{basis(a)}(zero(a.d))
+Base.zero(b::Symbol,a::WreathSymFunc)=WreathSymFunc{b}(zero(a.d))
 
 ⊠(a,a1)=tens(a,a1)
 
@@ -490,7 +492,7 @@ Algebras.basis(::Val{b},w::Vector{<:Vector{<:Integer}})where b=
 function Algebras.basis(::Val{b},h::WreathSymFunc{b1})where {b,b1}
   if b==b1 return h end
   if b==:π || b1==:π error("uuuu") end
-  sum(h.d)do (P,c)
+  sum(h.d;init=zero(b,h))do (P,c)
    tens(map(p->basis(Val(b),basis(Val(b1),p)),P.P)...)*c
   end
 end
@@ -590,12 +592,12 @@ function FinitePosets.:⊗(f::WreathSymFunc{b},g::WreathSymFunc)where b
   basis(Val(b),r)
 end
 
-function plethysm(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)
+function plethysm(g::WreathSymFunc{b},f0::WreathSymFunc,f1::WreathSymFunc)where b
   g=p(g);f0=p(f0);f1=p(f1)
-  basis(Val(basis(g)),(sum(g.d)do (P,c)
+  basis(Val(b),(sum(g.d;init=zero(g))do (P,c)
     c*prod(1:2)do i
       prod(P.P[i];init=p(Int[],Int[]))do n
-        sum(i==1 ? f0.d : f1.d)do (P1,c1)
+       sum(i==1 ? f0.d : f1.d;init=zero(g))do (P1,c1)
           p(n)[p(P1.P[1])*c1]⊠p(n)[p(P1.P[2])]
         end
       end
