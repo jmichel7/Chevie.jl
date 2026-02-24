@@ -406,21 +406,6 @@ end
 
 Base.getindex(a::SymFunc,b::SymFunc)=plethysm(a,b)
 
-function plethysm(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)
-  g=p(g);f0=p(f0);f1=p(f1)
-  basis(Val(basis(g)),(sum(g.d)do (P,c)
-    c*prod(1:2)do i
-      prod(P.P[i];init=p(Int[],Int[]))do n
-        sum(i==1 ? f0.d : f1.d)do (P1,c1)
-          p(n)[p(P1.P[1])*c1]⊠p(n)[p(P1.P[2])]
-        end
-      end
-    end
-  end))
-end
-
-Base.getindex(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)=plethysm(g,f0,f1)
-
 struct WreathSymFunc{b,C}
   d::ModuleElt{PartitionTuple,C}
   WreathSymFunc{b}(m)where b =new{b,valtype(m)}(m)
@@ -604,6 +589,21 @@ function FinitePosets.:⊗(f::WreathSymFunc{b},g::WreathSymFunc)where b
   r=WreathSymFunc{:π}(ModuleElt(p=>c*z(p) for (p,c) in m))
   basis(Val(b),r)
 end
+
+function plethysm(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)
+  g=p(g);f0=p(f0);f1=p(f1)
+  basis(Val(basis(g)),(sum(g.d)do (P,c)
+    c*prod(1:2)do i
+      prod(P.P[i];init=p(Int[],Int[]))do n
+        sum(i==1 ? f0.d : f1.d)do (P1,c1)
+          p(n)[p(P1.P[1])*c1]⊠p(n)[p(P1.P[2])]
+        end
+      end
+    end
+  end))
+end
+
+Base.getindex(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)=plethysm(g,f0,f1)
 
 Base.getindex(a::WreathSymFunc,p::PartitionTuple)=a.d[p]
 Base.getindex(a::WreathSymFunc,x::Vararg{<:Vector{<:Int}})=a.d[PartitionTuple(collect(x))]
