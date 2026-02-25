@@ -320,8 +320,8 @@ julia> reflectionMatrix([1,0,-E(3,2)])
 ```
 """
 function reflectionMatrix(r::AbstractVector,l::Number=-1)
-  r1=conj(r)
-  I-(r1*transpose(r))*((1-l)//(transpose(r)*r1))
+  cr=conj(r);tr=transpose(r)
+  I-(cr*tr)*((1-l)//(tr*cr))
 end
 
 """
@@ -451,6 +451,14 @@ permutation group on a set of roots.
 """
 abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 
+# should use independent_roots? == means same representation
+function Base.:(==)(W::PermRootGroup,W1::PermRootGroup)
+  simpleroots(W)==simpleroots(W1) && simplecoroots(W)==simplecoroots(W1)
+end
+
+Base.hash(W::PermRootGroup,h::UInt)=
+  hash(simplecoroots(W),hash(simpleroots(W),h))
+
 """
 `inclusion(W::ComplexReflectionGroup)`
 
@@ -515,18 +523,6 @@ coxeter_number(W::PermRootGroup)=sum(t->coxnum(t),refltype(W);init=0)
 coxeter_number(t::TypeIrred)=div(nhyp(t)+nref(t),rank(t))
 
 const coxnum=coxeter_number
-
-# should use independent_roots
-function Base.:(==)(W::PermRootGroup,W1::PermRootGroup)
-  if ngens(W)!=ngens(W1) return false end
-  all(i->roots(W,i)==roots(W1,i) && coroots(W,i)==coroots(W1,i), 1:ngens(W))
-end
-
-function Base.hash(W::PermRootGroup,h::UInt)
-  for i in 1:ngens(W) h=hash(roots(W,i),h) end
-  for i in 1:ngens(W) h=hash(coroots(W,i),h) end
-  h
-end
 
 """
 `simple_reps(W)`
@@ -818,8 +814,13 @@ end
 
 Groups.ordergens(t::TypeIrred)=chevieget(t,:ordergens)
 
-# g is a sublist of 1:length(H.roots). Returns sublist k of g such that
-# refls(H,k) satisfy braid and order relations of type t
+"""
+`findgoodgens(H,g,t::TypeIrred)`
+
+`H` is a PermRootGroup and `g`  a sublist of `eachindex(H.roots)`. 
+Returns a sublist `k` of `g` such that `refls(H,k)` satisfy the braid and 
+order relations of type `t`, or `nothing` if such a sublist does not exist.
+"""
 function findgoodgens(H,g,t::TypeIrred)
 # println("g=$g\n t=");ds(t)
   orders=ordergens(t)
@@ -847,8 +848,13 @@ function findgoodgens(H,g,t::TypeIrred)
   return findarr(eltype(H)[],g)
 end
 
-# findgoodcartan(H,g,C):  g is a sublist of eachindex(H.roots).
-# Returns sublist k of g such that cartan(H,k)=C or nothing if none exists.
+"""
+`findgoodcartan(H,g,C::Matrix)`
+
+`H` is a PermRootGroup and `g`  a sublist of `eachindex(H.roots)`. 
+Returns a sublist `k` of `g` such that `cartan(H,k)=C` or `nothing` if 
+such a sublist does not exist.
+"""
 function findgoodcartan(H,g,C)
   function find(k,rest) # k has good cartan, see if can add some e∈ rest
     if length(k)==size(C,1) return k end
@@ -867,7 +873,13 @@ function findgoodcartan(H,g,C)
   return find(Int[],g)
 end
 
-# try to make cartan(H,p) like C by changing p rotating roots (C indecomposable)
+"""
+`fixCartan(H,C::Matrix,p)`
+
+`H`  is a PermRootGroup,  `p` a sublist  of `eachindex(H.roots)` and `C` an
+indecomposable  Cartan matrix. Try to make `cartan(H,p)==C` by changing `p`
+to other roots with same reflection.
+"""
 function fixCartan(H,C,p)
   CH=cartan(H,p)
   r=TypeIrred(CH)
@@ -893,13 +905,18 @@ function fixCartan(H,C,p)
   (r,p)
 end
 
-# find roots p in inclusion(H) with cartan(H,p) equal to C^(diagonal matrix D)
-# returns [p, diagonal of D]
+"""
+`findgensDiagCartan2(H,C)`
+
+`H`  is a  PermRootGroup and  `C` an  indecomposable Cartan  matrix. Find a
+subset `p` of `eachindex(roots(H))` such that `cartan(H,p)==inv(D)*C*D` for
+some diagonal matrix `D`. returns `(p,diag(D))` or nothing if no such `p,D`
+are found.
+"""
 function findgensDiagCartan2(H,C)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
   # here cartan(H,l) is conjugate by Diagonal(d) to beginning of C
   function complete(l,d)
-    local r,c,cc,n
     if length(l)==size(C,1) return (l,d) end
     n=length(l)+1
     for r in Iterators.filter(i->cartan(H,i,i)==C[n,n],eachindex(roots(H)))
@@ -916,9 +933,14 @@ function findgensDiagCartan2(H,C)
   return complete(Int[],eltype(C)[])
 end
 
-# find other roots p' in inclusion(H) with same reflections as p 
-# with cartan(H,p') equal to C^(diagonal matrix D)
-# returns [p', diagonal of D]
+"""
+`findgensDiagCartan(H,C,p)`
+
+`H`  is  a  PermRootGroup,  `C`  an  indecomposable Cartan matrix and `p` a
+sublist of `eachindex(roots(H))`. Find a `p'` defining the same reflections
+as  `p` such that  `cartan(H,p)==inv(D)*C*D` for some  diagonal matrix `D`.
+returns `(p',diag(D))` or nothing if no such `p',D` are found.
+"""
 function findgensDiagCartan(H,C,p)
   CH=cartan(H,p)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
@@ -1196,22 +1218,6 @@ julia> torus_order.(Ref(W),1:nconjugacy_classes(W),Pol(:q))
 """
 torus_order(W::PermRootGroup,i,q=Pol())=prod(l->q-l,refleigen(W)[i])
 
-Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
-
-function Base.show(io::IO, t::AbstractVector{<:TypeIrred})
-  r=0
-  join(io,map(t)do t
-    n=xrepr(io,t)
-    inds=indices(t)
-    if isnothing(inds) n*="?"
-    elseif inds!=r.+eachindex(inds) && hasdecor(io)
-      n=fromTeX(io,"{"*n*"}"*"_{"*joindigits(inds;always=true)*"}")
-    end
-    r+=rank(t)
-    n
-   end,hasdecor(io) ? fromTeX(io,"\\times{}") : "*")
-end
-
 function showtorus(io::IO,W)
   t=rank(W)-semisimplerank(W)
   if t>0
@@ -1345,8 +1351,9 @@ function PermX(W::PermRootGroup,M::AbstractMatrix)
   Perm(parent(W).roots,Ref(transpose(M)).*parent(W).roots)
 end
 
+# try to find a "canonical" element in the coset WF
 function PermGroups.reduced(W::PermRootGroup,F)
-  function redcenter(W,F)
+  function redcenter(W,F) #"better" representative mod. center
     FF=F.*elements(center(W))
     if true
       if F in parent(W)
@@ -1355,7 +1362,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
         ch=map(x->eigmat(reflrep(W,x)),FF)
       end
       m=minimum(map(x->sum(order.(x)),ch))
-      if length(m)>1 println("warning",length(m)) end
+      if length(m)>1 InfoChevie("central ambiguity(",length(m),")") end
       m=findall(x->sum(order.(x))==m,ch)
     else
       ch=map(x->conductor(charpoly(reflrep(W,x))),FF)
@@ -1365,7 +1372,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
     minimum(FF[m])
   end
   if isone(F) return F end
-  if issubset(inclusiongens(W).^F,inclusion(W))
+  if issubset(inclusiongens(W).^F,inclusion(W)) # "diagram" automorphism
     w=PermX(W,reflrep(W,F))
     if !isnothing(w) && w in W return redcenter(W,w\F)
     elseif length(W)==1 return F
@@ -1830,7 +1837,7 @@ the matrix for the distinguished reflection around the `i`-th root of `W`.
 """
 reflection_representation(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
 
-#--------------- type of subgroups of PRG----------------------------------
+#--------------- subgroups of PRG. Another implementation of PermRootGroup -----
 @GapObj struct PRSG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}
   one::Perm{T1}

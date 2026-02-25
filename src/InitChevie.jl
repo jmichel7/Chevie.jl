@@ -190,6 +190,22 @@ function Base.show(io::IO, t::TypeIrred)
   end
 end
 
+Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
+
+function Base.show(io::IO, t::AbstractVector{<:TypeIrred})
+  r=0
+  join(io,map(t)do t
+    n=xrepr(io,t)
+    inds=indices(t)
+    if isnothing(inds) n*="?"
+    elseif inds!=r.+eachindex(inds) && hasdecor(io)
+      n=fromTeX(io,"{"*n*"}"*"_{"*joindigits(inds;always=true)*"}")
+    end
+    r+=rank(t)
+    n
+   end,hasdecor(io) ? fromTeX(io,"\\times{}") : "*")
+end
+
 function field(t1::TypeIrred)
   if haskey(t1,:orbit)
     phi=t1.twist::Perm{Perms.Idef}

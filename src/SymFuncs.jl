@@ -220,6 +220,12 @@ struct SymFunc{b,C}
   SymFunc{b}(m)where b =new{b,valtype(m)}(m)
 end
 
+function Base.show(io::IO,::MIME"text/plain", h::SymFunc{b})where b
+  if iszero(h) print(io,"SymFunc{",repr(b),"}: 0")
+  else print(io,h)
+  end
+end
+
 function Base.show(io::IO, h::SymFunc{b})where b
   function showbasis(io::IO,w)
     res=string(b)
@@ -231,21 +237,20 @@ function Base.show(io::IO, h::SymFunc{b})where b
   show(rio(io,limit=true,showbasis=showbasis,naive=!hasdecor(io)),improve_type(h.d))
 end
 
-clone(h::SymFunc{b},d) where b=SymFunc{b}(d)
-
-Base.:+(a::SymFunc{ba},b::SymFunc) where ba=clone(a,a.d+basis(Val(ba),b).d)
+Base.:+(f::SymFunc{b},g::SymFunc) where b=SymFunc{b}(f.d+basis(Val(b),g).d)
 Base.:+(a::SymFunc, b::Union{Number,Pol,Mvp})=a+one(a)*b
-Base.:-(a::SymFunc)=clone(a,-a.d)
-Base.:-(a::SymFunc{ba},b::SymFunc) where ba=clone(a,a.d-basis(Val(ba),b).d)
-Base.:*(a::SymFunc, b::Union{Number,Pol,Mvp,Frac})=clone(a,a.d*b)
-Base.:(//)(a::SymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d//b)
-Base.:*(b::Union{Number,Pol,Mvp,Frac}, a::SymFunc)=a*b
-
+Base.:-(a::SymFunc{b}) where b=SymFunc{b}(-a.d)
+Base.:-(f::SymFunc{b},g::SymFunc) where b=SymFunc{b}(a,f.d-basis(Val(b),g).d)
+Base.:*(f::SymFunc{b},c::Union{Number,Pol,Mvp,Frac}) where b=SymFunc{b}(f.d*c)
+Base.:(//)(f::SymFunc{b},c::Union{Number,Pol,Mvp}) where b=SymFunc{b}(f.d//c)
+Base.:*(c::Union{Number,Pol,Mvp,Frac},f::SymFunc)=f*c
 Base.:^(a::SymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
-Base.one(a::SymFunc)=clone(a,ModuleElt(Partition()=>1))
+Base.one(a::SymFunc{b}) where b=basis(Val(b),Int[])
 Base.zero(a::SymFunc)=SymFunc{basis(a)}(zero(a.d))
 Base.zero(b::Symbol,a::SymFunc)=SymFunc{b}(zero(a.d))
+Base.iszero(a::SymFunc)=iszero(a.d)
+Base.:(==)(a::SymFunc,b::SymFunc)=basis(a)==basis(b) && a.d==b.d
 s(x...)=basis(Val(:s),x...)
 p(x...)=basis(Val(:p),x...)
 h(x...)=basis(Val(:h),x...)
@@ -277,12 +282,12 @@ function Algebras.basis(::Val{b1},h::SymFunc{b}) where {b,b1}
   basis(Val(b1),p(h))
 end
 
-function Algebras.basis(::Val{:p},h::SymFunc{:s})
-   sum(h.d)do (p,c)
-       SymFunc{:p}(ModuleElt(l=>charvalue(p,l)*c//z(l)
-            for l in cpartitions(rank(p))))
-   end
-end
+Algebras.basis(::Val{:p},h::SymFunc{:s})=
+  sum(h.d;init=zero(:p,h))do (p,c)
+    SymFunc{:p}(ModuleElt(l=>charvalue(p,l)*c//z(l)
+           for l in cpartitions(rank(p))))
+  end
+
 Algebras.basis(::Val{:p},h::SymFunc{:h})=sum(((μ,c),)->
   prod(i->p(basis(Val(:s),i)),μ.l;init=p())*c,h.d;init=zero(:p,h))
 Algebras.basis(::Val{:p},h::SymFunc{:e})=sum(((μ,c),)->
@@ -290,8 +295,7 @@ Algebras.basis(::Val{:p},h::SymFunc{:e})=sum(((μ,c),)->
 
 Algebras.basis(::Val{:s},h::SymFunc{:p})=
   sum(h.d;init=zero(:s,h))do (p,c)
-    SymFunc{:s}(ModuleElt(l=>charvalue(l,p)*c for l in
-                     cpartitions(rank(p))))
+    SymFunc{:s}(ModuleElt(l=>charvalue(l,p)*c for l in cpartitions(rank(p))))
   end
 
 function Pto(n,b) # p(n) to basis b∈(:e,:h)
@@ -307,22 +311,23 @@ function Algebras.basis(::Val{:e},f::SymFunc{:p})
   sum(((p,c),)->prod(n->Pto(n,:e),p.l;init=e())*c,f.d;init=zero(:e,f))
 end
 function Algebras.basis(::Val{:p},f::SymFunc{:m})
-  sum(f.d)do (μ,c)
+  sum(f.d;init=zero(:p,f))do (μ,c)
     SymFunc{:p}(ModuleElt(l=>h(p(l))[μ]//z(l) for l in cpartitions(rank(μ))))*c
   end
 end
 function Algebras.basis(::Val{:m},f::SymFunc{:p})
-  sum(f.d)do (μ,c)
+  sum(f.d;init=zero(:m,f))do (μ,c)
     SymFunc{:m}(ModuleElt(l=>p(h(l))[μ] for l in cpartitions(rank(μ))))*z(μ)*c
   end
 end
 
 Base.getindex(a::SymFunc,p::Partition)=a.d[p]
 Base.getindex(a::SymFunc,x::Vararg{Int})=a.d[Partition(collect(x))]
+Base.getindex(a::SymFunc,x::Vector{Int})=a.d[Partition(x)]
 
 function Base.:*(f::SymFunc{b},g::SymFunc)where b
-  g=basis(Val(b),g)
   if b in (:p,:h,:e)
+    g=basis(Val(b),g)
     SymFunc{b}(ModuleElt([union(p,q)=>c*c1 for (p,c) in f.d for (q,c1) in g.d]))
   else basis(Val(b),p(f)*p(g))
   end
@@ -330,15 +335,18 @@ end
 
 "`a⊗b` is the inner product of the symmetric functions `a` and `b`"
 function FinitePosets.:⊗(f::SymFunc{b},g::SymFunc)where b
-  m=ModuleElts.merge2((x,y)->x*y,p(f).d,p(g).d)
+  m=ModuleElts.merge2(*,p(f).d,p(g).d)
   r=SymFunc{:p}(ModuleElt(p=>c*z(p) for (p,c) in m))
   basis(Val(b),r)
 end
 
-function PuiseuxPolynomials.Mvp(a::SymFunc,
-  vars=[Symbol("x",stringind(rio(),j)) for j in 1:rank(last(a.d.d)[1])])
+function PuiseuxPolynomials.Mvp(a::SymFunc,vars=nothing)
+  if iszero(a) return Mvp(0) end
+  if isnothing(vars)
+    vars=[Symbol("x",stringind(rio(),j)) for j in 1:rank(last(a.d.d)[1])]
+  end
   improve_type(sum(p(a).d)do (l,c)
-                prod(i->sum(Mvp.(vars).^i),l.l)*c
+                prod(i->sum(Mvp.(vars).^i),l.l;init=Mvp(1))*c
   end)
 end
 
@@ -346,9 +354,9 @@ end
 function Chars.scalar_product(a::SymFunc{ab},b::SymFunc)where ab
   b=basis(Val(ab),b)
   if ab==:s
-    sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d)))
+    sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d));init=0)
   elseif ab==:p
-    sum(((p,c),)->z(p)*c,ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d))
+    sum(((p,c),)->z(p)*c,ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d);init=0)
   else scalar_product(p(a),p(b))
   end
 end
@@ -394,6 +402,10 @@ is defined by the rules:
   - `(1⊠pₙ)[f₀,f₁]=(1⊠pₙ)[0,f₁]`
   - `(1⊠pₙ)[0,f₁+f'₁]=(1⊠pₙ)[0,f₁]+(1⊠pₙ)[0,f'₁]`
   - `(1⊠pₙ)[0,a⊠b]=pₙ[a]⊠pₙ[b]`
+```julia-rep1
+julia> s([1],[1])[p(1)⊠p()+u*p()⊠p(1),p(1)⊠p()+v*p()⊠p(1)]
+uvs.₁₁+uvs.₂+(u+v)s₁.₁+s₁₁.+s₂.
+```
 """
 function plethysm(a::SymFunc{ab},b::SymFunc)where ab
   a=p(a);b=p(b)
@@ -406,9 +418,16 @@ end
 
 Base.getindex(a::SymFunc,b::SymFunc)=plethysm(a,b)
 
+#----------------------- Wreath symmetric functions ------------------------
 struct WreathSymFunc{b,C}
   d::ModuleElt{PartitionTuple,C}
   WreathSymFunc{b}(m)where b =new{b,valtype(m)}(m)
+end
+
+function Base.show(io::IO,::MIME"text/plain", h::WreathSymFunc{b})where b
+  if iszero(h) print(io,"WreathSymFunc{",repr(b),"}: 0")
+  else print(io,h)
+  end
 end
 
 function Base.show(io::IO, h::WreathSymFunc{b})where b
@@ -451,17 +470,26 @@ julia> p(Pi(Int[],Int[],[3],Int[]))
 π(x...)=basis(Val(:π),x...)
 
 Algebras.basis(h::WreathSymFunc{b})where b=b
-clone(h::WreathSymFunc{b},d) where b=WreathSymFunc{b}(d)
 
-Base.:+(a::WreathSymFunc{ba},b::WreathSymFunc) where ba=clone(a,a.d+basis(Val(ba),b).d)
+Base.:+(f::WreathSymFunc{b},g::WreathSymFunc) where b=
+  WreathSymFunc{b}(f.d+basis(Val(b),g).d)
 Base.:+(a::WreathSymFunc, b::Union{Number,Pol,Mvp})=a+one(a)*b
-Base.:-(a::WreathSymFunc)=clone(a,-a.d)
-Base.:-(a::WreathSymFunc{ba},b::WreathSymFunc) where ba=clone(a,a.d-basis(Val(ba),b).d)
-Base.:*(a::WreathSymFunc, b::Union{Number,Pol,Mvp,Frac})=clone(a,a.d*b)
-Base.:(//)(a::WreathSymFunc, b::Union{Number,Pol,Mvp})=clone(a,a.d//b)
+Base.:-(a::WreathSymFunc{b})where b=WreathSymFunc{b}(-a.d)
+Base.:-(f::WreathSymFunc{b},g::WreathSymFunc) where b=
+  WreathSymFunc{b}(f.d-basis(Val(b),g).d)
+Base.:*(a::WreathSymFunc{b},c::Union{Number,Pol,Mvp,Frac})where b=
+  WreathSymFunc{b}(a.d*c)
+Base.:(//)(a::WreathSymFunc{b},c::Union{Number,Pol,Mvp})where b=
+  WreathSymFunc{b}(a.d//c)
 Base.:*(b::Union{Number,Pol,Mvp,Frac}, a::WreathSymFunc)=a*b
+Base.:^(a::WreathSymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                       Base.power_by_squaring(inv(a),-n)
 Base.zero(a::WreathSymFunc)=WreathSymFunc{basis(a)}(zero(a.d))
 Base.zero(b::Symbol,a::WreathSymFunc)=WreathSymFunc{b}(zero(a.d))
+Base.iszero(a::WreathSymFunc)=iszero(a.d)
+LaurentPolynomials.degree(p::WreathSymFunc)=degree(first(first(p.d)))
+Base.one(a::WreathSymFunc{b}) where b=basis(Val(b),fill(Int[],degree(a)))
+Base.:(==)(a::WreathSymFunc,b::WreathSymFunc)=basis(a)==basis(b) && a.d==b.d
 
 ⊠(a,a1)=tens(a,a1)
 
@@ -475,13 +503,12 @@ function tens(aa::SymFunc...)
   WreathSymFunc{b}(m)
 end
 
-function tens(a::WreathSymFunc,b::SymFunc)
-  A=b.A
-  b=basis(A,Val(basis(a)),b)
-  m=ModuleElt(map(cartesian(pairs(a.d),pairs(b.d)))do ((P,c),(p,c1))
+function tens(f::WreathSymFunc{b},g::SymFunc)where b
+  g=basis(Val(b),g)
+  m=ModuleElt(map(cartesian(pairs(f.d),pairs(g.d)))do ((P,c),(p,c1))
                PartitionTuple(vcat(P.P,[p.l]))=>c*c1
               end)
-  WreathSymFunc{basis(a)}(m)
+  WreathSymFunc{b}(m)
 end
 
 Algebras.basis(::Val{b},p::PartitionTuple)where b=
@@ -489,32 +516,30 @@ Algebras.basis(::Val{b},p::PartitionTuple)where b=
 Algebras.basis(::Val{b},w::Vector{<:Vector{<:Integer}})where b=
   basis(Val(b),PartitionTuple(w))
   
+Algebras.basis(::Val{b},h::WreathSymFunc{b})where b=h
+
 function Algebras.basis(::Val{b},h::WreathSymFunc{b1})where {b,b1}
-  if b==b1 return h end
-  if b==:π || b1==:π error("uuuu") end
   sum(h.d;init=zero(b,h))do (P,c)
    tens(map(p->basis(Val(b),basis(Val(b1),p)),P.P)...)*c
   end
 end
 
-LaurentPolynomials.degree(p::WreathSymFunc)=degree(first(first(p.d)))
-    
-Algebras.basis(::Val{:π},h::WreathSymFunc{:π})=h
+Algebras.basis(::Val{:π},h::WreathSymFunc{:π})=h # because of ambiguity
 
 function Algebras.basis(::Val{:π},h::WreathSymFunc{b})where b
   function toπ(n,j,e)
     if n==0 WreathSymFunc{:π}(ModuleElt(PartitionTuple(fill(Int[],e))=>1))
     elseif e==2 WreathSymFunc{:π}(
-        ModuleElt(PartitionTuple([n],Int[])=>1//2,
-                  PartitionTuple(Int[],[n])=>j==1 ? 1//2 : -1//2))
-    else
-      WreathSymFunc{:π}(ModuleElt(
+       ModuleElt(PartitionTuple([n],Int[])=>1//2,
+                 PartitionTuple(Int[],[n])=>j==1 ? 1//2 : -1//2))
+    else WreathSymFunc{:π}(ModuleElt(
        map(1:e)do i
           v=fill(Int[],e);v[i]=[n]
           PartitionTuple(v)=>E(e,(i-1)*(j-1))//e
        end))
     end
   end
+  if iszero(h) return zero(:π,h) end
   h=basis(Val(:p),h)
   e=degree(h)
   sum(h.d)do(P,c)
@@ -529,18 +554,17 @@ end
 function Algebras.basis(::Val{b},h::WreathSymFunc{:π})where b
   function fromπ(n,i,e)
     if n==0 WreathSymFunc{:p}(ModuleElt(PartitionTuple(fill(Int[],e))=>1))
-    elseif e==2 
-       WreathSymFunc{:p}(
-        ModuleElt(PartitionTuple([n],Int[])=>1,
-                  PartitionTuple(Int[],[n])=>i==1 ? 1 : -1))
-    else
-        WreathSymFunc{:p}(ModuleElt(
-         map(1:e)do j
-            v=fill(Int[],e);v[j]=[n]
-            PartitionTuple(v)=>E(e,-(i-1)*(j-1))
-         end))
+    elseif e==2 WreathSymFunc{:p}(
+       ModuleElt(PartitionTuple([n],Int[])=>1,
+                 PartitionTuple(Int[],[n])=>i==1 ? 1 : -1))
+    else WreathSymFunc{:p}(ModuleElt(
+       map(1:e)do j
+          v=fill(Int[],e);v[j]=[n]
+          PartitionTuple(v)=>E(e,-(i-1)*(j-1))
+       end))
     end
   end
+  if iszero(h) return zero(b,h) end
   e=degree(h)
   basis(Val(b),sum(h.d)do(P,c)
     prod(eachindex(P.P))do j
@@ -552,8 +576,8 @@ function Algebras.basis(::Val{b},h::WreathSymFunc{:π})where b
 end
 
 function Base.:*(f::WreathSymFunc{b},g::WreathSymFunc)where b
-  g=basis(Val(b),g)
   if b in (:p,:π,:h,:e)
+    g=basis(Val(b),g)
     WreathSymFunc{b}(ModuleElt(
       [union(p,q)=>c*c1 for (p,c) in f.d for (q,c1) in g.d]))
   else basis(Val(b),p(f)*p(g))
@@ -561,7 +585,8 @@ function Base.:*(f::WreathSymFunc{b},g::WreathSymFunc)where b
 end
 
 function PuiseuxPolynomials.Mvp(a::WreathSymFunc,vars=nothing)
-  e=length(a.d.d[1][1].P)
+  if iszero(a) return Mvp(0) end
+  e=degree(a)
   a=p(a)
   if isnothing(vars)
     varnames="xyztuvw"
@@ -576,18 +601,18 @@ end
 function Chars.scalar_product(a::WreathSymFunc{ab},b::WreathSymFunc)where ab
   b=basis(Val(ab),b)
   res=if ab==:s
-    sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d)))
+    sum(values(ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d));init=0)
   elseif ab==:p
-    sum(((p,c),)->prod(z,p.P)*c,ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d))
+    sum(((p,c),)->prod(z,p.P)*c,ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d);init=0)
   elseif ab==:π
-    sum(((p,c),)->z(p)*c,ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d))
+    sum(((p,c),)->z(p)*c,ModuleElts.merge2((x,y)->x*conj(y),a.d,b.d);init=0)
   else scalar_product(p(a),p(b))
   end
   improve_type(res)
 end
 
 function FinitePosets.:⊗(f::WreathSymFunc{b},g::WreathSymFunc)where b
-  m=ModuleElts.merge2((x,y)->x*y,π(f).d,π(g).d)
+  m=ModuleElts.merge2(*,π(f).d,π(g).d)
   r=WreathSymFunc{:π}(ModuleElt(p=>c*z(p) for (p,c) in m))
   basis(Val(b),r)
 end
@@ -596,8 +621,8 @@ function plethysm(g::WreathSymFunc{b},f0::WreathSymFunc,f1::WreathSymFunc)where 
   g=p(g);f0=p(f0);f1=p(f1)
   basis(Val(b),(sum(g.d;init=zero(g))do (P,c)
     c*prod(1:2)do i
-      prod(P.P[i];init=p(Int[],Int[]))do n
-       sum(i==1 ? f0.d : f1.d;init=zero(g))do (P1,c1)
+      prod(P.P[i];init=one(g))do n
+        sum(i==1 ? f0.d : f1.d;init=zero(g))do (P1,c1)
           p(n)[p(P1.P[1])*c1]⊠p(n)[p(P1.P[2])]
         end
       end

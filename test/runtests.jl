@@ -1145,6 +1145,4 @@ end
 @test mytest("reflection.jl","W=crg(4)","G₄")
 @test mytest("reflection.jl","reflections(W)","8-element Vector{Reflection{PRG{Cyc{Rational{Int64}}, Int16}}}:\n Reflection(G₄,1,ζ₃)\n Reflection(G₄,2,ζ₃)\n Reflection(G₄,4,ζ₃)\n Reflection(G₄,5,ζ₃)\n Reflection(G₄,1,ζ₃²)\n Reflection(G₄,2,ζ₃²)\n Reflection(G₄,4,ζ₃²)\n Reflection(G₄,5,ζ₃²)")
 end
-@testset "sym.jl" begin
-end
 end

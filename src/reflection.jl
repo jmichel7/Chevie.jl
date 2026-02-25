@@ -17,7 +17,7 @@ julia> W=crg(8);
 julia> r=reflections(W)[7] # shows (r.W,r.rootno,r.eigen)
 Reflection(G₈,1,-1)
 
-julia> r.rootno # r is a reflection for the first root
+julia> r.rootno # smallest index of root which is a root for r
 1
 
 julia> r.eigen # the non-trival eigenvalue, as a Root1
