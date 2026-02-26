@@ -863,7 +863,7 @@ PermGroups.orbits(W::FiniteCoxeterGroup)=orbits(W.G)
 PermGroups.stabilizer(W::FiniteCoxeterGroup,p,F::Function)=stabilizer(W.G,p,F)
 PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=stabilizer(W.G,p,ontuples)
 
-Base.isfinite(W::FiniteCoxeterGroup)=true
+Base.isfinite(::FiniteCoxeterGroup)=true
 #--------------------- CoxSym ---------------------------------
 @GapObj struct CoxSym{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermGroup{T}
@@ -934,14 +934,14 @@ function Base.show(io::IO, W::CoxSym)
   end
 end
 
-PermRoot.action(W::CoxSym,i,p)=i^p
+PermRoot.action(::CoxSym,i,p)=i^p
 
 PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
   [TypeIrred(;series=:A,indices=collect(1:length(W.d)-1))]
 end
 
 PermRoot.inclusiongens(W::CoxSym)=W.d[1:end-1]
-Perms.reflength(W::CoxSym,a)=reflength(a)
+Perms.reflength(::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=length(W.inversions)
 PermRoot.refls(W::CoxSym)=W.refls
 PermRoot.simple_reps(W::CoxSym)=W.simple_reps
@@ -1047,7 +1047,7 @@ const coxhyp=coxeter_hyperoctaedral_group
 
 Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(W.n))")
 
-PermRoot.action(W::CoxHyp,i,p)=abs(i^p)
+PermRoot.action(::CoxHyp,i,p)=abs(i^p)
 
 PermRoot.refltype(W::CoxHyp)=[TypeIrred(;series=:B,indices=collect(1:W.n))]
 
@@ -1082,7 +1082,7 @@ end
 PermRoot.simple_reps(W::CoxHyp)=getp(refls,W,:simple_reps)
 PermRoot.unique_refls(W::CoxHyp)=getp(refls,W,:unique_refls)
 
-function Perms.reflength(W::CoxHyp,w)
+function Perms.reflength(::CoxHyp,w)
   sym=nsym=0
   for x in cycles(w)
     if sort(x)==sort(-x) sym+=length(x)
@@ -1115,7 +1115,7 @@ end
 
 Base.one(W::MatCox)=one(W(1))
 PermRoot.cartan(W::MatCox)=W.cartan
-isleftdescent(W::MatCox,w,i::Int)=real(sum(w[i,:]))<0
+isleftdescent(::MatCox,w,i::Int)=real(sum(w[i,:]))<0
 
 """
 `coxeter_group(C)` or `coxgroup(C)`

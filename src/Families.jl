@@ -1252,7 +1252,6 @@ function Chars.CharTable(A::ZBasedRing)
   irr=improve_type([ratio(coefficients(b*e),coefficients(e))
        for e in idempotents(A), b in basis(A)])
   if irr!=A.irr error() end
-  labels=string.(1:dim(A))
   centralizers=fill(dim(A),dim(A))
   CharTable(irr,A.charnames,A.classnames,centralizers,
          dim(A),Dict{Symbol,Any}(:name=>xrepr(A;TeX=true)))

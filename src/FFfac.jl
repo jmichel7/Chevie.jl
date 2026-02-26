@@ -26,7 +26,7 @@ function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
     k=maximum(degree.(f.c))
     if p==2 # take g+g^2+g^(2^2)+ ... +g^(2^(k*d-1)) for GF(2^k)
       h=g
-      for i in 1:k*d-1
+      for _ in 1:k*d-1
         g=powermod(g,2,f)
         h+=g
       end
@@ -135,7 +135,7 @@ end
 
 using LaTeXStrings
 function Base.show(io::IO, ::MIME"text/latex",f::Primes.Factorization{<:Pol})
-  print(io,latexstring(xrepr(MIME("text/plain"),ci,TeX=true)))
+  print(io,latexstring(xrepr(MIME("text/plain"),f,TeX=true)))
 end
 
 function Base.show(io::IO, ::MIME{Symbol("text/plain")}, 

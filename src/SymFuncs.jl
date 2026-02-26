@@ -240,13 +240,13 @@ end
 Base.:+(f::SymFunc{b},g::SymFunc) where b=SymFunc{b}(f.d+basis(Val(b),g).d)
 Base.:+(a::SymFunc, b::Union{Number,Pol,Mvp})=a+one(a)*b
 Base.:-(a::SymFunc{b}) where b=SymFunc{b}(-a.d)
-Base.:-(f::SymFunc{b},g::SymFunc) where b=SymFunc{b}(a,f.d-basis(Val(b),g).d)
+Base.:-(f::SymFunc{b},g::SymFunc) where b=SymFunc{b}(f.d-basis(Val(b),g).d)
 Base.:*(f::SymFunc{b},c::Union{Number,Pol,Mvp,Frac}) where b=SymFunc{b}(f.d*c)
 Base.:(//)(f::SymFunc{b},c::Union{Number,Pol,Mvp}) where b=SymFunc{b}(f.d//c)
 Base.:*(c::Union{Number,Pol,Mvp,Frac},f::SymFunc)=f*c
 Base.:^(a::SymFunc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
-Base.one(a::SymFunc{b}) where b=basis(Val(b),Int[])
+Base.one(::SymFunc{b}) where b=basis(Val(b),Int[])
 Base.zero(a::SymFunc)=SymFunc{basis(a)}(zero(a.d))
 Base.zero(b::Symbol,a::SymFunc)=SymFunc{b}(zero(a.d))
 Base.iszero(a::SymFunc)=iszero(a.d)
@@ -257,7 +257,7 @@ h(x...)=basis(Val(:h),x...)
 e(x...)=basis(Val(:e),x...)
 m(x...)=basis(Val(:m),x...)
 
-Algebras.basis(h::SymFunc{b})where b=b
+Algebras.basis(::SymFunc{b})where b=b
 
 function Algebras.basis(::Val{b},p::Partition)where b
   if b==:π error("basis π takes only PartitionTuples") end
@@ -365,7 +365,7 @@ end
 pow(m::Monomial,r)=Monomial(m.d*r)
 pow(p::Mvp,r)=Mvp(ModuleElt(pow(m,r)=>c for (m,c) in p.d))
 pow(p::Frac{<:Mvp},r)=Frac(pow(p.num,r),pow(p.den,r))
-pow(p,r)=p
+pow(p,_)=p
 
 """
 `plethysm(a::SymFunc,b::SymFunc)` or `a[b]`.

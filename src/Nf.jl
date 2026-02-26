@@ -433,7 +433,6 @@ function NF(N::Integer,stab::Group{<:Mod})
   end
   if iszero(a) H1=stab else H1=Group(H1) end
 
-  zumb=CyclotomicNumbers.zumbroich_basis(N)
   lenst=LenstraBase(N,H1,stab)
   
   # We want 'CoeffsCyc(z,N)[F.coeffslist]=Coefficients(F,z)'

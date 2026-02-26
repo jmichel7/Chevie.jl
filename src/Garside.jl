@@ -569,7 +569,7 @@ function PermGroups.word(M::LocallyGarsideMonoid,w)
   end
 end
 
-PermGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
+PermGroups.word(::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
 
 """
 left_divisors(M::LocallyGarsideMonoid, s)
@@ -646,8 +646,8 @@ function δad(M::GarsideMonoid,x,i::Integer=1)
   if IntervalStyle(M)==Interval() #horrible: has to know interval exists
     return iszero(i) ? x : x^(M.δ^mod(i,M.orderδ))
   end
-  for j in i:-1:1 x=rightcomplδ(M,rightcomplδ(M,x)) end
-  for j in i:-1   x=leftcomplδ(M,leftcomplδ(M,x)) end
+  for _ in i:-1:1 x=rightcomplδ(M,rightcomplδ(M,x)) end
+  for _ in i:-1   x=leftcomplδ(M,leftcomplδ(M,x)) end
   x
 end
 
@@ -717,26 +717,26 @@ PermGroups.elements(M::LocallyGarsideMonoid,l::AbstractVector{<:Integer})=
 abstract type IntervalStyle end
 struct Interval<:IntervalStyle end
 struct NoInterval<:IntervalStyle end
-IntervalStyle(M::LocallyGarsideMonoid)=NoInterval()
+IntervalStyle(::LocallyGarsideMonoid)=NoInterval()
 
 Base.one(M::LocallyGarsideMonoid)=one(IntervalStyle(M),M)
 Base.one(::Interval,M)=one(M.W)
 Base.:*(M::LocallyGarsideMonoid{T},x::T,y::T) where T=*(IntervalStyle(M),M,x,y)
-Base.:*(::Interval,M,x,y)=x*y
+Base.:*(::Interval,_,x,y)=x*y
 Base.:\(M::LocallyGarsideMonoid{T},x::T,y::T) where T=\(IntervalStyle(M),M,x,y)
-Base.:\(::Interval,M,x,y)=x\y
+Base.:\(::Interval,_,x,y)=x\y
 Base.:/(M::LocallyGarsideMonoid{T},x::T,y::T) where T=/(IntervalStyle(M),M,x,y)
-Base.:/(::Interval,M,x,y)=x/y
+Base.:/(::Interval,_,x,y)=x/y
 #Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
 #Base.inv(::Interval,M,x)=inv(x)
 CoxGroups.isrightdescent(M::LocallyGarsideMonoid,w,i::Integer)=isrightdescent(IntervalStyle(M),M,w,i)
 CoxGroups.isrightdescent(::Interval,M,w,i)=isleftdescent(M,inv(w),i)
 mul!(M::LocallyGarsideMonoid,x,y)=mul!(IntervalStyle(M),M,x,y)
-mul!(::Interval,M::LocallyGarsideMonoid{<:Perm},x,y)=Perms.mul!(x,y)
+mul!(::Interval,::LocallyGarsideMonoid{<:Perm},x,y)=Perms.mul!(x,y)
 mul!(::Interval,M,x,y)=*(M,x,y)
 mul!(::NoInterval,M,x,y)=*(M,x,y)
 Base.reverse(M::LocallyGarsideMonoid,x)=reverse(IntervalStyle(M),M,x)
-Base.reverse(::Interval,M,x)=inv(x)
+Base.reverse(::Interval,_,x)=inv(x)
 
 #-----------------------BraidMonoid-----------------------------------
 @GapObj struct BraidMonoid{T,TW}<:GarsideMonoid{T}
@@ -751,7 +751,7 @@ end
 # this speeds up a lot, using that orderδ=2
 δad(M::BraidMonoid,x,i::Integer=1)=iseven(i) ? x : x^M.δ
 
-IntervalStyle(M::BraidMonoid)=Interval()
+IntervalStyle(::BraidMonoid)=Interval()
 """
 `BraidMonoid(W::CoxeterGroup)`
 
@@ -794,7 +794,7 @@ BraidMonoid(W::Weyl.Affine)=BraidMonoid(W.G)
 end
 
 # The repetitions below reflect the poor type system of Julia
-IntervalStyle(M::ArtinMonoid)=Interval()
+IntervalStyle(::ArtinMonoid)=Interval()
 BraidMonoid(W::CoxeterGroup)=ArtinMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::ArtinMonoid)=print(io,"BraidMonoid(",M.W,")")
@@ -1160,7 +1160,7 @@ function PermGroups.word(b::GarsideElt)
     d,n=fraction(b)
     return vcat(-reverse(word(d)),word(n))
   end
-  for i in 1:b.pd append!(res,word(M,M.δ)) end
+  for _ in 1:b.pd append!(res,word(M,M.δ)) end
   for e in b.elm append!(res,word(M,e)) end
   res
 end
@@ -1539,7 +1539,7 @@ Base.rand(M::LocallyGarsideMonoid,i::Integer)=M(rand(1:length(M.atoms),i)...)
   W::TW
 end
 
-IntervalStyle(M::DualBraidMonoid)=Interval()
+IntervalStyle(::DualBraidMonoid)=Interval()
 
 """
 `DualBraidMonoid(W;c=xxx)`
@@ -1653,7 +1653,7 @@ end
 For  monoids of the  same Coxeter group,  convert to an  element of `B` the
 `i`-th atom of `D`.
 """
-(B::BraidMonoid)(M::DualBraidMonoid,i::Integer)=atomsinbraidmonoid(M)[i]
+(::BraidMonoid)(M::DualBraidMonoid,i::Integer)=atomsinbraidmonoid(M)[i]
 """
 `(B::BraidMonoid)(D::DualBraidMonoid,s)`
 
@@ -1846,10 +1846,10 @@ julia> endomorphisms(conjcat(M(1,1,2,2,3)),1) # generators of centralizer
 ```
 """
 function endomorphisms(C::Category{TO,TM},o::Integer)where {TO,TM}
-  paths=[Tuple{Int,Int}[] for i in eachindex(C.obj)]
+  paths=[Tuple{Int,Int}[] for _ in eachindex(C.obj)]
   paths[o]=Tuple{Int,Int}[]
   if isempty(C.atoms[o]) return TM[] end
-  maps=[one(C.atoms[o][1][1]) for i in eachindex(C.obj)]
+  maps=[one(C.atoms[o][1][1]) for _ in eachindex(C.obj)]
   function foo()
     reached=[o]
     for i in reached t=C.atoms[i]
@@ -1919,7 +1919,7 @@ function conjatoms(a,::Val{s}=Val(:sc),F::Function=(x,y=1)->x)where s
 end
 
 # a braid x atom; return x if x≼a, nothing else
-function minc(a,x,::Val{:cyc},F::Function=(x,y=1)->x)
+function minc(a,x,::Val{:cyc},::Function)  # Frobenius unused
   if a.pd>0 return x end
   if isone(a) return nothing end
   if isleftdescent(a,findfirst(==(x),a.M.atoms)) return x end
@@ -1928,7 +1928,7 @@ end
 # given a Garside element a and a simple x, returns the
 # minimal m such that x≼m and inf(inv(m)*a*F(m))>=inf(a).
 # Since m=Δ works, m exists and is simple; see algorithm 2 in Franco-Gonzales 1.
-function minc(a::GarsideElt{T},x::T,::Val{:inf},F::Function=(x,y=1)->x)where T
+function minc(a::GarsideElt{T},x::T,::Val{:inf},F::Function=x->x)where T
   M=a.M
   m=x
   while true
@@ -2003,7 +2003,7 @@ end
 `slide(b)=b^preferred_prefix(b)`
 returns `(slide(b),preferred_prefix(b))
 """
-function slide(b::GarsideElt,F::Function=(x,y=1)->x)
+function slide(b::GarsideElt,F::Function=x->x)
   r=preferred_prefix(b,F)
   (^(b,r,F),r)
 end
@@ -2025,7 +2025,7 @@ end
 
 # given a Garside element a assumed to be in SC(a) and a simple x, 
 # minimal m such that x<m and inv(m)*a*F(m) is in SC(a). m is simple
-function minc(a,x,::Val{:sc},F::Function=(x,y=1)->x)
+function minc(a,x,::Val{:sc},F::Function=x->x)
   M=a.M
 # Gebhart-Gonzalez function F for a in SC such that a^x in SSS
   function ggF(a,x,F)
@@ -2060,7 +2060,7 @@ function minc(a,x,::Val{:sc},F::Function=(x,y=1)->x)
   end
 end
 
-minc(a,x,F::Function=(x,y=1)->x)=minc(a,x,Val(:sc),F)
+minc(a,x,F::Function=x->x)=minc(a,x,Val(:sc),F)
 
 """
 `conjcat(b[,F];ss=Val(:sc))`
@@ -2320,8 +2320,8 @@ function Base.show(io::IO,r::TPMSimple)
 end
 
 function TwistedPowerMonoid(M,n)
-  δ=TPMSimple([M.δ for i in 1:n],true,M)
-  atoms=[TPMSimple([one(M) for i in 1:n],true,M)]
+  δ=TPMSimple([M.δ for _ in 1:n],true,M)
+  atoms=[TPMSimple([one(M) for _ in 1:n],true,M)]
   for i in 1:n
     append!(atoms,map(a->
       TPMSimple([j==i ? a : one(M) for j in 1:n],false,M),
@@ -2349,7 +2349,7 @@ function CoxGroups.isleftdescent(M::TwistedPowerMonoid,s,i)
 end
 
 Base.one(M::TwistedPowerMonoid)=TPMSimple(
-           [one(M.M) for i in 1:M.n],false,M.M)
+           [one(M.M) for _ in 1:M.n],false,M.M)
 
 Base.:*(M::TwistedPowerMonoid,a::TPMSimple,b::TPMSimple)=TPMSimple(
      map(i->*(M.M,a.v[b.t ? 1+mod(i,M.n) : i],b.v[i]),1:M.n),a.t||b.t,M.M)

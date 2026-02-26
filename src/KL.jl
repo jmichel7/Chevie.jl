@@ -292,8 +292,8 @@ struct HeckeCElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,C,P}
 end
 HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
 
-HeckeAlgebras.basisname(h::HeckeCpElt)="C'"
-HeckeAlgebras.basisname(h::HeckeCElt)="C"
+HeckeAlgebras.basisname(::HeckeCpElt)="C'"
+HeckeAlgebras.basisname(::HeckeCElt)="C"
 
 """
 `Cpbasis(H)`
@@ -324,7 +324,7 @@ Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeCpElt(ModuleElt(one(H.W)=>one
 Cpbasis(H::HeckeAlgebra,w::Vector{<:Integer})=HeckeCpElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
 Cpbasis(H::HeckeAlgebra,w::Vararg{Integer})=Cpbasis(H,collect(w))
 Cpbasis(H::HeckeAlgebra,w)=Cpbasis(H,word(H.W,w))
-Cpbasis(H::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
+Cpbasis(::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
 
 """
 `Cbasis(H::HeckeAlgebra)`
@@ -386,7 +386,7 @@ Cbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeCElt(ModuleElt(one(H.W)=>one(c
 Cbasis(H::HeckeAlgebra,w::Vector{<:Integer})=HeckeCElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
 Cbasis(H::HeckeAlgebra,w::Vararg{Integer})=Cbasis(H,collect(w))
 Cbasis(H::HeckeAlgebra,w)=Cbasis(H,word(H.W,w))
-Cbasis(H::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
+Cbasis(::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
 
 # To convert from "T", we use the fact that the transition matrix M from
 # any  KL  bases to  the  standard  basis  is triangular  with  diagonal
@@ -1140,7 +1140,7 @@ function Base.show(io::IO,A::AsymptoticAlgebra)
   print(io," dim.",dim(A))
 end
 
-Groups.isabelian(A::AsymptoticAlgebra)=false
+Groups.isabelian(::AsymptoticAlgebra)=false
 
 function Chars.CharTable(A::AsymptoticAlgebra)
   centralizers=fill(dim(A),dim(A))

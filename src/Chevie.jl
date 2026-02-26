@@ -107,7 +107,7 @@ using UsingMerge
 @reexport using ModuleElts
 @reexport using Combinat
 @reexport using MatInt
-@reexport using Primes: factor, eachfactor, divisors
+@reexport using Primes: divisors, eachfactor, factor
 @reexport using OrderedCollections: OrderedDict
 # careful: use very little of LinearAlgebra
 @reexport using LinearAlgebra: LinearAlgebra, diag, tr, I, Diagonal, exactdiv,

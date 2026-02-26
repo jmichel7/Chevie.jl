@@ -4,13 +4,12 @@ Factoring polynomials over the rationals:
 `factor(f::Pol{<:Union{Integer,Rational{<:Integer}}})`
 """
 module Fact
-import Primes: Primes, nextprime, factor
+import Primes: Primes, factor, nextprime
 using LinearAlgebra:exactdiv
-using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, valuation, coefficients
-using ..FiniteFields: FiniteFields, FFE
+using LaurentPolynomials: Pol, shift, degree, derivative, valuation, coefficients
+using ..FiniteFields: FFE
 using ..Modulo: Modulo, Mod
-using ..Combinat: Combinat, combinations, npartitions
-using ..Tools: improve_type
+using ..Combinat: combinations, npartitions
 
 verbose::Bool=false
 function info(x...)
@@ -46,7 +45,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
     fp=nothing
     while true
       while true
-        p=Primes.nextprime(p+1)
+        p=nextprime(p+1)
         if mod(lc, p)!=0 && mod(f[0], p)!=0 break end
       end
       fp=Pol{FFE{p}}(f)/lc
@@ -677,7 +676,6 @@ function ApproxRootBound(f::Pol{<:Rational})
       while true
         d=length(p)
         # compute T[p]=\bar a_n p-a_0 p*, everything rational.
-        pl=p
         p=p[1]*p-p[d]*reverse(p)
         p=ApproxRational.(p,10)
         d=findlast(!iszero,p[2:end])
@@ -749,7 +747,7 @@ end
 #  HenselBound(<pol>,[<minpol>,<den>]) . . . Bounds for Factor coefficients
 #    if the computation takes place over an algebraic extension, then
 #    minpol and denominator must be given
-function HenselBound(pol,arg...)
+function HenselBound(pol,arg...) # not completely translated from GAP
   if length(arg)>0
     n,d=arg
     dis=discriminant(n)
@@ -784,7 +782,7 @@ function HenselBound(pol,arg...)
   # As we nowhere selected a specific galois representative,
   # this bound (which is rational!) will bound all conjugactes as well.
   lm=Integer(ceil(sqrt(w)))
-  lb=2^div(degree(pol), 2)*lm
+  lb=2^div(degree(pol), 2)*lm # unused
   bound=map(1:degree(pol))do k
     l=2^k*lm
     if l<bea w=l

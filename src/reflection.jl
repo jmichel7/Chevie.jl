@@ -140,7 +140,7 @@ function invert_word(W,w)
   end
   if lastg!=0 push!(seq,lastg=>mul) end
   o=ordergens(W)
-  [i for (i,mul) in seq for y in 1+mul:o[i]]
+  [i for (i,mul) in seq for _ in 1+mul:o[i]]
 end
 
 function Reflection(W::PermRootGroup,i::Integer,eig)
@@ -182,7 +182,7 @@ function reflections(W::PermRootGroup)
     if W isa PermRootGroup
       dd=map(x->Groups.words_transversal(gens(W),x),pnts)
     end
-    res=map(i->Reflection{typeof(W)}[],1:maximum(ordergens(W))-1)
+    res=map(_->Reflection{typeof(W)}[],1:maximum(ordergens(W))-1)
     for i in unique_refls(W)
       e=ordergens(W)[simple_reps(W)[i]]
       if W isa CoxeterGroup w=word(W,refls(W,i))

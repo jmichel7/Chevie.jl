@@ -271,7 +271,6 @@ function lusztig_induction_table(LF,WF;check=true)
 # if haskey(res, :scalar) return res end
   res.pieces=LusztigInductionPieces(LF,WF)
   fL=fourier(uL)
-  hh=uL.almostHarishChandra
   fWinv=fourier(uW)'
   maps=map(res.pieces)do piece
     mapping=fill(zero(eltype(piece.scalar)),length(uW),length(uL))
@@ -302,8 +301,8 @@ function lusztig_induction_table(LF,WF;check=true)
   if any(x->x isa Mvp, scalars) error() end
   if any(!isone,scalars)
     res.scalars=scalars
-    if all(isinteger, scalars) p="#I signs are "
-    else InfoChevie("#I non-sign scalars needed:", scalars, "\n")
+    if !all(x->x in (-1,1), scalars)
+         InfoChevie("#I non-sign scalars needed:", scalars, "\n")
     end
   end
   scalars=sum(i->maps[i]*scalars[i],1:length(scalars))

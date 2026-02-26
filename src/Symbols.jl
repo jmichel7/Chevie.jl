@@ -130,7 +130,7 @@ Spaltenstein  which  parametrize  local  systems  on  unipotent classes for
 classical reductive groups.
 """
 module Symbols
-using ..Format: joindigits, rio, xrepr, hasdecor
+using ..Format: joindigits, xrepr, hasdecor
 using Combinat: Combinat, arrangements, partition_tuples, collectby, 
   conjugate_partition, dominates
 using CyclotomicNumbers: E
@@ -258,7 +258,7 @@ julia> quotient(Partition(3,3,1),3)
 """
 function quotient(μ::Partition,e)
   λ=conjugate_partition(μ.l)
-  q=[Int[] for i in 1:e]
+  q=[Int[] for _ in 1:e]
   for (i,m) in enumerate(μ.l)
     qj=mod(m-i,e)
     x=count(j->mod(j-λ[j]-1,e)==qj,1:m)
@@ -1033,7 +1033,7 @@ function ennola(s::CharSymbol)
   e=length(s)
   z=sum(length,s.S)%e==1 ? e : gcd(e,rank(s))
   if isone(z) return s end
-  res=map(x->Int[],s.S)
+  res=map(_->Int[],s.S)
   for i in 1:length(s), k in s.S[i]
     push!(res[1+(i+k*div(e,z))%e],k)
   end

@@ -122,7 +122,7 @@ end
 HeckeAlgebras.clone(h::HeckeMElt,d)=HeckeMElt(d,h.H)
 Base.zero(::Type{HeckeMElt},H::HeckeAlgebra)=HeckeMElt(zero(ModuleElt{Tuple{Int,Int,Int},coefftype(H)}),H)
 Base.zero(h::HeckeMElt)=zero(HeckeMElt,h.H)
-HeckeAlgebras.basisname(h::HeckeMElt)="M"
+HeckeAlgebras.basisname(::HeckeMElt)="M"
 
 Murphycache=Dict{Tuple{Int,Any},Any}()
 
@@ -289,7 +289,7 @@ end
 function StringTableau(io::IO,t)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
-  if TeX return "\\tab("*join(join.(tab),",")*")"
+  if TeX return "\\tab("*join(join.(t),",")*")"
   elseif repl return join(joindigits.(t),"/")
   else "["*join(map(p->"["*join(p,",")*"]",t),",")*"]"
   end
@@ -508,7 +508,7 @@ end
 # the Jucys-Murphy elements of the Hecke algebra H. 
 function JucysMurphy(H)
   T=Tbasis(H)
-  murphy=[0*T() for i in 0:length(H.para)]
+  murphy=[0*T() for _ in 0:length(H.para)]
   q=H.para[1][1]
   for i in 2:length(H.para)+1
     for j in 1:i-1
@@ -536,7 +536,7 @@ function Spechtmodel(H, mu)
   get!(H.Murphy.SpechtModels,mu)do
   tabs=tableaux(mu)
   n=sum(mu)-1
-  mats=map(i->fill(sum(sum,H.para)*0,length(tabs),length(tabs)),1:n)
+  mats=map(_->fill(sum(sum,H.para)*0,length(tabs),length(tabs)),1:n)
   for t in tabs
     St=SpechtModule(H,mu)(t)
     for i in 1:n

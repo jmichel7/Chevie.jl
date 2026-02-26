@@ -472,7 +472,7 @@ Group((1,5)(2,6)(3,7)(4,8),(1,2),(1,4))
 """
 function graph_automorphisms(t::Vector{TypeIrred})
   gen=empty([Perm()])
-  for (n,t) in groupby(repr,t)
+  for (_,t) in groupby(repr,t)
     for i in 1:length(t)-1
       push!(gen,prod(Perm.(t[i].indices,t[i+1].indices)))
     end
@@ -981,7 +981,7 @@ subspets(W::ComplexReflectionGroup,I::AbstractVector{<:Integer},w=one(W))=subspe
   W::TW
 end
 
-function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
+function Base.show(io::IO,::Type{PRC{T,TW}})where {T,TW}
   print(io,"Spets{",TW,"}")
 end
 
@@ -1045,7 +1045,7 @@ function spets(W::PermRootGroup,F::AbstractMatrix;NC=false)
   if length(unique(perm))<length(perm) return false end
   w=Perm(eltype(one(W)).(perm))
   if isnothing(w) error("matrix F must preserve the roots") end
-  res=PRC(w,F,W,Dict{Symbol,Any}(:scalars=>scalars))
+  PRC(w,F,W,Dict{Symbol,Any}(:scalars=>scalars))
 end
 
 """

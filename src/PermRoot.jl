@@ -884,8 +884,8 @@ function fixCartan(H,C,p)
   CH=cartan(H,p)
   r=TypeIrred(CH)
   if !isnothing(r) return (r,p) end
-  d=diagconj_elt(C,CH)
- #if isnothing(d) error("raté") end
+  #d=diagconj_elt(C,CH)
+  #if isnothing(d) error("raté") end
   seen=[size(CH,1)]
   for i in size(CH,1):-1:1
   # go reverse for better luck in type B?
@@ -1159,7 +1159,7 @@ function refleigen(t::TypeIrred)
   ct=CharTable(t).irr[charinfo(t).extRefl,:]
   l=map(v->Pol(reverse(v).*((-1).^axes(ct,1))),eachcol(ct))
   l=CycPol.(l)
-  ll=map(p->[Root1(;r=e) for (e,m) in p.v for i in 1:m],l)
+  ll=map(p->[Root1(;r=e) for (e,m) in p.v for _ in 1:m],l)
   if haskey(t,:scalar) ll.*=Root1(prod(t.scalar)) end
   ll
 end
@@ -1686,7 +1686,7 @@ end
 function Groups.normalizer(W::PermGroup,L::PermRootGroup)
   if length(L)==1 return W end
   s=sort(refls(L,unique_refls(L)))
-  J=filter(x->refls(W,x) in s,eachindex(roots(W)))
+# J=filter(x->refls(W,x) in s,eachindex(roots(W)))
 # C=stabilizer(W,J,onsets)
   R=stabilizer(W,s,onsets)
 #  if length(R)<length(C) error("not expected") end
@@ -1720,7 +1720,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   # root values.
 
 # println("# roots: ")
-  gens_=map(x->T1[],matgens)
+  gens_=map(_->T1[],matgens)
   newroots=true
   while newroots
     newroots=false
@@ -1795,11 +1795,11 @@ coroots(W::PRG)=all(i->isassigned(W.coroots,i),eachindex(W.coroots)) ?
 simple coroots of `W`, that is `coroots(W,1:ngens(W))`.
 """
 simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(view(W.coroots,eachindex(gens(W))))
-inclusion(W::PRG,i::Integer)=i
-inclusion(W::PRG,i::AbstractVector)=collect(i) # we do not want ranges
+inclusion(::PRG,i::Integer)=i
+inclusion(::PRG,i::AbstractVector)=collect(i) # we do not want ranges
 inclusion(W::PRG)=inclusion(W,eachindex(W.roots))
 restriction(W::PRG,i=eachindex(W.roots))=i
-action(W::PRG,i,p)=i^p
+action(::PRG,i,p)=i^p
 
 "`coroots(W,i)` same as but better than `coroots(W)[i]`"
 function coroots(W::PRG{T},i::Integer)where T
@@ -2247,7 +2247,7 @@ function hyperplane_orbits(W::PermRootGroup)
   end
   chars=CharTable(W).irr
   pairs=zip(orb,class)
-  res=map(pairs) do (s,c)
+  map(pairs) do (s,c)
     ord=ordergens(W)[s]
     dets=map(1:ord-1) do j
       findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&

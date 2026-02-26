@@ -1261,7 +1261,7 @@ function  power(powermap,class,order)
     if p>length(powermap) error("missing $p-powermap")
     else pm=powermap[p]
       if isnothing(pm) error("missing $p-powermap") end
-      for j in 1:i class=pm[class] end
+      for _ in 1:i class=pm[class] end
     end
   end
   class
@@ -1422,7 +1422,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
       end
     end...)
   end
-  (W isa Spets) ? (gens=reps,F=F) : reps
+  (W isa Spets) ? (gens=reps,F) : reps
 end
 
 """
@@ -1512,7 +1512,7 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   prom(gr[2])
   v=improve_type(v)
   T=promote_type(T,typeof(v))
-  S=map(i->spzeros(T,dim,dim),1:rk)
+  S=map(_->spzeros(T,dim,dim),1:rk)
   for j in 1:dim
     for i in 1:rk
       if i in I[j] S[i][j,j]=-one(v)

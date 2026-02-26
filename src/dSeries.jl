@@ -1078,7 +1078,7 @@ function paramcyclic(s::Series)
               # as fraction predeigen_i:=delta di -delta m_i d^2e
     end
   end
-  series=map(x->findfirst(y->x in charnumbers(y),uc.harishChandra),charnumbers(s))
+#  series=map(x->findfirst(y->x in charnumbers(y),uc.harishChandra),charnumbers(s))
   unique=filter(p->length(p[1])==1,mmp)
   ratio=map(p->s.eigen[p[1][1]]//Cyc(predeigen(p[1][1], p[2][1])), unique)
   if length(Set(ratio))>1

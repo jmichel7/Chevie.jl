@@ -262,7 +262,7 @@ function Base.show(io::IO,d::Diagram,::Val{:I})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G4})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(3,ind[1]))
     print(io,barr(10),ncnode(3,ind[2]),"\$\$")
@@ -271,7 +271,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G4})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G5})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(3,ind[1]))
     print(io,dbarr(10),ncnode(3,ind[2]),"\$\$")
@@ -280,7 +280,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G5})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G6})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[1]))
     print(io,tbarr,ncnode(3,ind[2]),"\$\$")
@@ -289,7 +289,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G6})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G7})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",lcnode(2,ind[1]))
     print(io,kern(-2.5),raise(-3,larger("\\bigcirc",5)),"\n",kern(-5),
@@ -304,7 +304,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G7})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G8})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(4,ind[1]))
     print(io,barr(10),ncnode(4,ind[2]),"\$\$")
@@ -313,7 +313,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G8})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G9})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[1]))
     print(io,tbarr,ncnode(4,ind[2]),"\$\$")
@@ -322,7 +322,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G9})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G10})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(3,ind[1]))
     print(io,dbarr(10),ncnode(4,ind[2]),"\$\$")
@@ -331,7 +331,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G10})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G11})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",lcnode(2,ind[1]))
     print(io,kern(-2.5),raise(-3,larger("\\bigcirc",5)),kern(-5),"\n",
@@ -345,7 +345,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G11})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G12})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",lcnode(2,ind[1]))
     print(io,kern(-2.5),raise(-3,larger("\\bigcirc",5)*raise(3,kern(-15)*"4")),
@@ -360,7 +360,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G12})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G13})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
    print(io,"\$\$",lcnode(2,ind[1]),kern(-2.5),
          rlap(raise(-3,larger("\\bigcirc",5))),
@@ -380,7 +380,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G13})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G14})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[1]))
     print(io,rlap(kern(3)*raise(6,script(8))))
@@ -392,7 +392,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G14})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G15})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     println(io,"\$\$",lcnode(2,ind[1]),kern(-1),
       rlap(kern(-2.5)*raise(-10,script(5))))
@@ -408,7 +408,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G15})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G16})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(5,ind[1]))
     print(io,barr(10),ncnode(5,ind[2]),"\$\$")
@@ -417,7 +417,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G16})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G17})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[1]))
     print(io,tbarr,ncnode(5,ind[2]),"\$\$")
@@ -426,7 +426,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G17})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G18})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(3,ind[1]))
     print(io,dbarr(10),ncnode(5,ind[2]),"\$\$")
@@ -435,7 +435,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G18})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G19})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",lcnode(2,ind[1]))
     print(io,kern(-2.5),raise(-3,larger("\\bigcirc",5)),kern(-5),"\n",
@@ -449,7 +449,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G19})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G20})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(3,ind[1]))
     print(io,rlap(kern(3)*raise(6,script(5))))
@@ -460,7 +460,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G20})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G21})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[1]))
     print(io,rlap(kern(3)*raise(6,script(10))))
@@ -471,7 +471,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G21})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G22})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",lcnode(2,ind[1]))
     print(io,kern(-2.5),raise(-3,larger("\\bigcirc",5)*
@@ -486,7 +486,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G22})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G24})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[2]),dbarr(14),ncnode(2,ind[3]))
     print(io,kern(-26.2),raise(8.5,"\\diagup"),kern(-3.1))
@@ -524,7 +524,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G26})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G27})
-  l,ind=getlind(d)
+  _,ind=getlind(d)
   if get(io,:TeX,false)
     print(io,"\$\$",ncnode(2,ind[2]),dbarr(14),ncnode(2,ind[3]))
     print(io,kern(-26.2),raise(8.5,"\\diagup"),kern(-3.1))
@@ -626,7 +626,6 @@ end
 
 function impdiagram(io::IO,D::Diagram,p,q,r,ind)
   d=div(p,q)
-  j=chevieget(:imp, :BraidRelations)(p, q, r)
   if q==1
     if get(io,:TeX,false)
       print(io,"\$\$",ncnode(p,ind[1]),dbarr(10),ncnode(2,ind[2]))

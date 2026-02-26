@@ -55,8 +55,8 @@ abstract type FiniteDimAlgebra{C} end
 `coefftype(A::FiniteDimAlgebra{C}) where C=C`
 returns the type of the coefficients of the algebra `A`.
 """
-coefftype(A::FiniteDimAlgebra{C}) where C=C
-coefftype(T::Type{<:FiniteDimAlgebra{C}}) where C=C
+coefftype(::FiniteDimAlgebra{C}) where C=C
+coefftype(::Type{<:FiniteDimAlgebra{C}}) where C=C
 
 InfoAlgebra=print
 
@@ -123,9 +123,9 @@ Base.broadcastable(h::AlgebraElt)=Ref(h)
 AlgebraElt(A::FiniteDimAlgebra,v::AbstractVector)=
   AlgebraElt(A,ModuleElt(Pair.(1:dim(A),v)))
 
-Weyl.dim(A::FiniteDimAlgebra)=error("not implemented in general")
+Weyl.dim(::FiniteDimAlgebra)=error("not implemented in general")
 
-idempotents(A::FiniteDimAlgebra)=error("not implemented in general")
+idempotents(::FiniteDimAlgebra)=error("not implemented in general")
 
 struct AlgebraHom{TA<:FiniteDimAlgebra,TB<:FiniteDimAlgebra}
   source::TA
@@ -456,13 +456,13 @@ function Quaternions(a::T=-1,b::T=-1)where T
   A=Quaternions(multable,Dict{Symbol,Any}())
   A.a=a;A.b=b
   A.isabelian=false
-  A.showbasis=(io::IO,i)->["","i","j","k"][i]
+  A.showbasis=(::IO,i)->["","i","j","k"][i]
   A
 end
 
-Weyl.dim(A::Quaternions)=4
+Weyl.dim(::Quaternions)=4
 
-Base.show(io::IO,A::Quaternions{T}) where T=print(io,"Quaternions(",A.a,",",A.b,")")
+Base.show(io::IO,A::Quaternions)=print(io,"Quaternions(",A.a,",",A.b,")")
 
 Groups.gens(A::Quaternions)=basis.(Ref(A),[2,3])
 
@@ -1045,7 +1045,7 @@ function SolomonAlgebra(W::FiniteCoxeterGroup,T=Int)
     if n>LIM InfoAlgebra("# structure constants...") end;c=n
     Idict=Dict(p=>i for (i,p) in enumerate(I))
     subsets=map(x->map(j->Idict[j],combinations(x)),I)
-    mackey=[Pair{Int,Int}[] for i in 1:d,j in 1:d]
+    mackey=[Pair{Int,Int}[] for _ in 1:d,_ in 1:d]
     for w in elements(W)
       leftascents=Idict[setdiff(1:r,leftdescents(W,w))]
       rightascents=Idict[setdiff(1:r,leftdescents(W,inv(w)))]

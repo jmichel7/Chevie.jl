@@ -882,7 +882,7 @@ function Groups.gens(H::HeckeAlgebra{C,T,TW})where {C,T,TW}
 end
 
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H) # d could be different type from h.d
-basisname(h::HeckeTElt)="T"
+basisname(::HeckeTElt)="T"
 
 function Base.one(H::HeckeAlgebra{C,T,TW})where {C,T,TW}
   get!(H,:one)do
@@ -932,8 +932,8 @@ function Tbasis(H::HeckeAlgebra{C,T,TW},w::Vector{<:Integer}) where {C,T,TW<:Gro
   end
 end
 Tbasis(H::HeckeAlgebra,w::Vararg{Integer})=Tbasis(H,collect(w))
-Tbasis(H::HeckeAlgebra,h::HeckeTElt)=h
-Tbasis(H::HeckeAlgebra,h::HeckeElt)=Tbasis(h)
+Tbasis(::HeckeAlgebra,h::HeckeTElt)=h
+Tbasis(::HeckeAlgebra,h::HeckeElt)=Tbasis(h)
 Tbasis(H::HeckeAlgebra,w)=HeckeTElt(MM(w=>one(coefftype(H));check=false),H)
 
 # for each parameter p relation T^length(p)=lower terms
@@ -970,7 +970,7 @@ function innermul(W::PermRootGroup,a,b)
   end
   sum(a.d) do (ea,pa)
     h=b.d*pa
-    for i in reverse(word(W,ea))
+    for _ in reverse(word(W,ea))
       new=zero(h)
       for (eb,pb) in h
         lb=length(word(W,eb))
@@ -1112,7 +1112,7 @@ function class_polynomials(h::HeckeElt)
   while length(h.d)>0
     elms=typeof(elm)[]
     coeffs=typeof(coeff)[]
-    l=[length(W,elm) for (elm,coeff) in h.d]
+    l=[length(W,elm) for elm in keys(h.d)]
     maxl=maximum(l)
     for (elm,coeff) in h.d
       if length(W,elm)<maxl
@@ -1672,14 +1672,14 @@ struct HeckeTCElt{TH<:HeckeCoset,C,P}<:HeckeElt{TH,C,P}
   H::TH
 end
 
-basisname(h::HeckeTCElt)="T"
+basisname(::HeckeTCElt)="T"
 clone(h::HeckeTCElt,d)=HeckeTCElt(d,h.H)
 
 Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? one(H) : Tbasis(H,x...)
 Tbasis(H::HeckeCoset,w::Vararg{Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeCoset,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
-Tbasis(H::HeckeCoset,h::HeckeTCElt)=h
-Tbasis(H::HeckeCoset,h::HeckeElt)=Tbasis(h)
+Tbasis(::HeckeCoset,h::HeckeTCElt)=h
+Tbasis(::HeckeCoset,h::HeckeElt)=Tbasis(h)
 Tbasis(H::HeckeCoset,w)=HeckeTCElt(MM(w=>one(coefftype(H.H))),H)
 
 Base.:*(h::HeckeTElt,h1::HeckeTCElt)=clone(h1,(h*clone(h,h1.d)).d)
