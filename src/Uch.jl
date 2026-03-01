@@ -677,7 +677,6 @@ function Base.show(io::IO,uc::UnipotentCharacters)
 end
 
 function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
-  repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   print(io,TeX ? "\$\\mbox{UnipotentCharacters}" : "UnipotentCharacters")
   print(io,"(",spets(uc),")")

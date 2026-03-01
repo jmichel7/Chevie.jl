@@ -402,12 +402,12 @@ function degrees(t::TypeIrred)
   end
   if haskey(t,:scalar)
     p=improve_type(prod(t.scalar))
-    f=[f[i]*p^d[i] for i in eachindex(d)]
+    f=f.*p.^d
   end
-  f=collect(zip(d,Cyc.(f)))
+  ff=collect(zip(d,Cyc.(f)))
   a=length(t.orbit)
-  if a==1 return f end
-  vcat(map(f)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
+  if a==1 return ff end
+  vcat(map(ff)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
 end
 
 function codegrees(t::TypeIrred)
@@ -431,17 +431,17 @@ function codegrees(t::TypeIrred)
       if isnothing(f) return f end
       f=Cyc.(improve_type(reverse(f[a].//f)))
     end
-    d=collect(zip(d,Cyc.(f)))
+    dd=collect(zip(d,Cyc.(f)))
   elseif order(t.twist)==1
-    d=collect(zip(d,fill(Cyc(1),length(d))))
+    dd=collect(zip(d,fill(Cyc(1),length(d))))
   end
   if haskey(t,:scalar)
     f=Cyc.(improve_type(prod(t.scalar)))
-    d=[(deg,eps*f^deg) for (deg,eps) in d]
+    dd=[(deg,eps*f^deg) for (deg,eps) in dd]
   end
   a=length(t.orbit)
-  if a==1 return d end
-  vcat(map(d)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
+  if a==1 return dd end
+  vcat(map(dd)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
 end
 
 #---------------------------------------------------------------------------
@@ -1524,11 +1524,11 @@ function parabolic_reps(W::PermRootGroup,s)
     r=parabolic_reps(t[i],c[i])
     if r===nothing
       R=reflection_subgroup(W,t[i].indices)
-      return recompute_parabolic_reps(R)[c[i]+1]
+      recompute_parabolic_reps(R)[c[i]+1]
     elseif all(x->all(y->y in 1:t[i].rank,x),r)
-      return map(x->t[i].indices[x],r)
+      map(x->t[i].indices[x],r)
     else R=reflection_subgroup(W,t[i].indices)
-      return map(x->inclusion(R,W,x),r);
+      map(x->inclusion(R,W,x),r);
     end
     end...))end...)
 end
@@ -2042,8 +2042,8 @@ function Combinat.catalan(W,m=1;q=1)
     fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(hgal^m*complex)]
     fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
   end
-  f(i)=sum(j->q^j,0:i-1)
   h=div(nhyp(W)+nref(W),length(d))
+  f(i)=sum(j->q^j,0:i-1)
   exactdiv(prod(x->f(m*h+x),fd),prod(x->f(x),d))
 end
 
@@ -2065,11 +2065,10 @@ julia> invariant_form(W)
 ```
 """
 function invariant_form(W::PermRootGroup)
-  I=independent_roots(W)
-  C=cartan(W)[I,I]
+  J=independent_roots(W)
+  C=cartan(W)[J,J]
 # we use that C[i,j]/C[i,i]=F[j,i]/F[i,i]
-  T=typeof(C[1,1]*1//1)
-  F=zeros(T,size(C))
+  F=zero(C)//1
   for b in diagblocks(C)
     # first fill in the diagonal terms
     F[b[1],b[1]]=1
@@ -2088,8 +2087,7 @@ function invariant_form(W::PermRootGroup)
       if i!=j F[j,i]=C[i,j]*F[i,i]//C[i,i] end
     end
   end
-  d=rank(W)-semisimplerank(W)
-  F=cat(F,one(zeros(T,d,d)),dims=(1,2))
+  F=cat(F,I(rank(W)-semisimplerank(W)),dims=(1,2))
   N=invbaseX(W)
   F=N*F*N'
   improve_type(F.//F[1,1])

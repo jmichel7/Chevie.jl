@@ -739,7 +739,7 @@ end)
 
 chevieset(:families,:HS4,Family(;group="SL2(5)",name="H4",
   explanation= "DrinfeldDouble(SL_2(5))?ER(5)",
-  charLabels= map((i->begin "?" end), 1:74), special=9,
+  charLabels= fill("?",74), special=9,
   eigenvalues=
   Cyc{Int64}[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, E(5,3), E(5,2),
  E(5,3), E(5,2), E(5,3), E(5,2), E(5,3), E(5,2), 1, -1, -1, -1, 1, 1, -1, -1,

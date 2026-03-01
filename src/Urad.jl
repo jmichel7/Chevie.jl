@@ -323,12 +323,12 @@ function Ncarter(W,special)
 # ambient  vector space. 1:nref(W) is such an order (see check_root_order).
 # Compute  Nᵣₛ for each special  pair, using arbitraryness for extraspecial
 # pairs. See formula in proof of [car72b; 4.2.2](@cite).
-  r=s=rs=0
+  r=s=0
   ns=div(length(special),2)
   Nc=fill((N=0,),2*ns)
   for i in 1:ns
     if i==1 || special[i-1].rs!=special[i].rs #extraspecial
-      (r,s,rs)=special[i]
+      (r,s,_)=special[i]
       Nc[i]=(N=count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3),)
     else # special of sum rs
       (r1,s1,rs1)=special[i]
@@ -470,7 +470,6 @@ function reorder(U::UnipotentGroup,l,order=U.order)
 # uₛ(u)uᵣ(t)=uᵣ(t)uₛ(u)∏_{i,j>0} uᵢᵣ₊ⱼₛ(Cᵣₛᵢⱼ(-t)ⁱuʲ)
 #
 # Here l[i]=[s,u] and l[i+1]=[r,t].
-      W=U.W
       res=l[[i+1,i]]
       s,u=l[i]; r,t=l[i+1]
       c=findfirst(p->p.r==r && p.s==s,U.special)

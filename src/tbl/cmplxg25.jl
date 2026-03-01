@@ -54,7 +54,7 @@ chevieset(:G25, :charinfo, function ()
   res
 end)
 
-chevieset(:G25, :HeckeCharTable, function (para, root)
+chevieset(:G25, :HeckeCharTable, function (para,_)
   u,v,w=para[1]
   c=(u*v*w)^0
   res=Dict{Symbol, Any}(:name => "H(G25)", :identifier => "H(G25)",
@@ -174,7 +174,7 @@ chevieset(:G25, :SchurData, [
   Dict{Symbol, Any}(:name => "f9_7", :order => [1, 2, 3], :rootUnityPower=>1),
   Dict{Symbol, Any}(:name => "f9_7", :order => [1, 2, 3], :rootUnityPower=>2)])
 
-chevieset(:G25, :HeckeRepresentation, function (para, root, i)
+chevieset(:G25, :HeckeRepresentation, function (para, _, i)
   f1=u->[[u;;], [u;;], [u;;]]
   f2(v,w)=WGraph2Representation([[[1, 3], [2]], [[1, 2, -1, v * w]]], [w, v])
   f31(u,v)=WGraph2Representation([[[1],[2],[3]],[[1,2,u,-v],[2,3,-v,u]]],[u,v])

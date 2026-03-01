@@ -2239,7 +2239,7 @@ chevieset(:G32, :sparseFakeDegrees, [[1, 0], [1, 80], [1, 40],
   [1, 12, 4, 18, 7, 24, 12, 30, 14, 36, 15, 42, 12, 48, 9, 54, 5, 60, 2, 66], 
   [2, 14, 5, 20, 9, 26, 12, 32, 15, 38, 14, 44, 12, 50, 7, 56, 4, 62, 1, 68], 
   [1, 10, 2, 16, 6, 22, 10, 28, 14, 34, 15, 40, 14, 46, 10, 52, 6, 58, 2, 64, 1, 70]])
-chevieset(:G32, :HeckeRepresentation, function (para, rt, i)
+chevieset(:G32, :HeckeRepresentation, function (para, _, i)
   u,v,w=para[1]
   f1=u->[[u;;],[u;;],[u;;],[u;;]]
   f4(w,v)=WGraph2Representation([[[1],[2],[3],[4]],[[1,2,w,-v],[2,3,w,-v],

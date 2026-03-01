@@ -635,7 +635,7 @@ function isrepresentation(H::HeckeAlgebra,t;details=false)
     end
   end
   for (l,r) in braid_relations(W)
-    if prod(t[l])!=prod(t[r])
+    if !iszero(prod(t[l])-prod(t[r]))
       if !details return false end
       println("Error in relation ",l,"=",r)
       res=false

@@ -21,7 +21,7 @@ chevieset(:I, :simpleroots, function(m)
   [1 0;r*(a+b)//2 r*(a-b)//2//E(4)]
 end)
 
-chevieset(:I,:ordergens,m->fill(2,2))
+chevieset(:I,:ordergens,_->[2,2])
 
 chevieset(:I,:ReflectionDegrees,m->[2,m])
 
@@ -248,7 +248,7 @@ chevieset(:I,:ParameterToSymbol,function(e,p)
       S[[mod(-p[1],e),p[2]].+1]=[Int[],Int[]]
     end
   else
-    S=map(i->[0],1:e)
+    S=map(_->[0],1:e)
     if p[1]!=0
       S[[1,1+mod(-sum(p),e)]]=[[0,1],[0,1]]
       S[map(x->mod(x,e),-p).+1]=[Int[],Int[]]

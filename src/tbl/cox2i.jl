@@ -6,7 +6,7 @@ chevieset("2I", :nconjugacy_classes,m->div(m+3,2))
 chevieset("2I", :WordsClassRepresentatives, function (m)
   r=[Int[]]
   x=[1]
-  for i in 1:div(m+1,2)
+  for _ in 1:div(m+1,2)
     push!(r, copy(x))
     append!(x, [2, 1])
   end
@@ -25,9 +25,9 @@ chevieset("2I", :classinfo, function(m)
   res
 end)
 
-chevieset("2I", :PhiFactors,m->[1,-1])
+chevieset("2I", :PhiFactors,_->[1,-1])
 
-chevieset("2I", :ClassParameter, function (m, w)
+chevieset("2I", :ClassParameter, function (_, w)
   if iseven(length(w)) return "" end
   w[1]==2 ? joindigits(vcat(w[2:end],1)) : joindigits(w)
 end)
@@ -67,7 +67,7 @@ chevieset("2I", :HeckeCharTable, function (m, param, rootpara)
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   cl=chevieget("2I",:classinfo)(m)
   cos(i)=E(2m,i)+E(2m,-i)
-  ct=map(i->map(j->cos(1)*0*v,cl[:classtext]), cl[:classtext])
+  ct=map(i->map(_->cos(1)*0*v,cl[:classtext]), cl[:classtext])
   ct[1]=map(i->q^length(i),cl[:classtext])
   ct[2]=map(i->(-1)^length(i),cl[:classtext])
   for i in 1:div(m-1,2)

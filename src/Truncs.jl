@@ -113,7 +113,7 @@ varname::Symbol=LaurentPolynomials.varname
 
 Base.length(p::Trunc)=length(p.c)
 Base.iszero(p::Trunc)=iszero(p.c)[1]
-Base.eltype(p::Trunc{T}) where T =T
+Base.eltype(::Trunc{T}) where T =T
 
 function Base.:*(p::Trunc,q::Trunc)
   l=min(length(p),length(q))
@@ -310,10 +310,10 @@ function pade(f::Trunc,i=length(f))
   Fracfromcf(p)
 end
 
-Trunc(f::typeof(sin),n)=Trunc(map(i->
+Trunc(::typeof(sin),n)=Trunc(map(i->
                       iseven(i) ? 0//1 : (-1)^div(i,2)//factorial(i),0:n-1),0)
-Trunc(f::typeof(cos),n)=Trunc(map(i->
+Trunc(::typeof(cos),n)=Trunc(map(i->
                       isodd(i) ? 0//1 : (-1)^div(i,2)//factorial(i),0:n-1),0)
-Trunc(f::typeof(exp),n)=Trunc(map(i->1//factorial(i),0:n-1),0)
-Trunc{T}(f::typeof(exp),n) where T=Trunc(map(i->1//factorial(T(i)),0:n-1),0)
+Trunc(::typeof(exp),n)=Trunc(map(i->1//factorial(i),0:n-1),0)
+Trunc{T}(::typeof(exp),n) where T=Trunc(map(i->1//factorial(T(i)),0:n-1),0)
 end

@@ -1,7 +1,7 @@
 # data common to several (but not all) types of reflection groups
 # chevie/tbl/exceptio.jl (C) Jean Michel 1999-
 
-chevieset([:A,:B,:D],:ordergens,t->r->fill(2,r))
+chevieset([:A,:B,:D],:ordergens,_->r->fill(2,r))
 
 chevieset([:E6,:E7,:E8,:F4,:G2,:H3,:H4],:ordergens,t->fill(2,string(t)[end]-'0'))
 
@@ -71,7 +71,7 @@ end)
 chevieset([:G2,:F4,:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34],
   :SemisimpleRank,t->size(chevieget(t,:simpleroots),2))
 
-chevieset([:A,:B,:D],:SemisimpleRank,t->(r->r))
+chevieset([:A,:B,:D],:SemisimpleRank,_->(r->r))
 
 chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34,
            :H4, :E7, :E8, :G31],:charindex,t->
@@ -130,13 +130,13 @@ function(p)
 end)
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4],:SchurElement,t->
-function(phi,para,arg...)
+function(phi,para,_...)
   i=chevieget(t,:charindex)(phi)
   CycPol(chevieget(t,:CycPolSchurElements)[i])(-para[1][1]//para[1][2])
 end)
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
-  :FactorizedSchurElement, t->function(phi,para,arg...)
+  :FactorizedSchurElement, t->function(phi,para,_...)
                #arg=[] for G24--G34, [rootparam] for E6--H4
   i=chevieget(t,:charindex)(phi)
   c=chevieget(t,:CycPolSchurElements)[i]
@@ -147,7 +147,7 @@ chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4],
 end)
 
 chevieset([:G2,:F4,:G25,:G26,:G32],:FactorizedSchurElement,t->
-function (phi,para,arg...)
+function (phi,para,_...)
   i=chevieget(t,:charindex)(phi)
   Y=vcat(para[chevieget(t,:HyperplaneRepresentatives)]...)
   ci=chevieget(t,:SchurData)[i]
@@ -155,15 +155,15 @@ function (phi,para,arg...)
 end)
 
 chevieset([:F4,:G25,:G26,:G32],:SchurElement,t->
-function(phi,para,arg...)
+function(phi,para,_...)
   i=chevieget(t,:charindex)(phi)
   Y=vcat(para[chevieget(t, :HyperplaneRepresentatives)]...)
   ci=chevieget(t,:SchurData)[i]
   VcycSchurElement(Y,chevieget(t,:SchurModels)[Symbol(ci[:name])],ci)
 end)
 
-chevieset([:E7,:E8,:F4,"2F4",:G2,"3D4",:H3,:H4,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:Ennola,t->
-function (arg...)
+chevieset([:E7,:E8,:F4,"2F4",:G2,"3D4",:H3,:H4,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],:Ennola,
+t->function(_...)
   uc = chevieget(t, :UnipotentCharacters)
   if uc isa Function uc = uc() end
   res = uc[:a] * 0

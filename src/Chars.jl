@@ -441,11 +441,13 @@ function schur_functor(A::AbstractMatrix,λ)
   basis=multisets(axes(A,1),n)
   basis=filter(b->!isempty(semistandard_tableaux(λ,b)),basis)
   if isempty(basis) return A[1:0,1:0] end
-  M=sum(x->kron(rep(x),
+  M=let rep=rep, f=f, basis=basis # boxed variables
+    sum(x->kron(rep(x),
     toM(map(basis)do i
       i=invpermute(i,x)
       map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i)
      end)),elements(Sn))
+  end
   #print(size(M),"=>")
   M=M[filter(i->!iszero(@view M[i,:]),axes(M,1)),
       filter(i->!iszero(@view M[:,i]),axes(M,2))]
@@ -477,10 +479,9 @@ Pol{Int64}: q²+q
 ```
 """
 function Symbols.fakedegree(W,p,q=Pol())
-  typ=refltype(W)
-  if isempty(typ) return one(q) end
-# prod(map((t,p)->fakedegree(t,p,q),typ,p))
-  prod(fakedegree.(typ,p,q))
+  l=fakedegree.(refltype(W),p,q)
+  if any(isnothing,l) return nothing end
+  prod(l;init=one(q))
 end
 
 function Symbols.fakedegree(t::TypeIrred,p,q=Pol())

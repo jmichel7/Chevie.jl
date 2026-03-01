@@ -97,7 +97,6 @@ chevieset(:H3, :sparseFakeDegrees,
    [1,4,1,6,1,8,1,12]])
 
 chevieset(:H3, :HeckeCharTable, function (param, rootpara)
-  a=(1+root(5))//2
   q=-param[1][1]//param[1][2]
   v=ismissing(rootpara[1]) ? root(q) : -rootpara[1]//param[1][2]
   tbl=Dict{Symbol, Any}(:identifier => "H(H3)",

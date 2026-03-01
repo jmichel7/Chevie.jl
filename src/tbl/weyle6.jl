@@ -678,7 +678,7 @@ chevieset(:E6, :UnipotentClasses, function(p)
       if !(haskey(c, :red)) c[:red] = Z(1) end
       if !(haskey(c, :Au)) c[:Au] = Z(1) end
       if !(haskey(c, :AuAction))
-        c[:AuAction] = ExtendedReflectionGroup(c[:red], map(x->
+        c[:AuAction] = ExtendedReflectionGroup(c[:red], map(_->
                             Matrix(1I,rank(c[:red]),rank(c[:red])),
                             1:semisimplerank(c[:Au])))
       end

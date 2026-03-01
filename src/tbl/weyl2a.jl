@@ -3,38 +3,37 @@
 # Data for the coset W(A_r).F where F induces -w0.
 
 chevieset("2A",:WordsClassRepresentatives,function(n,part=partitions(n+1))
-  function redw(n, w)local l
-    l=Int[]
-    while true
-      i=findfirst(j->j^w>(j+1)^w,1:n)
-      if isnothing(i) return l end
-      push!(l,i)
-      w=Perm(i,i+1)*w
-    end
-  end
-  # longest element in class, see [gkp00]
-  function guesslongest(p,l) 
-    p=vcat(filter(iseven, p), filter(i->i!=1 && isodd(i), p))
-    x=Perm()
-    off=0
-    for i in p
-      x*=prod(j->Perm(l[off+1],l[off+j]), 2:i)
-      off+=i
-    end
-    x
-  end
   l=Int[]
   w0=Perm()
   for p in 1:div(n+1,2)
     append!(l,[p,n-p+2])
-    w0*=Perm(p,n-p+2)
+    Perms.mul!(w0,Perm(p,n-p+2))
   end
   if iseven(n) push!(l,div(n,2)+1) end
-  map(p->redw(n,guesslongest(p,l)*w0),part)
+  map(part)do p
+    long=Perm()
+    off=0
+    for i in vcat(filter(iseven, p), filter(i->i!=1 && isodd(i), p))
+      for j in 2:i Perms.mul!(long,Perm(l[off+1],l[off+j])) end
+      off+=i
+    end
+    # here long is longest element in class p, see [gkp00]
+    w=long*w0
+    l1=Int[]
+    while true # here compute word(coxsym(n+1),w)
+      i=let w=w  # boxed variable
+        findfirst(j->j^w>(j+1)^w,1:n)
+      end
+      if isnothing(i) return l1 end
+      push!(l1,i)
+      w=Perm(i,i+1)*w
+    end
+  end
 end)
 
-chevieset("2A", :classinfo, function (n,)
-  res=chevieget(:A,:classinfo)(n)
+chevieset("2A", :classinfo, function(n)
+  res=chevieget(:imp,:classinfo)(1,1,n+1)
+  res[:classparams]=first.(res[:classparams])
   res[:classtext]=chevieget("2A",:WordsClassRepresentatives)(n,res[:classparams])
   delete!(res, :orders)
   res
@@ -85,7 +84,7 @@ chevieset("2A",:HeckeCharTable, function(r, para, rootpara)
   AdjustHeckeCharTable(tbl, para)
 end)
 
-chevieset("2A", :HeckeRepresentation, function (n, para, sqrtpara, i)
+chevieset("2A", :HeckeRepresentation, function (n, para, _, i)
   W=coxgroup(:A,n)
   H=hecke(W,-para[1][1]//para[1][2])
   p=partitions(n+1)[i]
@@ -95,7 +94,7 @@ chevieset("2A", :HeckeRepresentation, function (n, para, sqrtpara, i)
 end)
 
 chevieset("2A", :Representation, function(n,i)
-  chevieget("2A",:HeckeRepresentation)(n,map(x->[1,-1],1:n),1:1,i)
+  chevieget("2A",:HeckeRepresentation)(n,fill([1,-1],n),1:1,i)
 end)
 
 # symbol associated to 2-core d and partitions-pair p
@@ -117,29 +116,29 @@ chevieset("2A", :UnipotentCharacters, function (l,)
       twist=prod(i->Perm(i,l+1-i),1:div(l,2)),rank=l)
   uc[:harishChandra]=Dict{Symbol,Any}[]
   d=0
-  while div(d*(d+1),2)<=l+1
+  while true
     k=l+1-div(d*(d+1),2)
-    if iseven(k)
-      r=div(k, 2)
-      s=Dict{Symbol, Any}(:levi=>r+1:l-r,:relativeType=> 
-        TypeIrred(;series=:B,indices=r:-1:1,rank=r),
-        :eigenvalue=>(-1)^div(prod(d.+(-1:2)),8))
-      # for the eigenvalue see [proof of 3.34 (ii), lu78]
-      if d==0 
-       s[:relativeType]=TypeIrred(;series=:B,indices=r:-1:1,rank=r,cartanType=1)
-      end
-      if r!=0 s[:parameterExponents]=vcat(2d+1,fill(2,r-1))
-      else s[:parameterExponents]=[]
-      end
-      if k<l s[:cuspidalName]="{}^2A"*stringind(rio(TeX=true),l-k)
-      else s[:cuspidalName]=""
-      end
-      s[:charNumbers]=map(a->findfirst(==(
-     isodd(d) ? Symbol2core2quotient(d,a) : Symbol2core2quotient(d,reverse(a))),
-        uc[:charSymbols]),partition_tuples(r,2)) # see [fg82] for this map
-      FixRelativeType(s)
-      push!(uc[:harishChandra],s)
+    if k<0 break end
+    if isodd(k) d+=1; continue end
+    r=div(k,2)
+    s=Dict{Symbol, Any}(:levi=>r+1:l-r,:relativeType=> 
+      TypeIrred(;series=:B,indices=r:-1:1,rank=r),
+      :eigenvalue=>(-1)^div(prod(d.+(-1:2)),8))
+    # for the eigenvalue see [proof of 3.34 (ii), lu78]
+    if d==0 
+     s[:relativeType]=TypeIrred(;series=:B,indices=r:-1:1,rank=r,cartanType=1)
     end
+    if r!=0 s[:parameterExponents]=vcat(2d+1,fill(2,r-1))
+    else s[:parameterExponents]=Int[]
+    end
+    if k<l s[:cuspidalName]="{}^2A"*stringind(rio(TeX=true),l-k)
+    else s[:cuspidalName]=""
+    end
+    s[:charNumbers]=map(a->
+      findfirst(==(Symbol2core2quotient(d,isodd(d) ? a : reverse(a))),
+        uc[:charSymbols]),partition_tuples(r,2)) # see [fg82] for this map
+    FixRelativeType(s)
+    push!(uc[:harishChandra],s)
     d+=1
   end
   # for delta see [page 124 line 7, lus85]
@@ -158,8 +157,7 @@ chevieset("2A", :UnipotentClasses, function (r, p)
     if isempty(t) m=reflrep(c[:red],one(c[:red]))
     else m=reflrep(c[:red],Perm(vcat(map(x->reverse(indices(x)),t)...)))
     end
-    p=tally(c[:parameter])
-    for i in 1:length(p)-1 m[end+1-i,end+1-i]=-1 end
+    for i in 1:length(tally(c[:parameter]))-1 m[end+1-i,end+1-i]=-1 end
     c=copy(c)
     c[:red]=spets(c[:red],m)
     c

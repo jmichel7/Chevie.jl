@@ -310,14 +310,14 @@ cartanmats[:g]=cartanmats[:G]=function(r,cartanType=1)
   end
   m
 end
-cartanmats[:gsym]=cartanmats[:Gsym]=r->cartanmats[:Isym](2,6)
+cartanmats[:gsym]=cartanmats[:Gsym]=_->cartanmats[:Isym](2,6)
 cartanmats[:h]=cartanmats[:H]=function(r)
   if r>4 error("type :H is defined only for rank ≤4") end
   m=Cyc.(cartanmats[:A](r))
   m[1:2,1:2]=cartanmats[:Isym](2,5)
   m
 end
-cartanmats[:isym]=cartanmats[:Isym]=function(r,bond)
+cartanmats[:isym]=cartanmats[:Isym]=function(_,bond)
   c=improve_type(-E(2*bond)-E(2*bond,-1))
   [2 c;c 2]
 end
@@ -730,6 +730,13 @@ standard_parabolic(W::FC,H::FC)=
   else standard_parabolic(W,inclusiongens(H,W))
   end
 
+function parabolic_subgroups(W::FC,i)
+  unique(vcat(map(parabolic_reps(W,i))do I
+     R=reflection_subgroup(W,I)
+     map(x->I.^x,vcat(reduced(R,W)...))
+  end...))
+end
+
 """
 `badprimes(W)`
 
@@ -854,7 +861,7 @@ function Base.show(io::IO, W::FCG)
   end
 end
 
-function Base.show(io::IO,t::Type{FCG{T,T1}})where {T,T1}
+function Base.show(io::IO,::Type{FCG{T,T1}})where {T,T1}
   print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
 end
 
@@ -1074,7 +1081,7 @@ end
 #--------------- FCSG -----------------------------------------
 Base.show(io::IO, W::FCSG)=show(io,W.G)
 
-function Base.show(io::IO,t::Type{FCSG{T,T1}})where {T,T1}
+function Base.show(io::IO,::Type{FCSG{T,T1}})where {T,T1}
   print(io,"FiniteCoxeterSubGroup{Perm{$T},$T1}")
 end
 
@@ -1312,7 +1319,7 @@ function AffineRootAction(W,w,x)
   y[eachindex(x)]-y[length(x)+1].*roots(W.W)[nref(W.W)]
 end
 
-Base.isfinite(W::Affine)=false
+Base.isfinite(::Affine)=false
 
 function Perms.reflength(W::Affine,w)
   W0=W.W
@@ -1321,8 +1328,8 @@ function Perms.reflength(W::Affine,w)
   mov=map(v->AffineRootAction(W,w,v)-v,eachrow(Id))
   l=push!(map(i->refls(W0,i),eachindex(gens(W0))),refls(W0,nref(W0)))
   p=reflength(W0,prod(l[word(W,w)]))
-  dimw=minimum(length.(filter(x->RankMat(vcat(mov,roots(W0,x)))==length(x),
-                      ParabolicSubgroups(W0))))
+  dimw=minimum(length.(filter(x->GenLinearAlgebra.rank(vcat(mov,
+     roots(W0,x)))==length(x),ParabolicSubgroups(W0))))
   2*dimw-p
 end
 # a benchmark on julia 1.0.2

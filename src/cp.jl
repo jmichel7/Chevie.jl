@@ -11,7 +11,7 @@
   one::T
 end
 
-Garside.IntervalStyle(M::CPMonoid)=Garside.Interval()
+Garside.IntervalStyle(::CPMonoid)=Garside.Interval()
 
 function Base.show(io::IO,M::CPMonoid)
   print(io,"CorranPicantinMonoid(",M.e,",",M.e,",",M.n,")")
@@ -39,7 +39,7 @@ end
 Base.Matrix(M::CPMonoid,s)=reflrep(M.W,s)
 showmat(M::CPMonoid,s)=display(Matrix(M,s))
 function showmat(s::GarsideElt)
-  for i in 1:s.pd showmat(s.M,s.M.δ) end
+  for _ in 1:s.pd showmat(s.M,s.M.δ) end
   for t in s.elm showmat(s.M,t) end
 end
 

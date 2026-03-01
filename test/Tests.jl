@@ -393,6 +393,7 @@ function Tclassinfo(W)
     for i in eachindex(p)
       if !isnothing(p[i]) cmap=map(x->position_class(W,x^i),cl)
         if cmap!=p[i]
+          @show p[i],cmap
           cmpvec(p[i],cmap;na="$i-th power map ",nb="should be")
         end
       end

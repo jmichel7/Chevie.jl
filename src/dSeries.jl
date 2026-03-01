@@ -323,7 +323,7 @@ function Subsets_sum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
   # v= remaining v to match
   function inner(S, s::AbstractVector{Int}, t::AbstractVector{Int}, 
     nonsolved::AbstractVector{Int}, v::Vector, factor)
-    local bad, good, p, sols, res, i, sol, f, ll, solved
+    local bad, good, p, res, sol, f, ll, solved
  #  @show S,s,t,nonsolved,v,factor
  #  println("#solved=",size(l,2)-length(nonsolved)," ",join(s),"=>",join(t),
  #        " v=",join(map(x->join(x,":"),tally(v))," "))
@@ -646,7 +646,6 @@ end
 
 function format(io::IO,s::Series)
   uw = UnipotentCharacters(s.spets)
-  e = length(charnumbers(s))
   function f(texn,val)
     push!(col_labels,texn)
     push!(m,val)

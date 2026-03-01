@@ -129,7 +129,7 @@ chevieset(:F4, :ClassParameter, function (w,)
   chevieget(:F4,:cyclestructure))]
 end)
 
-chevieset(:F4, :HeckeCharTable, function (param, rootpara)
+chevieset(:F4, :HeckeCharTable, function (param, _)
   u=improve_type(-param[1][1]//param[1][2])
   uinv=improve_type(-param[1][2]//param[1][1])
   v=improve_type(-param[3][1]//param[3][2])
@@ -853,7 +853,7 @@ chevieset(:F4, :Discriminant,()->(x1,x2,x3,x4)->
 9342537960*x1^12*x3^3+105367602964*x1^12*x2^4+29012190480*x1^13*x2*x3^2+
 30031354080*x1^14*x2^2*x3+10362106560*x1^15*x2^3)
 
-chevieset(:F4, :UnipotentClasses, function(p,ctype)# ctype not used
+chevieset(:F4, :UnipotentClasses, function(p,_)
   if p==0 p=1 end
   Z(n)=crg(n,1,1)
   class(n)=uc[:classes][findfirst(x->x[:name]==n,uc[:classes])]

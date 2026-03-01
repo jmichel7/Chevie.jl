@@ -5,12 +5,10 @@ export abelian_gens, abelian_invariants, improve_type
 using ModuleElts
 using PuiseuxPolynomials
 using Combinat: tally
-using PermGroups: Group, Groups, gens, word, PermGroup, elements,
-         minimal_words, isabelian, ordergens, Coset
+using PermGroups: Group, gens, word, PermGroup, isabelian, ordergens, Coset
 using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor, Root1, num
-using ..FiniteFields: FiniteFields, FFE, Z
-using ..Modulo: Mod
+using FiniteFields: FiniteFields, FFE, Z, Mod
 using ..Chevie: Chevie, order
 
 #------------------ improve_type
@@ -47,8 +45,8 @@ function best_type(q::Frac)
   if q.den isa Pol && length(q.den.c)==1 return best_type(Pol(q)) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}
 end
-best_type(q::Frac{Pol{Rational{T}}}) where T=Frac{Pol{T}}
-best_type(q::Frac{Mvp{Rational{T}}}) where T=Frac{Mvp{T}}
+best_type(::Frac{Pol{Rational{T}}}) where T=Frac{Pol{T}}
+best_type(::Frac{Mvp{Rational{T}}}) where T=Frac{Mvp{T}}
 function best_type(p::Mvp{T,N}) where {T,N}
   if iszero(p) return  Mvp{best_empty(T),Int} end
   n=all(m->all(isinteger,powers(m)),monomials(p)) ? Int : N

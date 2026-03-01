@@ -158,7 +158,7 @@ chevieset(:G2, :Invariants, [
 
 chevieset(:G2, :Discriminant,()->(x,y)->4*x^3*y-27*y^2)
 
-chevieset(:G2, :UnipotentClasses, function(p,cartantype) # cartantype not used
+chevieset(:G2, :UnipotentClasses, function(p,_)
   if p==0 p=1 end
   Z(n)=crg(n,1,1)
   uc=Dict{Symbol,Any}(:classes =>[
@@ -200,7 +200,7 @@ chevieset(:G2, :UnipotentClasses, function(p,cartantype) # cartantype not used
     delete!(c,:succ)
     if !(haskey(c,:red)) c[:red]=Z(1) end
     if !(haskey(c,:Au)) c[:Au]=Z(1) end
-    c[:AuAction]=ExtendedReflectionGroup(c[:red],map(x->
+    c[:AuAction]=ExtendedReflectionGroup(c[:red],map(_->
        Matrix(1I,rank(c[:red]),rank(c[:red])), 1:semisimplerank(c[:Au])))
   end
   uc

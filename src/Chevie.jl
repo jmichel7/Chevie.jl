@@ -160,28 +160,39 @@ include("dSeries.jl");@reexport using .dSeries
 include("Sscoset.jl");@reexport using .Sscoset
 include("gendec.jl"); # for now no module
 include("tbl/util.jl")
-const cheviedata=[("G(de,e,n)","cmplximp"),
-  ("Aₙ","weyla"), ("Bₙ and Cₙ","weylbc"),("Dₙ","weyld"),
-  ("³D₄","weyl3d4"), ("²Aₙ","weyl2a"), ("²Dₙ","weyl2d"),
-  ("ᵗG(e,e,n)","cmpxtimp"), ("G₂","weylg2"), 
-  ("I₂(e)","coxi"), ("²I₂(e)","cox2i"),
-  ("G₄-G₂₂","cmp4_22"),("H₃","coxh3"),
-  ("G₂₄","cmplxg24"),("G₂₅","cmplxg25"),("G₂₆","cmplxg26"),
-  ("G₂₇","cmplxg27"), ("F₄","weylf4"), ("²F₄","weyl2f4"),
-  ("G₂₉","cmplxg29"), ("H₄","coxh4"), ("G₃₁","cmplxg31"),
-  ("G₃₂","cmplxg32"),("G₃₃","cmplxg33"),("G₃₄","cmplxg34"), 
-  ("E₆","weyle6"),("²E₆","weyl2e6"),("E₇","weyle7"),
-  ("E₈","weyle8"), ("several groups","exceptio")]
+showt(t)=println(rpad(string(round(t;digits=3)),5,'0')," seconds")
 println("reading Chevie data:")
-foreach(cheviedata) do (e,f)
-  print("for ",rpad(e,16))
-  t=@elapsed include(string("tbl/",f,".jl"))
-  println(rpad(string(round(t;digits=3)),5,'0')," seconds")
-end
-function contr(s) 
-  include(replace(@__DIR__,"/src"=>"/contr/"*s*".jl"))
-end
-Testspath=replace(@__DIR__,"/src"=>"/test/Tests.jl")
-export contr
+print(rpad("for G(de,e,n)",20));t=@elapsed include("tbl/cmplximp.jl");showt(t)
+print(rpad("for Aₙ",20));t=@elapsed include("tbl/weyla.jl");showt(t) 
+print(rpad("for Bₙ and Cₙ",20));t=@elapsed include("tbl/weylbc.jl");showt(t)
+print(rpad("for Dₙ",20));t=@elapsed include("tbl/weyld.jl");showt(t)
+print(rpad("for ³D₄",20));t=@elapsed include("tbl/weyl3d4.jl");showt(t) 
+print(rpad("for ²Aₙ",20));t=@elapsed include("tbl/weyl2a.jl");showt(t) 
+print(rpad("for ²Dₙ",20));t=@elapsed include("tbl/weyl2d.jl");showt(t)
+print(rpad("for ᵗG(e,e,n)",20));t=@elapsed include("tbl/cmpxtimp.jl");showt(t) 
+print(rpad("for G₂",20));t=@elapsed include("tbl/weylg2.jl");showt(t) 
+print(rpad("for I₂(e)",20));t=@elapsed include("tbl/coxi.jl");showt(t) 
+print(rpad("for ²I₂(e)",20));t=@elapsed include("tbl/cox2i.jl");showt(t)
+print(rpad("for G₄-G₂₂",20));t=@elapsed include("tbl/cmp4_22.jl");showt(t)
+print(rpad("for H₃",20));t=@elapsed include("tbl/coxh3.jl");showt(t)
+print(rpad("for G₂₄",20));t=@elapsed include("tbl/cmplxg24.jl");showt(t)
+print(rpad("for G₂₅",20));t=@elapsed include("tbl/cmplxg25.jl");showt(t)
+print(rpad("for G₂₆",20));t=@elapsed include("tbl/cmplxg26.jl");showt(t)
+print(rpad("for G₂₇",20));t=@elapsed include("tbl/cmplxg27.jl");showt(t) 
+print(rpad("for F₄",20));t=@elapsed include("tbl/weylf4.jl");showt(t) 
+print(rpad("for ²F₄",20));t=@elapsed include("tbl/weyl2f4.jl");showt(t)
+print(rpad("for G₂₉",20));t=@elapsed include("tbl/cmplxg29.jl");showt(t) 
+print(rpad("for H₄",20));t=@elapsed include("tbl/coxh4.jl");showt(t) 
+print(rpad("for G₃₁",20));t=@elapsed include("tbl/cmplxg31.jl");showt(t)
+print(rpad("for G₃₂",20));t=@elapsed include("tbl/cmplxg32.jl");showt(t)
+print(rpad("for G₃₃",20));t=@elapsed include("tbl/cmplxg33.jl");showt(t)
+print(rpad("for G₃₄",20));t=@elapsed include("tbl/cmplxg34.jl");showt(t) 
+print(rpad("for E₆",20));t=@elapsed include("tbl/weyle6.jl");showt(t)
+print(rpad("for ²E₆",20));t=@elapsed include("tbl/weyl2e6.jl");showt(t)
+print(rpad("for E₇",20));t=@elapsed include("tbl/weyle7.jl");showt(t)
+print(rpad("for E₈",20));t=@elapsed include("tbl/weyle8.jl");showt(t) 
+print(rpad("for several groups",20));t=@elapsed include("tbl/exceptio.jl");showt(t)
 roundtrip(x)=x==eval(Meta.parse(repr(x))) # for debugging purposes
+cheviepath(s)=replace(@__DIR__,"/src"=>"/")*s*".jl"
+export cheviepath
 end

@@ -1246,7 +1246,7 @@ function Algebras.idempotents(A::ZBasedRing)
   end
 end
 
-Groups.isabelian(A::ZBasedRing)=true
+Groups.isabelian(::ZBasedRing)=true
 
 function Chars.CharTable(A::ZBasedRing)
   irr=improve_type([ratio(coefficients(b*e),coefficients(e))

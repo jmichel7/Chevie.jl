@@ -1,7 +1,7 @@
 # cmplximp.jl Imprimitive groups  G_{p,q,r} Chevie Library
 # (C) 1998-  Gunter Malle and  Jean Michel
 
-chevieset(:imp,:SemisimpleRank,(p,q,r)->r)
+chevieset(:imp,:SemisimpleRank,(_,_,r)->r)
 
 chevieset(:imp,:ordergens,function(p,q,r)
   res=fill(2,r)
@@ -24,10 +24,22 @@ chevieset(:imp,:simpleroots,function(p,q,r)
   toM(roots)
 end)
 
+chevieset(:imp,:simplecoroots,function(p,q,r)
+  rt=chevieget(:imp, :simpleroots)(p,q,r)
+  eigen=E.(chevieget(:imp,:ordergens)(p,q,r))
+  Cyc{Int}.(toM(coroot.(eachrow(rt),eigen)))
+end)
+
+chevieset(:imp,:cartan,function(p,q,r)
+  rt=chevieget(:imp, :simpleroots)(p,q,r)
+  cr=chevieget(:imp, :simplecoroots)(p,q,r)
+  [sum(x.*y) for x in eachrow(cr), y in eachrow(rt)]
+end)
+
 chevieset(:imp, :BraidRelations, function (p, q, r)
   function b(i,j,o)
-    p(i,j)=map(k->i*mod(k,2)+j*mod(1-k,2),1:o)
-    [p(i,j),p(j,i)]
+    s(i,j)=[ifelse(iseven(k),j,i) for k in 1:o]
+    [s(i,j),s(j,i)]
   end
   res=Vector{Vector{Int}}[]
   if q==1
@@ -60,14 +72,6 @@ chevieset(:imp, :nconjugacy_classes, function (p, q, r)
   elseif q==1 npartition_tuples(r,p)
   else length(chevieget(:imp,:classinfo)(p,q,r)[:classtext])
   end
-end)
-
-chevieset(:imp,:cartan,function(p,q,r)
-  rt=chevieget(:imp, :simpleroots)(p,q,r)
-  rbar=conj(rt)
-  e=1 .-E.(chevieget(:imp,:ordergens)(p,q,r))
-  e=map(i->(e[i]*rbar[i,:])//sum(rbar[i,:].*rt[i,:]),1:length(e))
-  [Cyc{Int}(sum(x.*y)) for x in e, y in eachrow(rt)]
 end)
 
 chevieset(:imp,:ReflectionDegrees,(p,q,r)->vcat(p*(1:r-1),div(r*p,q)))
@@ -112,9 +116,10 @@ chevieset(:imp, :charparams, function (de, e, r)
     if t==minimum(tt)
       s=findfirst(==(t),tt)
       if s==e push!(charparams, t)
-      else t=t[1:s*d]
-        s=div(e,s)
-        append!(charparams,map(i->vcat(t,[s,i]),0:s-1))
+      else s=div(e,s)
+        let s=s # boxed variable
+          append!(charparams,map(i->vcat(t[1:s*d],[s,i]),0:s-1))
+        end
       end
     end
   end
@@ -226,7 +231,7 @@ information  about  it  necessary  to  compute  the  function `Δ` in [hr98;
                 which βlist they come from, axial position
   - stripped   the symbol left after removing the strip collection
 """
-    function Strips(S,s)local e, res, hs, ss, a
+    function Strips(S,s)local e, res, hs,  a
       get!(StripsCache,S=>s) do
       function strip(S,hs) # strip hooks hs from βlist S
         S=copy(S)
@@ -374,15 +379,15 @@ chevieset(:imp, :CharTable, function (p, q, r)
   end
 end)
 
-chevieset(:imp,:b,function (p, q, r)
+chevieset(:imp,:b,function (p, q, _)
   if q==1 || p==q error("should not be called") end
 end)
 
-chevieset(:imp, :B, function (p, q, r)
+chevieset(:imp, :B, function (p, q, _)
   if q==1 || p==q error("should not be called") end
 end)
 
-chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
+chevieset(:imp, :FakeDegree, function (p, q, _, c, v)
   if q==1 fakedegree(Symbol_partition_tuple(c,1))(v)
   elseif q==p fakedegree(Symbol_partition_tuple(c,fill(0,p)))(v)
   else nothing
@@ -426,6 +431,20 @@ chevieset(:imp, :Invariants, function(p,q,r)
   end
 end)
 
+# next is separate function because used in SchurData
+function param_to_malle(t)
+  if t[end] isa Number
+    t[end]==0 ? [1,2,1,findfirst(==([1]),t)] : [1,1,2,findfirst(==([1]),t)]
+  else
+    de=div(length(t),2)
+    pos=filter(i->length(t[i])>0,1:length(t))
+    if length(pos)==1
+      t[pos[1]]==[2] ? [1,1,1,pos[1]-de] : [1,2,2,pos[1]-de]
+    else pos[1]<=de ? [2,-1,pos[1],pos[2]-de] : [2,1,pos[2]-de,pos[1]-de]
+    end
+  end
+end
+
 chevieset(:imp, :charinfo, function (de, e, r)
   res=Dict{Symbol,Any}(:charparams=>chevieget(:imp, :charparams)(de, e, r))
   d=div(de,e)
@@ -458,27 +477,14 @@ chevieset(:imp, :charinfo, function (de, e, r)
       if haskey(res,:malleparam) 
         res[:malle]=exceptioCharName.(res[:malleparam])
       end
-    elseif iseven(e) && r==2
-# .malle: indexing of chars as in [mal96]
-      res[:malle]=map(res[:charparams])do t
-        local pos, de
-        if t[end] isa Number
-         t[end]==0 ? [1,2,1,findfirst(==([1]),t)] : [1,1,2,findfirst(==([1]),t)]
-        else
-          de=div(length(t),2)
-          pos=filter(i->length(t[i])>0,1:length(t))
-          if length(pos)==1
-            t[pos[1]]==[2] ? [1,1,1,pos[1]-de] : [1,2,2,pos[1]-de]
-          else pos[1]<=de ? [2,-1,pos[1],pos[2]-de] : [2,1,pos[2]-de,pos[1]-de]
-          end
-        end
-      end
+    elseif iseven(e) && r==2 # .malle: indexing of chars as in [mal96]
+      res[:malle]=param_to_malle.(res[:charparams])
     end
   end
   if de==1 t=map(i->[vcat(i,fill(1,r-i))],r:-1:1) 
   else
     t=map(r:-1:0)do i
-      v=map(x->Int[],1:de)
+      v=map(_->Int[],1:de)
       if i>0 v[1]=[i] end
       v[2]=fill(1,r-i)
       if e>1 v=minimum(map(i->circshift(v,i*d),1:e)) end
@@ -493,16 +499,14 @@ chevieset(:imp, :charinfo, function (de, e, r)
     res[:b]=valuation_feg.(res[:charSymbols])
   end
   if e>1 && d>1
-    galp=map(res[:charparams])do s
-      s=copy(s)
-      if s[end] isa Number
-        t=div(length(s)-2,d)
-        s[1:d:d*t-d+1]=circshift(s[1:d:d*t-d+1],1)
-        s[1:end-2]=minimum(map(i->circshift(s[1:end-2],i*d),1:t))
-        return s
+    galp=map(res[:charparams])do S
+      if S[end] isa Number s=S[1:end-2]
+      else s=copy(S)
       end
       s[1:d:d*e-d+1]=circshift(s[1:d:d*e-d+1],1)
-      minimum(map(i->circshift(s,i*d),1:e))
+      s=minimum(map(i->circshift(s,i*d),1:e))
+      if S[end] isa Number append!(s,S[end-1:end]) end
+      s
     end
     res[:hgal]=Perm(string.(res[:charparams]),string.(galp)) #horrible hack
   end
@@ -557,15 +561,15 @@ end)
 
 using Primes: primes
 
+# nth power of partitionTuple
 chevieset(:imp,:pow,function(S,n)
   e=length(S)
-  S1=map(x->[],1:e)
+  S1=map(_->[],1:e)
   for k in 1:e, l in S[k]
     g=gcd(n,l)
     append!(S1[1+mod(div(n,g)*(k-1),e)], fill(div(l,g),g))
   end
-  for m in S1 sort!(m,rev=true) end
-  S1
+  sort!.(S1,rev=true)
 end)
 
 chevieset(:imp, :classinfo, function (p, q, r)
@@ -672,7 +676,7 @@ chevieset(:imp, :classinfo, function (p, q, r)
         else
           d=mod(d, p)
           if d==0 add(2)
-          else for i in 1:p-d-1 add(1);add(2) end
+          else for _ in 1:p-d-1 add(1);add(2) end
             add(1)
           end
         end
@@ -751,8 +755,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
     end
     return res
   elseif (q,r)==(2,2)
-    ci = chevieget(:imp, :charinfo)(p, q, r)
-    phi = ci[:malle][findfirst(==(phi),ci[:charparams])]
+    phi=param_to_malle(phi)
     p2 = div(p, 2)
     if phi[1] == 1
       res=Dict(:coeff=>1,:factor=>fill(0,4+p2),:vcyc=>[])
@@ -786,8 +789,7 @@ end)
 
 chevieset(:imp, :SchurData, function (p, q, r, phi)
   if (q,r)==(2,2)
-    ci=chevieget(:imp, :charinfo)(p, q, r)
-    phi=ci[:malle][findfirst(==(phi),ci[:charparams])]
+    phi=param_to_malle(phi)
     if phi[1]==1
       res=Dict(:order=>[phi[2],3-phi[2],2+phi[3],5-phi[3],4+phi[4]])
       append!(res[:order], 4 .+setdiff(1:div(p,2),[phi[4]]))
@@ -820,16 +822,16 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rootpara)
                      chevieget(:imp,:SchurData)(p,2,2,phi))//e1
   elseif p==q
     if phi[end] isa Integer
-      m=length(phi)-2
-      phi=fullsymbol(phi)
+      m=div(length(phi)-2,phi[end-1])
+      phi=phi[1:end-2]
     else
       m=p
     end
     chevieget(:imp,:SchurElement)(p,1,r,phi,vcat([E.(p,0:p-1)],para[2:end]),[])//m
   elseif para[2]==para[3]
     if phi[end] isa Integer
-      m=length(phi)-2
-      phi=fullsymbol(phi)
+      m=div(length(phi)-2,phi[end-1])
+      phi=phi[1:end-2]
     else
       m=p
     end
@@ -852,7 +854,7 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rootpara)
   end
 end)
 
-chevieset(:imp,:FactorizedSchurElement,function(p,q,r,phi,para,rootpara)
+chevieset(:imp,:FactorizedSchurElement,function(p,q,r,phi,para,_)
   if r==1
    VFactorSchurElement(vcat(para[1],[0]),chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif p==1
@@ -866,8 +868,8 @@ chevieset(:imp,:FactorizedSchurElement,function(p,q,r,phi,para,rootpara)
    chevieget(:imp,:SchurModel)(p,q,r,phi),chevieget(:imp,:SchurData)(p,q,r,phi))
   elseif p==q
     if phi[end] isa Integer
-      m=length(phi)-2
-      phi=fullsymbol(phi)
+      m=div(length(phi)-2,phi[end-1])
+      phi=phi[1:end-2]
     else
       m=p
     end
@@ -882,8 +884,8 @@ chevieset(:imp,:FactorizedSchurElement,function(p,q,r,phi,para,rootpara)
     F
   elseif para[2]==para[3]
     if phi[end] isa Integer
-      m=length(phi)-2
-      phi=fullsymbol(phi)
+      m=div(length(phi)-2,phi[end-1])
+      phi=phi[1:end-2]
     else
       m=p
     end
@@ -2041,8 +2043,8 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     extra=false
     if S[end] isa Integer
       extra=E(S[end-1],S[end])
-      d=length(S)-2
-      S=fullsymbol(S)
+      d=div(length(S)-2,S[end-1])
+      S=S[1:end-2]
     end
     p1=length(para[1]);if p1!=p error() end
     v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],

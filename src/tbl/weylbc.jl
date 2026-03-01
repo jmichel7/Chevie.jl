@@ -20,7 +20,7 @@ chevieset(:B, :cartan, function(n,cartanType=2)
   improve_type(a)
 end)
 
-chevieset(:B, :Auname, function(r,option,cartanType=2)
+chevieset(:B, :Auname, function(rank,option,cartanType=2)# rank unused
   if cartanType==2
     if haskey(option,:TeX) "D_8"
     else "D8"
@@ -39,7 +39,7 @@ chevieset(:B,:parabolic_reps,(l,s)->chevieget(:imp,:parabolic_reps)(2,1,l,s))
 
 chevieset(:B,:ReflectionDegrees,n->2:2:2n)
 
-chevieset(:B,:nconjugacy_classes,(r,arg...)->npartition_tuples(r,2))
+chevieset(:B,:nconjugacy_classes,(r,_...)->npartition_tuples(r,2))
 
 chevieset(:B,:WeightInfo,function(n,cartanType)
   M=Array(Int.(I(n)))
@@ -173,7 +173,7 @@ function BHk(n,Q,q,γ,π)
   val
 end
 
-chevieset(:B,:HeckeCharTable,function(n,para,rt)
+chevieset(:B,:HeckeCharTable,function(n,para,_)
   Q=improve_type(-para[1][1]//para[1][2])
   q=improve_type(-para[2][1]//para[2][2])
   ci=chevieget(:B,:charinfo)(n)
@@ -208,7 +208,7 @@ chevieset(:B,:HeckeRepresentation,(arg...)->
 
 chevieset(:B,:Representation,(n,i)->chevieget(:imp,:Representation)(2,1,n,i))
 
-chevieset(:B,:FakeDegree,(n,c,q)->fakedegree(Symbol_partition_tuple(c,1))(q))
+chevieset(:B,:FakeDegree,(_,c,q)->fakedegree(Symbol_partition_tuple(c,1))(q))
 
 chevieset(:B, :DecompositionMatrix, function (l, p)
   decS(i)= MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))
@@ -475,7 +475,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
         trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
         d = 2
       else
-        error("Au non-commutative of order ",Size(cl[:Au])*2," not implemented")
+        error("Au non-commutative of order ",length(cl[:Au])*2," not implemented")
       end
       addSpringer(ss->ss[:Z]==[-1] && rank(ss[:relgroup])==sum(sum,s),i,s,d)
     end

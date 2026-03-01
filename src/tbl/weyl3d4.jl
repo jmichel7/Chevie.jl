@@ -41,7 +41,7 @@ chevieset("3D4",:charinfo,function()
   res
 end)
 
-chevieset("3D4", :HeckeCharTable, function (param, rootpara)
+chevieset("3D4", :HeckeCharTable, function (param, _)
            q=improve_type(-param[1][1]//param[1][2])
   tbl=Dict{Symbol, Any}(:identifier => "H(3D4)", :parameter=>[q,q,q,q],
     :sqrtparameter=>[],:cartan=>chevieget("3D4",:cartan),:size=>192,
@@ -184,7 +184,6 @@ chevieset("3D4",:UnipotentCharacters,
 )
 
 chevieset("3D4", :UnipotentClasses, function(p)
-  class(n)=uc[:classes][findfirst(x->x[:name]==n,uc[:classes])]
   uc=copy(chevieget(:D, :UnipotentClasses)(4,p))
   uc[:classes]=copy(uc[:classes])
   for c in [["11111111", perm"(1,2,4)"],

@@ -289,8 +289,7 @@ chevieset(:G34, :CycPolSchurElements, [[1, 0, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3
   [42,-15,3,3,3,3,3,3,6,6,6,6,6,6,14]])
 
 # Computed JM june 2010. Some columns contain missing entries
-chevieset(:G34, :HeckeCharTable, function (para, rt)
-  j=E(3)
+chevieset(:G34, :HeckeCharTable, function (para, _)
   f3(q,j)=[6,-1+5*q,-q+4*q^2,-2*q+4*q^2,-2*q^2+3*q^3,
 -q^2+3*q^3,j*q^2+3*q^3,-3*q^2+3*q^3,j^2*q+3*q^3,j^2*q^2-q^3+2*q^4,-2*q^3+2*q^4,
 -q^3+2*q^4,j*q^3+2*q^4,j^2*q^2+2*q^4,-2*q^3+2*q^4,(j^2+2*j)*q^3+2*q^4,
@@ -4934,7 +4933,6 @@ missing,24*q^63-90*q^64+130*q^65-90*q^66+24*q^67,1280*q^84,missing,
 640*q^105-640*q^106,-208*q^105+432*q^106-208*q^107,missing,48*q^105-
 160*q^106+160*q^107-48*q^108]
   x,y=para[1]
-  q=-x//y
   tbl=Dict{Symbol, Any}(:identifier => "H(G34)", :size => 39191040, 
     :order => 39191040)
   merge!(tbl, chevieget(:G34, :classinfo))
@@ -5000,7 +4998,7 @@ missing,24*q^63-90*q^64+130*q^65-90*q^66+24*q^67,1280*q^84,missing,
 end)
 
 chevieset(:G34, :CharTable, function()
-  res=chevieget(:G34,:HeckeCharTable)(map(x->[1,-1],1:6),[])
+  res=chevieget(:G34,:HeckeCharTable)(fill([1,-1],6),[])
   res[:identifier]=res[:name]="G34"
   res[:powermap] = chevieget(:G34,:PowerMaps)
   res[:galomorphisms] = Group(perm"(7,9)(10,16)( 13, 14)( 19, 26)( 20, 22)( 21, 23)( 27, 32)( 28, 31)( 35, 37)( 36, 38)( 40, 42)( 43, 44)( 45, 46)( 47, 48)( 49, 52)( 50, 55)( 51, 53)( 56, 57)( 59, 64)( 60, 63)( 61, 62)( 67, 73)( 68, 70)( 69, 72)( 76, 89)( 77,158)( 79,148)( 80,150)( 82,120)( 83,112)( 84,128)( 86,139)( 87,140)( 88,163)( 90,165)( 91,164)( 92,169)( 93,126)( 95,145)( 97,107)( 98,116)( 99,147)(101,149)(102,137)(103,110)(106,154)(108,166)(111,167)(113,168)(114,131)(115,118)(122,155)(123,156)(124,157)(125,162)(129,146)(133,138)(134,159)(135,160)(136,161)")
@@ -5143,7 +5141,7 @@ toM([[E(3),E(3,2),3,1,0,0,E(3,2),E(3),E(3,2),E(3,2),E(3),0,E(3),0,4,0,0,1,1,1,E(
 res
 end)
 
-chevieset(:G34, :HeckeRepresentation, function (para, rt, i)
+chevieset(:G34, :HeckeRepresentation, function (para, _, i)
   r,p=para[1]
   f1(p)=map(x->[p;;],1:6)
   f3(x,y,a)=WGraph2Representation([[[1,2,3,4,5],[1,2,3,4,6],[1,2,3,5,6],

@@ -114,7 +114,7 @@ chevieset(:G27,:sparseFakeDegrees,[[1,0],[1,45],[1,7,1,13,1,25],
   [2,10,3,16,3,22,3,28,3,34,1,40],[1,5,3,11,3,17,3,23,3,29,2,35],
   [1,8,3,14,3,20,3,26,3,32,2,38]])
 
-chevieset(:G27, :HeckeCharTable, function (para, rootpara)
+chevieset(:G27, :HeckeCharTable, function (para, _)
   r,p=para[1]
   tbl= Dict{Symbol, Any}(:identifier => "H(G27)", :size => 2160, :order => 2160)
   merge!(tbl, chevieget(:G27, :classinfo))
@@ -164,7 +164,7 @@ end)
 chevieset(:G27, :galomorphisms,[perm"(4,8)(6,19)(7,20)(12,28)(14,27)(15,26)",
   perm"(6,7)(11,13)(14,15)(17,18)(19,20)(22,23)(24,25)(26,27)(30,31)(32,33)"])
 
-chevieset(:G27, :HeckeRepresentation, function (para, rootpara, i)
+chevieset(:G27, :HeckeRepresentation, function (para, _, i)
   f1(r)=map(x->[r;;],1:3)
   function f3(r, p, j, d)
     c=(2+j^2*(1-d))//2

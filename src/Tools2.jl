@@ -94,7 +94,9 @@ function Primes.factor(p::Mvp{T,N})where {T,N}
   r=length(v)+1
   m=zeros(T,r,r)*1//1
   for (e,t) in p.d
-    n=map(x->findfirst(==(x),v),keys(e.d))
+    let v=v #boxed variable
+     n=map(x->findfirst(==(x),v),keys(e.d))
+    end
     c=collect(values(e.d))
     if c==[1,1] m[n[1],n[2]]=m[n[2],n[1]]=t*1//2
     elseif c==[2] m[n[1],n[1]]=t
@@ -127,7 +129,7 @@ end
 `eigmat(m::Matrix)` eigenvalues of finite order of `m`, as a `Vector{Root1}`
 """
 function eigmat(M::Matrix)
-  [Root1(;r=e) for (e,m) in CycPol(Pol(charpoly(M))).v for i in 1:m]
+  [Root1(;r=e) for (e,m) in CycPol(Pol(charpoly(M))).v for _ in 1:m]
 end
 
 "`CycPol(x::Mvp)` converts univariate `Mvp` `x` to a `CycPol`"
@@ -146,7 +148,7 @@ Chevie.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
 Chevie.gap(p::Integer)=string(p)
 
-Chevie.gap(p::Missing)="Unknown()"
+Chevie.gap(::Missing)="Unknown()"
 
 function Chevie.gap(p::Cyc)
   res=join(map(pairs(p.d)) do (deg,v)
@@ -175,7 +177,6 @@ Chevie.gap(m::AbstractMatrix)=gap(toL(m))
 
 function Chevie.gap(p::Pol)
   if iszero(p) return "0*q" end
-  l=filter(x->x[2]!=0,collect(pairs(p.c)))
   prod(map(degree(p):-1:valuation(p))do d
     c=p[d]
     if iszero(c) return "" end

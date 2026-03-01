@@ -29,13 +29,12 @@ chevieset(:D, :WeightInfo,function(n)
   end
 end)
 
-chevieset(:D, :parabolic_reps,(l, s)->
-  chevieget(:imp, :parabolic_reps)(2,2,l,s))
+chevieset(:D,:parabolic_reps,(l,s)->chevieget(:imp,:parabolic_reps)(2,2,l,s))
 
-chevieset(:D, :WordClass,function(n,pi)
+chevieset(:D, :WordClass,function(_,pi)
   w=Int[]
   i=1
-  if !(pi[2] in "+-")
+  if !(pi[end] isa Number)
     for l in reverse(pi[2])
       if i==1 append!(w,2:l)
       else
@@ -51,9 +50,9 @@ chevieset(:D, :WordClass,function(n,pi)
     i+=l
   end
   if !isempty(w) && w[1]==2 w[1]=1 end # cosmetics for lexicographics.
-  # classes are labelled with '+', if they have representatives
+  # classes splitting from B are labelled with '0', if they have representatives
   # in parabolic subgroup of type A_{l-1}, given by {1,3,4,..}
-  if pi[2]=='-' w[1]=2 end
+  if pi[end]==1 w[1]=2 end
   w
 end)
 
@@ -63,17 +62,14 @@ chevieset(:D, :classinfo, function (n)
   l=maximum(res[:orders])
   pmaps=Vector{Any}(fill(nothing,l))
   pp=res[:classparams]
-  splits(S)=all(iseven,S[1]) && isempty(S[2])
   for pw in primes(l)
     pmaps[pw]=map(pp)do x
       px=chevieget(:imp,:pow)(x[1:2],pw)
-      if splits(px) px=vcat(px,x[end]) end
-      findfirst(y->y==px,pp)
+      if all(iseven,px[1]) && isempty(px[2]) px=vcat(px,x[end]) end
+      findfirst(==(px),pp)
     end
   end
   res[:powermaps]=pmaps
-  res[:classparams]=map(x->x[end] isa Number ? [x[1],x[end]==0 ? '+' : '-'] : x,
-                        res[:classparams])
   res[:classtext]=chevieget(:D,:WordClass).(n,res[:classparams])
   res
 end)
@@ -89,51 +85,45 @@ chevieset(:D, :charinfo, n->chevieget(:imp, :charinfo)(2, 2, n))
 #  classes or  characters, respectively. Their  values  are given by  the
 #  character  values    for W(B_l) and   those  for  the  symmetric group
 #  S_(l/2). This is described in [p94].
-chevieset(:D,:HeckeCharTable,function(n,para,root)
-   ci=chevieget(:D,:classinfo)(n)
-   cl=chevieget(:D,:charinfo)(n)
-   chp=cl[:charparams]
-   q=-para[1][1]//para[1][2]
-   tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
-   tbl[:identifier]=tbl[:name]
-   tbl[:parameter]=fill(q,n)
+chevieset(:D,:HeckeCharTable,function(n,para,_)
+  q=-para[1][1]//para[1][2]
+  tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
+  tbl[:identifier]=tbl[:name]
+  tbl[:parameter]=fill(q,n)
+  tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
+  ci=chevieget(:D,:classinfo)(n)
+  cl=chevieget(:D,:charinfo)(n)
+  merge!(tbl,ci)
+  merge!(tbl,cl)
 function chard(n,q)
-  if n%2==0
+  if iseven(n)
     n1=div(n,2)-1
     AHk=chevieget(:A,:HeckeCharTable)(n1,fill([q^2,-1],n1),[])[:irreducibles]
     pA=partitions(n1+1)
     Airr(x,y)=AHk[findfirst(==(x),pA),findfirst(==(y),pA)]
   end
-  BHk=isone(q) ? chevieget(:B,:CharTable)(n) :
-      chevieget(:B,:HeckeCharTable)(n,vcat([[1,-1]],fill([q,-1],n)),[])
+  BHk=chevieget(:B,:HeckeCharTable)(n,vcat([[1,-1]],fill([q,-1],n)),[])[:irreducibles]
   pB=chevieget(:B,:charinfo)(n)[:charparams]
-  Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB),findfirst(==(y),pB)]
-  function value(lambda,mu)
-    if length(lambda)>2
-      delta=[lambda[1], lambda[1]]
-      if !(mu[2] isa Vector)
-        vb=Birr(delta,[mu[1],Int[]])//2
-        va=(q+1)^length(mu[1])//2*Airr(lambda[1],div.(mu[1],2))
-        if "+-"[lambda[3]+1]==mu[2] val=vb+va
-        else val=vb-va
-        end
-      else val=Birr(delta,mu)//2
+  Birr(x,y)=BHk[findfirst(==(x),pB),findfirst(==(y),pB)]
+  function value(λ,μ)
+    if length(λ)>2
+      if !(μ[end] isa Vector)
+        vb=Birr([λ[1],λ[1]],[μ[1],Int[]])//2
+        va=(q+1)^length(μ[1])*Airr(λ[1],div.(μ[1],2))//2
+        val=λ[4]==μ[3] ? vb+va : vb-va
+      else val=Birr([λ[1],λ[1]],μ)//2
       end
     else
-      if !(mu[2] isa Vector) val=Birr(lambda, [mu[1], Int[]])
-      else val=Birr(lambda, mu)
+      if !(μ[end] isa Vector) val=Birr(λ,[μ[1],Int[]])
+      else val=Birr(λ,μ)
       end
     end
-    return val
+    if denominator(val)==1 val=numerator(val) end
+    val
   end
-  [[value(lambda,mu) for mu in ci[:classparams]] for lambda in chp]
+  [[value(λ,μ) for μ in ci[:classparams]] for λ in cl[:charparams]]
 end
   tbl[:irreducibles]=chard(n,q)
-  tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
-#  tbl[:irredinfo]=List(chevieget(:D,:charinfo)(n).charparams,p->
-#     rec(charparam:=p,charname:=string_partition_tuple(p)));
-  merge!(tbl,ci)
-  merge!(tbl,cl)
   AdjustHeckeCharTable(tbl,para)
 end)
 
@@ -142,7 +132,7 @@ chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
 chevieset(:D,:CycPolPoincarePolynomial,n->CycPol(Pol()^n-1)*
           prod(i->CycPol(Pol()^2i-1),1:n-1)//CycPol(Pol()-1)^n)
 
-chevieset(:D,:SchurElement, function (n, phi, para, sqrtparam)
+chevieset(:D,:SchurElement, function (n, phi, para, _)
   (chevieget(:D, :CycPolPoincarePolynomial)(n)//
    chevieget(:D, :CycPolGenericDegree)(phi))(-para[1][1]//para[1][2])
 end)
@@ -152,7 +142,7 @@ chevieset(:D,:FactorizedSchurElement, function (n,p,arg...)
   chevieget(:imp, :FactorizedSchurElement)(2, 2, n, p, arg[1], [])
 end)
 
-chevieset(:D,:HeckeRepresentation, function (n,para,rt,i,arg...)
+chevieset(:D,:HeckeRepresentation, function (n,para,_,i,_...)
   p=chevieget(:D, :charinfo)(n)[:charparams][i]
   if p[end]==0 i+=1
   elseif p[end]==1 i-=1
@@ -181,7 +171,7 @@ end)
 
 chevieset(:D,:CycPolGenericDegree,c->gendeg(Symbol_partition_tuple(c,0)))
 
-chevieset(:D,:FakeDegree,(n,c,q)->fakedegree(Symbol_partition_tuple(c, 0))(q))
+chevieset(:D,:FakeDegree,(_,c,q)->fakedegree(Symbol_partition_tuple(c, 0))(q))
 
 chevieset(:D,:UnipotentCharacters,function(rank)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
@@ -229,12 +219,16 @@ end)
 
 # References for unipotent classes: [lus04], [gm00], [spalt82]
 chevieset(:D,:UnipotentClasses,function(n,char)
+  function fulllsymbol(s)
+    if s[end] isa Vector return s end
+    [s[1],s[1],s[2],s[3]]
+  end
   function addSpringer(s, i, cc)
     ss=first(x for x in uc[:springerSeries] 
                      if x[:defect]==defectsymbol(s[:symbol]))
     if s.sp in [[Int[],[1]],[Int[],Int[]]] p=1
     elseif s.sp==[[1], Int[]] p=2
-    else p=findfirst(==([s.sp]),charinfo(ss[:relgroup]).charparams)
+    else p=findfirst(==([fulllsymbol(s.sp)]),charinfo(ss[:relgroup]).charparams)
     end
     ss[:locsys][p]=[i,findfirst(==(map(x->x ? [1,1] : [2],s.Au)),
                                            charinfo(cc[:Au]).charparams)]
@@ -267,7 +261,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       end
       [reverse(filter(!iszero,sort(part))), ex]
     end
-   else # see [2.10, gm00]
+  else # see [2.10, gm00]
     ss=XSP(2, 0, n, 1)
     symbol2partition=function(S)
       c=sort(reduce(vcat,S))
@@ -520,8 +514,8 @@ chevieset(:D, :ClassParameter, function (n, w)
       [Dgens,H[1],H[2]]
     end
     tmp=tally(cycletype(prod(u[1][w])))
-    if tmp in u[2] && !(tmp in u[3]) res=[res[1],'+']
-    elseif !(tmp in u[2]) && tmp in u[3] res=[res[1],'-']
+    if tmp in u[2] && !(tmp in u[3]) res=[res[1],Int[],0]
+    elseif !(tmp in u[2]) && tmp in u[3] res=[res[1],Int[],1]
     end
   end
   sort!(res[1],rev=true)

@@ -469,7 +469,7 @@ julia> p(Pi(Int[],Int[],[3],Int[]))
 """
 π(x...)=basis(Val(:π),x...)
 
-Algebras.basis(h::WreathSymFunc{b})where b=b
+Algebras.basis(::WreathSymFunc{b})where b=b
 
 Base.:+(f::WreathSymFunc{b},g::WreathSymFunc) where b=
   WreathSymFunc{b}(f.d+basis(Val(b),g).d)

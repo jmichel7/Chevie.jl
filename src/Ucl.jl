@@ -649,6 +649,9 @@ function UnipotentClasses(t::TypeIrred,p=0)
   if haskey(t,:series) && t.series==:B && rankt==2 && indices(t)==[2,1] #neutralize locally C2->B2
     t.cartanType=1
     uc=chevieget(t,:UnipotentClasses,p)
+    for c in uc[:classes] 
+      if haskey(c,:dynkin) c[:dynkin]=reverse(c[:dynkin]) end
+    end
     t.cartanType=2
   else uc=chevieget(t,:UnipotentClasses,p)
     if uc===nothing error("no UnipotentClasses for ",t) end
@@ -657,9 +660,9 @@ function UnipotentClasses(t::TypeIrred,p=0)
     if v isa String && isempty(v) return Int[] end
     Vector{Int}(v)
   end
-  for c in uc[:classes] 
-    if haskey(c,:dynkin) c[:dynkin]=c[:dynkin][sortperm(indices(t))] end
-  end
+# for c in uc[:classes] 
+#   if haskey(c,:dynkin) c[:dynkin]=c[:dynkin][sortperm(indices(t))] end
+# end
   c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
   rr=toM(roots(c))
   classes=map(uc[:classes])do u # fill omitted fields
@@ -1211,7 +1214,6 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
 # where $dᵢ$ are the reflection degrees of $W_G(L)$
 # res[:scalar] is the matrix $P$
   R=ss[:relgroup]
-  ct=CharTable(R)
   k=charinfo(R).positionDet
 # Partition on characters of ss.relgroup induced by poset of unipotent classes
   res.dimBu=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
@@ -1600,7 +1602,7 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
   for (i,ss) in pairs(uc.springerseries)
    if i==1 append!(m,f[charnumbers(uw.harishChandra[1])])
     elseif !haskey(ss,:hc) error("not implemented")
-    elseif ss[:hc]==0 append!(m,map(i->zero(f[1]),eachindex(ss[:locsys])))
+    elseif ss[:hc]==0 append!(m,map(_->zero(f[1]),eachindex(ss[:locsys])))
     else append!(m,f[charnumbers(uw.harishChandra[ss[:hc]])])
     end
   end

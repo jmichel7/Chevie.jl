@@ -133,18 +133,15 @@ end
   during evaluation (e.g., if pol has no terms of odd degree and n=2,
   then no root extraction is necessary).
 """
-function EvalPolRoot(pol::Pol,x,n,p)
-# println("pol=",pol,"\nx=",x,"\nn=",n,"\np=",p)
-  if isempty(pol.c) return 0 end
-  P=vcat(fill(0,mod(pol.v,n)),pol.c)
-  P=map(i->Pol(P[i:n:length(P)],div(pol.v-mod(pol.v,n),n))(x*p^n),1:n)
-  j=findlast(!iszero,P)
-  if isnothing(j) return 0 end
-  pol=Pol(P[1:j],0)
-  l=(pol.v-1).+filter(i->!iszero(pol.c[i]),eachindex(pol.c))
-  r=gcd(n,l...)
-  pol=Pol(pol.c[1:r:length(pol.c)],div(pol.v,r))
-  pol(root(x,div(n,r))*p^r)
+function EvalPolRoot(p::Pol,x,n,f)
+  if iszero(p) return 0 end
+  v=valuation(p)
+  d=degree(p)
+  r=n
+  for i in v:d
+   if !iszero(p[i]) r=gcd(r,i) end
+  end
+  Pol(p[v:r:d],div(v,r))(root(x,div(n,r))*f^r)
 end
 
 """
@@ -152,8 +149,8 @@ end
 
 This function computes the Schur elements for G4-22,  G25-26, G28, G32 and
 imprimitive groups according to the data computed by Maria Chlouveraki.
-  - `para` are vcat(the parameters of some Hecke algebra).
-  - `r` is a *schur model* and data is some *schur data*.
+  - `para` is `vcat(H.para...)` for some Hecke algebra `H`.
+  - `r` is a *schur model* and data is a *schur data*.
 a schur model describes the shape of the Schur element: it has the fields
   - `.factor` a (possibly fractional) *vecmonomial* coefficient
   - `.coeff` a constant coefficient
@@ -161,7 +158,7 @@ a schur model describes the shape of the Schur element: it has the fields
   - `vcyc` a vector of [vecmonomial, cyclotomic polynomial index]
   - `rootCoeff`  a constant by which multiply .root before taking root
 
-a vecmonomial is a vector of powers for variables in `para` (plus if of length
+a vecmonomial is a vector of powers to apply to `para` (plus if of length
 `length(para)+1`, the power to which to raise `.root` or `.rootUnity`)
 
 a schur data describes the Schur element in its Galois orbit : it has fields
@@ -171,34 +168,30 @@ a schur data describes the Schur element in its Galois orbit : it has fields
 During computation the result is evaluated as a Pol in .root in order to
 use EvalPolRoot at the end.
 """
-function VcycSchurElement(para,r,data=nothing)
+function VcycSchurElement(para::Vector,r,data=nothing)
 # println("para=",para,"\nr=",r,"\ndata=",data)
-  n=length(para)
-  if !isnothing(data) para=para[data[:order]] else para = copy(para) end
-  monomial(mon)=prod(map(^,para//1,Int.(mon[1:n])))
-  if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
-  if haskey(r, :coeff) res = r[:coeff] else res = 1 end
-  if haskey(r, :factor) res*=monomial(r[:factor]) 
-     res=Pol([res],0)
-  end
-  function term(v)
-    mon,pol=v
+  if !isnothing(data) para=para[data[:order]] else para=copy(para) end
+  monomial(mon,para)=prod(i->(para[i]//1)^(Int(mon[i])),eachindex(para))
+  if haskey(r,:rootUnity) && haskey(r,:root) error("cannot have both") end
+  res=haskey(r,:coeff) ? r[:coeff] : 1
+  if haskey(r,:factor) res=Pol([res*monomial(r[:factor],para)]) end
+  res*=prod(r[:vcyc])do (mon,pol)
+    C=cyclotomic_polynomial(pol)
+    n=length(para)
     if haskey(r,:rootUnity)
-      tt=monomial(mon)
+      tt=monomial(mon,para)
       if length(mon)==n+1 tt*=(r[:rootUnity]^data[:rootUnityPower])^mon[n+1] end
-      Pol([cyclotomic_polynomial(pol)(tt)],0)
-    elseif haskey(r, :root)
-      if length(mon)==n Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
-      else cyclotomic_polynomial(pol)(Pol([monomial(mon)],mon[n+1]))
+      Pol([C(tt)])
+    elseif haskey(r,:root)
+      if length(mon)==n Pol([C(monomial(mon,para))])
+      else C(Pol([monomial(mon,para)],mon[n+1]))
       end
-    else 
-      Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
+    else Pol([C(monomial(mon,para))])
     end
   end
-  res*=prod(term.(r[:vcyc]))
-  if !haskey(r, :root) return res.c[1] end
-  den=lcm(denominator.(r[:root])...)
-  root=monomial(den*r[:root])
-  if haskey(r, :rootCoeff) root*=r[:rootCoeff] end
-  EvalPolRoot(res, root, den, data[:rootPower])
+  if !haskey(r,:root) return res[begin] end
+  den=lcm(denominator.(r[:root]))
+  root=monomial(den*r[:root],para)
+  if haskey(r,:rootCoeff) root*=r[:rootCoeff] end
+  EvalPolRoot(res,root,den,data[:rootPower])
 end

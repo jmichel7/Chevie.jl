@@ -222,7 +222,7 @@ end)
 
 chevieset("2E6", :ClassParameter, function (w,)
   x=prod(chevieget("2E6",:generators)[w],init=Perm())*chevieget("2E6",:phi)
-  chevieget("2E6",:ClassNames)[findfirst(==(tally(classtype(x))),
+  chevieget("2E6",:ClassNames)[findfirst(==(tally(cycletype(x))),
                                chevieget("2E6",:cyclestructure))]
 end)
 

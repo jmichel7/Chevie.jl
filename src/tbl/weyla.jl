@@ -57,7 +57,7 @@ chevieset(:A,:HeckeCharTable,function(n,para,root)
   chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root)
 end)
 
-chevieset(:A,:FakeDegree,(n,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
+chevieset(:A,:FakeDegree,(_,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
 
 # partition for a coxeterword w
 chevieset(:A, :ClassParameter, function(n,w)
@@ -97,7 +97,7 @@ chevieset(:A, :PoincarePolynomial,function(n,param)
 end)
 
 # Reference: [13.5, p. 446, car85]
-chevieset(:A, :SchurElement, function (n, alpha, param, sqrtparam)
+chevieset(:A, :SchurElement, function (_, alpha, param, _)
   q=-param[1][1]//param[1][2]
   lambda=βset(alpha)
   res=q^binomial(length(lambda), 3)
@@ -111,11 +111,11 @@ chevieset(:A, :SchurElement, function (n, alpha, param, sqrtparam)
   res
 end)
 
-chevieset(:A, :FactorizedSchurElement,function(n,alpha,para,arg...)
+chevieset(:A, :FactorizedSchurElement,function(n,alpha,para,_...)
   chevieget(:imp, :FactorizedSchurElement)(1,1,n+1,[alpha],para,[])
 end)
 
-chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
+chevieset(:A, :HeckeRepresentation, function (n, param, _, i)
   pp=chevieget(:A,:charparams)(n)
   if param[1][2]==-1 && haskey(Murphy.Murphycache,(n,param[1][1])) && 
     haskey(Murphy.Murphycache[(n,param[1][1])].SpechtModels,pp[i])
@@ -129,7 +129,7 @@ chevieset(:A, :Representation, function (n, i)
   chevieget(:A, :HeckeRepresentation)(n,fill([1,-1],n),fill(1,n),i)
 end)
 
-chevieset(:A, :FakeDegree, function (n, p, q)
+chevieset(:A, :FakeDegree, function (_, p, q)
   improve_type(exactdiv(chevieget(:A, :PoincarePolynomial)(sum(p)-1,[[q,-1]]),
                         chevieget(:A, :SchurElement)(sum(p)-1,p,[[q,-1]],[])))
 end)
@@ -137,8 +137,8 @@ end)
 chevieset(:A, :KLeftCellRepresentatives,function(n)
   pp=chevieget(:A,:charparams)(n)
   function f(i)
-    i=prod(j->Perm(j,j+1),word(W,i);init=Perm())
-    p=length.(robinson_schensted((1:n+1).^i)[1])
+    w=prod(j->Perm(j,j+1;degree=n+1),word(W,i);init=Perm(;degree=n+1))
+    p=length.(robinson_schensted(perm(w))[1])
     [findfirst(==(p),pp)]
   end
   W=coxgroup(:A,n)
@@ -175,7 +175,7 @@ chevieset(:A, :Invariants, function(n)
   end
 end)
 
-chevieset(:A, :UnipotentClasses, function (n, p)
+chevieset(:A, :UnipotentClasses, function (n, _)
   uc=Dict{Symbol, Any}(:classes=>
       map(p->Dict{Symbol,Any}(:parameter=>p),chevieget(:A,:charparams)(n)),
     :springerSeries=>vcat(map(d->map(i->
@@ -187,7 +187,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
     res=Int[]
     c=1
     for pa in p
-      for i in 1:pa-1
+      for _ in 1:pa-1
         push!(res,c)
         c+=1
       end
@@ -206,9 +206,9 @@ chevieset(:A, :UnipotentClasses, function (n, p)
     sort!(p)
     cl[:dynkin]=map(i->p[i+1]-p[i],1:length(p)-1)
     cl[:red]=coxgroup()
-    p=tally(cl[:parameter])
-    for j in p cl[:red]*=coxgroup(:A,j[2]-1) end
-    cl[:red]*=torus(length(p)-1)
+    sp=tally(cl[:parameter])
+    for j in sp cl[:red]*=coxgroup(:A,j[2]-1) end
+    cl[:red]*=torus(length(sp)-1)
     cl[:AuAction]=ExtendedReflectionGroup(cl[:red],
                                          reflrep(cl[:red],one(cl[:red])))
     cl[:rep]=partition2parab(cl[:parameter])

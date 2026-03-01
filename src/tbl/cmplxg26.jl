@@ -67,7 +67,7 @@ chevieset(:G26, :charinfo, function ()
   res
 end)
 
-chevieset(:G26, :HeckeCharTable, function (para, rt)
+chevieset(:G26, :HeckeCharTable, function (para, _)
   c=prod(prod,para)^0
   res = Dict{Symbol, Any}(:size => 1296, :order => 1296, :identifier => "G26",
    :name => "G26",
@@ -306,7 +306,7 @@ chevieset(:G26,:SchurData,[
   Dict{Symbol,Any}(:name=>"f9_7",:order=>[2,1,3,4,5],:rootUnityPower=>1),
   Dict{Symbol,Any}(:name=>"f9_7",:order=>[1,2,3,4,5],:rootUnityPower=>1)])
 
-chevieset(:G26, :HeckeRepresentation, function (para, rt, i)
+chevieset(:G26, :HeckeRepresentation, function (para, _, i)
   f10(x,u)=[[x;;],[u;;],[u;;]]
   f23(x,u,v)=[[x 0;0 x],[u 0;-u v],[v v;0 u]]
   f36(x,u,v,w)=[[x 0 0;0 x 0;0 0 x],[w 0 0;u*w+v^2 v 0;v 1 u],

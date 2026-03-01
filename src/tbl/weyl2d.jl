@@ -26,10 +26,10 @@ chevieset("2D", :classinfo, function(n)
   # with words with an odd number of 1. To gather one 1 at right we go left
   # to right doing substitutions 11->, 12->u1, and 1a->a1 if a<>2.
                       res=Int[]
-                      n=1
+                      m=1
                       for i in l
-                        if i==1 n=mod(n+1,2)
-                        elseif i==2 push!(res,2-n)
+                        if i==1 m=mod(m+1,2)
+                        elseif i==2 push!(res,2-m)
                         else push!(res, i)
                         end
                       end
@@ -83,7 +83,7 @@ chevieset("2D", :charinfo, function (n)
   res
 end)
 
-chevieset("2D",:FakeDegree,(n,c,q)->
+chevieset("2D",:FakeDegree,(_,c,q)->
   fakedegree(Symbol_partition_tuple(c,0),1)(q))
 
 chevieset("2D",:PhiFactors,n->vcat(fill(1,n-1),-1))
@@ -97,11 +97,11 @@ chevieset("2D",:PhiFactors,n->vcat(fill(1,n-1),-1))
 # Alternatively  you can get the  *good* extension instead of *preferred*
 # extension by defining testchar appropriately.
 chevieset("2D",:HeckeCharTable,
-function (l,param,sqrtpara)
-  q=-param[1][1]//param[1][2]
-  q=vcat([[q^0,-1]],map(i->[q,-1],2:l))
-  hi=chevieget(:B,:HeckeCharTable)(l,q,Int[])
-  chr=1:length(hi[:classparams])
+function (l,para,_)
+  q=improve_type(-para[1][1]//para[1][2])
+  param=vcat([[one(q),-1]],[[q,-1] for _ in 2:l])
+  hi=chevieget(:B,:HeckeCharTable)(l,param,Int[])
+  chr=eachindex(hi[:classparams])
   lst=filter(i->isodd(length(hi[:classparams][i][2])),chr);
   tbl=Dict{Symbol,Any}(:identifier=>"H(^2D$l)",
                        :size=>div(hi[:size],2),
@@ -110,16 +110,15 @@ function (l,param,sqrtpara)
                        :classes=>hi[:classes][lst],
 	   :text=>"extracted from generic character table of HeckeB")
   merge!(tbl,chevieget("2D",:classinfo)(l))
-  para=chevieget("2D",:charparams)(l)
-  tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
-      :charname=>string_partition_tuple(para[i])),eachindex(para))
-  para=partition_tuples(l,2)
-  chr=filter(i->chevieget("2D",:IsPreferred)(para[i]),chr)
-  T=Tbasis(hecke(coxgroup(:B,l),q))
-  tbl[:irreducibles]=transpose(toM(map(x->char_values(
+  tbl[:irredinfo]=map(p->Dict{Symbol,Any}(:charparam=>p,
+      :charname=>string_partition_tuple(p)),chevieget("2D",:charparams)(l))
+  pp=partition_tuples(l,2)
+  chr=filter(i->chevieget("2D",:IsPreferred)(pp[i]),chr)
+  T=Tbasis(hecke(coxgroup(:B,l),param))
+  tbl[:irreducibles]=permutedims(toM(map(x->char_values(
     T(1,Replace(x,[1],[1,2,1])...),hi[:irreducibles][chr,:]),
                                        tbl[:classtext])))
-  AdjustHeckeCharTable(tbl,param)
+  AdjustHeckeCharTable(tbl,para)
 end)
 
 chevieset("2D",:CharTable,l->chevieget("2D",:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))
@@ -177,14 +176,14 @@ chevieset("2D", :UnipotentCharacters, function(rank)
     push!(uc[:almostHarishChandra],s)
   end
   # note: delta is always 1 since a+A is always even
-  z(x)=(Z1=sort(symdiff(x.S[1],x.S[2])),Z2=intersect(x.S...))
-  uc[:families]=map(sort(unique(z.(uc[:charSymbols]))))do f
-    sharp(s)=symdiff(setdiff(s.S[2],f.Z2),f.Z1[1:2:length(f.Z1)-1])
-    res=Dict{Symbol,Any}(:charNumbers=>filter(i->z(uc[:charSymbols][i])==f,
-                                                 1:length(uc[:charSymbols])))
+  zz=[(Z1=sort(symdiff(x.S[1],x.S[2])),Z2=intersect(x.S...)) 
+                                               for x in uc[:charSymbols]]
+  uc[:families]=map(sort(unique(zz)))do f
+    res=Dict{Symbol,Any}(:charNumbers=>findall(==(f),zz))
     res[:almostCharNumbers]=res[:charNumbers]
+    sharp(s,f)=symdiff(setdiff(s.S[2],f.Z2),f.Z1[1:2:length(f.Z1)-1])
     res[:fourierMat]=[(1//2)^div(length(f.Z1)-1,2)*
-     (-1)^length(intersect(sharp(u),sharp(a))) for
+     (-1)^length(intersect(sharp(u,f),sharp(a,f))) for
         u in uc[:charSymbols][res[:charNumbers]],
         a in uc[:almostCharSymbols][res[:almostCharNumbers]]]
     if size(res[:fourierMat],1)==16 #JM jan 2015: fix this horrible kludge
@@ -262,7 +261,7 @@ chevieset("2D", :ClassParameter, function (n, w)
   cycletype(x*SPerm(1,-1),n)
 end)
 
-chevieset("2D", :HeckeRepresentation, function(n,para,sqpara,i)
+chevieset("2D", :HeckeRepresentation, function(n,para,_,i)
    phi=chevieget("2D",:charinfo)(n)[:charparams][i]
    bno=findfirst(==(phi),chevieget(:B,:charinfo)(n)[:charparams])
    parab=copy(para);parab[1]=[1,-1]

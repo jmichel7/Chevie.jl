@@ -1535,7 +1535,6 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
   c23=[[2, 3], [1, 3], [1, 2]]
   c25=combinations(1:5, 2)
   c35=combinations(1:5, 3)
-  c=prod(prod,para)
 # for c a vector, e an integer vector same length returns c.*(E(n,p)*x^(1/n)).^e
 # The point is to avoid unnecessary root extractions in case
 # gcd(n,gcd(e[findall(!=(0),c)]))>1
@@ -1872,7 +1871,7 @@ chevieset(:G4_22,:UnipotentCharacters,function(ST)
 end)
 
 # roots not yet used
-chevieset(:G4_22, :HeckeRepresentation, function(ST,para,roots,i)
+chevieset(:G4_22, :HeckeRepresentation, function(ST,para,_,i)
   X,Y,Z=chevieget(:G4_22,:ParamSpecialization)(ST,para)
   function rep(char)
     dim=char[1]
@@ -1972,7 +1971,7 @@ chevieset(:G4_22,:SchurModels,ST->Data4_22.SchurModels[G4_22type(ST)])
 chevieset(:G4_22,:index,ST->
   [6, 2, 3, 1, 6, 3, 2, 1, 12, 6, 4, 2, 6, 3, 2, 1, 10, 5, 15][ST-3])
 
-chevieset(:G4_22,:FactorizedSchurElement,function(ST,charpara,para,rootpara)
+chevieset(:G4_22,:FactorizedSchurElement,function(ST,charpara,para,_)
   Y=vcat(chevieget(:G4_22,:ParamSpecialization)(ST,para)...)
   ci=chevieget(:G4_22,:charinfo)(ST)
   ind=G4_22FetchIndexChars(ST,para)[findfirst(==(charpara),ci[:charparams])]
@@ -1981,7 +1980,7 @@ chevieset(:G4_22,:FactorizedSchurElement,function(ST,charpara,para,rootpara)
   VFactorSchurElement(Y,model,data)//chevieget(:G4_22,:index)(ST)
 end)
 
-chevieset(:G4_22,:SchurElement,function(ST,charpara,para,rootpara)
+chevieset(:G4_22,:SchurElement,function(ST,charpara,para,_)
   Y=vcat(chevieget(:G4_22,:ParamSpecialization)(ST,para)...)
   ci=chevieget(:G4_22,:charinfo)(ST)
   ind=G4_22FetchIndexChars(ST,para)[findfirst(==(charpara),ci[:charparams])]

@@ -485,7 +485,7 @@ function string_partition_tuple(n;opt...)
   r=xrepr(E(n[end-1],n[end]);opt...)
   if r=="1" r="+" end
   if r=="-1" r="-" end
-  join(joindigits.(n[1:end-2]),".")*r
+  join(joindigits.(n[1:div(length(n)-2,n[end-1])]),".")*r
 end
 #------------------------------------------------------------------------
 struct CharSymbol
@@ -547,8 +547,7 @@ julia> Symbol_partition_tuple([[2,1],[1]],-1)
 """
 function Symbol_partition_tuple(p,S)
   if p[end] isa Number
-   return CharSymbol(Symbol_partition_tuple(repeat(p[1:end-2],p[end-1]),S).S,
-                     p[end-1],p[end])
+   return CharSymbol(Symbol_partition_tuple(p[1:end-2],S).S,p[end-1],p[end])
   end
   if S isa Integer
     if S<0 s=fill(-S,length(p));s[1]=0
@@ -831,7 +830,9 @@ function shapesSymbols(e,r,c=1,def=0)
     res=Vector{Int}[]
     a=div(len,nb-1)
     while a<=max  &&  binomial(a,2)<=lim2  &&  a<=len
+      let a=a # boxed variable
       append!(res,map(x->pushfirst!(x,a),f(lim2-binomial(a,2),len-a,nb-1,a)))
+      end
       a+=1
     end
     return res

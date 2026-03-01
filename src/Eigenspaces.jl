@@ -476,7 +476,7 @@ function relative_root(W,L,i)
   error("no root found for reflection along root ",i,"\n")
 end
 
-function relative_group(W::PRG,J::AbstractVector{<:Integer},indices=false)
+function relative_group(W::Union{PRG,PRSG},J::AbstractVector{<:Integer},indices=false)
 # println("relative_group: W=$W J=$J indices=$indices")
   res = Dict{Symbol, Any}(:callarg => joindigits(J))
   if indices!=false res[:callarg]*=","*joindigits(indices) end

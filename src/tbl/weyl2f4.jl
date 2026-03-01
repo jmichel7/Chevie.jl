@@ -42,15 +42,15 @@ chevieset("2F4",:cartan,
   [2 -1 0 0;-1 2 -root(2) 0;0 -root(2) 2 -1;0 0 -1 2])
 
 chevieset("2F4",:ClassParameter,function(w)
+  params=chevieget("2F4",:classinfo)()[:classparams]
   if length(w)==1
-    params=chevieget("2F4",:classinfo)[:classparams]
-    if tally(cycletype(x*chevieget("2F4",:phi)))==[2=>2,4=>11]
+   if tally(cycletype(chevieget("2F4",:generators)[w[1]]*chevieget("2F4",:phi)))==[2=>2,4=>11]
          return params[3]
     else return params[6]
     end
   else
     params[findfirst(x->length(x)==length(w),
-                     chevieget("2F4",:classinfo)[:classtext])]
+                     chevieget("2F4",:classinfo)()[:classtext])]
   end
 end)
 
