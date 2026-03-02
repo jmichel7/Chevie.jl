@@ -4,10 +4,10 @@
 # of interest are the alternate presentations of the braid group:
 chevieset(:G27,:AltPres,[
   Dict{Symbol,Any}(:gens=>[[2],[2,3,-2],[1]],
-                   :rels=>[braidrel(1,3,3),braidrel(1,2,4),brairel(2,3,5),
+                   :rels=>[braidrel(1,3,3),braidrel(1,2,4),braidrel(2,3,5),
                            ([3,2,1,3,2,1,2],[1,3,2,1,3,2,1])]),
   Dict{Symbol,Any}(:gens=>[[1],[-1,3,1],[2]],
-                   :rels=>[braidrel(1,2,3),brairel(2,3,5),braidrel(1,3,3),
+                   :rels=>[braidrel(1,2,3),braidrel(2,3,5),braidrel(1,3,3),
                            ([2,3,2,3,1,2,3,1,2,3],[3,2,3,1,2,3,1,2,3,1])]),
   Dict{Symbol,Any}(:gens=>[[2],[3],[-3,-2,1,2,3]],
                    :rels=>[braidrel(1,2,4),braidrel(2,3,5),braidrel(1,3,5),
