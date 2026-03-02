@@ -1,7 +1,7 @@
 #  tbl/cmplxg31.jl       Chevie library                 Jean Michel
 #  Copyright (C) 1998-  The Chevie Team
 
-chevieset(:G31,:BraidRelations,[braidrel(1,4,3),braidrel(2,4,3),braidrel(3,5,3),
+chevieset(:G31,:braid_relations,[braidrel(1,4,3),braidrel(2,4,3),braidrel(3,5,3),
   braidrel(2,5,3),([2,3,1],[1,2,3]),([2,3,1],[3,1,2]),braidrel(1,5,2),
   braidrel(3,4,2),braidrel(4,5,2)])
 

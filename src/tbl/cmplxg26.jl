@@ -10,7 +10,7 @@ chevieset(:G26,:HyperplaneRepresentatives, [1, 2])
 
 chevieset(:G26,:ordergens,[2,3,3])
 
-chevieset(:G26,:BraidRelations,[braidrel(1,2,4),braidrel(1,3,2),braidrel(2,3,3)])
+chevieset(:G26,:braid_relations,[braidrel(1,2,4),braidrel(1,3,2),braidrel(2,3,3)])
 
 chevieset(:G26, :ReflectionDegrees, [6, 12, 18])
 

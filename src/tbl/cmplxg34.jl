@@ -1,10 +1,10 @@
 #  tbl/cmplxg34.jl      Chevie library    Gunter Malle and Jean Michel
 #  Copyright (C) 1998-  The Chevie Team
 
-chevieset(:G34, :BraidRelations, [braidrel(1,2,3),braidrel(2,3,3),
+chevieset(:G34, :braid_relations, [braidrel(1,2,3),braidrel(2,3,3),
   braidrel(2,4,3), braidrel(3,4,3), braidrel(4,5,3), braidrel(1,3,2),
   braidrel(1,4,2), braidrel(1,5,2), braidrel(2,5,2), braidrel(3,5,2),
-  braidrel(5,6,2), braidrel(1,6,2), braidrel(2,6,2), braidrel(3,6,2),
+  braidrel(5,6,3), braidrel(1,6,2), braidrel(2,6,2), braidrel(3,6,2),
   braidrel(4,6,2), ([4, 2, 3, 4, 2, 3], [3, 4, 2, 3, 4, 2])])
 
 # with  the following choice of simple roots (of norm 6) the set of all 756

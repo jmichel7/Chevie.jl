@@ -1,7 +1,7 @@
 #  tbl/cmplxg33.jl      Chevie library                Jean Michel
 #  Copyright (C) 1998-  The Chevie Team
 
-chevieset(:G33,:BraidRelations,[braidrel(1,2,3),braidrel(2,3,3),
+chevieset(:G33,:braid_relations,[braidrel(1,2,3),braidrel(2,3,3),
   braidrel(2,4,3), braidrel(3,4,3),braidrel(4,5,3),braidrel(1,3,2), 
   braidrel(1,4,2), braidrel(1,5,2),braidrel(2,5,2),braidrel(3,5,2),
   ([4,2,3,4,2,3],[3,4,2,3,4,2])])
@@ -9,15 +9,15 @@ chevieset(:G33,:BraidRelations,[braidrel(1,2,3),braidrel(2,3,3),
 # of interest are the alternate presentations of the braid group:
 chevieset(:G33,:AltPres,[Dict{Symbol,Any}(
   :gens=>[[1],[2],[-4,3,4],[5,4,-5],[5]],
-  :rels=>[[[1,2,1],[2,1,2]],[[3,2,3],[2,3,2]],[[4,2,4],[2,4,2]],
-          [[4,5,4],[5,4,5]],[[3,5,3],[5,3,5]],[[1,3],[3,1]],[[1,4],[4,1]],
-          [[1,5],[5,1]],[[2,5],[5,2]],[[3,4],[4,3]],
-          [[4,5,3,2,4,5,3,2,4],[2,4,5,3,2,4,5,3,2]]]),
+  :rels=>[braidrel(1,2,3),braidrel(2,3,3),braidrel(2,4,3),
+          braidrel(4,5,3),braidrel(3,5,3),braidrel(1,3,2),braidrel(1,4,2),
+          braidrel(1,5,2),braidrel(2,5,2),braidrel(3,4,2),
+          ([4,5,3,2,4,5,3,2,4],[2,4,5,3,2,4,5,3,2])]),
   Dict{Symbol,Any}(:gens=>[[1],[2],[3],[-3,-2,4,2,3],[5]],
-  :rels=>[[[4,2,4],[2,4,2]],[[4,5,4],[5,4,5]],[[4,3,4],[3,4,3]],
-          [[4,1,4],[1,4,1]],[[3,2,3],[2,3,2]],[[1,2,1],[2,1,2]],[[1,3],[3,1]],
-          [[3,5],[5,3]],[[1,5],[5,1]],[[2,5],[5,2]],
-          [[1,2,3,4,1,2],[2,3,4,1,2,3]]])])
+   :rels=>[braidrel(2,4,3),braidrel(4,5,3),braidrel(3,4,3),
+           braidrel(1,4,3),braidrel(2,3,3),braidrel(1,2,3),braidrel(1,3,2),
+           braidrel(3,5,2),braidrel(1,5,2),braidrel(2,5,2),
+          ([1,2,3,4,1,2],[2,3,4,1,2,3])])])
 
 # G33 is derived by  a non-orthogonal projection on coordinates 3
 # and 4  from ReflectionSubGroup(G34,[1..5]). If  one replaces the  2 in

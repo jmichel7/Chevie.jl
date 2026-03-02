@@ -36,7 +36,7 @@ chevieset(:imp,:cartan,function(p,q,r)
   [sum(x.*y) for x in eachrow(cr), y in eachrow(rt)]
 end)
 
-chevieset(:imp, :BraidRelations, function (p, q, r)
+chevieset(:imp, :braid_relations, function (p, q, r)
   res=Tuple{Vector{Int},Vector{Int}}[]
   if q==1
     if r>=2 push!(res,braidrel(1,2,p==1 ? 3 : 4)) end

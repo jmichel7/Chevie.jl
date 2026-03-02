@@ -113,7 +113,7 @@ const Data4_22=(simpleroots=
   (-4E(20,17)-E(20,16)-E(20,13)+3E(20,12)-3E(20,9)+2E(20,8)+E(20,4)-2E(20))//5 (-2E(20,17)-3E(20,16)+2*E(20,13)-E(20,12)+E(20,9)+E(20,8)-2E(20,4)-E(20))//5;
   (-E(20,17)-E(20,16)-4E(20,13)-2E(20,12)-2E(20,9)-3E(20,8)+E(20,4)-3E(20))//5 (2E(20,17)+2E(20,16)-2E(20,13)-E(20,12)-E(20,9)+E(20,8)+3E(20,4)+E(20))//5]],
 # for the braid relations see [bbr02]
-  BraidRelations=[[braidrel(1,2,3)],
+  braid_relations=[[braidrel(1,2,3)],
                   [braidrel(1,2,4)],
                   [braidrel(1,2,6)],
                   [([1,2,3],[2,3,1]),([1,2,3],[3,1,2])],
@@ -129,7 +129,7 @@ const Data4_22=(simpleroots=
                   [braidrel(1,2,6)],
                   [braidrel(1,2,4)],
                   [([1,2,3],[2,3,1]),([1,2,3],[3,1,2])],
-                  [braidrel(1,2,6)],
+                  [braidrel(1,2,5)],
                   [braidrel(1,2,10)],
                  [([1,2,3,1,2],[2,3,1,2,3]),([1,2,3,1,2],[3,1,2,3,1])]],
   ordergens=[[3,3],[3,3],[2,3],[2,3,3],[4,4],
@@ -1409,7 +1409,7 @@ chevieset(:G4_22, :simpleroots,ST->Data4_22.simpleroots[ST-3])
 
 chevieset(:G4_22,:simplecoroots,ST->Data4_22.simplecoroots[ST-3])
 
-chevieset(:G4_22, :BraidRelations,ST->Data4_22.BraidRelations[ST-3])
+chevieset(:G4_22, :braid_relations,ST->Data4_22.braid_relations[ST-3])
 
 chevieset(:G4_22,:ordergens,ST->Data4_22.ordergens[ST-3])
 

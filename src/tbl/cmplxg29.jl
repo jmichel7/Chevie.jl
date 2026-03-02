@@ -4,9 +4,9 @@
 # of interest is the alternate presentation of the braid group
 chevieset(:G29, :AltPres, [Dict{Symbol, Any}(
 :gens => [[1], [-4, 2, 4], [3], [4]], 
-:rels => [[[1, 2, 1], [2, 1, 2]], [[2, 4, 2], [4, 2, 4]],
-     [[3, 4, 3], [4, 3, 4]], [[2, 3, 2], [3, 2, 3]], [[1, 3], [3, 1]],
-     [[1, 4], [4, 1]], [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
+:rels => [braidrel(1,2,3), braidrel(2,4,3),
+          braidrel(3,4,3), braidrel(2,3,3), braidrel(1,3,2),
+        brairel(1,4,2), [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
 # Our G29 is equal to reflection_subgroup(G31,[234,13,3,5])
 # This is also the subgroup which leaves invariant the Φ₁ of [ma1887]
 
@@ -17,7 +17,7 @@ chevieset(:G29, :simpleroots, [0 0 0 -2;
 
 chevieset(:G29, :ordergens, fill(2,4))
 
-chevieset(:G29, :BraidRelations, [braidrel(1,2,3), braidrel(2,4,3),
+chevieset(:G29, :braid_relations, [braidrel(1,2,3), braidrel(2,4,3),
   braidrel(3,4,3), braidrel(2,3,4), braidrel(1,3,2), braidrel(1,4,2),
   ([4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4])])
 
