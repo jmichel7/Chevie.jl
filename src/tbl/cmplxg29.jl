@@ -6,7 +6,7 @@ chevieset(:G29, :AltPres, [Dict{Symbol, Any}(
 :gens => [[1], [-4, 2, 4], [3], [4]], 
 :rels => [braidrel(1,2,3), braidrel(2,4,3),
           braidrel(3,4,3), braidrel(2,3,3), braidrel(1,3,2),
-        brairel(1,4,2), [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
+       braidrel(1,4,2), [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
 # Our G29 is equal to reflection_subgroup(G31,[234,13,3,5])
 # This is also the subgroup which leaves invariant the Φ₁ of [ma1887]
 
