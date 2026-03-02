@@ -46,7 +46,6 @@ function FindCuspidalInLevi(n,HF)
   cusp
 end
 
-ChevieErr(x...)=printstyled(rio(),"Error: ",x...;color=:red)
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.
 function FindIntSol(l)

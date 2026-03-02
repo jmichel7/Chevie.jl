@@ -1,9 +1,9 @@
 #  tbl/cmplxg31.jl       Chevie library                 Jean Michel
 #  Copyright (C) 1998-  The Chevie Team
 
-chevieset(:G31,:BraidRelations,[[[1,4,1],[4,1,4]],[[2,4,2],[4,2,4]],
-  [[5,3,5],[3,5,3]],[[2,5,2],[5,2,5]],[[2,3,1],[1,2,3]],[[2,3,1],[3,1,2]],
-  [[1,5],[5,1]],[[3,4],[4,3]],[[5,4],[4,5]]])
+chevieset(:G31,:BraidRelations,[braidrel(1,4,3),braidrel(2,4,3),braidrel(3,5,3),
+  braidrel(2,5,3),([2,3,1],[1,2,3]),([2,3,1],[3,1,2]),braidrel(1,5,2),
+  braidrel(3,4,2),braidrel(4,5,2)])
 
 # For the data relative to this group see [ma1887]
 # The group <T,U> described by Maschke where

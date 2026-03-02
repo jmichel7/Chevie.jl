@@ -177,9 +177,9 @@ chevieset(:D,:UnipotentCharacters,function(rank)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
   for d in 0:4:4*isqrt(div(rank,4))
     r=div(d^2,4)
-    s=Dict{Symbol, Any}(:relativeType=> 
+    s=Dict{Symbol, Any}(:relativeType=>
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
-      :eigenvalue=>(-1)^div(d+1,4), 
+      :eigenvalue=>(-1)^div(d+1,4),
       :parameterExponents=>vcat(d,fill(1,max(0, rank-1-r))))
     s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
     if d==0
@@ -219,16 +219,12 @@ end)
 
 # References for unipotent classes: [lus04], [gm00], [spalt82]
 chevieset(:D,:UnipotentClasses,function(n,char)
-  function fulllsymbol(s)
-    if s[end] isa Vector return s end
-    [s[1],s[1],s[2],s[3]]
-  end
   function addSpringer(s, i, cc)
-    ss=first(x for x in uc[:springerSeries] 
-                     if x[:defect]==defectsymbol(s[:symbol]))
+    ss=first(x for x in uc[:springerSeries]
+                     if x[:defect]==defectsymbol(s.symbol))
     if s.sp in [[Int[],[1]],[Int[],Int[]]] p=1
     elseif s.sp==[[1], Int[]] p=2
-    else p=findfirst(==([fulllsymbol(s.sp)]),charinfo(ss[:relgroup]).charparams)
+    else p=findfirst(==([s.sp]),charinfo(ss[:relgroup]).charparams)
     end
     ss[:locsys][p]=[i,findfirst(==(map(x->x ? [1,1] : [2],s.Au)),
                                            charinfo(cc[:Au]).charparams)]
@@ -239,7 +235,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     vcat([p[1]+p[2]], map(i->p[i+1]-p[i], 1:length(p)-1))
   end
   if char==2
-    ss=XSP(4, 0, n, 1)
+    ss=XSP(4,0,n,1)
     symbol2partition=function(S) # see [2.17, gm00]
       c=sort(reduce(vcat,S))
       i=1
@@ -262,15 +258,15 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       [reverse(filter(!iszero,sort(part))), ex]
     end
   else # see [2.10, gm00]
-    ss=XSP(2, 0, n, 1)
+    ss=XSP(2,0,n,1)
     symbol2partition=function(S)
       c=sort(reduce(vcat,S))
       i=1
       part=Int[]
       while i <= length(c)
-        l=2 * (c[i]-(i-1))
-        if i == length(c) || c[i+1]-c[i]>0
-          push!(part, l+1)
+        l=2(c[i]-(i-1))
+        if i==length(c) || c[i+1]-c[i]>0
+          push!(part,l+1)
           i+=1
         else
           part=append!(part, [l, l])
@@ -280,18 +276,18 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       reverse(filter(!iszero,sort(part)))
     end
   end
-  l=union(map(c->map(x->[defectsymbol(x.symbol),
-                         sum(sum,fullsymbol(x.sp))],c),ss)...)
+  l=union(map(c->map(x->[defectsymbol(x.symbol),sum(sum,x.sp[1:2])],c),ss)...)
   sort!(l, by=x->[abs(x[1]), -sign(x[1])])
-  uc=Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
-      res=Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
-      if mod(n-d[2],4)==0 || char==2 res[:Z]=mod(n,2)==0  ? [1, 1] : [1]
-      else   res[:Z]=mod(n,2)==0  ? [-1,1] : [-1]
+  uc=Dict{Symbol, Any}(:classes=>[], :springerSeries => 
+    map(l)do defect,rank
+      res=Dict{Symbol, Any}(:defect=>defect, :levi=>1:n-rank)
+      if mod(n-rank,4)==0 || char==2 res[:Z]=iseven(n) ? [1, 1] : [1]
+      else                           res[:Z]=iseven(n) ? [-1,1] : [-1]
       end
-      res[:relgroup]=coxgroup(d[1]==0 ? :D : :B, d[2])
+      res[:relgroup]=coxgroup(defect==0 ? :D : :B, rank)
       res[:locsys]=[[0,0] for i in 1:nconjugacy_classes(res[:relgroup])]
       res
-  end, l))
+  end)
   for cl in ss
     cc=Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1].symbol))
     if char==2
@@ -305,7 +301,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       cc[:dynkin]=partition2DR(cc[:parameter])
       cc[:name]=joindigits(cc[:parameter])
     end
-    cc[:Au]=isempty(cl[1].Au) ? coxgroup() : 
+    cc[:Au]=isempty(cl[1].Au) ? coxgroup() :
        prod(coxgroup(:A,1) for i in eachindex(cl[1].Au))
     if char != 2
       cc[:red]=coxgroup()
@@ -319,15 +315,15 @@ chevieset(:D,:UnipotentClasses,function(n,char)
         end
       end
     end
-    if !(cl[1].sp[2] isa Vector) cl[1].sp[3]=1-mod(div(n,2),2) end
+    if !(cl[1].sp[end] isa Vector) cl[1].sp[end]=1-mod(div(n,2),2) end
     push!(uc[:classes], cc)
     for s in cl addSpringer(s, length(uc[:classes]), cc) end
-    if !(cl[1].sp[2] isa Vector)
-      cl[1].sp[3]=1-cl[1].sp[3]
+    if !(cl[1].sp[end] isa Vector)
+      cl[1].sp[end]=1-cl[1].sp[end]
       cc[:name]*="+"
       cc=copy(cc)
       cc[:name]=replace(cc[:name],r".$"=>"-")
-      if haskey(cc,:dynkin) 
+      if haskey(cc,:dynkin)
         cc[:dynkin]=vcat(cc[:dynkin][[2,1]],cc[:dynkin][3:end])
       end
       push!(uc[:classes], cc)
@@ -336,8 +332,8 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   if char==2 # see [2.10 page 24, spalt82]
     uc[:orderClasses]=hasse(Poset(uc[:classes])do x,y
-      xp=x[:parameter] 
-      yp=y[:parameter] 
+      xp=x[:parameter]
+      yp=y[:parameter]
       m=max(xp[1][1], yp[1][1])
       f=x->map(i->sum(filter(<(i),x))+i*count(>=(i),x),1:m)
       fx=f(xp[1])
@@ -353,8 +349,8 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end)
   else
     uc[:orderClasses]=hasse(Poset(uc[:classes])do x,y
-      xp=x[:parameter] 
-      yp=y[:parameter] 
+      xp=x[:parameter]
+      yp=y[:parameter]
       dominates(yp,xp) && (xp!=yp || x==y)
     end)
   end
@@ -435,15 +431,15 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   for i in l
      cl=uc[:classes][i]
      s=LuSpin(cl[:parameter])
-     if length(cl[:Au]) == 1
+     if length(cl[:Au])==1
        cl[:Au]=coxgroup(:A, 1)
        trspringer(i, [2])
        k=[1, 1]
-     elseif length(cl[:Au]) == 2
+     elseif length(cl[:Au])==2
        cl[:Au]=coxgroup(:A, 1)*coxgroup(:A,1)
        trspringer(i, [2, 4])
        k=[1, 3]
-     elseif length(cl[:Au]) == 8
+     elseif length(cl[:Au])==8
        cl[:Au]=coxgroup(:A,1)*coxgroup(:B,2)
        trspringer(i, [1, 6, 8, 5, 10, 3, 4, 9])
        k=[2, 7]
@@ -451,12 +447,12 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        error("Au non-commutative of order ",length(cl[:Au])*2,"  ! implemented")
      end
      if !('-' in cl[:name])
-      addSpringer1(ss->ss[:Z] in [[(-1)^(div(n,2)+1),-1], [E(4)]] && 
-                     rank(ss[:relgroup]) == sum(sum,s) , i, s, k[1])
+      addSpringer1(ss->ss[:Z] in [[(-1)^(div(n,2)+1),-1], [E(4)]] &&
+                     rank(ss[:relgroup])==sum(sum,s),i,s,k[1])
      end
      if !('+' in cl[:name])
-      addSpringer1(ss->ss[:Z] in [[(-1)^div(n,2),-1], [-(E(4))]] && 
-                     rank(ss[:relgroup]) == sum(sum,s), i, s, k[2])
+      addSpringer1(ss->ss[:Z] in [[(-1)^div(n,2),-1], [-(E(4))]] &&
+                     rank(ss[:relgroup])==sum(sum,s),i,s,k[2])
      end
   end
 end
@@ -475,22 +471,22 @@ end
 # Used by `D.ClassParameter` for separating classes with `+` or `-` in label;
 # precomputed for D_n with n=4,6,8
 chevieset(:D, :gensMODA,Dict(4=>[[perm"(1,2)(7,8)", perm"(3,4)(5,6)", perm"(2,3)(6,7)", perm"(3,5)(4,6)"],[[2 => 4], [4 => 2]], [[2 => 2], [2 => 1, 4 => 1]]],
-6=>[[perm"(1,2)(8,11)(12,14)(15,17)(16,18)(19,21)(22,25)(31,32)", 
-     perm"(3,4)(5,6)(7,9)(10,13)(20,23)(24,26)(27,28)(29,30)", 
-     perm"(2,3)(6,8)(9,12)(13,16)(17,20)(21,24)(25,27)(30,31)", 
-     perm"(3,5)(4,6)(12,15)(14,17)(16,19)(18,21)(27,29)(28,30)", 
-     perm"(5,7)(6,9)(8,12)(11,14)(19,22)(21,25)(24,27)(26,28)", 
-     perm"(7,10)(9,13)(12,16)(14,18)(15,19)(17,21)(20,24)(23,26)"], 
+6=>[[perm"(1,2)(8,11)(12,14)(15,17)(16,18)(19,21)(22,25)(31,32)",
+     perm"(3,4)(5,6)(7,9)(10,13)(20,23)(24,26)(27,28)(29,30)",
+     perm"(2,3)(6,8)(9,12)(13,16)(17,20)(21,24)(25,27)(30,31)",
+     perm"(3,5)(4,6)(12,15)(14,17)(16,19)(18,21)(27,29)(28,30)",
+     perm"(5,7)(6,9)(8,12)(11,14)(19,22)(21,25)(24,27)(26,28)",
+     perm"(7,10)(9,13)(12,16)(14,18)(15,19)(17,21)(20,24)(23,26)"],
     [[2 => 16], [2 => 4, 4 => 6], [2 => 1, 6 => 5]],
     [[2 => 12], [2 => 2, 4 => 6], [3 => 2, 6 => 4]]],
-8=>[[perm"(1,2)(8,11)(12,15)(16,20)(17,21)(22,26)(23,27)(28,33)(29,34)(30,35)(36,41)(37,42)(43,50)(44,51)(52,59)(60,68)(61,69)(70,77)(78,85)(79,86)(87,92)(88,93)(94,99)(95,100)(96,101)(102,106)(103,107)(108,112)(109,113)(114,117)(118,121)(127,128)", 
-     perm"(3,4)(5,6)(7,9)(10,13)(14,18)(19,24)(25,31)(32,38)(39,45)(40,46)(47,53)(48,54)(49,55)(56,62)(57,63)(58,64)(65,71)(66,72)(67,73)(74,80)(75,81)(76,82)(83,89)(84,90)(91,97)(98,104)(105,110)(111,115)(116,119)(120,122)(123,124)(125,126)", 
-     perm"(2,3)(6,8)(9,12)(13,17)(18,23)(20,25)(24,30)(26,32)(33,39)(34,40)(41,48)(42,49)(50,57)(51,58)(53,61)(59,67)(62,70)(68,76)(71,78)(72,79)(80,87)(81,88)(89,95)(90,96)(97,103)(99,105)(104,109)(106,111)(112,116)(117,120)(121,123)(126,127)", 
-     perm"(3,5)(4,6)(12,16)(15,20)(17,22)(21,26)(23,29)(27,34)(30,37)(35,42)(39,47)(45,53)(48,56)(54,62)(57,65)(58,66)(63,71)(64,72)(67,75)(73,81)(76,84)(82,90)(87,94)(92,99)(95,102)(100,106)(103,108)(107,112)(109,114)(113,117)(123,125)(124,126)", 
-     perm"(5,7)(6,9)(8,12)(11,15)(22,28)(26,33)(29,36)(32,39)(34,41)(37,44)(38,45)(40,48)(42,51)(46,54)(49,58)(55,64)(65,74)(71,80)(75,83)(78,87)(81,89)(84,91)(85,92)(88,95)(90,97)(93,100)(96,103)(101,107)(114,118)(117,121)(120,123)(122,124)", 
-     perm"(7,10)(9,13)(12,17)(15,21)(16,22)(20,26)(25,32)(31,38)(36,43)(41,50)(44,52)(48,57)(51,59)(54,63)(56,65)(58,67)(62,71)(64,73)(66,75)(70,78)(72,81)(77,85)(79,88)(86,93)(91,98)(97,104)(103,109)(107,113)(108,114)(112,117)(116,120)(119,122)", 
-     perm"(10,14)(13,18)(17,23)(21,27)(22,29)(26,34)(28,36)(32,40)(33,41)(38,46)(39,48)(45,54)(47,56)(52,60)(53,62)(59,68)(61,70)(67,76)(69,77)(73,82)(75,84)(81,90)(83,91)(88,96)(89,97)(93,101)(95,103)(100,107)(102,108)(106,112)(111,116)(115,119)", 
-     perm"(14,19)(18,24)(23,30)(27,35)(29,37)(34,42)(36,44)(40,49)(41,51)(43,52)(46,55)(48,58)(50,59)(54,64)(56,66)(57,67)(62,72)(63,73)(65,75)(70,79)(71,81)(74,83)(77,86)(78,88)(80,89)(85,93)(87,95)(92,100)(94,102)(99,106)(105,111)(110,115)"], 
+8=>[[perm"(1,2)(8,11)(12,15)(16,20)(17,21)(22,26)(23,27)(28,33)(29,34)(30,35)(36,41)(37,42)(43,50)(44,51)(52,59)(60,68)(61,69)(70,77)(78,85)(79,86)(87,92)(88,93)(94,99)(95,100)(96,101)(102,106)(103,107)(108,112)(109,113)(114,117)(118,121)(127,128)",
+     perm"(3,4)(5,6)(7,9)(10,13)(14,18)(19,24)(25,31)(32,38)(39,45)(40,46)(47,53)(48,54)(49,55)(56,62)(57,63)(58,64)(65,71)(66,72)(67,73)(74,80)(75,81)(76,82)(83,89)(84,90)(91,97)(98,104)(105,110)(111,115)(116,119)(120,122)(123,124)(125,126)",
+     perm"(2,3)(6,8)(9,12)(13,17)(18,23)(20,25)(24,30)(26,32)(33,39)(34,40)(41,48)(42,49)(50,57)(51,58)(53,61)(59,67)(62,70)(68,76)(71,78)(72,79)(80,87)(81,88)(89,95)(90,96)(97,103)(99,105)(104,109)(106,111)(112,116)(117,120)(121,123)(126,127)",
+     perm"(3,5)(4,6)(12,16)(15,20)(17,22)(21,26)(23,29)(27,34)(30,37)(35,42)(39,47)(45,53)(48,56)(54,62)(57,65)(58,66)(63,71)(64,72)(67,75)(73,81)(76,84)(82,90)(87,94)(92,99)(95,102)(100,106)(103,108)(107,112)(109,114)(113,117)(123,125)(124,126)",
+     perm"(5,7)(6,9)(8,12)(11,15)(22,28)(26,33)(29,36)(32,39)(34,41)(37,44)(38,45)(40,48)(42,51)(46,54)(49,58)(55,64)(65,74)(71,80)(75,83)(78,87)(81,89)(84,91)(85,92)(88,95)(90,97)(93,100)(96,103)(101,107)(114,118)(117,121)(120,123)(122,124)",
+     perm"(7,10)(9,13)(12,17)(15,21)(16,22)(20,26)(25,32)(31,38)(36,43)(41,50)(44,52)(48,57)(51,59)(54,63)(56,65)(58,67)(62,71)(64,73)(66,75)(70,78)(72,81)(77,85)(79,88)(86,93)(91,98)(97,104)(103,109)(107,113)(108,114)(112,117)(116,120)(119,122)",
+     perm"(10,14)(13,18)(17,23)(21,27)(22,29)(26,34)(28,36)(32,40)(33,41)(38,46)(39,48)(45,54)(47,56)(52,60)(53,62)(59,68)(61,70)(67,76)(69,77)(73,82)(75,84)(81,90)(83,91)(88,96)(89,97)(93,101)(95,103)(100,107)(102,108)(106,112)(111,116)(115,119)",
+     perm"(14,19)(18,24)(23,30)(27,35)(29,37)(34,42)(36,44)(40,49)(41,51)(43,52)(46,55)(48,58)(50,59)(54,64)(56,66)(57,67)(62,72)(63,73)(65,75)(70,79)(71,81)(74,83)(77,86)(78,88)(80,89)(85,93)(87,95)(92,100)(94,102)(99,106)(105,111)(110,115)"],
   [[2=>64],[2=>16,4=>24],[4=>32],[2=>4,6=>20],[8=>16]],
   [[2=>56],[2=>12,4=>24],[2=>6,4=>28],[2=>2,3=>4,6=>18],[2=>1,4=>3,8=>14]]]))
 
@@ -499,7 +495,7 @@ chevieset(:D, :ClassParameter, function (n, w)
   if isempty(res[2]) && all(iseven, res[1])
   # for classes with '+' or '-' we use the cycle type for the
   # permutation representation on the cosets of the parabolic
-  # subgroup 2:n (gens(Dₙ) in this representation are 
+  # subgroup 2:n (gens(Dₙ) in this representation are
   # stored for n<=8 in the Dict 'chevieget(:D,:gensMODA)')
     u=get!(chevieget(:D,:gensMODA),n)do
       Dn=coxgroup(:D,n)

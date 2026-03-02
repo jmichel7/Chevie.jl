@@ -787,11 +787,10 @@ equal  to the product according to the  indices on the right side. See also
 `diagram`.
 """
 function braid_relations(t::TypeIrred)
-  r=if t.series==:ST Tuple.(chevieget(t,:BraidRelations))
+  r=if t.series==:ST chevieget(t,:BraidRelations)
   else
     m=coxmat(cartan(t))
-    p(i,j)=map(k->iseven(k) ? j : i,1:m[i,j])
-    vcat(map(i->map(j->(p(i,j),p(j,i)),1:i-1),axes(m,1))...)
+    vcat(map(i->map(j->Chevie.braidrel(i,j,m[i,j]),1:i-1),axes(m,1))...)
   end
   haskey(t,:indices) ? map(x->map(y->t.indices[y],x),r) : r
 end

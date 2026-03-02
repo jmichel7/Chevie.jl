@@ -2838,10 +2838,8 @@ chevieset(:E8,:HeckeCharTable,function(para,rootpara)
     if isnothing(p)  # use that the dual is just after a character
       map(vpol[i-1],cl) do (c,val),w
         l=length(w)
-        if val>=0
-          evalpoly(q,reverse(c))*(-1)^l*q^(l+1-length(c)-val)
-        else
-          evalpoly(v,reverse(c))*(-1)^l*v^(2l+1-length(c)+val)
+        if val>=0 evalpoly(q,reverse(c))*(-1)^l*q^(l+1-length(c)-val)
+        else      evalpoly(v,reverse(c))*(-1)^l*v^(2l+1-length(c)+val)
         end
       end
     else map(p)do (c,val)

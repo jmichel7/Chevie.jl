@@ -264,7 +264,8 @@ end)
 chevieset(:B,:Invariants,function(n,cartanType)
   m=fill(1,n);m[1]=2//cartanType
   m=Diagonal(m)*chevieget(:imp,:simpleroots)(2,1,n)
-  map(f->(arg...)->f(transpose(collect(arg))*m...),CHEVIE.imp[:Invariants](2,1,n))
+  map(f->(arg...)->f(transpose(collect(arg))*m...),
+    chevieget(:imp,:Invariants)(2,1,n))
 end)
 
 # References: [lus04], [gm00], [spalt82]
@@ -441,13 +442,13 @@ chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
         end
       end
     end
-    d = 0
+    d=0
     while 4d^2-3d<=r
       i=4d^2-3d
       if mod(r-d,2)==0
           l=vcat(1:i,i+2:2:r)
           ss=Dict{Symbol, Any}(:relgroup=>coxgroup(:B,div(r-i,2)),
-                               :levi => l, :Z => [-1])
+                               :levi=>l, :Z=>[-1])
           ss[:locsys]=fill([0,0],nconjugacy_classes(ss[:relgroup]))
           push!(uc[:springerSeries],ss)
           i=4d^2+3d

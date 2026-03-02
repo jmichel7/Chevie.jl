@@ -2,15 +2,15 @@
 module InitChevie
 
 using ..Chevie
-export CHEVIE, chevieget, chevieset, InfoChevie, TypeIrred, indices
+export CHEVIE, chevieget, chevieset, InfoChevie, TypeIrred, indices, ChevieErr
 
 verbose_chevieget::Bool=false
 @GapObj struct _CHEVIE end
 const CHEVIE=_CHEVIE(Dict{Symbol,Any}(:info=>true))
 
-function InfoChevie(a...)
-  if CHEVIE.info xprint(a...) end
-end
+InfoChevie(a...)=if CHEVIE.info xprint(a...) end
+
+ChevieErr(x...)=printstyled(rio(),"Error: ",x...;color=:red)
 
 " chevieget(t::Symbol,w::Symbol) returns CHEVIE.t[w] or nothing if absent"
 function chevieget(t::Symbol,w::Symbol)
@@ -22,7 +22,6 @@ end
 chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
 
 function chevieset(t::Symbol,w::Symbol,o)
-  if t==Symbol("3D4") && w==:ReflectionDegrees error() end
   get!(CHEVIE.prop,t,Dict{Symbol,Any}())[w]=o
 end
 

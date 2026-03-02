@@ -140,7 +140,7 @@ using LinearAlgebra: dot
 using ModuleElts: ModuleElt
 export shiftβ, βset, partβ, CharSymbol, Symbol_partition_tuple,
 gendeg, valuation_gendeg, degree_gendeg,  degree_feg, valuation_feg,
-fakedegree, defectsymbol,   fullsymbol,
+fakedegree, defectsymbol,
 Malledefect, defect, rank,  symbols, XSP, string_partition_tuple, ennola,
 quotient, core, Partition, partition_core_quotient, PartitionTuple
 
@@ -482,7 +482,9 @@ julia> string_partition_tuple.(d)
 """
 function string_partition_tuple(n;opt...)
   if n[end] isa Vector return join(joindigits.(n),".") end
-  r=xrepr(E(n[end-1],n[end]);opt...)
+  r=E(n[end-1],n[end])
+  if n[end-1]==2 r=Int(r) end
+  r=xrepr(r;opt...)
   if r=="1" r="+" end
   if r=="-1" r="-" end
   join(joindigits.(n[1:div(length(n)-2,n[end-1])]),".")*r
@@ -558,11 +560,6 @@ function Symbol_partition_tuple(p,S)
   s.-=length.(p)
   s.-=minimum(s)
   CharSymbol(βset.(p,s))
-end
-
-function fullsymbol(S)::Vector{Vector{Int}}
-  if isempty(S) || S[end] isa AbstractVector return S end
-  repeat(S[1:end-2],S[end-1])
 end
 
 """
@@ -1059,6 +1056,27 @@ function xsp(rho,s,n,d)
 end
 #---------------------------------------------------------------------------
 """
+A `LocSys` describes a local system. The fields are
+  - `symbol` the Lusztig-Spaltenstein symbol
+  - `dimBu` for the support `u` of the local system
+  - `Au` describes the character  of `A(u)` corresponding to the  local system 
+     as a boolean list where `true`->sgn, `false`->Id
+  - `sp`  is the parameter (double partition) of the generalized Springer
+     correspondent (a character of the relative Weyl group)
+"""
+struct LocSys
+  symbol
+  Au::Vector{Bool}
+  dimBu::Int
+  sp
+end
+  
+function Base.show(io::IO,r::LocSys)
+  println(io,"(symbol=",string_partition_tuple(r.symbol),
+    ", sp=",string_partition_tuple(r.sp),", dimBu=",r.dimBu,", Au=",r.Au,")")
+end
+
+"""
 `XSP(ρ,s,n,even=false)` Lusztig-Spaltenstein symbols.
 
 returns  the union of the  [lusp85](@cite) symbols ``X̃^{ρ-s,s}_{n,d}`` for
@@ -1075,15 +1093,7 @@ class). If `s==0`, only positive defects `d` are considered.
   - `XSP(2,0,n,true)` gives Lusztig-Spaltenstein symbols for SO₂ₙ of even defect
   - `XSP(4,0,n,true)` gives Lusztig-Spaltenstein symbols for SO₂ₙ in char 2
 
-Each  Lusztig-Spaltenstein symbol  is represented  by a  `NamedTuple` whose
-fields describe the local system. The fields are
-
-  - `symbol` the Lusztig-Spaltenstein symbol
-  - `dimBu` for the support `u` of the local system
-  - `Au` describes the character  of `A(u)` corresponding to the  local system 
-     as a boolean list where `true`->sgn, `false`->Id
-  - `sp`  is the parameter (double partition) of the generalized Springer
-     correspondent (a character of the relative Weyl group)
+Each  Lusztig-Spaltenstein symbol  is represented  by a  `LocSys`.
 """
 function XSP(rho,s,n,even=false)
   d=Int(!Bool(even))
@@ -1139,7 +1149,7 @@ function XSP(rho,s,n,even=false)
       sp=[rr(S[1],0), rr(S[2],s)]
       if defectsymbol(S) == 0
         if sp>reverse(sp) reverse!(sp) end
-        if sp[1]==sp[2] sp=[sp[1],2,0] end
+        if sp[1]==sp[2] sp=[sp[1],sp[2],2,0] end
       elseif defectsymbol(S)<0 reverse!(sp)
       end
       Au=map(i->intersect(S[1],i)!=intersect(dist[1],i), ii)
@@ -1147,11 +1157,8 @@ function XSP(rho,s,n,even=false)
         if Au[end] Au=.!(Au) end
         Au=Au[1:end-1]
       end
-      (symbol=S,Au,dimBu=n,sp)
+      LocSys(S,Au,n,sp)
+    end
   end
 end
-end
-
-showxsp(r)=println("(symbol=",string_partition_tuple(r.symbol),
-    ", sp=",string_partition_tuple(r.sp),", dimBu=",r.dimBu,", Au=",r.Au,")")
 end

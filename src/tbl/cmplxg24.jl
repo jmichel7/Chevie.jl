@@ -12,9 +12,8 @@ chevieset(:G24, :simplecoroots,
 
 chevieset(:G24,:ordergens,fill(2,3))
 
-chevieset(:G24,:BraidRelations, [[[1, 2, 1], [2, 1, 2]],[[1, 3, 1], [3, 1, 3]],
-  [[3, 2, 3, 2], [2, 3, 2, 3]],
-  [[2, 3, 1, 2, 3, 1, 2, 3, 1], [3, 2, 3, 1, 2, 3, 1, 2, 3]]])
+chevieset(:G24,:BraidRelations,[braidrel(1,2,3),braidrel(1,3,3),braidrel(2,3,4),
+  ([2, 3, 1, 2, 3, 1, 2, 3, 1], [3, 2, 3, 1, 2, 3, 1, 2, 3])])
 # 14/1/2009 JM: changed generators to get presentation no.2 of  [bm03]
 
 # of interest are the alternate presentations  (1,3 of [bm03])

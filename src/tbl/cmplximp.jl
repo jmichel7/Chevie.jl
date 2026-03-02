@@ -37,32 +37,34 @@ chevieset(:imp,:cartan,function(p,q,r)
 end)
 
 chevieset(:imp, :BraidRelations, function (p, q, r)
-  function b(i,j,o)
-    s(i,j)=[ifelse(iseven(k),j,i) for k in 1:o]
-    [s(i,j),s(j,i)]
-  end
-  res=Vector{Vector{Int}}[]
+  res=Tuple{Vector{Int},Vector{Int}}[]
   if q==1
-    if r>=2 push!(res, b(1, 2, p==1 ? 3 : 4)) end
-    append!(res,map(i->b(i,i-1,3),3:r))
-    for i in 3:r append!(res,map(j->b(i,j,2),1:i-2)) end
+    if r>=2 push!(res,braidrel(1,2,p==1 ? 3 : 4)) end
+    for i in 3:r 
+      push!(res,braidrel(i,i-1,3))
+      for j in 1:i-2 push!(res,braidrel(i,j,2)) end
+    end
   elseif p==q
-    push!(res,b(1,2,p))
+    push!(res,braidrel(1,2,p))
     if r>=3
-      append!(res,[[[1,2,3,1,2,3],[3,1,2,3,1,2]],b(1,3,3),b(2,3,3)])
+      push!(res,([1,2,3,1,2,3],[3,1,2,3,1,2]),braidrel(1,3,3),braidrel(2,3,3))
     end
-    append!(res,map(i->b(i,i-1,3),4:r))
-    for i in 4:r append!(res,map(j->b(i,j,2),1:i-2)) end
+    for i in 4:r 
+      push!(res,braidrel(i,i-1,3))
+      for j in 1:i-2 push!(res,braidrel(i,j,2)) end
+    end
   else
-    push!(res,[[1,2,3],[2,3,1]])
-    i=b(2,3,q-1)
-    push!(res,[vcat([1,2],i[2]),vcat([3,1],i[1])])
+    push!(res,([1,2,3],[2,3,1]))
+    i=braidrel(2,3,q-1)
+    push!(res,(vcat([1,2],i[2]),vcat([3,1],i[1])))
     if r>=3
-      if q!=2 push!(res,[[2,3,4,2,3,4],[4,2,3,4,2,3]]) end
-      append!(res,[b(2,4,3),b(3,4,3),b(1,4,2)])
+      if q!=2 push!(res,([2,3,4,2,3,4],[4,2,3,4,2,3])) end
+      push!(res,braidrel(2,4,3),braidrel(3,4,3),braidrel(1,4,2))
     end
-    append!(res,map(i->b(i,i-1,3),5:r+1))
-    for i in 5:r+1 append!(res,map(j->b(i,j,2),1:i-2)) end
+    for i in 5:r+1 
+      push!(res,braidrel(i,i-1,3))
+      for j in 1:i-2 push!(res,braidrel(i,j,2)) end
+    end
   end
   res
 end)

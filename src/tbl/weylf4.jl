@@ -28,17 +28,19 @@ chevieset(:F4,:ReflectionDegrees, [2, 6, 8, 12])
 
 chevieset(:F4,:nconjugacy_classes, 25)
 
+chevieset(:F4,:classparams,["A_0","4A_1","2A_1","A_2","D_4","D_4(a_1)",
+  "\\tilde A_2","C_3+A_1","A_2+\\tilde A_2","F_4(a_1)","F_4","A_1","3A_1",
+  "\\tilde A_2+A_1","C_3","A_3","\\tilde A_1","2A_1+\\tilde A_1",
+  "A_2+\\tilde A_1","B_3","B_2+A_1","A_1+\\tilde A_1","B_2","A_3+\\tilde A_1",
+  "B_4"])
+
 chevieset(:F4,:classinfo,function() # representatives are "very good" see [gm97]
   res=Dict{Symbol,Any}(:classtext=>map(x->Replace(x,[0],1:4),
     [[],[0,0,0,0,0,0],[2,3,2,3],[2,1],[0,2,3,2,3,4,3],[0,0,0],[4,3],
      [1,2,1,3,2,3,0],[0,0,0,0],[0,0],[0],[1],[2,3,2,3,4,3,2,3,4],[1,4,3],
      [4,3,2],[2,3,2,1,3],[3],[1,2,1,3,2,1,3,2,3],[2,1,4],[3,2,1],[2,4,3,2,3],
      [1,3],[3,2],[0,0,0,2,3],[0,2,3]]),
-  :classnames=>["A_0","4A_1","2A_1","A_2","D_4","D_4(a_1)","\\tilde A_2",
-    "C_3+A_1","A_2+\\tilde A_2","F_4(a_1)","F_4","A_1","3A_1",
-    "\\tilde A_2+A_1","C_3","A_3","\\tilde A_1","2A_1+\\tilde A_1",
-    "A_2+\\tilde A_1","B_3","B_2+A_1","A_1+\\tilde A_1","B_2",
-    "A_3+\\tilde A_1","B_4"],
+  :classnames=>chevieget(:F4,:classparams),
   :classes=>[1,1,18,32,32,12,32,32,16,16,96,12,12,96,96,72,12,12,96,96,72,72,36,36,144],
   :orders => [1,2,2,3,6,4,3,6,3,6,12,2,2,6,6,4,2,2,6,6,4,2,4,4,8])
   res[:classparams]=res[:classnames]
@@ -121,12 +123,11 @@ chevieset(:F4,:sparseFakeDegrees,
 1,21],[1,3,1,5,1,7,2,9,1,11,1,13,1,15],[1,9,1,11,1,13,2,15,1,17,1,19,1,21],[1,
 5,2,7,2,9,3,11,3,13,2,15,2,17,1,19]])
 
-chevieset(:F4, :ClassParameter, function (w,)
+chevieset(:F4, :ClassParameter, function(w)
   x=prod(chevieget(:F4,:generators)[w],init=Perm())
   chevieget(:F4,:classparams)[findfirst(
-  ==([tally(cycletype(RestrictedPerm(x,chevieget(:F4,:orbits)[1]))),
-      tally(cycletype(RestrictedPerm(x,chevieget(:F4,:orbits))[2]))]),
-  chevieget(:F4,:cyclestructure))]
+    ==(tally.(cycletype.(restricted.(x,chevieget(:F4,:orbits))))),
+    chevieget(:F4,:cyclestructure))]
 end)
 
 chevieset(:F4, :HeckeCharTable, function (param, _)

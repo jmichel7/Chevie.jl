@@ -9,8 +9,7 @@ chevieset(:G25,:ordergens,fill(3,3))
 
 chevieset(:G25,:HyperplaneRepresentatives, [1])
 
-chevieset(:G25,:BraidRelations,
-          [[[1,2,1],[2,1,2]],[[1,3],[3,1]],[[2,3,2],[3,2,3]]])
+chevieset(:G25,:BraidRelations,[braidrel(1,2,3),braidrel(1,3,2),braidrel(2,3,3)])
 
 chevieset(:G25,:ReflectionDegrees, [6, 9, 12])
 

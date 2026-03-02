@@ -200,7 +200,7 @@ chevieset(:A, :UnipotentClasses, function (n, _)
     p=cl[:parameter]
     d=gcd(p)
     cl[:name]=joindigits(p)
-    cl[:Au]=crg(d, 1, 1)
+    cl[:Au]=crg(d,1,1)
     cl[:balacarter]=vcat(map(i->sum(p[1:i-1]).+(1:p[i]-1),1:length(p))...)
     p=vcat(map(x->1-x:2:x-1,p)...)
     sort!(p)

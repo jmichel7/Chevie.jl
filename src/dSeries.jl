@@ -673,8 +673,6 @@ function format(io::IO,s::Series)
   showtable(io,m;row_labels=charnumbers(s),col_labels)
 end
 
-ChevieErr(x...)=xprint("!!!!!!! ",x...)
-
 """
 `relative_group(s::Series)`
 

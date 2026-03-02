@@ -94,6 +94,11 @@ function AdjustHeckeCharTable(tbl,param)
   tbl
 end
 
+function braidrel(i,j,o)
+  s(i,j)=[ifelse(iseven(k),j,i) for k in 1:o]
+  (s(i,j),s(j,i))
+end
+
 """
 `CycPol(v::AbstractVector)`
 
@@ -171,7 +176,7 @@ use EvalPolRoot at the end.
 function VcycSchurElement(para::Vector,r,data=nothing)
 # println("para=",para,"\nr=",r,"\ndata=",data)
   if !isnothing(data) para=para[data[:order]] else para=copy(para) end
-  monomial(mon,para)=prod(i->(para[i]//1)^(Int(mon[i])),eachindex(para))
+  monomial(m,p)=prod(i->(p[i]//1)^(Int(m[i])),eachindex(p))
   if haskey(r,:rootUnity) && haskey(r,:root) error("cannot have both") end
   res=haskey(r,:coeff) ? r[:coeff] : 1
   if haskey(r,:factor) res=Pol([res*monomial(r[:factor],para)]) end

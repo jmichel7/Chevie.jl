@@ -17,9 +17,9 @@ chevieset(:G29, :simpleroots, [0 0 0 -2;
 
 chevieset(:G29, :ordergens, fill(2,4))
 
-chevieset(:G29, :BraidRelations, [[[1, 2, 1], [2, 1, 2]], [[2, 4,2], [4, 2, 4]],
-  [[3, 4, 3], [4, 3, 4]], [[2, 3, 2, 3], [3, 2, 3, 2]], [[1, 3], [3, 1]],
-  [[1, 4], [4, 1]], [[4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4]]])
+chevieset(:G29, :BraidRelations, [braidrel(1,2,3), braidrel(2,4,3),
+  braidrel(3,4,3), braidrel(2,3,4), braidrel(1,3,2), braidrel(1,4,2),
+  ([4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4])])
 
 chevieset(:G29, :ReflectionDegrees, [4, 8, 12, 20])
 
