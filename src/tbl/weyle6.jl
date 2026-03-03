@@ -23,7 +23,7 @@ end)
 
 chevieset(:E6, :nconjugacy_classes, 25)
 
-chevieset(:E6, :ClassNames, ["A_0", "4A_1", "2A_1", "3A_2", "A_2", "2A_2",
+chevieset(:E6, :classnames, ["A_0", "4A_1", "2A_1", "3A_2", "A_2", "2A_2",
   "D_4(a_1)", "A_3+A_1", "A_4", "E_6(a_2)", "D_4", "A_5+A_1", "A_2+2A_1",
   "E_6(a_1)", "E_6", "A_1", "3A_1", "A_3+2A_1", "A_3", "A_2+A_1", "2A_2+A_1",
   "A_5", "D_5", "A_4+A_1", "D_5(a_1)"])
@@ -35,7 +35,7 @@ chevieset(:E6,:PowerMaps,[nothing,
   [1,2,3,4,5,6,7,8,1,10,11,12,13,14,15,16,17,18,19,20,21,22,23,16,25],
   nothing,1:25,nothing,nothing,nothing,1:25])
 
-chevieset(:E6, :classinfo, Dict{Symbol, Any}(:classtext => [Int[],
+chevieset(:E6, :classinfo, Dict{Symbol, Any}(:classwords => [Int[],
   [3, 4, 3, 2, 4, 3, 5, 4, 3, 2, 4, 5], [1, 4],
   [1, 3, 1, 4, 3, 1, 2, 4, 5, 4, 3, 1, 2, 4, 3, 5, 6, 5, 4, 3, 2, 4, 5, 6],
   [1, 3], [1, 3, 5, 6], [3, 4, 3, 2, 4, 5], [1, 4, 3, 6], [1, 4, 3, 2],
@@ -45,8 +45,8 @@ chevieset(:E6, :classinfo, Dict{Symbol, Any}(:classtext => [Int[],
   [1, 3, 4, 3, 2, 4, 3, 5, 4, 3, 2, 4, 5], [1, 4, 3], [1, 3, 2],
   [1, 3, 2, 5, 6], [1, 4, 6, 3, 5], [1, 3, 4, 2, 5], [1, 4, 3, 2, 6],
   [1, 4, 2, 5, 4, 2, 3]],
-  :classnames => chevieget(:E6, :ClassNames),
-  :classparams => chevieget(:E6, :ClassNames),
+  :classnames => chevieget(:E6, :classnames),
+  :classparams => chevieget(:E6, :classnames),
   :powermaps => chevieget(:E6, :PowerMaps),
   :orders=>[1,2,2,3,3,3,4,4,5,6,6,6,6,9,12,2,2,4,4,6,6,6,8,10,12],
   :classes=>[1,45,270,80,240,480,540,3240,5184,720,1440,1440,2160,5760,4320,
@@ -265,7 +265,7 @@ chevieset(:E6, :CycPolSchurElements, [
   [1, -6, 2, 2, 2, 2, 4, 4, 5, 8], 
   [1, -10, 2, 2, 2, 2, 4, 4, 5, 8]])
 
-chevieset(:E6, :sparseFakeDegrees, [
+chevieset(:E6, :sparse_fakedegrees, [
   [1, 0], [1, 36], 
   [1, 9, 1, 13, 1, 15, 1, 16, 1, 17, 1, 19, 1, 20, 1, 21, 1, 23, 1, 27], 
   [1, 1, 1, 4, 1, 5, 1, 7, 1, 8, 1, 11], 
@@ -305,7 +305,7 @@ chevieset(:E6, :sparseFakeDegrees, [
    6, 21, 7, 22, 5, 23, 5, 24, 4, 25, 4, 26, 2, 27, 2, 28, 1, 29, 1, 30]])
 
 chevieset(:E6, :ClassParameter, w->
-  chevieget(:E6, :ClassNames)[findfirst(==(tally(cycletype(prod(
+  chevieget(:E6, :classnames)[findfirst(==(tally(cycletype(prod(
     chevieget(:E6,:generators)[w],init=Perm())))),chevieget(:E6,:cyclestructure))])
 
 chevieset(:E6, :HeckeCharTable, function (param, rootpara)

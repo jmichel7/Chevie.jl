@@ -1415,7 +1415,7 @@ chevieset(:G4_22,:ordergens,ST->Data4_22.ordergens[ST-3])
 
 chevieset(:G4_22, :ReflectionDegrees,ST->Data4_22.ReflectionDegrees[ST-3])
 
-chevieset(:G4_22, :FakeDegree,(ST,phi,q)->
+chevieset(:G4_22, :fakedegree,(ST,phi,q)->
   sum(q.^Data4_22.sparse_fakedegrees[ST-3][findfirst(==(phi),
      chevieget(:G4_22,:charinfo)(ST)[:charparams])]))
 
@@ -1449,7 +1449,7 @@ chevieset(:G4_22, :parabolic_reps, function (ST, s)
   if s==0 
     [Int[]]
   elseif s==1
-    filter(x->length(x)==1,chevieget(:G4_22,:classinfo)(ST)[:classtext])
+    filter(x->length(x)==1,chevieget(:G4_22,:classinfo)(ST)[:classwords])
   else [1:size(Data4_22.simpleroots[ST-3],1)]
   end
 end)
@@ -2022,74 +2022,68 @@ chevieset(:G4_22, :indexclasses, function(ST)
   end
 end)
 
-chevieset(:G4_22, :classinfo, function(ST)
+chevieset(:G4_22, :classwords, function(ST)
+  indexclasses=chevieget(:G4_22,:indexclasses)(ST)
   p=chevieget(:G4_22, :malleclasses)(ST)
+  f(class,z)=vcat([Int[],[1],[2],[3],[3,3]][class[1]],repeat(z,class[2]))
+  h(z,l)=map(x->Replace(f(x, z), l...),p[indexclasses])
+  if ST==4 h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
+  elseif ST==5 h([2, 3], [[1], Int[], [2], [1], [3], [2]])
+  elseif ST==6 h([3, 1], [[2], Int[], [3], [2]])
+  elseif ST==7 h([1, 2, 3], Vector{Int}[])
+  elseif ST==8 h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
+  elseif ST==9 h([3, 1], [[2], Int[], [3], [2]])
+  elseif ST==10 h([2, 3], [[1], Int[], [2], [1], [3], [2]])
+  elseif ST==11 h([1, 2, 3], Vector{Int}[])
+  elseif ST==12 h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
+  elseif ST==13
+    map(x->Replace(x,[0],[1,2,3,1,2,3,1,2,3]),[Int[],[0],[0,0],[0,0,0],[2],
+      [2,0],[3,1,2],[3,1,2,0],[3,1,2,0,0],[3,1,2,0,0,0],[2,3,1,2,1],
+      [2,3,1,2,1,0],[2,3,1,2,1,0,0],[2,3,1,2,1,0,0,0],[1],[1,0]])
+  elseif ST==14 h([1, 2], [[3], Int[]])
+  elseif ST==15 h([1,2,3],[[3,3],[4],[3,1,2,3],[4,1,2],[4],[3]])
+  elseif ST==16 h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
+  elseif ST==17 h([3, 1], [[2], Int[], [3], [2]])
+  elseif ST==18 h([2, 3], [[1], Int[], [2], [1], [3], [2]])
+  elseif ST==19 h([1, 2, 3], Int[])
+  elseif ST==20 h([1,2],[[3],Int[],[1,1],Int[],[1,2,1],[3],[2],[1],[3],[2]])
+  elseif ST==21 h([1, 2], [[3], Int[]])
+  elseif ST==22 h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
+  end
+end)
+
+chevieset(:G4_22, :classnames, function(ST)
+  if ST==4 z="121212";c="12"
+  elseif ST==5 z="1212";c="12"
+  elseif ST==6 z="212121";c="2zzz"
+  elseif ST==7 z="123";c="123"
+  elseif ST==8 z="121212";c="12"
+  elseif ST==9 z="212121";c="zzzzz2121"
+  elseif ST==10 z="1212";c="12"
+  elseif ST==11 z="123";c="zzzzzzzzzzzzz"
+  elseif ST==12 z="123123123123";c="z123"
+  elseif ST==13 z="123123123";c="312zz"
+  elseif ST==14 z="12121212";c="zzzz121212"
+  elseif ST==15 z="12312";c="312zzz"
+  elseif ST==16 z="121212";c="12"
+  elseif ST==17 z="212121";c="zzzzzzzzzzzzz2121"
+  elseif ST==18 z="1212";c="12"
+  elseif ST==19 z="123";c="123"
+  elseif ST==20 z="2121212121";c="zzz21212121"
+  elseif ST==21 z="1212121212";c="zzzzzzzzz12121212"
+  elseif ST==22 z="123123123123123";c="123"
+  end
+  map(x->isempty(x) ? "." : replace(replace("123"[x],z=>"z"),c=>"c"),
+      chevieget(:G4_22,:classwords)(ST))
+end)
+
+chevieset(:G4_22, :classinfo, function(ST)
   res=Dict{Symbol, Any}()
   res[:indexclasses]=chevieget(:G4_22,:indexclasses)(ST)
-  f(class,z)=vcat([Int[],[1],[2],[3],[3,3]][class[1]],repeat(z,class[2]))
-  h(z,l)=map(x->Replace(f(x, z), l...),p[res[:indexclasses]])
-  if ST==4
-    res[:classtext]=h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-    z="121212";c="12"
-  elseif ST==5
-    res[:classtext]=h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-    z="1212";c="12"
-  elseif ST==6
-    res[:classtext]=h([3, 1], [[2], Int[], [3], [2]])
-    z="212121";c="2zzz"
-  elseif ST==7
-    res[:classtext]=h([1, 2, 3], Vector{Int}[])
-    z="123";c="123"
-  elseif ST==8
-    res[:classtext]=h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-    z="121212";c="12"
-  elseif ST==9
-    res[:classtext]=h([3, 1], [[2], Int[], [3], [2]])
-    z="212121";c="zzzzz2121"
-  elseif ST==10
-    res[:classtext]=h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-    z="1212";c="12"
-  elseif ST==11
-    res[:classtext]=h([1, 2, 3], Vector{Int}[])
-    z="123";c="zzzzzzzzzzzzz"
-  elseif ST==12
-    res[:classtext]=h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
-    z="123123123123";c="z123"
-  elseif ST==13
-    res[:classtext]=map(x->Replace(x,[0],[1,2,3,1,2,3,1,2,3]),
-      [Int[],[0],[0,0],[0,0,0],[2],[2,0],[3,1,2],[3,1,2,0],[3,1,2,0,0],[3,1,2,0,0,0],[2,3,1,2,1],[2,3,1,2,1,0],[2,3,1,2,1,0,0],[2,3,1,2,1,0,0,0],[1],[1,0]])
-      z="123123123";c="312zz"
-  elseif ST==14
-    res[:classtext]=h([1, 2], [[3], Int[]])
-    z="12121212";c="zzzz121212"
-  elseif ST==15
-    res[:classtext]=h([1,2,3],[[3,3],[4],[3,1,2,3],[4,1,2],[4],[3]])
-    z="12312";c="312zzz"
-  elseif ST==16
-    res[:classtext]=h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-    z="121212";c="12"
-  elseif ST==17
-    res[:classtext]=h([3, 1], [[2], Int[], [3], [2]])
-    z="212121";c="zzzzzzzzzzzzz2121"
-  elseif ST==18
-    res[:classtext]=h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-    z="1212";c="12"
-  elseif ST==19
-    res[:classtext]=h([1, 2, 3], Int[])
-    z="123";c="123"
-  elseif ST==20
-    res[:classtext]=h([1,2],[[3],Int[],[1,1],Int[],[1,2,1],[3],[2],[1],[3],[2]])
-    z="2121212121";c="zzz21212121"
-  elseif ST==21
-    res[:classtext]=h([1, 2], [[3], Int[]])
-    z="1212121212";c="zzzzzzzzz12121212"
-  elseif ST==22
-    res[:classtext]=h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
-    z="123123123123123";c="123"
-  end
-  res[:classnames]=map(x->isempty(x) ? "." : replace(replace("123"[x],z=>"z"),c=>"c"),
-                       res[:classtext])
+  res[:classwords]=chevieget(:G4_22,:classwords)(ST)
+  res[:classnames]=chevieget(:G4_22,:classnames)(ST)
   zord=Data4_22.classes_orders[G4_22type(ST)]
+  p=chevieget(:G4_22, :malleclasses)(ST)
   res[:classes]=zord.z[first.(p[res[:indexclasses]])]
   res[:orders]=zord.ord[res[:indexclasses]]
   res[:classparams]=res[:classnames]
@@ -2123,10 +2117,10 @@ end)
 chevieset("2G5", :PhiFactors, [1, -1])
 chevieset("2G5", :nconjugacy_classes, 9)
 chevieset("2G5", :classinfo, function()
-  res=Dict{Symbol,Any}(:classtext=>[Int[],[1,2,2,1,2,2,1],[1,2,2,1,2,2,1,1],
+  res=Dict{Symbol,Any}(:classwords=>[Int[],[1,2,2,1,2,2,1],[1,2,2,1,2,2,1,1],
     [1],[1,1,2,1,1],[1,1,2,2,1,1],[1,2],[1,2,1],[2,1,2,1]],
     :classes=>[12,6,6,6,12,6,6,6,12],:orders=>[2,24,24,24,6,8,24,8,6])
-  res[:classnames]=joindigits.(res[:classtext])
+  res[:classnames]=joindigits.(res[:classwords])
   res
 end)
 

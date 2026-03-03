@@ -2,15 +2,19 @@
 # Copyright (C) 1998-2001  The Chevie Team
 chevieset("2F4", :nconjugacy_classes, 11)
 
+chevieset("2F4", :classnames,
+          ["2a","8a","4a","24a","24b","8a","8b","12a","4b","8c","8d"])
+
+chevieset("2F4", :classwords, [Int[],[2,3,2],[1],[1,2,1,3,2,1,4,3,2,1],[1,2],
+  [2],[1,2,1,3,2,1,3,2],[1,2,3,2],[1,2,1,3,2,1,3,2,4,3,2,1],
+  [1,2,1,3,2,1,3,2,4,3,2,1,3,2,4,3,2,1],[1,2,1,3,2,1]])
+
 chevieset("2F4", :classinfo, function ()
-  res=Dict{Symbol,Any}(:classtext=>
-    [Int[],[2,3,2],[1],[1,2,1,3,2,1,4,3,2,1],[1,2],[2],[1,2,1,3,2,1,3,2],
-     [1,2,3,2],[1,2,1,3,2,1,3,2,4,3,2,1],[1,2,1,3,2,1,3,2,4,3,2,1,3,2,4,3,2,1],
-     [1,2,1,3,2,1]],
+  res=Dict{Symbol,Any}(:classwords=>chevieget("2F4",:classwords),
     :orders=>[2,8,4,24,24,8,8,12,4,8,8],
     :classes=>[72,144,288,96,96,144,72,192,24,12,12],
-    :classnames=>["2a","8a","4a","24a","24b","8a","8b","12a","4b","8c","8d"])
-  res[:classparams]=joindigits.(res[:classtext])
+    :classnames=>chevieget("2F4",:classnames))
+  res[:classparams]=joindigits.(res[:classwords])
   return res
 end)
 
@@ -42,15 +46,14 @@ chevieset("2F4",:cartan,
   [2 -1 0 0;-1 2 -root(2) 0;0 -root(2) 2 -1;0 0 -1 2])
 
 chevieset("2F4",:ClassParameter,function(w)
-  params=chevieget("2F4",:classinfo)()[:classparams]
+  params=joindigits.(chevieget("2F4",:classords))
   if length(w)==1
    if tally(cycletype(chevieget("2F4",:generators)[w[1]]*chevieget("2F4",:phi)))==[2=>2,4=>11]
          return params[3]
     else return params[6]
     end
   else
-    params[findfirst(x->length(x)==length(w),
-                     chevieget("2F4",:classinfo)()[:classtext])]
+    params[findfirst(x->length(x)==length(w),chevieget("2F4",:classwords))]
   end
 end)
 
@@ -127,7 +130,7 @@ chevieset(:families,:X2,Family(;name="X_2",
   fourierMat=root(2)//2*[-1 -1;-1 1],eigenvalues=[E(8,3),-E(8)],
   charLabels=["1", "2"], special=1, sh=[1,-1]))
 
-chevieset("2F4", :sparseFakeDegrees,
+chevieset("2F4", :sparse_fakedegrees,
   [[1,0],[1,24],[1,8,1,16],[1,2,-1,4,1,8,-1,12,1,14],
    [-1,10,1,12,-1,16,1,20,-1,22],[1,6,-1,8,-1,16,1,18],
    [-1,6,1,8,-2,12,1,16,-1,18],[1,4,1,20],[1,1,-1,5,1,7,-1,11],

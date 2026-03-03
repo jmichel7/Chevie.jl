@@ -33,20 +33,20 @@ chevieset(:G24, :nconjugacy_classes, 12)
 chevieset(:G24, :parabolic_reps, s->
        [[[]], [[1]], [[1, 2], [2, 3]], [1:3]][s+1])
 
-chevieset(:G24, :ClassNames, [".", "1", "23", "13", "ccc", "c", "2323", "cc1",
+chevieset(:G24, :classnames, [".", "1", "23", "13", "ccc", "c", "2323", "cc1",
                      "cccccc", "cc", "ccc12", "z"])
 # z=c^7 where c=123 is coxeter --- in the braid group (cc1)^6=zz
 
-chevieset(:G24, :WordsClassRepresentatives, map(x->
+chevieset(:G24, :classwords, map(x->
  collect(replace(x,"."=>"","z"=>"123"^7,"c"=>"123")).-'0',
- chevieget(:G24, :ClassNames)))
+ chevieget(:G24, :classnames)))
 
 chevieset(:G24, :PowerMaps, [nothing, [1, 1, 7, 4, 9, 10, 1, 4, 9, 10, 7, 1], [1, 2, 3, 1, 6, 5, 7, 12, 10, 9, 11, 12], nothing, [1, 2, 3, 4, 6, 5, 7, 8, 10, 9, 11, 12], nothing, [1, 2, 3, 4, 12, 12, 7, 8, 1, 1, 11, 12], nothing, nothing, nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], nothing, [1, 2, 3, 4, 6, 5, 7, 8, 10, 9, 11, 12]])
 
 chevieset(:G24, :classinfo, Dict{Symbol, Any}(
-  :classtext=>chevieget(:G24, :WordsClassRepresentatives),
-  :classnames => chevieget(:G24, :ClassNames),
-  :classparams => chevieget(:G24, :ClassNames),
+  :classwords=>chevieget(:G24, :classwords),
+  :classnames => chevieget(:G24, :classnames),
+  :classparams => chevieget(:G24, :classnames),
   :orders => [1, 2, 4, 3, 14, 14, 2, 6, 7, 7, 4, 2],
   :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1],
   :powermaps=>chevieget(:G24,:PowerMaps)))
@@ -74,7 +74,7 @@ chevieset(:G24, :CycPolSchurElements,
    [2, -4, 3, 7], 
    [2, -4, 3, 7]])
 
-chevieset(:G24, :sparseFakeDegrees, [[1, 0], [1, 21], [1, 8, 1, 16, 1, 18], 
+chevieset(:G24, :sparse_fakedegrees, [[1, 0], [1, 21], [1, 8, 1, 16, 1, 18], 
   [1, 1, 1, 9, 1, 11], [1, 10, 1, 12, 1, 20], [1, 3, 1, 5, 1, 13], 
   [1, 2, 1, 4, 1, 6, 1, 8, 1, 10, 1, 12], 
   [1, 9, 1, 11, 1, 13, 1, 15, 1, 17, 1, 19], 

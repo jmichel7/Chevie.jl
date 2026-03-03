@@ -25,17 +25,17 @@ chevieset(:H3,:cartan,[2 -(1+root(5))//2 0;-(1+root(5))//2 2 -1;0 -1 2])
 
 chevieset(:H3, :PowerMaps, [nothing, [1, 1, 7, 1, 5, 3, 3, 5, 7, 1], [1, 2, 7, 4, 1, 9, 3, 10, 6, 10], nothing, [1, 2, 1, 4, 5, 10, 1, 8, 10, 10], nothing, [1, 2, 7, 4, 5, 9, 3, 8, 6, 10]])
 
-chevieset(:H3, :WordsClassRepresentatives, [Int[],[1],[1,2],[1,3],[2,3],[1,2,3],
+chevieset(:H3, :classwords, [Int[],[1],[1,2],[1,3],[2,3],[1,2,3],
   [1,2,1,2],[1,2,1,2,3],[1,2,1,2,3,2,1,2,3],[1,2,1,2,1,3,2,1,2,1,3,2,1,2,3]])
 
 chevieset(:H3, :parabolic_reps, s->
   [[Int[]],[[1]],[[1,2],[1,3],[2,3]],[1:3]][s+1])
 
 chevieset(:H3, :classinfo, function ()
-  res=Dict{Symbol,Any}(:classtext=>chevieget(:H3,:WordsClassRepresentatives),
+  res=Dict{Symbol,Any}(:classwords=>chevieget(:H3,:classwords),
     :orders => [1, 2, 5, 2, 3, 10, 5, 6, 10, 2],
     :classes => [1, 15, 12, 15, 20, 12, 12, 20, 12, 1])
-  res[:classnames]=joindigits.(res[:classtext])
+  res[:classnames]=joindigits.(res[:classwords])
   res[:classnames][1]="."
   res[:classparams]=res[:classnames]
   res[:powermaps]=chevieget(:H3,:PowerMaps)
@@ -91,7 +91,7 @@ chevieset(:H3, :CycPolSchurElements, [
   [2,-3,3,5],
   [2,-3,3,5]])
 
-chevieset(:H3, :sparseFakeDegrees, 
+chevieset(:H3, :sparse_fakedegrees, 
   [[1,15],[1,0],[1,5,1,7,1,9,1,11,1,13],[1,2,1,4,1,6,1,8,1,10],[1,6,1,10,1,14],
    [1,8,1,10,1,12],[1,1,1,5,1,9],[1,3,1,5,1,7],[1,3,1,7,1,9,1,11],
    [1,4,1,6,1,8,1,12]])

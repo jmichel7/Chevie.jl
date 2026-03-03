@@ -13,7 +13,7 @@ using Chevie
 
   - if  keyword `w` is given  the algorithm starts  from that `w`  (by default 
     the  algorithm starts from the representative  of the class obtained by
-    `classinfo(WF)[:classtext][i]`)
+    `classinfo(WF)[:classwords][i]`)
 
   - if  `canonical=true` and the eigenvalue `1` appears last in the list  `e` 
     the function returns the "canonical" element of the class as an element
@@ -35,7 +35,7 @@ function HeConjugate(WF,i,e;w=classreps(WF)[i],canonical=false)
   S=toM(map((x,y)->x*y//2,rootlengths(W),eachrow(cartan(W))))
   xprintln("Starting with w=",B(w)," of length ",length(W,w))
   xprintln("w is in class#",i," with minimal length ",
-    length(classinfo(WF)[:classtext][i])," and eigenvalues ",e)
+    length(classinfo(WF)[:classwords][i])," and eigenvalues ",e)
   for l in e
     xprintln("\nUsing eigenvalue=",l)
     m=Cyc{Rational{Int}}.(reflrep(WF,w))

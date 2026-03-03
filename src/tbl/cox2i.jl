@@ -3,7 +3,7 @@
 
 chevieset("2I", :nconjugacy_classes,m->div(m+3,2))
 
-chevieset("2I", :WordsClassRepresentatives, function (m)
+chevieset("2I", :classwords, function (m)
   r=[Int[]]
   x=[1]
   for _ in 1:div(m+1,2)
@@ -14,13 +14,13 @@ chevieset("2I", :WordsClassRepresentatives, function (m)
 end)
 
 chevieset("2I", :classinfo, function(m)
-  res=Dict{Symbol,Any}(:classtext=>chevieget("2I",:WordsClassRepresentatives)(m))
-  res[:classnames]=joindigits.(res[:classtext])
+  res=Dict{Symbol,Any}(:classwords=>chevieget("2I",:classwords)(m))
+  res[:classnames]=joindigits.(res[:classwords])
   res[:classparams]=res[:classnames]
   res[:classes]=[m]
   append!(res[:classes],fill(2,div(m,2)))
   if isodd(m) push!(res[:classes],1) end
-  res[:orders]=map(i->2m//gcd(2m,length(i)),res[:classtext])
+  res[:orders]=map(i->2m//gcd(2m,length(i)),res[:classwords])
   res[:orders][1]=2
   res
 end)
@@ -48,7 +48,7 @@ chevieset("2I", :charinfo, function(m)
   res
 end)
 
-chevieset("2I", :FakeDegree, function (m, phi, q)
+chevieset("2I", :fakedegree, function (m, phi, q)
   i=findfirst(==(phi),chevieget("2I",:charinfo)(m)[:charparams])
   if i==1 q^0
   elseif i==2 q^m
@@ -67,9 +67,9 @@ chevieset("2I", :HeckeCharTable, function (m, param, rootpara)
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   cl=chevieget("2I",:classinfo)(m)
   cos(i)=E(2m,i)+E(2m,-i)
-  ct=map(i->map(_->cos(1)*0*v,cl[:classtext]), cl[:classtext])
-  ct[1]=map(i->q^length(i),cl[:classtext])
-  ct[2]=map(i->(-1)^length(i),cl[:classtext])
+  ct=map(i->map(_->cos(1)*0*v,cl[:classwords]), cl[:classwords])
+  ct[1]=map(i->q^length(i),cl[:classwords])
+  ct[2]=map(i->(-1)^length(i),cl[:classwords])
   for i in 1:div(m-1,2)
     for j in 1:div(m+1,2)
       ct[i+2][j+1]=-v^(2j-1)*cos(i*(2j-1))

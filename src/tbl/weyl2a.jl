@@ -2,7 +2,7 @@
 # Frank Luebeck & Jean Michel (C) 1992--2001
 # Data for the coset W(A_r).F where F induces -w0.
 
-chevieset("2A",:WordsClassRepresentatives,function(n,part=partitions(n+1))
+chevieset("2A",:classwords,function(n,part=partitions(n+1))
   l=Int[]
   w0=Perm()
   for p in 1:div(n+1,2)
@@ -34,7 +34,7 @@ end)
 chevieset("2A", :classinfo, function(n)
   res=chevieget(:imp,:classinfo)(1,1,n+1)
   res[:classparams]=first.(res[:classparams])
-  res[:classtext]=chevieget("2A",:WordsClassRepresentatives)(n,res[:classparams])
+  res[:classwords]=chevieget("2A",:classwords)(n,res[:classparams])
   delete!(res, :orders)
   res
 end)
@@ -53,8 +53,8 @@ chevieset("2A",:CharTable,function(r)
   merge!(tbl,chevieget("2A",:classinfo)(r))
 end)
 
-chevieset("2A",:FakeDegree,function(n,p,q)
-  res=chevieget(:A, :FakeDegree)(n, p, Pol())
+chevieset("2A",:fakedegree,function(n,p,q)
+  res=chevieget(:A, :fakedegree)(n, p, Pol())
   (-1)^valuation(res)*res(-q)
 end)
 
@@ -75,7 +75,7 @@ chevieset("2A",:HeckeCharTable, function(r, para, rootpara)
   tbl[:charnames]=ct.charnames
   tbl[:centralizers]=ct.centralizers
   T=Tbasis(H)
-  cl=map(x->T(W(x...)*longest(W)), tbl[:classtext])
+  cl=map(x->T(W(x...)*longest(W)), tbl[:classwords])
   tbl[:irreducibles]=transpose(toM(char_values.(cl)))
   charparams=chevieget(:A,:charinfo)(r)[:charparams]
   a=chevieget(:A,:b).(charparams)

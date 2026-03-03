@@ -20,20 +20,20 @@ chevieset(:G25,:parabolic_reps,s->
 
 # position in classes of G26
 # [1,4,7,8,11,13,15,17,19,21,24,27,28,29,32,34,36,37,39,40,42,43,45,47]
-chevieset(:G25, :ClassNames, [".", "cc", "31", "3131", "12231223", "1223", "d",
+chevieset(:G25, :classnames, [".", "cc", "31", "3131", "12231223", "1223", "d",
   "dd", "z", "zz", "2231223", "d1", "1", "131", "3221223221", "11", "1122",
   "12", "12z", "122312231223", "332112", "212", "c", "cz"])
 
-chevieset(:G25, :WordsClassRepresentatives, map(x->
+chevieset(:G25, :classwords, map(x->
    collect(replace(x,"."=>"","z"=>"123"^4,"c"=>"123","d"=>"1232")).-'0',
-   chevieget(:G25, :ClassNames)))
+   chevieget(:G25, :classnames)))
 
 chevieset(:G25, :PowerMaps, [nothing, [1, 9, 4, 3, 15, 5, 8, 7, 10, 9, 3, 15, 16, 14, 5, 13, 16, 13, 4, 1, 10, 20, 2, 21], [1, 20, 1, 1, 1, 20, 9, 10, 1, 1, 20, 20, 1, 1, 1, 1, 20, 20, 20, 20, 20, 22, 22, 22], nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23], nothing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], nothing, nothing, nothing, [1, 21, 4, 3, 15, 12, 8, 7, 10, 9, 19, 6, 16, 14, 5, 13, 18, 17, 11, 20, 2, 22, 24, 23]])
 
 chevieset(:G25, :classinfo, Dict{Symbol, Any}(
-  :classtext=>chevieget(:G25,:WordsClassRepresentatives),
-  :classnames=>chevieget(:G25,:ClassNames),
-  :classparams=>chevieget(:G25,:ClassNames),
+  :classwords=>chevieget(:G25,:classwords),
+  :classnames=>chevieget(:G25,:classnames),
+  :classparams=>chevieget(:G25,:classnames),
   :powermaps=>chevieget(:G25,:PowerMaps),
   :orders=>[1,6,3,3,3,6,9,9,3,3,6,6, 3, 3, 3, 3, 6, 6, 6, 2, 6, 4, 12, 12], 
  :classes=>[1,9,12,12,12,36,72,72,1,1,36,36,12,24,12,12,36,36,36,9,9,54,54,54]))
@@ -59,7 +59,7 @@ chevieset(:G25, :HeckeCharTable, function (para,_)
   res=Dict{Symbol, Any}(:name => "H(G25)", :identifier => "H(G25)",
     :parameter => para, :size => 648, :order => 648, :dim => 3,
     :degrees => [6, 9, 12], :reflclasses=>[13])
-  f10(y)=map(w->y^length(w),res[:classtext])
+  f10(y)=map(w->y^length(w),res[:classwords])
   f23(u,v,w)=[2,-2*(u*v)^3,u^2+v^2,u^4+v^4,(u*v)^2*(u^4+v^4),-u*v*(u^2+v^2),
               -(u^2)*v^2,-(u^4)*v^4,2*u^6*v^6,2*u^12*v^12,-(v^3)*u^3*(u+v),
               -(v^2)*u^2*(u+v),u+v,(u+v)*((u^2-u*v)+v^2),u^4*v^4*(u^2+v^2),
@@ -116,7 +116,7 @@ chevieset(:G25, :CharTable, function ()
 end)
 
 
-chevieset(:G25, :sparseFakeDegrees, [[1, 0], [1, 24], [1, 12], [1, 15, 1, 21],
+chevieset(:G25, :sparse_fakedegrees, [[1, 0], [1, 24], [1, 12], [1, 15, 1, 21],
   [1, 3, 1, 9], [1, 9, 1, 15], [1, 6, 1, 12, 1, 18], [1, 5, 1, 8, 1, 11],
   [1, 5, 1, 8, 1, 11], [1, 17, 1, 20, 1, 23], [1, 13, 1, 16, 1, 19], 
   [1, 1, 1, 4, 1, 7], [1, 13, 1, 16, 1, 19], [1, 8, 1, 11, 2, 14, 1, 17, 1, 20],

@@ -45,7 +45,7 @@ end)
 chevieset(:A,:classinfo,function(n)
   res=chevieget(:imp,:classinfo)(1,1,n+1)
   res[:classparams]=first.(res[:classparams])
-  res[:classtext]=chevieget(:A,:WordClass).(res[:classparams])
+  res[:classwords]=chevieget(:A,:WordClass).(res[:classparams])
   res
 end)
 
@@ -57,7 +57,7 @@ chevieset(:A,:HeckeCharTable,function(n,para,root)
   chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root)
 end)
 
-chevieset(:A,:FakeDegree,(_,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
+chevieset(:A,:fakedegree,(_,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
 
 # partition for a coxeterword w
 chevieset(:A, :ClassParameter, function(n,w)
@@ -129,7 +129,7 @@ chevieset(:A, :Representation, function (n, i)
   chevieget(:A, :HeckeRepresentation)(n,fill([1,-1],n),fill(1,n),i)
 end)
 
-chevieset(:A, :FakeDegree, function (_, p, q)
+chevieset(:A, :fakedegree, function (_, p, q)
   improve_type(exactdiv(chevieget(:A, :PoincarePolynomial)(sum(p)-1,[[q,-1]]),
                         chevieget(:A, :SchurElement)(sum(p)-1,p,[[q,-1]],[])))
 end)

@@ -18,4 +18,4 @@ function test_surjective(W;ss=Val(:sc))
   res
 end
 
-shortest(W,w)=classinfo(W).classtext[position_class(W,W(w...))]
+shortest(W,w)=classinfo(W).classwords[position_class(W,W(w...))]

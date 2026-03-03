@@ -70,7 +70,7 @@ chevieset(:D, :classinfo, function (n)
     end
   end
   res[:powermaps]=pmaps
-  res[:classtext]=chevieget(:D,:WordClass).(n,res[:classparams])
+  res[:classwords]=chevieget(:D,:WordClass).(n,res[:classparams])
   res
 end)
 
@@ -171,7 +171,7 @@ end)
 
 chevieset(:D,:CycPolGenericDegree,c->gendeg(Symbol_partition_tuple(c,0)))
 
-chevieset(:D,:FakeDegree,(_,c,q)->fakedegree(Symbol_partition_tuple(c, 0))(q))
+chevieset(:D,:fakedegree,(_,c,q)->fakedegree(Symbol_partition_tuple(c, 0))(q))
 
 chevieset(:D,:UnipotentCharacters,function(rank)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])

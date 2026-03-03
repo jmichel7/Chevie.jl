@@ -90,10 +90,10 @@ function schurrel(H;p=Perm())
                   (good[i]==1 && sums[i]!=ll(Pol())),eachindex(good))]
 end
  
-# classtext of "canonical" generator of the center
+# classword of "canonical" generator of the center
 function centerword(W)
   if length(refltype(W))>1 error("W should be irreducible") end
-  classinfo(W).classtext[position_regular_class(W,gcd(degrees(W)))]
+  classinfo(W).classwords[position_regular_class(W,gcd(degrees(W)))]
 end
 
 position_cox(W)=position_regular_class(W,maximum(degrees(W)))
@@ -184,7 +184,7 @@ end
 
 # encode class txt with classinfo given ie replace z,c,etc...
 function EncodeClass(txt,info)
-  dic=joindigits.(info.classtext).=>info.classnames
+  dic=joindigits.(info.classwords).=>info.classnames
   dic=filter(x->length(x[2])==1 && length(x[1])>1,dic)
   sort!(dic,by=x->-length(x[1]))
   txt=joindigits(txt)
@@ -196,7 +196,7 @@ end
 function checkparabolic(W)
   pz(nbz,noz)=joindigits(noz)*"z"^nbz
   ci=classinfo(W)
-  ct=ci.classtext
+  ct=ci.classwords
   zt=centerword(W)
   cc=ct[position_cox(W)]
   if !isempty(cutz(zt,cc)[2]) error("z=$zt is not power of c=$cc\n") end
@@ -220,7 +220,7 @@ function checkparabolic(W)
       p=fusion_conjugacy_classes(WI,W)
       zp=copy(p)
       for (pj,j) in enumerate(p)
-        s=classinfo(WI).classtext[pj]
+        s=classinfo(WI).classwords[pj]
         for k in 0:order(z)-1
           a=position_class(W,cl[j]*z^k);push!(zp,a)
           nbz,noz=cutz(ct[a],zt)
@@ -259,7 +259,7 @@ end
 # info about regular elements of W
 function showregular(W)
   ci=classinfo(W)
-  txt=ci.classtext
+  txt=ci.classwords
   cc=txt[position_cox(W)];println("c=",joindigits(cc))
   cl=classreps(W)
   lpi=sum(degrees(W)+codegrees(W))
@@ -280,10 +280,10 @@ function showregular(W)
     rows_label="RegEig")
 end
 
-# partial chartable of Hecke algebra H on classtexts in some W_I<z>
+# partial chartable of Hecke algebra H on classwords in some W_I<z>
 function fromparabolic(H;spec=group_specialization(H))
   W=H.W 
-  ct=classinfo(W).classtext
+  ct=classinfo(W).classwords
   n=length(ct)
   t=convert(Matrix{Union{Missing,coefftype(H)}},fill(missing,n,n))
   zt=centerword(W)
@@ -298,10 +298,10 @@ function fromparabolic(H;spec=group_specialization(H))
   t
 end
 
-# partial chartable of Hecke algebra H on classtexts in W_I<z>
+# partial chartable of Hecke algebra H on classwords in W_I<z>
 function fromHI(H,I)
   W=H.W
-  reps=classinfo(W).classtext
+  reps=classinfo(W).classwords
   n=length(reps)
   zt=centerword(W)
   v=HeckeCentralCharacters(H)
@@ -346,7 +346,7 @@ function fromrootpi(H,w;spec=group_specialization(H))
   o=div(sum(degrees(W).+codegrees(W)),length(w)) # order of w
   if order(W(w...))!=o error(w," is not root of π") end
   pospoww=map(i->position_class(W,W(w...)^i),1:o-1)
-  ct=classinfo(W).classtext
+  ct=classinfo(W).classwords
   p=Tuple{Int,Int}[]
   print("gives classes ")
   wz=centerword(W)
@@ -374,7 +374,7 @@ end
 # partial table of H from known reps.
 function from_representations(H,inds=1:nconjugacy_classes(H.W))
   W=H.W
-  cl=classinfo(W).classtext
+  cl=classinfo(W).classwords
   n=length(cl)
   t=convert(Matrix{Union{Missing,coefftype(H)}},fill(missing,n,n))
   for i in inds
@@ -438,7 +438,7 @@ coxclasses(W)=unique(map(x->position_class(W,prod(x)),permutations(gens(W))))
 #      columnLabels:=
 #       Concatenation(["rep","eigenvalues"],List([1..W.rank-1],x->"")))),"\n");
 #  od;
-#  Print("\nh=",h,"-regular class =",c,"=",ChevieClassInfo(W).classtext[c],"\n");
+#  Print("\nh=",h,"-regular class =",c,"=",ChevieClassInfo(W).classwords[c],"\n");
 #end;
 #
 ## find for each char. x of 1-param Hecke H an e such that x is in C[q^{1/e}]

@@ -17,11 +17,11 @@ chevieset("2D",:ClassParams,
 # entries of b and the odd entries of a.
 chevieset("2D", :classinfo, function(n)
   B=chevieget(:B, :classinfo)(n)
-  l=filter(i->isodd(length(B[:classparams][i][2])),1:length(B[:classtext]))
+  l=filter(i->isodd(length(B[:classparams][i][2])),1:length(B[:classwords]))
   Dict{Symbol, Any}(:classnames =>B[:classnames][l],
                     :classparams=>B[:classparams][l],
                     :classes=> B[:classes][l], 
-                    :classtext => map(B[:classtext][l])do l
+                    :classwords => map(B[:classwords][l])do l
   # 1 is the automorphism, and u=121 is the new generator of W(2D). We deal
   # with words with an odd number of 1. To gather one 1 at right we go left
   # to right doing substitutions 11->, 12->u1, and 1a->a1 if a<>2.
@@ -83,7 +83,7 @@ chevieset("2D", :charinfo, function (n)
   res
 end)
 
-chevieset("2D",:FakeDegree,(_,c,q)->
+chevieset("2D",:fakedegree,(_,c,q)->
   fakedegree(Symbol_partition_tuple(c,0),1)(q))
 
 chevieset("2D",:PhiFactors,n->vcat(fill(1,n-1),-1))
@@ -117,7 +117,7 @@ function (l,para,_)
   T=Tbasis(hecke(coxgroup(:B,l),param))
   tbl[:irreducibles]=permutedims(toM(map(x->char_values(
     T(1,Replace(x,[1],[1,2,1])...),hi[:irreducibles][chr,:]),
-                                       tbl[:classtext])))
+                                       tbl[:classwords])))
   AdjustHeckeCharTable(tbl,para)
 end)
 

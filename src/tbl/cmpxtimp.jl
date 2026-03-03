@@ -30,24 +30,24 @@ chevieset(:timp, :classinfo, function (p, q, r, phi)
   if [p, q, r]==[3, 3, 3]
     if phi==perm"(1,4,2)"
       Dict{Symbol, Any}(:classes => [3, 9, 9, 3, 18, 9, 3], 
-       :classtext=>[Int[],[3],[1],[2,1],[3,1],[3, 2, 1], [2, 3, 1, 2, 3, 1]], 
+       :classwords=>[Int[],[3],[1],[2,1],[3,1],[3, 2, 1], [2, 3, 1, 2, 3, 1]], 
        :classparams=>[Int[],[3],[1],[2,1],[3,1],[3,2,1],[2, 3, 1, 2, 3, 1]], 
        :classnames => ["Id", "3", "1", "21", "31", "321", "231231"])
     elseif phi==perm"(1,2,4)"
       Dict{Symbol, Any}(:classes => [3, 9, 9, 3, 18, 9, 3],
-       :classtext=>[Int[],[3],[1],[1,2],[3,1],[3,1, 2], [1, 3, 2, 1, 3, 2]], 
+       :classwords=>[Int[],[3],[1],[1,2],[3,1],[3,1, 2], [1, 3, 2, 1, 3, 2]], 
        :classparams=>[Int[],[3],[1],[1,2],[3,1],[3,1,2], [1, 3, 2, 1, 3, 2]], 
        :classnames => ["Id", "3", "1", "12", "31", "312", "132132"])
     elseif order(phi)==4
       Dict{Symbol, Any}(:classes => [9, 9, 9, 9, 9, 9],
-       :classtext=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
+       :classwords=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
        :classparams=>[Int[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]],
        :classnames =>["Id", "1", "12", "123", "121", "1213"])
     elseif order(phi)==2 chevieget(:imp,:classinfo)(3, 3, 3)
     else error("phi==", phi, " not implemented")
     end
   elseif [p, q, r]==[4, 2, 2]
-    Dict{Symbol, Any}(:classtext=>[Int[],[1],[1,2,3,1,2,3],[1,2,3,1,2,3,1,2,3]],
+    Dict{Symbol, Any}(:classwords=>[Int[],[1],[1,2,3,1,2,3],[1,2,3,1,2,3,1,2,3]],
                       :classes => [4, 4, 4, 4], 
                       :classnames => ["Id", "1", "cc", "z"])
   else
@@ -57,7 +57,7 @@ chevieset(:timp, :classinfo, function (p, q, r, phi)
 end)
 
 chevieset(:timp, :nconjugacy_classes, function (p, q, r, phi)
-  length(chevieget(:timp, :classinfo)(p, q, r, phi)[:classtext]) end)
+  length(chevieget(:timp, :classinfo)(p, q, r, phi)[:classwords]) end)
 
 chevieset(:timp, :charinfo, function (p, q, r, phi)
   if [p, q, r]==[3, 3, 3]

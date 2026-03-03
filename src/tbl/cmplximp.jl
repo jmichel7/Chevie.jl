@@ -72,7 +72,7 @@ end)
 chevieset(:imp, :nconjugacy_classes, function (p, q, r)
   if [q,r]==[2,2] div(p*(p+6),4)
   elseif q==1 npartition_tuples(r,p)
-  else length(chevieget(:imp,:classinfo)(p,q,r)[:classtext])
+  else length(chevieget(:imp,:classinfo)(p,q,r)[:classwords])
   end
 end)
 
@@ -300,7 +300,7 @@ information  about  it  necessary  to  compute  the  function `Δ` in [hr98;
         if iszero(n) return 1 end
         bp=maximum(x for S in λ for x in S)
         i=findfirst(x->bp in x,λ)
-        # choice of bp and i corresponds to choice (sort) in classtext
+        # choice of bp and i corresponds to choice (sort) in classwords
         strips=Strips(μ, bp)
         if isempty(strips) return 0 end
         rest=copy(λ)
@@ -362,7 +362,7 @@ information  about  it  necessary  to  compute  the  function `Δ` in [hr98;
     reps=map(i->chevieget(:imp,:HeckeRepresentation)(p,q,r,para,rootpara,i),
              1:length(res[:classes]))
     res[:irreducibles]=toM(improve_type(map(reps)do r
-      traces_words_mats(r,cl[:classtext])
+      traces_words_mats(r,cl[:classwords])
     end))
   end
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])
@@ -389,7 +389,7 @@ chevieset(:imp, :B, function (p, q, _)
   if q==1 || p==q error("should not be called") end
 end)
 
-chevieset(:imp, :FakeDegree, function (p, q, _, c, v)
+chevieset(:imp, :fakedegree, function (p, q, _, c, v)
   if q==1 fakedegree(Symbol_partition_tuple(c,1))(v)
   elseif q==p fakedegree(Symbol_partition_tuple(c,fill(0,p)))(v)
   else nothing
@@ -524,7 +524,7 @@ end)
 
 chevieset(:imp, :classparams, function (p, q, r)
   if r==2 && p!=q && iseven(q)
-    # classparams is the classtext where 0->z
+    # classparams is the classwords where 0->z
     e1=div(q,2)
 # if s,t,u generate G(p,2,2) then s':=s^e1,t,u generate G(p,q,2)
 # z:=stu generates Z(G(p,2,2)) and z':=z^e1 generates Z(G(p,q,2))
@@ -579,7 +579,7 @@ chevieset(:imp, :classinfo, function (p, q, r)
                    enumerate(S)))
   centralizer(S)=p^sum(length,S)*prod(map(pp->prod(y->factorial(y[2])*y[1]^y[2],
                                         tally(pp);init=1),S))
-  function classtext(S)
+  function classword(S)
     s=vcat(map(i->map(t->[t,i-1],S[i]),1:p)...)
     sort!(s,by=a->(a[1],-a[2]))
     l=0
@@ -599,22 +599,24 @@ chevieset(:imp, :classinfo, function (p, q, r)
 # z:=stu generates Z(G(p,2,2)) and z':=z^e1 generates Z(G(p,q,2))
 # relations for G(p,2,2) are stu=tus=ust
 # relations for G(p,q,2) are s'tu=tus' and [z',u]=1
-    res=Dict{Symbol, Any}(:classtext=>[],:classparams=>[],:classnames=>[])
+    res=Dict{Symbol, Any}(:classwords=>[],:classparams=>[],:classnames=>[])
     for i in 0:p-1
       for j in 0:div(p-i-1,2)
         if mod(j+i,e1)==0
           push!(res[:classparams],vcat(fill(1,j),fill(0,i)))
-          push!(res[:classtext],vcat(fill(1,div(j+i,e1)), repeat([2,3],i)))
-          push!(res[:classnames],"1"^(div(j+i,e1)-div(i,e1))*"23"^(mod(i,e1))*
-                "z"^div(i,e1))
+          word=vcat(fill(1,div(j+i,e1)-div(i,e1)),repeat([2,3],mod(i,e1)),
+                    repeat([1,2,3],div(i,e1)))
+          push!(res[:classwords],word)
+          push!(res[:classnames],replace(joindigits(word),"123"=>"z"))
         end
       end
     end
     for j in 2:3
      for i in 0:e1:div(p,2)-e1
         push!(res[:classparams], pushfirst!(fill(0,i),j))
-        push!(res[:classtext], vcat([j], fill(1,div(i,e1)),repeat([2,3],i)))
-        push!(res[:classnames], string(j,"z"^div(i,e1)))
+        word=vcat([j],repeat([1,2,3],div(i,e1)))
+        push!(res[:classwords], word)
+        push!(res[:classnames], replace(joindigits(word),"123"=>"z"))
       end
     end
     res[:orders] = map(res[:classparams])do c
@@ -634,8 +636,8 @@ chevieset(:imp, :classinfo, function (p, q, r)
   elseif q==1
     cp=partition_tuples(r,p)
     res=Dict{Symbol,Any}(:classparams=>cp)
-    res[:classtext]=classtext.(cp)
-    res[:classnames]=chevieget(:imp,:ClassName).(cp)
+    res[:classwords]=classword.(cp)
+    res[:classnames]=chevieget(:imp,:classname).(cp)
     res[:orders]=order.(cp)
     res[:centralizers]=centralizer.(cp)
     res[:classes]=div.(p^r*factorial(r),res[:centralizers])
@@ -690,7 +692,7 @@ chevieset(:imp, :classinfo, function (p, q, r)
       end
       res
     end
-    res=Dict{Symbol, Any}(:classtext=>Vector{Int}[],:classparams=>[],
+    res=Dict{Symbol, Any}(:classwords=>Vector{Int}[],:classparams=>[],
       :orders=>Int[],:centralizers=>Int[])
     for S in partition_tuples(r,p)
       if mod(sum(j->(j-1)*length(S[j]),1:p),q)!=0 continue end
@@ -700,7 +702,7 @@ chevieset(:imp, :classinfo, function (p, q, r)
         if !isempty(S[j]) a=gcd(a,j-1) end
       end
       for j in 0:a-1 # number of pieces the class splits
-        push!(res[:classtext],trans(vcat(fill(1,j),classtext(S),fill(1,p-j))))
+        push!(res[:classwords],trans(vcat(fill(1,j),classword(S),fill(1,p-j))))
         if a>1 push!(res[:classparams], vcat(S,[div(p,a)*j]))
         else push!(res[:classparams], S)
         end
@@ -709,12 +711,12 @@ chevieset(:imp, :classinfo, function (p, q, r)
       end
     end
     res[:classes]=div.(res[:centralizers][1], res[:centralizers])
-    res[:classnames]=map(chevieget(:imp, :ClassName), res[:classparams])
+    res[:classnames]=map(chevieget(:imp, :classname), res[:classparams])
     return res
   end
 end)
 
-chevieset(:imp, :ClassName, function(p)
+chevieset(:imp, :classname, function(p)
   if all(x->x isa Vector, p)
     if sum(sum,p)==1 xrepr(E(length(p),findfirst(==([1]),p)-1);TeX=true)
     else string_partition_tuple(p)

@@ -75,7 +75,7 @@ end)
 
 chevieset(:B,:classinfo, function(n)
   res=chevieget(:imp,:classinfo)(2,1,n)
-  res[:classtext]=map(chevieget(:B,:WordClass),res[:classparams])
+  res[:classwords]=map(chevieget(:B,:WordClass),res[:classparams])
   res[:classes]=div.(res[:centralizers][1],res[:centralizers])
   res
 end)
@@ -96,7 +96,7 @@ chevieset(:B,:PoincarePolynomial,function(n,para)
   prod(i->(q2^i*q1+1)*sum(k->q2^k,0:i),0:n-1)
 end)
 
-# we cannot do as below for Hecke algebra because the .classtext is not the same
+# we cannot do as below for Hecke algebra because the .classwords is not the same
 #chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
 #chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
 
@@ -208,7 +208,7 @@ chevieset(:B,:HeckeRepresentation,(arg...)->
 
 chevieset(:B,:Representation,(n,i)->chevieget(:imp,:Representation)(2,1,n,i))
 
-chevieset(:B,:FakeDegree,(_,c,q)->fakedegree(Symbol_partition_tuple(c,1))(q))
+chevieset(:B,:fakedegree,(_,c,q)->fakedegree(Symbol_partition_tuple(c,1))(q))
 
 chevieset(:B, :DecompositionMatrix, function (l, p)
   decS(i)= MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))

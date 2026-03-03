@@ -34,13 +34,13 @@ end)
 using Primes: primes
 chevieset(:I, :classinfo, function (m)
   res=chevieget(:imp,:classinfo)(m,m,2)
-  res[:classtext][end]=[1]
+  res[:classwords][end]=[1]
   l=length(res[:orders])
   l=iseven(m) ? vcat([1,l,l-1],2:l-2) : l=vcat([1,l],2:l-1)
-  for k in (:classes,:orders,:classtext,:centralizers,:classparams)
+  for k in (:classes,:orders,:classwords,:centralizers,:classparams)
     res[k]=res[k][l]
   end
-  res[:classnames]=joindigits.(res[:classtext])
+  res[:classnames]=joindigits.(res[:classwords])
   l=primes(m)
   pmaps=Vector{Any}(fill(nothing,maximum(l)))
   pp=res[:classparams]
@@ -70,7 +70,7 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
   end
   push!(ct,[-v^0,-v^0])
   cl=chevieget(:I,:classinfo)(m)
-  r=cl[:classtext]
+  r=cl[:classwords]
   ct=map(i->map(x->prod(i[x]),r),ct)*E(1)
   append!(ct, map(1:div(m-1,2))do j
     map(1:length(r))do i
@@ -191,7 +191,7 @@ chevieset(:I,:SchurElement, function (m,phi,para,rootpara)
   end
 end)
 
-chevieset(:I,:FakeDegree,(m,phi,q)->phi[1]==1 ? q^phi[2] : q^phi[2]+q^(m-phi[2]))
+chevieset(:I,:fakedegree,(m,phi,q)->phi[1]==1 ? q^phi[2] : q^phi[2]+q^(m-phi[2]))
 
 chevieset(:I,:CharTable,function(m)
   res=chevieget(:I,:HeckeCharTable)(m,[[1,-1],[1,-1]],[1,1])

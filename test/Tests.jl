@@ -277,7 +277,7 @@ function Trepresentations(H,l=Int[];check=true)
          ChevieErr("repr. ",i," character found at ",pos,"\n")
       else 
         ct=CharTable(H).irr
-        pos=collect(zip(ct[i,:],charfromrepr(gr,classinfo(W).classtext)))
+        pos=collect(zip(ct[i,:],charfromrepr(gr,classinfo(W).classwords)))
 	f=findall(x->x[2]!=x[1],pos)
         ChevieErr("character does not match\n")
         Format.Table(toM(pos[f]),row_labels=f,col_labels=["is","should be"])
@@ -402,8 +402,8 @@ function Tclassinfo(W)
   if ci.orders!=order.(cl)
     cmpvec(ci.orders,order.(cl);na="orders",nb="should be")
   end
-  if cl!=map(x->W(x...),ci.classtext)
-    cmpvec(map(x->W(x...),ci.classtext),cl;na="prod(classtext)",nb="should be")
+  if cl!=map(x->W(x...),ci.classwords)
+    cmpvec(map(x->W(x...),ci.classwords),cl;na="prod(classwords)",nb="should be")
   end
 end
 
@@ -733,11 +733,11 @@ function Tcharparams(W)
   end
   function fakdeghighterms(a,p) 
     ok(degree(fd[n0(a)]-p)<valuation(p),
-    "FakeDegree(",a,") should have high terms ",p)
+    "fakedegree(",a,") should have high terms ",p)
   end
   function fakdegsmaller(a,b) 
     ok(degree(fd[n0(a)])<degree(fd[n0(b)]),
-    "FakeDeg(",a,") should have a smaller degree than FakeDeg(",b,")")
+    "fakedegree(",a,") should have a smaller degree than fakedegree(",b,")")
   end
   function issign(a,b)local det
     det=map(x->position_class(W,x),gens(W))
@@ -1838,7 +1838,7 @@ function TG4_22index(W)
   if a!=b || b!=c
     a=hcat(filter(x->length(unique(x))>1,collect(eachcol(toM([a,b,c]))))...)
     ChevieErr(Format.Table(a[[2,3],:];
-      row_labels=["fusion to "*repr(O;context=rio()),"classtext"],
+      row_labels=["fusion to "*repr(O;context=rio()),"classwords"],
       col_labels=string.(a[1,:]),rows_label="indexclasses"))
   end
 end

@@ -9,7 +9,7 @@ chevieset("2E6", :nconjugacy_classes, 25)
 #    word(W,argmin(x->length(W,x),elements(c).*longest(W)))
 #  end
 chevieset("2E6", :classinfo, function ()
-  res=Dict{Symbol,Any}(:classtext=>[
+  res=Dict{Symbol,Any}(:classwords=>[
     [1,2,3,1,4,2,3,1,4,3,5,4,2,3,1,4,3,5,4,2,6,5,4,2,3,1,4,3,5,4,2,6,5,4,3,1],
     Int[],[3,4,3,5,4,3],[1,2,4,3,1,5,4,3,6,5,4,3],
     [1,2,3,1,4,3,1,5,4,3,1,6,5,4,3,1],[2,3,4,2,3,4,6,5,4,2,3,4,5,6],
@@ -17,10 +17,7 @@ chevieset("2E6", :classinfo, function ()
     [4,2,5,4,2,3,4,5,6,5,4,2,3,4,5,6],[2,4],[1,5],[5,4],[1,2,5,4],
     [1,2,3,1,4,3],[1,3,1,4,3,1,5,4,3,1,6,5,4,3,1],[2],[1],[2,3,4,3,5,4,3],
     [1,3,4,3,5,4,3],[1,3,1,4,3],[1,2,5],[2,5,4],[1,5,4],[1,2,4]],
-  :classnames=>["A_0", "4A_1", "2A_1", "3A_2", "A_2", "2A_2", "D_4(a_1)",
-    "A_3+A_1", "A_4", "E_6(a_2)", "D_4", "A_5+A_1", "A_2+2A_1", "E_6(a_1)",
-    "E_6", "A_1", "3A_1", "A_3+2A_1", "A_3", "A_2+A_1", "2A_2+A_1", "A_5",
-    "D_5", "A_4+A_1", "D_5(a_1)"],
+  :classnames=>chevieget("E6",:classnames),
   :classes=>[1, 45, 270, 80, 240, 480, 540, 3240, 5184, 720, 1440, 1440,
     2160, 5760, 4320, 36, 540, 540, 1620, 1440, 1440, 4320, 6480, 5184, 4320])
   res[:classparams] = res[:classnames]
@@ -214,15 +211,15 @@ Vector{Pol{Int64}}[[Pol([1],72), Pol([1]), Pol([1],12), Pol([1],24), Pol([1],
 4), Pol([-1, 0, 2, 0, -1],2), Pol([-1, 0, 3, 0, -2]), Pol([-1],4), Pol([1],2),
  Pol([2, 0, -3, 0, 1],2)]])
 
-chevieset("2E6", :FakeDegree, function (p, q)
+chevieset("2E6", :fakedegree, function (p, q)
   sgns=[1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,1]
   sgns[findfirst(==(p),chevieget(:E6, :charinfo)()[:charparams])]*
-    chevieget(:E6,:FakeDegree)(p,-q)
+    chevieget(:E6,:fakedegree)(p,-q)
 end)
 
 chevieset("2E6", :ClassParameter, function (w,)
   x=prod(chevieget("2E6",:generators)[w],init=Perm())*chevieget("2E6",:phi)
-  chevieget("2E6",:ClassNames)[findfirst(==(tally(cycletype(x))),
+  chevieget("2E6",:classnames)[findfirst(==(tally(cycletype(x))),
                                chevieget("2E6",:cyclestructure))]
 end)
 
@@ -243,7 +240,7 @@ function getHeckeCharTable2E6(v)
   tbl=copy(CharTable(H))
   merge!(tbl,chevieget("2E6",:classinfo)())
   tbl.identifier="H(^2E6)"
-  cl=map(x->W(x...)*longest(W),tbl.classtext)
+  cl=map(x->W(x...)*longest(W),tbl.classwords)
   tbl.irreducibles=transpose(map(x->char_values(Tbasis(H)(x)),cl))
   for i in axes(tbl.irreducibles,1)
     tbl.irreducibles[i,:]=qE[i]*aE[i]*tbl.irreducibles[i,:]

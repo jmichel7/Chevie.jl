@@ -92,7 +92,7 @@ characters.
 We  have  ``W(Aₙ)≅𝔖ₙ₊₁``;  its  classes  and  characters  are  labelled  by
 partitions  of `n+1`. The partition labelling a  class is the cycle type of
 the  elements in that  class; the representative  word in the generators in
-`.classtext`  is the concatenation of the words corresponding to each part,
+`.classwords`  is the concatenation of the words corresponding to each part,
 where  the  word  for  a  part  `i`  is  the  product  of `i-1` consecutive
 generators  (starting  one  higher  than  the  last  generator used for the
 previous  parts). The partition labelling a character describes the type of
@@ -488,7 +488,7 @@ function Symbols.fakedegree(t::TypeIrred,p,q=Pol())
   if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
   elseif haskey(t,:orbit) q=q^length(t.orbit)
   end
-  chevieget(t,:FakeDegree,p,q)
+  chevieget(t,:fakedegree,p,q)
 end
 
 """
@@ -865,11 +865,11 @@ function classinfo(t::TypeIrred)
      end
   end
   inds=t.indices
-  cl[:classtext]=map(x->inds[x],cl[:classtext])
+  cl[:classwords]=map(x->inds[x],cl[:classwords])
   if haskey(cl,:classes) cl[:classes]=Int.(cl[:classes]) end
   if haskey(cl,:centralizers) cl[:centralizers]=Int.(cl[:centralizers]) end
   cl[:classnames]=String.(cl[:classnames])
-  if !haskey(cl,:classparams) cl[:classparams]=cl[:classtext] end
+  if !haskey(cl,:classparams) cl[:classparams]=cl[:classwords] end
   ClassInfo(cl)
 end
 
@@ -905,7 +905,7 @@ The table contains the columns:
     in the conjugacy class.
   - `order`, corresponding to the field `.orders`, is the order of elements
     in the conjugacy class.
-  - `word`, corresponding to the field `.classtext`, describes a word in
+  - `word`, corresponding to the field `.classwords`, describes a word in
     the  generators for the  representatives of each  conjugacy class. Each
     word is a list of integers where the generator `W(i)` is represented by
     the  integer  `i`.  For  finite  Coxeter  groups,  it  is  the  same as
@@ -916,13 +916,13 @@ The table contains the columns:
 function classinfo(W)
   get!(W,:classinfo)do
     tmp=map(classinfo,refltype(W))
-    if isempty(tmp) return ClassInfo(Dict(:classtext=>[Int[]],:classnames=>[""],
+    if isempty(tmp) return ClassInfo(Dict(:classwords=>[Int[]],:classnames=>[""],
       :classparams=>[Int[]],:orders=>[1],:classes=>[1],:powermaps=>Any[]))
     end
     if any(isnothing, tmp) return nothing end
     if length(tmp)==1 res=copy(tmp[1].prop)
     else res=Dict{Symbol, Any}() 
-      res[:classtext]=map(x->reduce(vcat,x),tcartfields(tmp,:classtext))
+      res[:classwords]=map(x->reduce(vcat,x),tcartfields(tmp,:classwords))
       res[:classnames]=map(x->join(x,","),tcartfields(tmp,:classnames))
     end
     if all(haskey.(tmp,:classparams))
@@ -1023,7 +1023,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
       sz+=max(maximum(length.(t[end])),length(cl[end]))+1
     end
   end
-  push!(t,limitto.(showperiodic.(io,ci.classtext),displaysize(io)[2]-sz-2))
+  push!(t,limitto.(showperiodic.(io,ci.classwords),displaysize(io)[2]-sz-2))
   push!(cl,"word")
   showtable(io,permutedims(string.(toM(t)));row_labels=string.(1:n),col_labels=cl,rows_label="n0")
 end
@@ -1034,10 +1034,10 @@ const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyp}
 function Groups.conjugacy_classes(W::TW)where TW<:Hastype
   get!(W,:classes) do
     c=classinfo(W)
-    map(1:length(c.classtext))do i
-      C=ConjugacyClass(W,W(c.classtext[i]...),
+    map(1:length(c.classwords))do i
+      C=ConjugacyClass(W,W(c.classwords[i]...),
         Dict{Symbol,Any}(:length=>c.classes[i],
-                         :word=>c.classtext[i],
+                         :word=>c.classwords[i],
                          :name=>c.classnames[i],
                          :param=>c.classparams[i]))
       if haskey(c,:orders) C.order=c.orders[i] end

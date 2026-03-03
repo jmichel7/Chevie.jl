@@ -32,21 +32,21 @@ chevieset(:G2, :charinfo, function ()
   res
 end)
 
-chevieset(:G2,:ClassNames,["A_0","\\tilde A_1","A_1","G_2","A_2","A_1+\\tilde A_1"])
+chevieset(:G2,:classnames,["A_0","\\tilde A_1","A_1","G_2","A_2","A_1+\\tilde A_1"])
 
 chevieset(:G2, :PowerMaps,
           [nothing,[1,1,1,5,5,1],[1,2,3,6,1,6],nothing,[1,2,3,4,5,6]])
 
 chevieset(:G2, :classinfo, Dict{Symbol, Any}(
-  :classtext =>[[],[2],[1],[1,2],[1,2,1,2],[1,2,1,2,1,2]],
-  :classnames => chevieget(:G2, :ClassNames),
-  :classparams => chevieget(:G2, :ClassNames),
+  :classwords =>[[],[2],[1],[1,2],[1,2,1,2],[1,2,1,2,1,2]],
+  :classnames => chevieget(:G2, :classnames),
+  :classparams => chevieget(:G2, :classnames),
   :powermaps => chevieget(:G2, :PowerMaps),
   :orders =>[1,2,2,6,3,2],:classes=>[1,3,3,2,2,1]))
 
-chevieset(:G2,:sparseFakeDegrees,[[1,0],[1,6],[1,3],[1,3],[1,1,1,5],[1,2,1,4]])
+chevieset(:G2,:sparse_fakedegrees,[[1,0],[1,6],[1,3],[1,3],[1,1,1,5],[1,2,1,4]])
 
-chevieset(:G2, :ClassParameter, w->chevieget(:G2,:ClassNames)[
+chevieset(:G2, :ClassParameter, w->chevieget(:G2,:classnames)[
   findfirst(x->w in x,[[Int[]],[[2],[1,2,1],[2,1,2,1,2]],
     [[1],[2,1,2],[1,2,1,2,1]],[[2,1],[1,2]],[[2,1,2,1],[1,2,1,2]],
     [[1,2,1,2,1,2]]])])

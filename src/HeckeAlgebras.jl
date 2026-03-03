@@ -1174,7 +1174,7 @@ element  `v`  in  each  conjugacy  class  of  `W` and one expression in the
 generators  for it such that the character  values of the image `Tᵥ` in the
 Hecke  algebra of the lift to the braid group are known. Such an expression
 in the generators will be called a *known* word (the list of known words is
-obtained  by `word.(conjugacy_classes(W))`  or `classinfo(W).classtext`. If
+obtained  by `word.(conjugacy_classes(W))`  or `classinfo(W).classwords`. If
 the  word `v` is known, the computation is quick using the character table.
 If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
 representation.   The   values   returned   are   `missing`   for   missing

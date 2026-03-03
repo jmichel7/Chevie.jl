@@ -78,7 +78,7 @@ chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34,
   phi->findfirst(==(phi),chevieget(t,:charinfo)()[:charparams]))
 
 # cycpolfakedegrees is a compact representation of fake degrees
-chevieset([:H4, :E7, :E8, :G31], :FakeDegree,t->
+chevieset([:H4, :E7, :E8, :G31], :fakedegree,t->
 function(phi, q)
   i=chevieget(t,:charindex)(phi)
   f=chevieget(t,:cycpolfakedegrees)[i]
@@ -99,19 +99,19 @@ end)
 chevieset([:H4, :E7, :E8, :G31], :b,
   t->map(f->f[2],chevieget(t,:cycpolfakedegrees)))
 
-# sparseFakeDegrees is another compact representation of fake degrees
+# sparse_fakedegrees is another compact representation of fake degrees
 chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34],
-          :FakeDegree,t->function(phi, q)
+          :fakedegree,t->function(phi, q)
   i=chevieget(t,:charindex)(phi)
-  f=chevieget(t,:sparseFakeDegrees)[i]
+  f=chevieget(t,:sparse_fakedegrees)[i]
   sum(i->f[i]*q^f[i+1],1:2:length(f)-1)
 end)
 
 chevieset([:E6,:G32,:G33,:G34,:G2,:F4,:H3,:G24,:G25,:G26,:G27,:G29],:B,
-  t->map(x->x[end],chevieget(t,:sparseFakeDegrees)))
+  t->map(x->x[end],chevieget(t,:sparse_fakedegrees)))
 
 chevieset([:G2,:F4,:H3,:G24,:G25,:G26,:G27,:G29,:E6,:G32,:G33,:G34],:b,
-  t->map(x->x[2],chevieget(t,:sparseFakeDegrees)))
+  t->map(x->x[2],chevieget(t,:sparse_fakedegrees)))
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:A,function(t)
   N=sum(x->x-1,chevieget(t,:ReflectionDegrees))

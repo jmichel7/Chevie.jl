@@ -88,7 +88,7 @@ function AdjustHeckeCharTable(tbl,param)
   if !(tbl[:irreducibles] isa AbstractMatrix) 
     tbl[:irreducibles]=toM(tbl[:irreducibles])
   end
-  for (i,w) in enumerate(tbl[:classtext])
+  for (i,w) in enumerate(tbl[:classwords])
     tbl[:irreducibles][:,i].*=prod(-last.(param[w]))
   end
   tbl

@@ -1207,12 +1207,11 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   res=ICCTable(Dict(:spets=>uc.spets,:relgroup=>ss[:relgroup],
                     :series=>i,:q=>q,:p=>uc.p))
 # We are going to solve the equation in "unipotent support", page 151
-# ᵗPΛP=Ω  where $Λ_{i,j}$ is  $∑_{g∈ G^F} Yᵢ(g)Ȳⱼ(g)$ and $Ω_{i,j}$ is equal
-# to # $|Z^0(G^F)|q^{-semisimple rank L}|G^F|/P(W_G(L))
-#  q^{-bᵢ-bⱼ}FakeDegree(χᵢ⊗χⱼ⊗sgn)$
-# where $P(W_G(L))$ is the Poincare polynomial $∏ᵢ(q^{dᵢ}-1)$
-# where $dᵢ$ are the reflection degrees of $W_G(L)$
-# res[:scalar] is the matrix $P$
+# ᵗPΛP=Ω  where `Λ_{i,j}` is  `∑_{g∈ G^F} Yᵢ(g)Ȳⱼ(g)` and `Ω_{i,j}` is equal to
+#  `|Z^0(G^F)|q^{-semisimplerank L}|G^F|/P(W_G(L)) q^{-bᵢ-bⱼ}feg(χᵢ⊗χⱼ⊗sgn)`
+# where `P(W_G(L))` is the Poincare polynomial `∏ᵢ(q^{dᵢ}-1)`
+# where `dᵢ` are the reflection degrees of `W_G(L)`
+# res.scalar is the matrix `P` and `res.L` the matrix `Λ`.
   R=ss[:relgroup]
   k=charinfo(R).positionDet
 # Partition on characters of ss.relgroup induced by poset of unipotent classes

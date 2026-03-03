@@ -20,7 +20,7 @@ end)
 
 chevieset(:E7,:nconjugacy_classes, 60)
 
-chevieset(:E7,:WordsClassRepresentatives,map(x->Replace(x,[0],[7,6,5,4,3,2,1]),
+chevieset(:E7,:classwords,map(x->Replace(x,[0],[7,6,5,4,3,2,1]),
   [[],[7,6,7,5,6,7,4,5,6,7,2,4,5,6,7,3,4,5,6,7,2,4,5,6,3,4,5,2,4,3],
    [5,4,5,2,4,5,3,4,5,2,4,3],[7,5],[7,5,2,3],[7,6],
    [6,5,6,4,5,6,2,4,3,4,5,6,2,4,5,3,1,3,4,5,2,4,3,1],[7,6,4,2],[5,4,5,2,4,3],
@@ -40,7 +40,7 @@ chevieset(:E7,:WordsClassRepresentatives,map(x->Replace(x,[0],[7,6,5,4,3,2,1]),
    [4,2,5,4,2,3,6,5,4,2,0],[0],[7,5,6,4,1],[3,4,2,3,4,6,5],[7,5,6,3,1],
    [6,5,4,2,0],[2,4,2,3,5,4,2,7,6,5,4,3,1]]))
 
-chevieset(:E7,:ClassNames,["A_0","6A_1","4A_1''","2A_1","4A_1'","A_2","3A_2",
+chevieset(:E7,:classnames,["A_0","6A_1","4A_1''","2A_1","4A_1'","A_2","3A_2",
   "2A_2","D_4(a_1)","A_3+A_1'","A_3+3A_1","D_4(a_1)+2A_1","A_3+A_1''","A_4",
   "D_4+2A_1","D_4","E_6(a_2)","A_2+2A_1","D_6(a_2)","A_5+A_1''","A_5+A_1'",
   "A_6","D_5+A_1","D_6(a_1)","E_6(a_1)","D_6","A_3+A_2+A_1","D_5(a_1)+A_1",
@@ -53,9 +53,9 @@ chevieset(:E7,:ClassNames,["A_0","6A_1","4A_1''","2A_1","4A_1'","A_2","3A_2",
 chevieset(:E7,:PowerMaps,[nothing,[1,1,1,1,1,6,7,8,3,4,4,3,4,14,6,6,7,6,8,8,8,22,9,12,25,14,18,18,17,30,1,1,1,1,1,6,7,8,3,4,4,3,4,14,6,6,7,6,8,8,8,22,9,12,25,14,18,18,17,30],[1,2,3,4,5,1,1,1,9,10,11,12,13,14,2,3,3,4,2,3,5,22,23,24,7,26,10,11,9,14,31,32,33,34,35,31,31,31,39,40,41,42,43,44,32,33,33,34,32,33,35,52,53,54,37,56,40,41,39,44],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,1,15,16,17,18,19,20,21,22,23,24,25,2,27,28,29,6,31,32,33,34,35,36,37,38,39,40,41,42,43,31,45,46,47,48,49,50,51,52,53,54,55,32,57,58,59,36],nothing,[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,1,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,31,53,54,55,56,57,58,59,60]])
 
 chevieset(:E7, :classinfo, Dict{Symbol, Any}(
-  :classtext => chevieget(:E7, :WordsClassRepresentatives),
-  :classnames => chevieget(:E7, :ClassNames),
-  :classparams => chevieget(:E7, :ClassNames),
+  :classwords => chevieget(:E7, :classwords),
+  :classnames => chevieget(:E7, :classnames),
+  :classparams => chevieget(:E7, :classnames),
   :powermaps => chevieget(:E7, :PowerMaps),
   :orders => [1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6, 6, 6, 6, 6, 7, 8, 8, 9, 10, 12, 12, 12, 15, 2, 2, 2, 2, 2, 6, 6, 6, 4, 4, 4, 4, 4, 10, 6, 6, 6, 6, 6, 6, 6, 14, 8, 8, 18, 10, 12, 12, 12, 30],
   :classes => [1, 63, 315, 945, 3780, 672, 2240, 13440, 3780, 7560, 7560, 11340, 45360, 48384, 10080, 10080, 20160, 30240, 40320, 40320, 120960, 207360, 90720, 90720, 161280, 145152, 60480, 60480, 120960, 96768, 1, 63, 315, 945, 3780, 672, 2240, 13440, 3780, 7560, 7560, 11340, 45360, 48384, 10080, 10080, 20160, 30240, 40320, 40320, 120960, 207360, 90720, 90720, 161280, 145152, 60480, 60480, 120960, 96768]))
@@ -691,11 +691,11 @@ chevieset(:E7, :ClassParameter, function(w)
   x=prod(chevieget(:E7, :generators)[w],init=Perm())
   str=tally(cycletype(x))
   i=findall(==(str),chevieget(:E7,:cyclestructure))
-  if length(i)==1 return chevieget(:E7, :ClassNames)[i[1]] end
+  if length(i)==1 return chevieget(:E7, :classnames)[i[1]] end
   str=tally(cycletype(x*chevieget(:E7,:longestperm)))
   i=findfirst(==(str),[[2=>51],[2=>59],[3=>6,6=>17],[2=>2,3=>2,6=>19],
        [2=>7,4=>25],[2=>11,4=>25]])
-  chevieget(:E7, :ClassNames)[[3, 5, 20, 21, 40, 43][i]]
+  chevieget(:E7, :classnames)[[3, 5, 20, 21, 40, 43][i]]
 end)
 
 chevieset(:E7, :HeckeCharTable, function (para, rootpara)
@@ -711,7 +711,7 @@ chevieset(:E7, :HeckeCharTable, function (para, rootpara)
     :parameter=>para, :rootparameter=>rootpara, :size=>2903040)
   merge!(tbl, chevieget(:E7, :classinfo))
   merge!(tbl, chevieget(:E7, :charinfo)())
-  cl=tbl[:classtext]
+  cl=tbl[:classwords]
   vpol=chevieget(:E7,:vpolheckeirreducibles)
   tbl[:irreducibles]=map(enumerate(vpol))do (i,p)
     if isnothing(p)  # use that the dual is just after a character

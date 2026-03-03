@@ -19,11 +19,13 @@ chevieset("3D4",:positionclass,function(x)
               chevieget("3D4", :cyclestructure))
 end)
 
+chevieset("3D4",:classnames,["C_3","\\tilde A_2","C_3+A_1","\\tilde A_2+A_1",
+                            "F_4","\\tilde A_2+A_2","F_4(a_1)"])
+
 chevieset("3D4",:classinfo,function()
   res=Dict{Symbol, Any}(
-    :classtext=>[[1],Int[],[1,2,3,1,2,3],[3],[1,3],[1,2,3,1,2,4,3,2],[1,2,3,2]],
-    :classnames=>["C_3","\\tilde A_2","C_3+A_1","\\tilde A_2+A_1","F_4",
-                  "\\tilde A_2+A_2","F_4(a_1)"],
+    :classwords=>[[1],Int[],[1,2,3,1,2,3],[3],[1,3],[1,2,3,1,2,4,3,2],[1,2,3,2]],
+    :classnames=>chevieget("3D4",:classnames),
     :orders=>[6,3,6,6,12,3,6],:classes=>[48,16,16,48,48,8,8])
   res[:classparams] = res[:classnames]
   res
@@ -158,7 +160,7 @@ chevieset("3D4",:HeckeRepresentation,function(param,rootpara,i)
   end
 end)
 
-chevieset("3D4",:sparseFakeDegrees,[[1,0],[1,12],[1,4,1,8],
+chevieset("3D4",:sparse_fakedegrees,[[1,0],[1,12],[1,4,1,8],
   [-1,4,2,6,-1,8],[1,1,-1,3,1,5],[1,7,-1,9,1,11],[1,3,1,9]])
 
 chevieset("3D4",:UnipotentCharacters,
