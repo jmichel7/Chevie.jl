@@ -1037,7 +1037,7 @@ function coxeter_hyperoctahedral_group(n::Int)
   for i in 2:n-1 append!(roots,map(j->(j,j+i),1:n-i)) end
   for i in 1:n-1 append!(roots,map(j->(j,-j-i),1:n-i)) end
   append!(roots,roots)
-  G=hyperoctaedral_group(n)
+  G=hyperoctahedral_group(n)
   G.classreps=map(x->G(chevieget(:B,:WordClass)(x)...),partition_tuples(n,2))
   CoxHyp{Int8}(G,roots,n,Dict{Symbol,Any}())
 end
