@@ -30,17 +30,7 @@ chevieset(:A,:WordClass,function(λ)
 end)
 
 # centralizer in symmetric group of an element of class given by partition
-chevieset(:A,:centralizer,function(partition)
-  res=k=1;last=0
-  for p in partition
-    res*=p
-    if p==last k+=1;res*=k
-    else k=1
-    end
-    last=p
-  end
-  res
-end)
+chevieset(:A,:centralizer,partition->Symbols.z(partition))
 
 chevieset(:A,:classinfo,function(n)
   res=chevieget(:imp,:classinfo)(1,1,n+1)

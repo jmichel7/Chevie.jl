@@ -143,7 +143,7 @@ export bruhatless, bruhatPoset, CoxeterGroup, firstleftdescent, leftdescents,
   isleftdescent, isrightdescent,
   longest, braid_relations, coxmat, 
   coxeter_symmetric_group, coxsym, CoxSym,
-  coxeter_hyperoctaedral_group, coxhyp, CoxHyp,
+  coxeter_hyperoctahedral_group, coxhyp, CoxHyp,
   coxeter_group, coxgroup,
   standard_parabolic_class, inversions, degrees, FiniteCoxeterGroup
 
@@ -1011,9 +1011,9 @@ end
 Groups.gens(W::CoxHyp)=gens(W.G)
 
 """
-`coxeter_hyperoctaedral_group(n)`  or `coxhyp(n)`
+`coxeter_hyperoctahedral_group(n)`  or `coxhyp(n)`
 
-The  Hyperoctaedral group (the group of all signed permutations of ±1,…,±n)
+The  Hyperoctahedral group (the group of all signed permutations of ±1,…,±n)
 as   a  Coxeter   group  of   type  `Bₙ`,   with  generators  `(1,-1)`  and
 `(i,i+1)(-i,-i-1)`.
 
@@ -1030,7 +1030,7 @@ julia> elements(coxhyp(2))
  (1,-1)(2,-2)
 ```
 """
-function coxeter_hyperoctaedral_group(n::Int)
+function coxeter_hyperoctahedral_group(n::Int)
   roots=Tuple{Int8,Int8}[(1,-1)]
   append!(roots,map(i->(i-1,i),2:n))
   append!(roots,map(i->(i,-i),2:n))
@@ -1042,7 +1042,7 @@ function coxeter_hyperoctaedral_group(n::Int)
   CoxHyp{Int8}(G,roots,n,Dict{Symbol,Any}())
 end
 
-const coxhyp=coxeter_hyperoctaedral_group
+const coxhyp=coxeter_hyperoctahedral_group
 
 Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(W.n))")
 

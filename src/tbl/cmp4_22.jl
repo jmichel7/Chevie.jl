@@ -1439,18 +1439,19 @@ chevieset(:G4_22, :SemisimpleRank, 2)
 chevieset(:G4_22,:nconjugacy_classes,ST->
   [7,21,14,42,16,32,48,96,8,16,24,48,45,90,135,270,27,54,18][ST-3])
 
-chevieset(:G4_22, :cartan,ST->Data4_22.simplecoroots[ST-3]*
-                       transpose(Data4_22.simpleroots[ST-3]))
+chevieset(:G4_22,:cartan,ST->chevieget(:G4_22,:simplecoroots)(ST)*
+                   transpose(chevieget(:G4_22,:simpleroots)(ST)))
 
 chevieset(:G4_22,:ReflectionCoDegrees,ST->[0,
   [2,6,8,12,4,16,12,24,10,16,18,24,10,40,30,60,18,48,28][ST-3]])
 
-chevieset(:G4_22, :parabolic_reps, function (ST, s)
-  if s==0 
+chevieset(:G4_22, :parabolic_reps, function (ST, rk)
+  if rk==0 
     [Int[]]
-  elseif s==1
-    filter(x->length(x)==1,chevieget(:G4_22,:classinfo)(ST)[:classwords])
-  else [1:size(Data4_22.simpleroots[ST-3],1)]
+  elseif rk==1 
+    filter(x->length(x)==1,chevieget(:G4_22,:classwords)(ST))
+  else 
+    [1:size(chevieget(:G4_22,:simpleroots)(ST),1)]
   end
 end)
 

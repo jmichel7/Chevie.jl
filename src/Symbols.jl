@@ -309,18 +309,14 @@ end
 
 βset(p::Partition,s=0)=βset(p.l,s)
 
-function z(l::Vector{<:Integer})
-  prev=0
-  res=1
-  nocc=1 # useless but cannot see otherwise var introduced in for scope
-  for i in l
-    if i==prev
-      nocc+=1
-    else
-      prev=i
-      nocc=1
+# centralizer in 𝔖ₙ of class parameterized by partition
+function z(partition::Vector{<:Integer})
+  prev=0;res=nocc=1 # nocc useless but cannot see otherwise var introduced in for scope
+  for p in partition
+    res*=p
+    if p==prev nocc+=1;res*=nocc
+    else prev=p;nocc=1
     end
-    res*=prev*nocc
   end
   res
 end

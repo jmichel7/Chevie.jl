@@ -246,7 +246,7 @@ function Base.show(io::IO,t::Table)
     error("align=$align should be of length ",size(t,2)+1)
   end
   dotzero=get(io,:dotzero,false)
-  t=map(x->(!ismissing(x) && x==0 && dotzero) ? "." : strip(x),t)
+  t=map(x->(!ismissing(x) && (x==0 || x=="0") && dotzero) ? "." : strip(x),t)
   TeX=get(io,:TeX,false)
   cols_widths=map(i->maximum(textwidth.(t[rows,i])),axes(t,2))
   if !isnothing(col_labels)

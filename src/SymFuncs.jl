@@ -391,7 +391,7 @@ julia> p(3)[(u+v^2)p()]
 julia> p(3,2)[(u+v^2)p()]
 (u⁵+u³v⁴+u²v⁶+v¹⁰)p₋
 ```
-We  implement also the plethysm for hyperoctaedral groups, which associates
+We  implement also the plethysm for hyperoctahedral groups, which associates
 to  each element `f` of `R₂` a function `R₂⊗R₂→R₂:(f₀,f₁)↦ f[f₀,f₁])` which
 is defined by the rules:
   - `(f+f')[f₀,f₁]=f[f₀,f₁]+f'[f₀,f₁]`

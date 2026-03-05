@@ -20,7 +20,7 @@ chevieset("2I", :classinfo, function(m)
   res[:classes]=[m]
   append!(res[:classes],fill(2,div(m,2)))
   if isodd(m) push!(res[:classes],1) end
-  res[:orders]=map(i->2m//gcd(2m,length(i)),res[:classwords])
+  res[:orders]=Int.(map(i->2m//gcd(2m,length(i)),res[:classwords]))
   res[:orders][1]=2
   res
 end)
