@@ -42,11 +42,14 @@ chevieset(:H3, :classinfo, function ()
   res
 end)
 
+chevieset(:H3, :charparams,[[1,15],[1,0],[5,5],[5,2],[3,6],[3,8],[3,1],[3,3],
+                            [4,3],[4,4]])
+
 chevieset(:H3, :charinfo, function ()
-  res=Dict(
-    :charparams=>[[1,15],[1,0],[5,5],[5,2],[3,6],[3,8],[3,1],[3,3],[4,3],[4,4]],
-    :gp=>["1_r'","1_r","5_r'","5_r","3_s","\\overline{3}_s","3_s'","\\overline{3}_s'","4_r'","4_r"],
+  res=Dict(:gp=>["1_r'","1_r","5_r'","5_r","3_s","\\overline{3}_s","3_s'",
+                 "\\overline{3}_s'","4_r'","4_r"],
     :hgal=> perm"(9,10)", :extRefl => [2, 7, 5, 1])
+  res[:charparams]=chevieget(:H3,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

@@ -489,7 +489,7 @@ returns the `CharTable` of the Hecke algebra `H`. For the primitive complex
 reflection group `G₃₄` there are `missing` entries. If `W=H.W`, the columns
 of  the  `CharTable`  are  labelled  by  `classnames(W)`; the `i`-th column
 contains   the  character  values   for  the  lift   to  `H`  of  the  word
-`classinfo(W).classreps[i]`   for   the   element   `classreps(W)[i]`  (see
+`classinfo(W).classwords[i]`   for   the   element  `classreps(W)[i]`  (see
 [`char_values`](@ref) for more information).
 
 ```julia-repl
@@ -1176,7 +1176,7 @@ element  `v`  in  each  conjugacy  class  of  `W` and one expression in the
 generators  for it such that the character  values of the image `Tᵥ` in the
 Hecke  algebra of the lift to the braid group are known. Such an expression
 in the generators will be called a *known* word (the list of known words is
-obtained  by `word.(conjugacy_classes(W))`  or `classinfo(W).classwords`. If
+obtained  by `word.(conjugacy_classes(W))` or `classinfo(W).classwords`. If
 the  word `v` is known, the computation is quick using the character table.
 If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
 representation.   The   values   returned   are   `missing`   for   missing

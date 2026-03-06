@@ -18,10 +18,13 @@ chevieset("2F4", :classinfo, function ()
   return res
 end)
 
+chevieset("2F4", :charparams,
+  [[1,0],[1,24],[4,8],[9,2],[9,10],[6,6,1],[6,6,2],[12,4],[4,1],[4,13],[16,5]])
+
 chevieset("2F4", :charinfo, function ()
-  res=Dict{Symbol,Any}(:extRefl=>[1,9,7,10,2],:charparams=>
-   [[1,0],[1,24],[4,8],[9,2],[9,10],[6,6,1],[6,6,2],[12,4],[4,1],[4,13],[16,5]],
+  res=Dict{Symbol,Any}(:extRefl=>[1,9,7,10,2],
    :kondo=>["1_1","1_4","4_1","9_1","9_4","6_1","6_2","12","4_2","4_5","16"])
+  res[:charparams]=chevieget("2F4",:charparams)
   resparams=chevieget(:F4,:charinfo)()[:charparams]
   res[:charRestrictions]=map(x->findfirst(==(x),resparams),res[:charparams])
   res[:nrGroupClasses]=length(resparams)

@@ -51,10 +51,12 @@ chevieset(:G24, :classinfo, Dict{Symbol, Any}(
   :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1],
   :powermaps=>chevieget(:G24,:PowerMaps)))
 
-chevieset(:G24, :charinfo, function ()
-  res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,21],[3,8],[3,1],[3,10],[3,3],
-                                     [6,2],[6,9],[7,6],[7,3],[8,4],[8,5]],
-   :hgal => perm"(11,12)", :extRefl => [1, 4, 5, 2])
+chevieset(:G24, :charparams,[[1,0],[1,21],[3,8],[3,1],[3,10],[3,3],
+                             [6,2],[6,9],[7,6],[7,3],[8,4],[8,5]])
+
+chevieset(:G24, :charinfo, function()
+  res=Dict{Symbol,Any}(:hgal=>perm"(11,12)", :extRefl => [1, 4, 5, 2])
+  res[:charparams]=chevieget(:G24,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

@@ -71,12 +71,14 @@ chevieset(:H4, :classinfo, function ()
   res
 end)
 
-chevieset(:H4, :charinfo, function ()
-  res=Dict{Symbol, Any}(:charparams => [[1, 0], [1, 60], [4, 1], [4, 31],
+chevieset(:H4, :charparams,[[1, 0], [1, 60], [4, 1], [4, 31],
     [4, 7], [4, 37], [6, 12], [6, 20], [8, 12], [8, 13], [9, 2], [9, 22],
     [9, 6], [9, 26], [10, 12], [16, 11], [16, 13], [16, 3], [16, 21], [16, 6],
     [16, 18], [18, 10], [24, 11], [24, 7], [24, 12], [24, 6], [25, 4],
-    [25, 16], [30, 10, 1], [30, 10, 2], [36, 5], [36, 15], [40, 8], [48, 9]],
+    [25, 16], [30, 10, 1], [30, 10, 2], [36, 5], [36, 15], [40, 8], [48, 9]])
+
+chevieset(:H4, :charinfo, function ()
+  res=Dict{Symbol, Any}(
   :gp => ["1_r", "1_r'", "4_t", "4_t'", "\\overline{4}_t", "\\overline{4}_t'",
           "6_s", "\\overline{6}_s", "8_r", "8_{rr}", "9_s", "9_s'",
           "\\overline{9}_s", "\\overline{9}_s'", "10_r", "16_t",
@@ -85,6 +87,7 @@ chevieset(:H4, :charinfo, function ()
           "25_r'", "30_s", "\\overline{30}_s", "36_{rr}", "36_{rr}'", "40_r",
           "48_{rr}"],
   :hgal => perm"(18,20)(19,21)", :extRefl => [1, 3, 7, 4, 2])
+  res[:charparams]=chevieget(:H4,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

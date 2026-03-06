@@ -43,13 +43,12 @@ chevieset(:G26, :classinfo, Dict{Symbol, Any}(
   :classes=>[1,9,36,9,9,36,12,12,12,12,12,12,36,72,72,1,72,72,1,1,1,1,36,36,36,
            36,36,12,24,24,12,12,12,12,12,36,36,36,36,9,9,9,54,54,54,54,54,54]))
 
-chevieset(:G26, :charinfo, function ()
-  res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,9],[1,33],[1,21],[1,24],[1,12],
+chevieset(:G26,:charparams,[[1,0],[1,9],[1,33],[1,21],[1,24],[1,12],
     [2,24],[2,15],[2,12],[2,3],[2,18],[2,9],[3,6],[3,15],[3,8,2],[3,5,2],
     [3,8,1],[3,5,1],[3,20],[3,17],[3,16,2],[3,13,2],[3,4],[3,1],[3,16,1],
     [3,13,1],[6,8,2],[6,11,2],[6,8,1],[6,11,1],[6,2],[6,5],[6,4,2],[6,7,2],
     [6,10],[6,13],[6,4,1],[6,7,1],[8,6,1],[8,3],[8,9,2],[8,12],[8,6,2],[8,9,1],
-    [9,8],[9,5],[9,10],[9,7]],
+    [9,8],[9,5],[9,10],[9,7]])
 # The labelling is as follows:
 # The fakedegrees of phi{8,6}' and phi{8,9}' are monic.
 # The complex conjugate of phi{3,8}' is phi{3,4}
@@ -60,7 +59,10 @@ chevieset(:G26, :charinfo, function ()
 # The complex conjugate of phi{6,11}' is phi{6,13}
 # The complex conjugate of phi{6,4}' is phi{6,2}
 # The complex conjugate of phi{6,7}' is phi{6,5}
-   :hgal=>perm"(39,40)",:extRefl=>[1,24,15,4])
+
+chevieset(:G26,:charinfo, function ()
+  res=Dict{Symbol,Any}(:hgal=>perm"(39,40)",:extRefl=>[1,24,15,4])
+  res[:charparams]=chevieget(:G26,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

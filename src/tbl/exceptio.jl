@@ -21,8 +21,7 @@ chevieset([:E7, :E8, :H3, :H4], :Invariants, t->function()
       chevieget(t, :ReflectionDegrees))
 end)
 
-chevieset([:G24,:G25,:G26,:G27,:G29,:G31,:G32,:G33,:G34,:H3,:H4,"2E6","2F4",
-           "3D4",:E6,:E7,:E8,:F4,:G2],:IrredInfo,function(t)
+chevieset(["2E6","2F4","3D4"],:IrredInfo,function(t)
   ci=chevieget(t,:charinfo)()
   map((x,y)->(charparam=x,charname=y),ci[:charparams],ci[:charnames])
 end)
@@ -75,7 +74,7 @@ chevieset([:A,:B,:D],:SemisimpleRank,_->(r->r))
 
 chevieset(["3D4",:G2,:F4,"2F4",:H3,:E6,:G24,:G25,:G26,:G27,:G29,:G32,:G33,:G34,
            :H4, :E7, :E8, :G31],:charindex,t->
-  phi->findfirst(==(phi),chevieget(t,:charinfo)()[:charparams]))
+  phi->findfirst(==(phi),chevieget(t,:charparams)))
 
 # cycpolfakedegrees is a compact representation of fake degrees
 chevieset([:H4, :E7, :E8, :G31], :fakedegree,t->

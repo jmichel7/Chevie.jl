@@ -59,14 +59,20 @@ chevieset(:G27, :classinfo, Dict{Symbol, Any}(
   :orders => [1, 2, 3, 5, 4, 30, 30, 5, 3, 2, 12, 10, 12, 15, 15, 6, 12, 12, 30, 30, 6, 6, 6, 6, 6, 15, 15, 10, 4, 6, 6, 3, 3, 2], 
   :classes => [1, 45, 120, 72, 90, 72, 72, 72, 120, 45, 90, 72, 90, 72, 72, 120, 90, 90, 72, 72, 120, 45, 45, 45, 45, 72, 72, 72, 90, 1, 1, 1, 1, 1]))
 
-chevieset(:G27, :charinfo, function ()
-  res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,45],[3,7],[3,22],[3,1],[3,16],[3,5,1],[3,20,1],[3,5,2],[3,20,2],[5,6,2],[5,6,1],[5,15,2],[5,15,1],[6,19],[6,4],[6,17],[6,2],[8,6],[8,9,1],[8,12],[8,9,2],[9,6],[9,9],[9,13],[9,4],[9,11],[9,8],[10,12],[10,3],[15,7],[15,10],[15,5],[15,8]],
+chevieset(:G27, :charparams,[[1,0],[1,45],[3,7],[3,22],[3,1],[3,16],[3,5,1],
+  [3,20,1],[3,5,2],[3,20,2],[5,6,2],[5,6,1],[5,15,2],[5,15,1],[6,19],[6,4],
+  [6,17],[6,2],[8,6],[8,9,1],[8,12],[8,9,2],[9,6],[9,9],[9,13],[9,4],[9,11],
+  [9,8],[10,12],[10,3],[15,7],[15,10],[15,5],[15,8]])
 # The labelling is determined as follows:
 # phi{5,6}' and phi{5,15}' occur with multiplicity one in the induced
 # of identity from the parabolic A2 given by [1,3]
 # for the other pairs the character with the smallest degree of the fakedegree
 # is labelled with ', the other with ''
-  :hgal=>perm"(19,20)(21,22)(23,28,26)(24,25,27)",:extRefl=>[1,5,10,2])
+
+chevieset(:G27, :charinfo, function ()
+  res=Dict{Symbol,Any}(:hgal=>perm"(19,20)(21,22)(23,28,26)(24,25,27)",
+                       :extRefl=>[1,5,10,2])
+  res[:charparams]=chevieget(:G27,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

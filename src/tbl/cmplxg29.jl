@@ -49,13 +49,12 @@ chevieset(:G29, :classinfo, Dict{Symbol, Any}(
   :classes=>[1,40,320,60,120,240,320,320,240,480,30,384,384,480,240,240,320,
           480,384,320,60,60,320,320,40,320,240,240,384,120,30,40,40,60,1,1,1]))
 
-chevieset(:G29, :charinfo, function ()
-  res=Dict{Symbol, Any}(:charparams => [[1, 0], [1, 40], [4, 4], [4, 24],
+chevieset(:G29, :charparams,[[1, 0], [1, 40], [4, 4], [4, 24],
     [4, 1], [4, 21], [4, 3], [4, 23], [5, 8], [5, 16], [6, 12], [6, 10, 1],
     [6, 10, 2], [6, 10, 3], [6, 10, 4], [10, 18], [10, 2], [10, 14], [10, 6],
     [15, 4, 1], [15, 4, 2], [15, 12, 1], [15, 12, 2], [16, 15], [16, 5],
     [16, 13], [16, 3], [20, 6], [20, 10], [20, 9], [20, 5], [20, 11], [20, 7],
-    [24, 6], [24, 9], [24, 7], [30, 8]],
+    [24, 6], [24, 9], [24, 7], [30, 8]])
 # here the labelling is as follows: phi_15,4'' occurs in the tensor product
 # of phi_{4,1} and phi_{4,3}.
 # The tensor by sign of phi_{15,4}'' is phi_{15,12}''.
@@ -63,7 +62,10 @@ chevieset(:G29, :charinfo, function ()
 # A_3=reflection_subgroup(W,[1,2,4])
 # phi_{6,10}''' occurs in the tensor square of the phi_{4,1}, and
 # phi_{6,10''''} is the complex conjugate.
-   :hgal => perm"(24,26)(25,27)", :extRefl => [1, 5, 14, 8, 2])
+
+chevieset(:G29, :charinfo, function ()
+  res=Dict{Symbol, Any}(:hgal=>perm"(24,26)(25,27)", :extRefl=>[1,5,14,8,2])
+  res[:charparams]=chevieget(:G29,:charparams)
   res[:b]=map(x->x[2], res[:charparams])
   res[:charnames] = exceptioCharName.(res[:charparams])
   res

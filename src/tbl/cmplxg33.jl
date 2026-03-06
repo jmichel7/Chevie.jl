@@ -64,18 +64,20 @@ chevieset(:G33, :classinfo, Dict{Symbol, Any}(
   :orders => [1, 2, 2, 3, 4, 6, 6, 6, 2, 5, 9, 9, 4, 18, 18, 6, 6, 3, 3, 10, 12, 12, 6, 6, 12, 12, 6, 6, 4, 6, 3, 6, 6, 6, 6, 4, 6, 6, 2, 2], 
   :classes => [1, 45, 270, 480, 3240, 360, 360, 1440, 270, 5184, 2880, 2880, 3240, 2880, 2880, 1440, 2160, 40, 40, 5184, 2160, 2160, 720, 720, 2160, 2160, 240, 720, 540, 720, 240, 2160, 360, 360, 40, 540, 40, 480, 45, 1]))
 
-chevieset(:G33, :charinfo,function()
-  res=Dict{Symbol,Any}(:charparams => [[1, 0], [1, 45], [5, 28], [5, 1],
+chevieset(:G33, :charparams,[[1, 0], [1, 45], [5, 28], [5, 1],
    [5, 30], [5, 3], [6, 20], [6, 5], [10, 8, 2], [10, 17, 2], [10, 8, 1], 
    [10, 17, 1], [15, 12], [15, 9], [15, 2], [15, 23], [20, 6], [20, 15], 
    [24, 4], [24, 19], [30, 18], [30, 3], [30, 6], [30, 15], [30, 4], [30, 13], 
    [40, 14, 1], [40, 5, 1], [40, 14, 2], [40, 5, 2], [45, 12], [45, 9], 
-   [45, 10], [45, 7], [60, 10], [60, 7], [64, 8], [64, 9], [81, 6], [81, 11]],
- # here the labelling is as follows: phi_10,8' has fake degree q^28+q^26+...,
- # phi_40,5' has fake degree q^31+q^29+2q^27+...
- # phi_10,8' tensored by sign is phi_10,17' and
- # phi_40,5' tensored by sign is phi_40,14'
-   :hgal => perm"(37,38)", :extRefl => [1, 4, 9, 12, 5, 2])
+   [45, 10], [45, 7], [60, 10], [60, 7], [64, 8], [64, 9], [81, 6], [81, 11]])
+# here the labelling is as follows: phi_10,8' has fake degree q^28+q^26+...,
+# phi_40,5' has fake degree q^31+q^29+2q^27+...
+# phi_10,8' tensored by sign is phi_10,17' and
+# phi_40,5' tensored by sign is phi_40,14'
+ 
+chevieset(:G33, :charinfo,function()
+  res=Dict{Symbol,Any}(:hgal=>perm"(37,38)", :extRefl => [1, 4, 9, 12, 5, 2])
+  res[:charparams]=chevieget(:G33,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

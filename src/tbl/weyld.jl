@@ -278,8 +278,9 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   l=union(map(c->map(x->[defectsymbol(x.symbol),sum(sum,x.sp[1:2])],c),ss)...)
   sort!(l, by=x->[abs(x[1]), -sign(x[1])])
-  uc=Dict{Symbol, Any}(:classes=>[], :springerSeries => 
-    map(l)do defect,rank
+  uc=Dict{Symbol, Any}(:classes=>[])
+  uc[:springerSeries]=
+    map(l)do (defect,rank)
       res=Dict{Symbol, Any}(:defect=>defect, :levi=>1:n-rank)
       if mod(n-rank,4)==0 || char==2 res[:Z]=iseven(n) ? [1, 1] : [1]
       else                           res[:Z]=iseven(n) ? [-1,1] : [-1]
@@ -287,7 +288,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       res[:relgroup]=coxgroup(defect==0 ? :D : :B, rank)
       res[:locsys]=[[0,0] for i in 1:nconjugacy_classes(res[:relgroup])]
       res
-  end)
+  end
   for cl in ss
     cc=Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1].symbol))
     if char==2

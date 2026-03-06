@@ -48,11 +48,13 @@ chevieset(:F4,:classinfo,function() # representatives are "very good" see [gm97]
   res
 end)
 
-chevieset(:F4, :charinfo, function ()
-  res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,12,2],[1,12,1],[1,24],[2,4,2],
+chevieset(:F4, :charparams,[[1,0],[1,12,2],[1,12,1],[1,24],[2,4,2],
     [2,16,1],[2,4,1],[2,16,2],[4,8],[9,2],[9,6,2],[9,6,1],[9,10],[6,6,1],
     [6,6,2],[12,4],[4,1],[4,7,2],[4,7,1],[4,13],[8,3,2],[8,9,1],[8,3,1],
-    [8,9,2],[16,5]],
+    [8,9,2],[16,5]])
+
+chevieset(:F4, :charinfo, function ()
+  res=Dict{Symbol,Any}(
   :kondo=>["1_1","1_2","1_3","1_4","2_1","2_2","2_3","2_4","4_1","9_1","9_2",
            "9_3","9_4","6_1","6_2","12","4_2","4_3","4_4","4_5","8_1","8_2",
            "8_3","8_4","16"],
@@ -65,6 +67,7 @@ chevieset(:F4, :charinfo, function ()
   res[:lusztig]=["1_1","1_3","1_2","1_4","2_3","2_4","2_1","2_2","4_1","9_1",
     "9_3","9_2","9_4","6_1","6_2","12","4_2","4_4","4_3","4_5","8_3","8_4",
     "8_1","8_2","16"]
+  res[:charparams]=chevieget(:F4,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

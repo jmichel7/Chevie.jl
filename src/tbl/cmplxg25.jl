@@ -38,16 +38,18 @@ chevieset(:G25, :classinfo, Dict{Symbol, Any}(
   :orders=>[1,6,3,3,3,6,9,9,3,3,6,6, 3, 3, 3, 3, 6, 6, 6, 2, 6, 4, 12, 12], 
  :classes=>[1,9,12,12,12,36,72,72,1,1,36,36,12,24,12,12,36,36,36,9,9,54,54,54]))
 
-chevieset(:G25, :charinfo, function ()
-  res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,24],[1,12],[2,15],[2,3],[2,9],
+chevieset(:G25, :charparams,[[1,0],[1,24],[1,12],[2,15],[2,3],[2,9],
     [3,6],[3,5,2],[3,5,1],[3,17],[3,13,2],[3,1],[3,13,1],[6,8,2],[6,8,1],[6,2],
-    [6,4,2],[6,10],[6,4,1],[8,3],[8,9],[8,6],[9,5],[9,7]],
+    [6,4,2],[6,10],[6,4,1],[8,3],[8,9],[8,6],[9,5],[9,7]])
 # The labelling is determined as follows:
 # phi{3,5}' is complexconjugate of phi{3,1}
 # phi{3,13}' is complexconjugate of phi{3,17}
 # phi{6,8}' is complexconjugate of phi{6,10}
 # phi{6,4}' is complexconjugate of phi{6,2}
-   :extRefl=>[1,12,8,3])
+
+chevieset(:G25, :charinfo, function ()
+  res=Dict{Symbol,Any}(:extRefl=>[1,12,8,3])
+  res[:charparams]=chevieget(:G25,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:charnames]=exceptioCharName.(res[:charparams])
   res

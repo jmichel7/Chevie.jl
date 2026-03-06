@@ -57,15 +57,18 @@ chevieset(:E6, :parabolic_reps, s->
    [1:4, [1, 2, 3, 5], [1, 2, 4, 5], [1, 3, 5, 6], 2:5],
    [1:5, [1, 3, 4, 5, 6], [1, 2, 3, 4, 6], [1, 2, 3, 5, 6]], [1:6]][s+1])
 
-chevieset(:E6, :charinfo, function ()
-  res=Dict{Symbol, Any}(:charparams => [[1, 0], [1, 36], [10, 9], [6, 1],
+chevieset(:E6, :charparams,[[1, 0], [1, 36], [10, 9], [6, 1],
     [6, 25], [20, 10], [15, 5], [15, 17], [15, 4], [15, 16], [20, 2], [20, 20],
     [24, 6], [24, 12], [30, 3], [30, 15], [60, 8], [80, 7], [90, 8], [60, 5], 
-    [60, 11], [64, 4], [64, 13], [81, 6], [81, 10]],
+    [60, 11], [64, 4], [64, 13], [81, 6], [81, 10]])
+
+chevieset(:E6, :charinfo, function ()
+  res=Dict{Symbol, Any}(
   :frame=>["1_p", "1_p'", "10_s", "6_p", "6_p'", "20_s", "15_p", "15_p'",
     "15_q", "15_q'", "20_p", "20_p'", "24_p", "24_p'", "30_p", "30_p'",
     "60_s", "80_s", "90_s", "60_p", "60_p'", "64_p", "64_p'", "81_p", "81_p'"],
   :extRefl=>[1, 4, 7, 6, 8, 5, 2])
+  res[:charparams]=chevieget(:E6,:charparams)
   res[:b]=map(x->x[2], res[:charparams])
   res[:charnames] = exceptioCharName.(res[:charparams])
   res

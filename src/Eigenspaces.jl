@@ -105,9 +105,9 @@ julia> relative_degrees(W,4) # the degrees of G₃₂
 """
 relative_degrees(W,d::Integer)=relative_degrees(W,E(d))
 relative_degrees(W,d::Rational)=relative_degrees(W,Root1(;r=d))
-relative_degrees(W,d::Root1)=filter(x->isone(d^x),degrees(W))
+relative_degrees(W,d::Root1)=[dd for dd in degrees(W) if dd%order(d)==0]
 relative_degrees(W)=relative_degrees(W,E(1))
-relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if Cyc(z)^d==f]
+relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if z^d==f]
 
 """
 `regular_eigenvalues(W)`
@@ -142,20 +142,23 @@ julia> regular_eigenvalues(L)
 function regular_eigenvalues(W)
   d=degrees(W)
   c=codegrees(W)
-  l=filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
-                  sort(union(divisors.(d)...)))
-  sort(vcat(map(x->E.(x,prime_residues(x)),l)...),by=x->(order(x),exponent(x)))
+  l=unique_sorted!(sort!([i for dd in d for i in divisors(dd)]))
+  l=filter(x->count(dd->iszero(dd%x),d)==count(dd->iszero(dd%x),c),l)
+  sort!([E(d,x) for d in l for x in prime_residues(d)],
+          by=x->(order(x),exponent(x)))
 end
 
 function regular_eigenvalues(W::Spets)
   d=degrees(W)
   c=codegrees(W)
-  l=union(map(p->divisors(order(Root1(p[2]))*p[1]),d)...)
+  l=union(map(((dd,e),)->divisors(order(Root1(e))*dd),d)...)
   res=Root1[]
   for n in l
-    p=prime_residues(n)
-    p1=filter(i->count(p->E(n,i*p[1])==p[2],d)==count(p->E(n,i*p[1])==p[2],c),p)
-    append!(res,E.(n,p1))
+    p=filter(prime_residues(n))do i
+      count(((dd,e),)->E(n,i*dd)==e,d)==
+      count(((dd,e),)->E(n,i*dd)==e,c)
+    end
+    append!(res,E.(n,p))
   end
   res
 end

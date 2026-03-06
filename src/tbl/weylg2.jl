@@ -12,9 +12,11 @@ chevieset(:G2, :ReflectionDegrees, [2, 6])
 
 chevieset(:G2, :nconjugacy_classes, 6)
 
+chevieset(:G2, :charparams,[[1,0],[1,6],[1,3,1],[1,3,2],[2,1],[2,2]])
+
 chevieset(:G2, :charinfo, function ()
-  res=Dict{Symbol,Any}(:charparams=>[[1,0],[1,6],[1,3,1],[1,3,2],[2,1],[2,2]],
-                       :extRefl=>[1,5,2],:a=>[0,6,1,1,1,1],:A=>[0,6,5,5,5,5])
+  res=Dict{Symbol,Any}(:extRefl=>[1,5,2],:a=>[0,6,1,1,1,1],:A=>[0,6,5,5,5,5])
+  res[:charparams]=chevieget(:G2,:charparams)
   res[:b]=map(x->x[2],res[:charparams])
   res[:B]=[0,6,3,3,5,4]
   res[:spaltenstein]=["1","\\varepsilon","\\varepsilon_l","\\varepsilon_c",
