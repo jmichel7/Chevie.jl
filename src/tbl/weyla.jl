@@ -51,7 +51,9 @@ chevieset(:A,:fakedegree,(_,p,q)->fakedegree(CharSymbol([βset(p)]))(q))
 
 # partition for a coxeterword w
 chevieset(:A, :ClassParameter, function(n,w)
-  cycletype(prod(i->Perm(i,i+1),w;init=Perm()),1:n+1)
+  res=Perm(;degree=n+1)
+  for i in w res.d[i],res.d[i+1]=res.d[i+1],res.d[i] end
+  cycletype(res,1:n+1)
 end)
 
 chevieset(:A, :WeightInfo, function(n)
@@ -142,15 +144,14 @@ chevieset(:A, :DecompositionMatrix, function(n,p)
 end)
 
 chevieset(:A, :UnipotentCharacters,function(n)
-  ci=chevieget(:A,:charinfo)(n)
-  pp=ci[:charparams]
+  pp=chevieget(:A,:charparams)(n)
   Dict{Symbol,Any}(:harishChandra =>[Dict{Symbol, Any}(:levi=>Int[],
     :relativeType=>TypeIrred(;series=:A,indices=1:n,rank=n), 
     :parameterExponents=>fill(1,n),:cuspidalName=>"",:eigenvalue=>1,
-    :charNumbers=>1:length(pp))],
-  :families=>map(i->Family(:C1,[i]), 1:length(pp)), 
-  :charParams=>pp,:charSymbols=>map(x->CharSymbol([βset(x)]),pp),
-  :a=>ci[:a],:A=>ci[:A])
+    :charNumbers=>eachindex(pp))],
+    :families=>map(i->Family(:C1,[i]), eachindex(pp)), 
+    :charParams=>pp,:charSymbols=>map(x->CharSymbol([βset(x)]),pp),
+    :a=>chevieget(:A,:b).(pp),:A=>chevieget(:A,:B).(pp))
 end)
 
 chevieset(:A, :Ennola, n->n==1 ? SPerm([-1, 2]) : SPerm())
