@@ -850,10 +850,12 @@ function labels(uc::UnipotentCharacters)::Vector{String}
 end
 
 #-------------------------- UniChars -------------------------------
-struct UniChar{T,C}
+@GapObj struct UniChar{T,C}
   group::T
   v::Vector{C}
 end
+
+UniChar(W,r)=UniChar(W,r,Dict{Symbol,Any}())
 
 """
 `unipotent_character(W,l)` or `unichar(W,l)`
@@ -954,9 +956,12 @@ function Base.show(io::IO,r::UniChar)
     print(io,"unichar(",r.group,",",coefficients(r),")")
     return
   end
-  print(io,"[",r.group,"]:")
+  if haskey(r,:name) print(io,"[",r.group,":",r.name,"]:")
+  else print(io,"[",r.group,"]:")
+  end
   res=""
-  s=charnames(io,UnipotentCharacters(r.group))
+  s=get(io,:names,String[])
+  if isempty(s) s=charnames(io,UnipotentCharacters(r.group)) end
   m=maximum(length.(s))+3
   for (i,c) in pairs(r.v)
     n = "<"*s[i]*">"

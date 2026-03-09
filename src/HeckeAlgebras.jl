@@ -1679,7 +1679,7 @@ end
 basisname(::HeckeTCElt)="T"
 clone(h::HeckeTCElt,d)=HeckeTCElt(d,h.H)
 
-Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? one(H) : Tbasis(H,x...)
+Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? Tbasis(H,H.W()) : Tbasis(H,x...)
 Tbasis(H::HeckeCoset,w::Vararg{Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeCoset,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
 Tbasis(::HeckeCoset,h::HeckeTCElt)=h
