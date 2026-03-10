@@ -403,10 +403,17 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara=fill(missing,ngens(W)
     end
   end
   end
-  d=Dict{Symbol,Any}(:equal=>allequal(para),:rootpara=>rootpara)
   p=findfirst(i->length(para[i])!=order(W(i)),eachindex(para))
   if !isnothing(p) error("parameter no. $p should be of length ",order(W(p))) end
-  HeckeAlgebra(W,para,d)
+  if haskey(W,:HeckeAlgebras)
+    for H in W.HeckeAlgebras
+      if H.para==para && isequal(H.rootpara,rootpara) return H end
+    end
+  else W.HeckeAlgebras=HeckeAlgebra[]
+  end
+  H=HeckeAlgebra(W,para,Dict{Symbol,Any}(:equal=>allequal(para),:rootpara=>rootpara))
+  push!(W.HeckeAlgebras,H)
+  H
 end
 
 function hecke(W::Group,p::Vector;rootpara=fill(missing,ngens(W)))
@@ -415,9 +422,7 @@ function hecke(W::Group,p::Vector;rootpara=fill(missing,ngens(W)))
     if p isa Vector return p end
     all(==(2),oo) ? [p,-one(p)] : vcat([p],E.(o,1:o-1))
   end
-  if isempty(para)
-   return HeckeAlgebra(W,Vector{Int}[],Dict{Symbol,Any}(:rootpara=>rootpara))
-  end
+  if isempty(gens(W)) return hecke(W,Vector{Int}[];rootpara) end
   hecke(W,para;rootpara)
 end
 
@@ -426,9 +431,7 @@ function hecke(W::Group,p::C=1;rootpara=missing)where C
   elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
   else para=map(o->vcat([p],E.(o,1:o-1)),ordergens(W))
   end
-  H=HeckeAlgebra(W,para,Dict{Symbol,Any}(:equal=>true))
-  H.rootpara=fill(rootpara,ngens(W))
-  H
+  hecke(W,para;rootpara=fill(rootpara,ngens(W)))
 end
 
 function hecke(W::Group,p::Tuple;rootpara=fill(missing,ngens(W)))
@@ -503,13 +506,13 @@ CharTable(hecke(G₄,q))
 ├───────────┼──────────────────────────────────────┤
 │           │ .    z 2c    c     zc     1        1z│
 ├───────────┼──────────────────────────────────────┤
-│φ₁‚₀       │ 1   x⁶ x³   x²     x⁸     x        x⁷│
+│φ₁‚₀       │ 1   q⁶ q³   q²     q⁸     q        q⁷│
 │φ₁‚₄       │ 1    1  1  ζ₃²    ζ₃²    ζ₃        ζ₃│
 │φ₁‚₈       │ 1    1  1   ζ₃     ζ₃   ζ₃²       ζ₃²│
 │φ₂‚₅       │ 2   -2  .    1     -1    -1         1│
-│φ₂‚₃       │ 2 -2x³  . ζ₃²x -ζ₃²x⁴ x+ζ₃² -x⁴-ζ₃²x³│
-│φ₂‚₁       │ 2 -2x³  .  ζ₃x  -ζ₃x⁴  x+ζ₃  -x⁴-ζ₃x³│
-│φ₃‚₂       │ 3  3x² -x    .      .   x-1     x³-x²│
+│φ₂‚₃       │ 2 -2q³  . ζ₃²q -ζ₃²q⁴ q+ζ₃² -q⁴-ζ₃²q³│
+│φ₂‚₁       │ 2 -2q³  .  ζ₃q  -ζ₃q⁴  q+ζ₃  -q⁴-ζ₃q³│
+│φ₃‚₂       │ 3  3q² -q    .      .   q-1     q³-q²│
 └───────────┴──────────────────────────────────────┘
 ```
 """
