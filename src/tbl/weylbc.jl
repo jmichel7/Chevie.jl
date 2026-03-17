@@ -20,11 +20,9 @@ chevieset(:B, :cartan, function(n,cartanType=2)
   improve_type(a)
 end)
 
-chevieset(:B, :Auname, function(rank,option,cartanType=2)# rank unused
+chevieset(:B, :AuName, function(rank,cartanType=2)# rank unused
   if cartanType==2
-    if haskey(option,:TeX) "D_8"
-    else "D8"
-    end
+    "D_8"
   end
 end)
 

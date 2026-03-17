@@ -278,7 +278,7 @@ end
 
 KLPol(W::Weyl.Affine,x...)=KLPol(W.G,x...)
 
-HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
+HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  H.rootpara[1]^length(H.W,x) : prod(H.rootpara[word(H.W,x)])
 
 struct HeckeCpElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,P,C}
   d::ModuleElt{P,C}
@@ -397,6 +397,7 @@ Cbasis(::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
 function toKL(h::HeckeTElt,klbasis,index)
   H=h.H
   res=klbasis(zero(h.d),H)
+  rootpara(H)
   while !iszero(h)
     l=length.(Ref(H.W),keys(h))
     i=index(l)
@@ -414,21 +415,22 @@ Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
 function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
-  if !ismissing(rootpara(H)[1]) un=one(inv(rootpara(H)[1])) else un=1 end
   cdict=get!(H,Symbol("C'->T"))do
+    un=one(inv(rootpara(H)[1]))
     Dict(one(W)=>one(H)*un)
   end
+  un=one(inv(H.rootpara[1]))
   if haskey(cdict,w) return cdict[w] end
   T=Tbasis(H)
   if equalpara(H)
     l=firstleftdescent(W,w)
     s=gens(W)[l]
     if w==s
-      return cdict[w]=inv(rootpara(H)[l])*(T(s)-H.para[l][2]*one(H))
+      return cdict[w]=inv(H.rootpara[l])*(T(s)-H.para[l][2]*one(H))
     else
       res=getCp(H,s)*getCp(H,s*w)
       tmp=zero(H)
-      for (e,coef) in res
+      for (e,coef) in res::HeckeTElt{HeckeAlgebra{C,P,TW},typeof(un),P}
         if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
       end
       res-=tmp

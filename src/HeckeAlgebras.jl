@@ -448,7 +448,7 @@ function hecke(W::Group,p::Tuple;rootpara=fill(missing,ngens(W)))
   hecke(W,para;rootpara)
 end
 
-function rootpara(H::HeckeAlgebra)
+function rootpara(H::HeckeAlgebra{C,P,TW})where {C,P,TW}
   if any(ismissing,H.rootpara)
     H.rootpara=map(eachindex(H.para)) do i
       if ismissing(H.rootpara[i])
@@ -948,14 +948,14 @@ function polynomial_relations(H::HeckeAlgebra{C})where C
   end::Vector{Pol{C}}
 end
 
-function innermul(W::CoxeterGroup,a,b)
+function innermul(W::CoxeterGroup{P},a::HeckeTElt{TH,C},b::HeckeTElt{TH,C})where {P,C,TH}
   sum(a.d) do (ea,pa)
-    h=b.d*pa
+    h=(b.d*pa)
     for i in reverse(word(W,ea))
-      s=W(i)
-      up=empty(h.d)
-      down=empty(h.d)
-      for (e,p)  in h
+      s=W(i)::P
+      up=empty(h.d)::Vector{Pair{P,C}}
+      down=empty(h.d)::Vector{Pair{P,C}}
+      for (e,p)  in h::ModuleElt{P,C} #if no typing, runtime dispatch
         if isleftdescent(W,e,i) push!(down,e=>p) else push!(up,s*e=>p) end
       end
       h=MM(up)

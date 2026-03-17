@@ -12,6 +12,7 @@ using Chairmarks
 #1.9.4   10.091 ms (182390 allocs: 12.981 MiB)
 #1.10.3  11.648 ms (182389 allocs: 12.981 MiB)
 #1.11.rc 11.671 ms (237323 allocs: 13.295 MiB)
+#1.13β3   5.952 ms (110660 allocs: 9.560 MiB)
 test_w0(W)=Tbasis(hecke(W,Pol()))(longest(W))^2
 """
 test_w0:=function(n)local W,T,H,q,w02; # GAP3 takes 75ms for n=7
@@ -47,6 +48,7 @@ end;
 #julia> @b test_kl(coxgroup(:A,4))
 #1.10.3  5.870 ms (155260 allocs: 9.243 MiB)
 #1.11.rc 5.558 ms (205766 allocs: 8.983 MiB)
+#1.13β3  5.448 ms (175717 allocs: 7.832 MiB)
 function test_kl(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)
@@ -65,6 +67,7 @@ end;
 #julia> @b test_kl1(coxgroup(:A,4))
 #1.10.2  24.752 ms (403416 allocs: 43.278 MiB)
 #1.11.rc 22.338 ms (702087 allocs: 42.652 MiB)
+#1.13β3  22.856 ms (673616 allocs: 40.444 MiB)
 function test_kl1(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)

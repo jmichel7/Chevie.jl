@@ -605,8 +605,8 @@ function QuotientAu(Au,chars)
 # return rec(Au:=Au,chars:=chars);
 end
 
-# When some Springer series have been suppressed/weeded out, we  quotient
-# the Au's by the common  kernel of the remaining characters of the Au's.
+# When  some Springer series have been weeded  out, we quotient the Au's by
+# the common kernel of the remaining characters of the Au's.
 function AdjustAu!(classes,springerseries)
   for (i, u) in pairs(classes)
     l=map(s->filter(k->s[:locsys][k][1]==i,eachindex(s[:locsys])),
@@ -811,7 +811,9 @@ julia> xdisplay(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
 ```
 """
 function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
-# println("UnipotentClasses(",W,")")
+# we construct the unipotentclasses record for a general reductive group
+# as a quotient of the record for a simply connected group
+# xprintln("UnipotentClasses(",W,")")
   if !(p in (W isa Spets ? badprimes(Group(W)) : badprimes(W))) p=0 end
   get!(W,Symbol("unipotentclasses",p))do
   spetscase=W isa Spets
@@ -819,10 +821,13 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
     WF=W
     W=Group(WF)
     t=refltype(W)
-    l=map(x->findfirst(y->any(z->sort(x.indices)==sort(z.indices),
-                                       y.orbit),refltype(WF)),t)
+    l=map(t)do x # for each x in t in which orbit of refltype(WF) is it
+      findfirst(refltype(WF))do y 
+        any(z->sort(x.indices)==sort(z.indices),y.orbit)
+      end
+    end
     uc=UnipotentClasses.(refltype(WF)[l],p)
-   else WF=spets(W)
+  else WF=spets(W)
     t=refltype(W)
     uc=UnipotentClasses.(t,p)
   end
@@ -1599,7 +1604,7 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
   f=toL(fourier(uw))
   m=Vector{eltype(f[1])}[]
   for (i,ss) in pairs(uc.springerseries)
-   if i==1 append!(m,f[charnumbers(uw.harishChandra[1])])
+    if i==1 append!(m,f[charnumbers(uw.harishChandra[1])])
     elseif !haskey(ss,:hc) error("not implemented")
     elseif ss[:hc]==0 append!(m,map(_->zero(f[1]),eachindex(ss[:locsys])))
     else append!(m,f[charnumbers(uw.harishChandra[ss[:hc]])])
