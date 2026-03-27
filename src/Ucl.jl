@@ -1463,8 +1463,12 @@ Values of Green functions Q_wF of G₂ on local systems φ
 ```
 
 The  functions ``Q_{wF}`` depend only on the conjugacy class of `wF`, so in
-the  first column the indices of 'Q' are the names of the conjugacy classes
-of ``W_𝐆(𝐋)``. The exponents are the names of the groups ``W_𝐆(𝐋)``.
+the  first column the indices of `Q` are the names of the conjugacy classes
+of  ``W_𝐆(𝐋)``. The exponents  are the names  of the groups ``W_𝐆(𝐋)``. The
+validity  of  the  tables  is  for  *generic  `q`*,  which  means that some
+assumptions on `q` may be necessary. For instance in the last table we need
+`q≡1  (mod 3)`. For `q≡-1  (mod 3)` the non-zero  entry in the last line is
+`-q²`.
 
 ```julia-repl
 julia> GreenTable(UnipotentClasses(W);classes=true)
@@ -1542,7 +1546,10 @@ end
 `UnipotentValues(uc,classes=false)`
 
 This  function returns  a table  of the  values of  unipotent characters on
-local systems (by default) or on unipotent classes (if `classes=true`).
+local  systems (by  default) or  on unipotent  classes (if `classes=true`).
+These  tables are for *generic `q`*, that is their validity depends on some
+assumptions  on `q` (sometimes `q` large enough, or for `G₂` when `q≡1 (mod
+3)`).
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -1604,6 +1611,9 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
   f=toL(fourier(uw))
   m=Vector{eltype(f[1])}[]
   for (i,ss) in pairs(uc.springerseries)
+  # ss[:hc]=0 : local systems are not in unipotent Lusztig series
+  # ss[:hc]=i : the (unique) local system is fourier(cuspidal of i-th hc series)
+  # ss[:hc] unbound: information missing
     if i==1 append!(m,f[charnumbers(uw.harishChandra[1])])
     elseif !haskey(ss,:hc) error("not implemented")
     elseif ss[:hc]==0 append!(m,map(_->zero(f[1]),eachindex(ss[:locsys])))
@@ -1752,10 +1762,5 @@ function special_pieces(uc)
     p
   end
 end
-"""
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%'UnipotentValues(<W>,<w>)'
-"""
 
 end

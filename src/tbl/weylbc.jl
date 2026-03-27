@@ -53,7 +53,7 @@ chevieset(:B,:WeightInfo,function(n,cartanType)
   end
 end)
 
-# returns a very good representative in the sense of [gm97]
+# a very good representative from a partition pair. See [2.2;gm97] 
 chevieset(:B,:WordClass, function(pi)
   w=Int[]
   i=1
@@ -94,8 +94,7 @@ chevieset(:B,:PoincarePolynomial,function(n,para)
   prod(i->(q2^i*q1+1)*sum(k->q2^k,0:i),0:n-1)
 end)
 
-# we cannot do as below for Hecke algebra because the .classwords is not the same
-#chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
+# we cannot use next line because the .classwords are not the same
 #chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
 
 #  DifferencePartitions(γ,α) . . .  difference of partitions.
@@ -357,11 +356,11 @@ chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
     else
       cartanType = 1
       cc[:dimBu] = cl[1].dimBu
-      cc[:name] = join(map(function(x)
+      cc[:name] = join(map(reverse(tally(cc[:parameter][1])))do x
         res=joindigits(fill(0,max(0,x[2])).+x[1],"[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
         res
-      end, reverse(tally(cc[:parameter][1]))), "")
+      end,"")
     end
     cc[:red]=coxgroup()
     if char==2 j=cc[:parameter][1]
@@ -479,8 +478,16 @@ chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
       addSpringer(ss->ss[:Z]==[-1] && rank(ss[:relgroup])==sum(sum,s),i,s,d)
     end
   end
-  for ss in uc[:springerSeries] if !all(isone,ss[:Z]) ss[:hc]=0 end end
-  return uc
+  for (i,ss) in enumerate(uc[:springerSeries])
+  # cases when the local systems are not in the unipotent Lusztig series
+  # see [Appendix, dlm]
+    if char!=2 if i>1 ss[:hc]=0 end
+    else
+      if !all(isone,ss[:Z]) ss[:hc]=0 end
+      if r==2 && i==2 ss[:hc]=2 end
+    end
+  end
+  uc
 end)
 
 chevieset(:B, :ClassParameter, function(n, w)

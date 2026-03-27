@@ -457,7 +457,15 @@ chevieset(:D,:UnipotentClasses,function(n,char)
      end
   end
 end
-  for ss in uc[:springerSeries] if !all(isone,ss[:Z]) ss[:hc]=0 end end
+  for (i,ss) in enumerate(uc[:springerSeries])
+  # cases when the local systems are not in the unipotent Lusztig series
+  # see [Appendix, dlm]
+    if char!=2 if i>1 ss[:hc]=0 end
+    else
+      if !all(isone,ss[:Z]) ss[:hc]=0 end
+      if n==4 ss[:hc]=2 end
+    end
+  end
   uc
 end)
 
