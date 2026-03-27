@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Unipotent characters · Chevie.jl documentation</title><meta name="title" content="Unipotent characters · Chevie.jl documentation"/><meta property="og:title" content="Unipotent characters · Chevie.jl documentation"/><meta property="twitter:title" content="Unipotent characters · Chevie.jl documentation"/><meta name="description" content="Documentation for Chevie.jl documentation."/><meta property="og:description" content="Documentation for Chevie.jl documentation."/><meta property="twitter:description" content="Documentation for Chevie.jl documentation."/><meta property="og:url" content="https://juliadocs.github.io/Chevie.jl/uch/"/><meta property="twitter:url" content="https://juliadocs.github.io/Chevie.jl/uch/"/><link rel="canonical" href="https://juliadocs.github.io/Chevie.jl/uch/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">Chevie.jl documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Chevie</a></li><li><span class="tocitem">Infrastructure</span><ul><li><a class="tocitem" href="../format/">formatting facilities</a></li><li><a class="tocitem" href="../symbols/">Symbols</a></li><li><a class="tocitem" href="../symfuncs/">Symmetric functions</a></li><li><a class="tocitem" href="../nf/">Number fields</a></li><li><a class="tocitem" href="../truncs/">Truncated Laurent series</a></li></ul></li><li><span class="tocitem">Reflection groups</span><ul><li><a class="tocitem" href="../permroot/">Finite reflection groups</a></li><li><a class="tocitem" href="../coxgroups/">Coxeter groups</a></li><li><a class="tocitem" href="../weyl/">Finite Coxeter groups, Weyl groups, crystallographic root systems</a></li><li><a class="tocitem" href="../chars/">Classes/characters of reflection groups</a></li></ul></li><li><span class="tocitem">Hecke algebras</span><ul><li><a class="tocitem" href="../hecke/">Hecke algebras</a></li><li><a class="tocitem" href="../kl/">Kazhdan-Lusztig polynomials and bases</a></li><li><a class="tocitem" href="../murphy/">Murphy basis</a></li><li><a class="tocitem" href="../algebras/">Algebras</a></li></ul></li><li><a class="tocitem" href="../garside/">Garside monoids and groups, braids.</a></li><li><span class="tocitem">Reductive groups</span><ul><li><a class="tocitem" href="../rootdata/">Reductive algebraic groups and root data</a></li><li><a class="tocitem" href="../semisimple/">Semisimple elements</a></li><li><a class="tocitem" href="../cosets/">Reflection cosets and Spets</a></li><li><a class="tocitem" href="../sscoset/">Non-connected reductive groups</a></li><li class="is-active"><a class="tocitem" href>Unipotent characters</a></li><li><a class="tocitem" href="../ct/">Classtypes</a></li></ul></li><li><span class="tocitem">Eigenspaces</span><ul><li><a class="tocitem" href="../eigen/">Eigenspaces</a></li><li><a class="tocitem" href="../dseries/">d-Harish-Chandra series</a></li></ul></li><li><span class="tocitem">Unipotent elements</span><ul><li><a class="tocitem" href="../ucl/">Unipotent classes of reductive groups</a></li><li><a class="tocitem" href="../urad/">Unipotent Elements</a></li></ul></li><li><a class="tocitem" href="../gendec/">Decomposition Matrices</a></li><li><a class="tocitem" href="../references/">References</a></li><li><a class="tocitem" href="../dict/">Dictionary from GAP3/Chevie</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Reductive groups</a></li><li class="is-active"><a href>Unipotent characters</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Unipotent characters</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl/blob/main/docs/src/uch.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Unipotent-characters"><a class="docs-heading-anchor" href="#Unipotent-characters">Unipotent characters</a><a id="Unipotent-characters-1"></a><a class="docs-heading-anchor-permalink" href="#Unipotent-characters" title="Permalink"></a></h1><ul><li><a href="#Chevie.Families"><code>Chevie.Families</code></a></li><li><a href="#Chevie.Uch"><code>Chevie.Uch</code></a></li><li><a href="#Chevie.Families.Family"><code>Chevie.Families.Family</code></a></li><li><a href="#Chevie.Uch.UnipotentCharacters"><code>Chevie.Uch.UnipotentCharacters</code></a></li><li><a href="#Base.:*-Tuple{Family, Family}"><code>Base.:*</code></a></li><li><a href="#Base.conj-Tuple{Family}"><code>Base.conj</code></a></li><li><a href="#Base.length-Tuple{Family}"><code>Base.length</code></a></li><li><a href="#Base.show-Tuple{IO, UniChar}"><code>Base.show</code></a></li><li><a href="#Chevie.Chars.charnumbers-Tuple{Family}"><code>Chevie.Chars.charnumbers</code></a></li><li><a href="#Chevie.Families.FamiliesClassical"><code>Chevie.Families.FamiliesClassical</code></a></li><li><a href="#Chevie.Families.Zbasedring"><code>Chevie.Families.Zbasedring</code></a></li><li><a href="#Chevie.Families.cospecial"><code>Chevie.Families.cospecial</code></a></li><li><a href="#Chevie.Families.drinfeld_double"><code>Chevie.Families.drinfeld_double</code></a></li><li><a href="#Chevie.Families.family_imprimitive"><code>Chevie.Families.family_imprimitive</code></a></li><li><a href="#Chevie.Families.fourier"><code>Chevie.Families.fourier</code></a></li><li><a href="#Chevie.Families.ndrinfeld_double"><code>Chevie.Families.ndrinfeld_double</code></a></li><li><a href="#Chevie.Families.special"><code>Chevie.Families.special</code></a></li><li><a href="#Chevie.Lusztig.lusztig_induction_table"><code>Chevie.Lusztig.lusztig_induction_table</code></a></li><li><a href="#Chevie.PermRoot.degrees-Tuple{UnipotentCharacters, Any}"><code>Chevie.PermRoot.degrees</code></a></li><li><a href="#Chevie.Uch.CycPoldegrees"><code>Chevie.Uch.CycPoldegrees</code></a></li><li><a href="#Chevie.Uch.almost_character"><code>Chevie.Uch.almost_character</code></a></li><li><a href="#Chevie.Uch.deligne_lusztigCharTable"><code>Chevie.Uch.deligne_lusztigCharTable</code></a></li><li><a href="#Chevie.Uch.deligne_lusztig_character"><code>Chevie.Uch.deligne_lusztig_character</code></a></li><li><a href="#Chevie.Uch.deligne_lusztig_lefschetz"><code>Chevie.Uch.deligne_lusztig_lefschetz</code></a></li><li><a href="#Chevie.Uch.lusztig_induce"><code>Chevie.Uch.lusztig_induce</code></a></li><li><a href="#Chevie.Uch.lusztig_restrict"><code>Chevie.Uch.lusztig_restrict</code></a></li><li><a href="#Chevie.Uch.on_unipotents"><code>Chevie.Uch.on_unipotents</code></a></li><li><a href="#Chevie.Uch.unipotent_character"><code>Chevie.Uch.unipotent_character</code></a></li><li><a href="#CyclotomicNumbers.galois-Tuple{Family, Int64}"><code>CyclotomicNumbers.galois</code></a></li><li><a href="#LinearAlgebra.eigen-Tuple{Family}"><code>LinearAlgebra.eigen</code></a></li><li><a href="#PermGroups.Perms.invpermute-Tuple{Family, Perm}"><code>PermGroups.Perms.invpermute</code></a></li></ul><article><details class="docstring" open="true"><summary id="Chevie.Uch"><a class="docstring-binding" href="#Chevie.Uch"><code>Chevie.Uch</code></a> — <span class="docstring-category">Module</span></summary><section><div><p>Let  <span>$𝐆$</span> be a connected reductive group over an algebraic closure of the finite  field <span>$𝔽_q$</span>,  defined over  <span>$𝔽_q$</span>, with corresponding Frobenius automorphism  <span>$F$</span>. We  want to  study the  irreducible characters  of <span>$𝐆 ^F$</span>.  More generally we consider <span>$𝐆 ^F$</span> where <span>$F$</span> is a Frobenius root, an  isogeny of  <span>$𝐆$</span>  such that  a power  is a Frobenius (this covers the Suzuki and Ree groups).</p><p>If  <span>$𝐓$</span> is an  <span>$F$</span>-stable maximal torus  of <span>$𝐆$</span>, and  <span>$𝐁$</span> is a (not necessarily  <span>$F$</span>-stable) Borel  subgroup containing  <span>$𝐓$</span>, we define the <em>Deligne-Lusztig</em>  variety <span>$X_𝐁=\{g𝐁∈𝐆/𝐁 ∣ g𝐁∩F(g𝐁)≠∅ \}$</span>. This variety affords  a  natural  action  of  <span>$𝐆^F$</span>  on the left, so the corresponding <em>Deligne-Lusztig  virtual module</em>  given by  the <code>ℓ</code>-adic  cohomology with compact  support  <span>$H^*_c(X_𝐁):=∑ᵢ(-1)ⁱHⁱ_c(X_𝐁,ℚ̄_ℓ)$</span>  has  an  action of <span>$𝐆^F$</span>  on  the  right.  The  (virtual)  character  of  this module is the <em>Deligne-Lusztig</em> character <span>$R_𝐓^𝐆(1)$</span>; the notation reflects the theorem that  this character does not depend on the choice of <span>$𝐁$</span>. This character can  be parameterized by an <span>$F$</span>-conjugacy class of <span>$W$</span>: if <span>$𝐓₀⊂𝐁₀$</span> is an <span>$F$</span>-stable pair, there is an unique <span>$w∈ W=N_𝐆 (𝐓₀)/𝐓₀$</span> such that the triple  <span>$(𝐓,𝐁,F)$</span>  is  <span>$𝐆$</span>-conjugate  to  <span>$(𝐓₀,𝐁₀,wF)$</span>.  We will thus denote  <span>$R_w$</span>  for  <span>$R_𝐓^𝐆(1)$</span>;  this  character  depends  only  on the <span>$F$</span>-class of <span>$w$</span>.</p><p>The  <em>unipotent characters</em> of <span>$𝐆^F$</span> are the irreducible constituents of the  <span>$R_w$</span>. In a similar way that the Jordan decomposition shows that the unipotent classes are a building block for describing the conjugacy classes of  a  reductive  group,  Lusztig  has  defined  a  Jordan decomposition of characters  where  the  unipotent  characters  are  the building block. The unipotent  characters are parameterized by  combinatorial data that Lusztig has  defined just  from the  coset <span>$Wφ$</span>,  where <code>φ</code>  is the  finite order automorphism  of <span>$X(𝐓₀)$</span>  such that  <span>$F=qφ$</span>. Thus,  from our viewpoint, unipotent  characters  are  objects  combinatorially  attached to a Coxeter coset.</p><p>A  subset  of  the  unipotent  characters, the <em>principal series</em> unipotent characters,  can  be  described  in  a  more  elementary  way. They are the constituents  of  <span>$R₁$</span>,  or  equivalently  the  characters of the virtual module   <span>$H^*_c(X_{𝐁₀})$</span>,  where  <span>$X_{𝐁₀}$</span>   is  the  discrete  variety <span>$(𝐆/𝐁₀)^F$</span>;   this   virtual   module   reduces   to  the  actual  module <span>$ℚ̄_ℓ[(𝐆/𝐁₀)^F]$</span>.  Thus the  Deligne-Lusztig induction <span>$R₁=R_{𝐓₀}^𝐆(1)$</span> reduces  to Harish-Chandra induction, defined  as follows: let <span>$𝐏=𝐔⋊𝐋$</span> be an <span>$F$</span>-stable Levi decomposition of an <span>$F$</span>-stable parabolic subgroup of <span>$𝐆$</span>.  Then the <em>Harish-Chandra</em> induced <span>$R_𝐋^𝐆$</span> of a character <span>$χ$</span> of <span>$𝐋^F$</span>  is the character <span>$Ind_{𝐏^F}^{𝐆 ^F}χ̃$</span>,  where <span>$χ̃$</span> is the lift to  <span>$𝐏^F$</span>  of  <span>$χ$</span>  via  the  quotient  <span>$𝐏^F/𝐔^F=𝐋^F$</span>; Harish-Chandra induction  is a  particular case  of <em>Lusztig  induction</em>, which is defined when  <span>$𝐏$</span>  is  not  <span>$F$</span>-stable  using  the  variety  <span>$X_𝐔=\{ g𝐔∈𝐆/𝐔 ∣ g𝐔∩F(g𝐔)≠∅\}$</span>, and gives for an <span>$𝐋^F$</span>-module a virtual <span>$𝐆 ^F$</span>-module. Like  ordinary induction, these  functors have adjoint  functors going from representations    of   <span>$𝐆^F$</span>    to   representations    (resp.   virtual representations)   of  <span>$𝐋^F$</span>  called  Harish-Chandra  restriction  (resp. Lusztig restriction).</p><p>The  commuting algebra of <span>$𝐆^F$</span>-endomorphisms of <span>$R₁=R_{𝐓₀}^𝐆(1)$</span> is an Iwahori-Hecke  algebra for <span>$W^φ$</span>, with parameters some powers of <code>q</code>; the parameters  are  all  equal  to  <code>q</code>  when <span>$W^φ=W$</span>. Thus principal series unipotent characters are parametrized by characters of <span>$W^φ$</span>.</p><p>To   understand  the  decomposition  of  more  general  <span>$R_w$</span>,  and  thus parameterize unipotent characters, is is useful to introduce another set of class  functions which are  parameterized by irreducible  characters of the coset  <span>$Wφ$</span>.  If  <span>$χ$</span>  is  such  a  character, we define the associated <em>almost  character</em> by:  <span>$Rᵪ=|W|⁻¹∑_{w∈ W}χ(wφ)  R_w$</span>. The  name reflects that these class function are close to irreducible characters. They satisfy <span>$⟨Rᵪ,  R_ψ⟩_{𝐆^F}=δ_{χ,ψ}$</span>;  for  the  linear  and unitary group they are actually  unipotent characters (up to sign in the latter case). They are in general the sum (with rational coefficients) of a small number of unipotent characters in the same <em>Lusztig family</em>, see <a href="#Chevie.Families"><code>Families</code></a>. The degree of  <span>$Rᵪ$</span>  is  a  polynomial  in  <span>$q$</span>  equal  to  the fake degree of the character <span>$χ$</span> of <span>$Wφ$</span> (see <a href="../chars/#Chevie.Symbols.fakedegree-Tuple{Any, Any, Any}"><code>fakedegree</code></a>).</p><p>We   now  describe  the  parameterization   of  unipotent  characters  when <span>$W^φ=W$</span>,  in  which  case  the  coset  <span>$Wφ$</span>  identifies with <span>$W$</span> (the general  situation is  similar but  a bit  more difficult to describe). The (rectangular) matrix of scalar products <span>$⟨ρ, Rᵪ⟩_{𝐆 ^F}$</span>, when characters of  <span>$W$</span>  and  unipotent  characters  are  arranged in the right order, is block-diagonal   with  rather  small  blocks   which  are  called  <em>Lusztig families</em>.</p><p>For  the characters  of <span>$W$</span>  a family  <code>𝓕</code> corresponds  to a block of the Hecke  algebra  over  a  ring  called  the  Rouquier  ring.  To <code>𝓕</code> Lusztig associates  a small group <span>$Γ$</span> (equal  to <span>$(ℤ/2)ⁿ$</span> for rather small <code>n</code>, or <span>$𝔖ᵢ$</span> for <span>$i≤5$</span>) such that the unipotent characters in the family are parameterized  by the  characters of  the Drinfed  double of  <code>Γ</code><code>, that is pairs</code><code>(x,θ)</code><code>taken up to</code><code>Γ</code><code>-conjugacy, where</code><code>x∈Γ</code><code>and</code><code>θ</code><code>is an irreducible   character  of</code><code>C_Γ(x)</code><code>.  Further,   the  elements  of</code>𝓕<code>themselves are parameterized by a subset of such pairs, and Lusztig defines a  pairing  between  such  pairs  which  computes  the scalar product</code><code>⟨ρ, Rᵪ⟩_{𝐆^F}</code><code>,  called  the  *Lusztig  Fourier  matrix*. For more details see [</code>drinfeld_double`](@ref).</p><p>A  second parameterization  of unipotent  character is  via <em>Harish-Chandra series</em>.  A character is called <em>cuspidal</em> if all its proper Harish-Chandra restrictions  vanish. There are few  cuspidal unipotent characters (none in <span>$GLₙ$</span>  for  <span>$n&gt;1$</span>,  and  at  most  one  in other classical groups). The <span>$𝐆^F$</span>-endomorphism algebra of an Harish-Chandra induced <span>$R_{𝐋^F}^{𝐆^F}λ$</span>,  where  <span>$λ$</span>  is  a  cuspidal unipotent character is a Hecke algebra associated to the group <span>$W_{𝐆^F}(𝐋^F):=N_{𝐆^F}(𝐋)/𝐋$</span>, which turns  out  to  be  a  Coxeter  group.  Thus another parameterization is by triples  <span>$(𝐋,λ,φ)$</span>,  where  <span>$λ$</span>  is  a  cuspidal unipotent character of <span>$𝐋^F$</span>  and  <span>$φ$</span>  is  an  irreducible  character of the <em>relative group</em> <span>$W_{𝐆^F}(𝐋^F)$</span>.  Such characters are said to belong to the Harish-Chandra series determined by <span>$(𝐋,λ)$</span>.</p><p>A  final  piece  of  information  attached  to  unipotent characters is the <em>eigenvalues of Frobenius</em>. Let <span>$Fᵟ$</span> be the smallest power of the isogeny <span>$F$</span>  which  is  a  split  Frobenius  (that  is, <span>$Fᵟ$</span> is a Frobenius and <span>$φᵟ=1$</span>). Then <span>$Fᵟ$</span> acts naturally on Deligne-Lusztig varieties and thus on  the  corresponding  virtual  modules,  and  commutes  to  the action of <span>$𝐆^F$</span>;  thus for  a given  unipotent character  <span>$ρ$</span>, a submodule of the virtual  module which  affords <span>$ρ$</span>  affords a  single eigenvalue <span>$μ$</span> of <span>$Fᵟ$</span>.  (<a href="../references/#lu78">Lusztig, 1978</a>; 3.9)  and  (<a href="../references/#dm85">Digne and Michel, 1985</a>; II,  2.3)  show that this eigenvalue  is of the form <span>$qᵃᵟλᵨ$</span> where <span>$2a∈ℤ$</span> and <span>$λᵨ$</span> is a root of unity, and where the parity of <code>2a</code> and <span>$λᵨ$</span> depend only on <span>$ρ$</span> and not the  considered module. This <span>$λᵨ$</span> is  called the <em>eigenvalue of Frobenius attached  to <span>$ρ$</span></em>. Unipotent characters in the Harish-Chandra series of a pair <span>$(𝐋,λ)$</span> have the same eigenvalue of Frobenius as <span>$λ$</span>.</p><p><code>Chevie</code>   contains  tables  of  all  this  information,  and  can  compute Harish-Chandra  and Lusztig  induction of  unipotent characters  and almost characters. We illustrate this on some examples:</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; uc=UnipotentCharacters(W)
+UnipotentCharacters(G₂)
+┌───────┬────────────────────────────────────────────────────┐
+│γ      │n₀    Deg(γ)  Feg              Symbol Fr(γ)    label│
+├───────┼────────────────────────────────────────────────────┤
+│φ₁‚₀   │ 1         1    1       (0,0,0,0,0,2)     1         │
+│φ₁‚₆   │ 2        q⁶   q⁶ (01,01,01,01,01,12)     1         │
+│φ′₁‚₃  │ 3   qΦ₃Φ₆/3   q³            (0,0,1+)     1    (1,ρ)│
+│φ″₁‚₃  │ 4   qΦ₃Φ₆/3   q³            (0,0,1-)     1   (g₃,1)│
+│φ₂‚₁   │ 5  qΦ₂²Φ₃/6  qΦ₈       (0,0,0,0,1,1)     1    (1,1)│
+│φ₂‚₂   │ 6  qΦ₂²Φ₆/2 q²Φ₄       (0,0,0,1,0,1)     1   (g₂,1)│
+│G₂[-1] │ 7  qΦ₁²Φ₃/2    0       (01,0,01,,0,)    -1   (g₂,ε)│
+│G₂[1]  │ 8  qΦ₁²Φ₆/6    0       (01,01,0,,,0)     1    (1,ε)│
+│G₂[ζ₃] │ 9 qΦ₁²Φ₂²/3    0       (01,0,0,01,,)    ζ₃  (g₃,ζ₃)│
+│G₂[ζ₃²]│10 qΦ₁²Φ₂²/3    0       (01,01,,0,0,)   ζ₃² (g₃,ζ₃²)│
+└───────┴────────────────────────────────────────────────────┘</code></pre><p>The  first column gives  the name of  the unipotent character, derived from its  Harish-Chandra  classification;  the  first  6  characters  are in the principal  series  so  are  named  by  characters  of  <code>W</code>.  The last 4 are cuspidal,  and named by the corresponding eigenvalue of Frobenius, which is displayed  in the fourth  column. For classical  groups, the Harish-Chandra data can be synthesized combinatorially to give a <em>symbol</em>.</p><p>The  first two characters are  each in a Lusztig  family by themselves. The last  eight are in a family associated to the group <code>Γ=𝔖₃</code>: the last column shows  the parameters  <code>(x,θ)</code>. The  third column  shows the  degree of the unipotent characters, which is transformed by the Lusztig Fourier matrix of the  fourth  column,  which  gives  the  degree of the corresponding almost character,  or equivalently the fake  degree of the corresponding character of <code>W</code> (extended by <code>0</code> outside the principal series).</p><p>One  can get  more information  on the  Lusztig Fourier  matrix of  the big family by asking</p><pre><code class="language-julia-repl hljs">julia&gt; uc.families[1]
+Family(D(𝔖 ₃)) Drinfeld double of 𝔖 ₃, Lusztig′s version
+┌────────┬───────────────────────────────────────────────────────┐
+│label   │no eigen                                               │
+├────────┼───────────────────────────────────────────────────────┤
+│(1,1)*  │ 5     1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3│
+│(g₂,1)  │ 6     1 1//2  1//2     .     . -1//2 -1//2     .     .│
+│(g₃,1)  │ 4     1 1//3     .  2//3 -1//3  1//3     . -1//3 -1//3│
+│(1,ρ)   │ 3     1 1//3     . -1//3  2//3  1//3     . -1//3 -1//3│
+│(1,ε)-e │ 8     1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3│
+│(g₂,ε)  │ 7    -1 1//2 -1//2     .     . -1//2  1//2     .     .│
+│(g₃,ζ₃) │ 9    ζ₃ 1//3     . -1//3 -1//3  1//3     .  2//3 -1//3│
+│(g₃,ζ₃²)│10   ζ₃² 1//3     . -1//3 -1//3  1//3     . -1//3  2//3│
+└────────┴───────────────────────────────────────────────────────┘</code></pre><p>We  can also do computations with  individual unipotent characters. Here we construct  the Coxeter torus, and then the identity character of this torus as a unipotent character.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; T=spets(reflection_subgroup(W,Int[]),W(1,2))
+G₂₍₎=Φ₆
+
+julia&gt; u=unipotent_character(T,1)
+[G₂₍₎=Φ₆]:&lt;Id&gt;</code></pre><p>To construct <code>T</code> one could equivalently do</p><pre><code class="language-julia-repl hljs">julia&gt; T=torus(W,position_regular_class(W,6))
+G₂₍₎=Φ₆</code></pre><p>Here  are two ways to construct the Deligne-Lusztig character associated to the Coxeter torus:</p><pre><code class="language-julia-repl hljs">julia&gt; lusztig_induce(W,u)
+[G₂]:&lt;φ₁‚₀&gt;+&lt;φ₁‚₆&gt;-&lt;φ₂‚₁&gt;+&lt;G₂[-1]&gt;+&lt;G₂[ζ₃]&gt;+&lt;G₂[ζ₃²]&gt;
+
+julia&gt; v=deligne_lusztig_character(W,[1,2])
+[G₂]:&lt;φ₁‚₀&gt;+&lt;φ₁‚₆&gt;-&lt;φ₂‚₁&gt;+&lt;G₂[-1]&gt;+&lt;G₂[ζ₃]&gt;+&lt;G₂[ζ₃²]&gt;
+
+julia&gt; degree(v)
+Pol{Int64}: q⁶+q⁵-q⁴-2q³-q²+q+1
+
+julia&gt; scalar_product(v,v)
+6</code></pre><p>The  last two lines ask  for the degree of  the virtual character <code>v</code>, then for the scalar product of <code>v</code> with itself.</p><p>Finally  we mention  that Chevie  can also  provide unipotent characters of Spetses, as defined in (<a href="../references/#bmm14">Broué <em>et al.</em>, 2014</a>). An example:</p><pre><code class="language-julia-repl hljs">julia&gt; UnipotentCharacters(complex_reflection_group(4))
+UnipotentCharacters(G₄)
+┌─────┬────────────────────────────────────────┐
+│γ    │n₀            Deg(γ)    Feg Fr(γ)  label│
+├─────┼────────────────────────────────────────┤
+│φ₁‚₀ │ 1                 1      1     1       │
+│φ₁‚₄ │ 2  -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1   1∧ζ₆│
+│φ₁‚₈ │ 3   √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1 -1∧ζ₃²│
+│φ₂‚₅ │ 4         q⁴Φ₂²Φ₆/2   q⁵Φ₄     1  1∧ζ₃²│
+│φ₂‚₃ │ 5 -ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1  1∧ζ₃²│
+│φ₂‚₁ │ 6 ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1   1∧ζ₃│
+│φ₃‚₂ │ 7            q²Φ₃Φ₆ q²Φ₃Φ₆     1       │
+│Z₃:2 │ 8     -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₃²│
+│Z₃:11│ 9    -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₆⁵│
+│G₄   │10        -q⁴Φ₁²Φ₃/2      0    -1  ζ₆∧-1│
+└─────┴────────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1-L237">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.UnipotentCharacters"><a class="docstring-binding" href="#Chevie.Uch.UnipotentCharacters"><code>Chevie.Uch.UnipotentCharacters</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>UnipotentCharacters(W)</code></p><p><code>W</code>  should be a Coxeter group, a  Coxeter Coset or a Spetses. The function gives  back a record containing  information about the unipotent characters of the associated algebraic group (or Spetses). This contains the following fields:</p><p><code>.harishChandra</code>:  information  about  Harish-Chandra  series  of  unipotent characters.  This is itself a list of records, one for each pair <code>(𝐋,λ)</code> of a  Levi  of  an  <code>F</code>-stable  parabolic  subgroup  and  a cuspidal unipotent character of <span>$𝐋^F$</span>. These records themselves have the following fields:</p><p><code>:levi</code>: a list &#39;l&#39; such that <code>𝐋</code> corresponds to &#39;reflection_subgroup(W,l)&#39;.</p><p><code>:cuspidalName</code>: the name of the unipotent cuspidal character <code>lambda</code>.</p><p><code>:eigenvalue</code>: the eigenvalue of Frobenius for <code>λ</code>.</p><p><code>:relativeType</code>: the reflection type of <span>$W_𝐆 (𝐋)$</span>;</p><p><code>:parameterExponents</code>:  the <span>$𝐆 ^F$</span>-endomorphism  algebra of <span>$R_𝐋^𝐆 (λ)$</span> is  a  Hecke  algebra  for  <span>$W_𝐆  (𝐋)$</span>  with  some parameters of the form <span>$q^{a_s}$</span>. This holds the list of exponents <span>$a_s$</span>.</p><p><code>:charNumbers</code>:  the  indices  of  the  unipotent  characters indexed by the irreducible characters of <span>$W_𝐆 (𝐋)$</span>.</p><p><code>.almostHarishChandra</code>:   information   about   Harish-Chandra   series  of unipotent  character sheaves.  This is  identical to  ̀harishChandra` for a split  reductive group,  and reflects  the situation  for the corresponding split group for a nonsplit group.</p><p><code>.families</code>:  information  about  Lusztig  families of unipotent characters. This  is itself a list  of records, one for  each family. These records are described in the section about families below.</p><p>the following information is computed on demand from <code>uc=UnipotentCharacters(W)</code>:</p><p><code>spets(uc)</code>: the reductive group <code>W</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:Bsym,2)
+Bsym₂
+
+julia&gt; WF=spets(W,Perm(1,2))
+²Bsym₂
+
+julia&gt; uc=UnipotentCharacters(WF)
+UnipotentCharacters(²Bsym₂)
+┌────────┬─────────────────────────────────────────────────────┐
+│γ       │n₀ almostch    Deg(γ)   Feg        Symbol Fr(γ) label│
+├────────┼─────────────────────────────────────────────────────┤
+│2       │ 1       2.         1     1     (02,,0,0)     1      │
+│11      │ 2      .11        q⁴    q⁴ (012,1,01,01)     1      │
+│²B₂[1,3]│ 3      1.1 √2qΦ₁Φ₂/2 qΦ₁Φ₂     (01,,1,0)   ζ₈³     1│
+│²B₂[1,5]│ 4       B₂ √2qΦ₁Φ₂/2     0     (01,,0,1)   ζ₈⁵     2│
+└────────┴─────────────────────────────────────────────────────┘
+
+julia&gt; uc.families
+3-element Vector{Family}:
+ Family(C₁,[1])
+ Family(C₁,[2])
+ Family(?4,[3, 4])
+
+julia&gt; uc.families[3]
+Family(?4) 
+┌─────┬───────────────────┐
+│label│no eigen   1*     2│
+├─────┼───────────────────┤
+│1*   │ 3   ζ₈³ √2/2 -√2/2│
+│2    │ 4   ζ₈⁵ √2/2  √2/2│
+└─────┴───────────────────┘</code></pre><p><code>charnames(uc)</code>:  the list of names of the unipotent characters.  Using    appropriate keywords, one can control the display in various ways.</p><pre><code class="language-julia-repl hljs">julia&gt; uc=UnipotentCharacters(coxgroup(:G,2));
+
+julia&gt; charnames(uc;limit=true)
+10-element Vector{String}:
+ &quot;φ₁‚₀&quot;
+ &quot;φ₁‚₆&quot;
+ &quot;φ′₁‚₃&quot;
+ &quot;φ″₁‚₃&quot;
+ &quot;φ₂‚₁&quot;
+ &quot;φ₂‚₂&quot;
+ &quot;G₂[-1]&quot;
+ &quot;G₂[1]&quot;
+ &quot;G₂[ζ₃]&quot;
+ &quot;G₂[ζ₃²]&quot;
+
+julia&gt; charnames(uc;TeX=true)
+10-element Vector{String}:
+ &quot;\phi_{1,0}&quot;
+ &quot;\phi_{1,6}&quot;
+ &quot;\phi_{1,3}&#39;&quot;
+ &quot;\phi_{1,3}&#39;&#39;&quot;
+ &quot;\phi_{2,1}&quot;
+ &quot;\phi_{2,2}&quot;
+ &quot;G_2[-1]&quot;
+ &quot;G_2[1]&quot;
+ &quot;G_2[\zeta_3]&quot;
+ &quot;G_2[\zeta_3^2]&quot;</code></pre><p>One  can control  the display  of unipotent  characters in  various ways by <code>IOContext</code> properties. In the display, the row labels are the names of the unipotent characters. The possible columns are numbered as follows:</p><ol><li>The index of the character in the list of unipotent characters.</li><li>The degree of the unipotent character.</li><li>The degree of the corresponding almost character.</li><li>for imprimitive groups, the symbol attached to the unipotent character.</li><li>The eigenvalue of Frobenius attached to the unipotent character.</li><li>The parameter the character has in its Lusztig family.</li></ol><p>Which  columns  are  displayed  can  be  controlled by the property <code>:cols</code> (default [2,3,5,6] and 4 when applicable).</p><p>In  addition if  &#39;:byfamily=true&#39;, the  characters are  displayed family by family  instead  of  in  index  order.  Finally,  the properties <code>rows</code> and <code>columnrepartition</code>  of  <code>format</code>  can  be  set,  giving more tuning of the table.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:B,2)
+B₂
+
+julia&gt; uc=UnipotentCharacters(W)
+UnipotentCharacters(B₂)
+┌───┬──────────────────────────────────┐
+│γ  │n₀ Deg(γ) Feg   Symbol Fr(γ) label│
+├───┼──────────────────────────────────┤
+│11.│ 1  qΦ₄/2  q²   (12,0)     1   +,-│
+│1.1│ 2 qΦ₂²/2 qΦ₄   (02,1)     1   +,+│
+│.11│ 3     q⁴  q⁴ (012,12)     1      │
+│2. │ 4      1   1     (2,)     1      │
+│.2 │ 5  qΦ₄/2  q²   (01,2)     1   -,+│
+│B₂ │ 6 qΦ₁²/2   0   (012,)    -1   -,-│
+└───┴──────────────────────────────────┘</code></pre><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(uc;byfamily=true)
+┌────┬──────────────────────────────────┐
+│γ   │n₀ Deg(γ) Feg   Symbol Fr(γ) label│
+├────┼──────────────────────────────────┤
+│11. │ 1  qΦ₄/2  q²   (12,0)     1   +,-│
+│1.1ˢ│ 2 qΦ₂²/2 qΦ₄   (02,1)     1   +,+│
+│.2  │ 5  qΦ₄/2  q²   (01,2)     1   -,+│
+│B₂  │ 6 qΦ₁²/2   0   (012,)    -1   -,-│
+├────┼──────────────────────────────────┤
+│2.  │ 4      1   1     (2,)     1      │
+├────┼──────────────────────────────────┤
+│.11 │ 3     q⁴  q⁴ (012,12)     1      │
+└────┴──────────────────────────────────┘
+
+julia&gt; xdisplay(uc;cols=[1,4])
+UnipotentCharacters(B₂)
+┌───┬───────────┐
+│γ  │n₀   Symbol│
+├───┼───────────┤
+│11.│ 1   (12,0)│
+│1.1│ 2   (02,1)│
+│.11│ 3 (012,12)│
+│2. │ 4     (2,)│
+│.2 │ 5   (01,2)│
+│B₂ │ 6   (012,)│
+└───┴───────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L401-L575">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.PermRoot.degrees-Tuple{UnipotentCharacters, Any}"><a class="docstring-binding" href="#Chevie.PermRoot.degrees-Tuple{UnipotentCharacters, Any}"><code>Chevie.PermRoot.degrees</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>degrees(uc::UnipotentCharacters,q=Pol())</code></p><p>Returns  the  list  of  degrees  of  the unipotent characters of the finite reductive group (or Spetses) with Weyl group (or Spetsial reflection group) <code>W</code>, evaluated at <code>q</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; uc=UnipotentCharacters(W);
+
+julia&gt; degrees(uc)
+10-element Vector{Pol{Rational{Int64}}}:
+ 1
+ q⁶
+ (1//3)q⁵+(1//3)q³+(1//3)q
+ (1//3)q⁵+(1//3)q³+(1//3)q
+ (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q
+ (1//2)q⁵+(1//2)q⁴+(1//2)q²+(1//2)q
+ (1//2)q⁵+(-1//2)q⁴+(-1//2)q²+(1//2)q
+ (1//6)q⁵+(-1//2)q⁴+(2//3)q³+(-1//2)q²+(1//6)q
+ (1//3)q⁵+(-2//3)q³+(1//3)q
+ (1//3)q⁵+(-2//3)q³+(1//3)q</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L756-L782">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.CycPoldegrees"><a class="docstring-binding" href="#Chevie.Uch.CycPoldegrees"><code>Chevie.Uch.CycPoldegrees</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>CycPoldegrees(uc::UnipotentCharacters)</code></p><p>Taking  advantage that  the degrees  of unipotent  characters of the finite reductive group (or Spetses) with Weyl group (or Spetsial reflection group) <code>W</code>  are products  of cyclotomic  polynomials, this  function returns these degrees as a list of <code>CycPol</code>s. It is faster than  <code>CycPol.(degrees(uc))</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; CycPoldegrees(UnipotentCharacters(W))
+10-element Vector{CycPol{Rational{Int64}}}:
+ 1
+ q⁶
+ qΦ₃Φ₆/3
+ qΦ₃Φ₆/3
+ qΦ₂²Φ₃/6
+ qΦ₂²Φ₆/2
+ qΦ₁²Φ₃/2
+ qΦ₁²Φ₆/6
+ qΦ₁²Φ₂²/3
+ qΦ₁²Φ₂²/3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L791-L816">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.unipotent_character"><a class="docstring-binding" href="#Chevie.Uch.unipotent_character"><code>Chevie.Uch.unipotent_character</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>unipotent_character(W,l)</code> or <code>unichar(W,l)</code></p><p>Constructs  an object representing the unipotent character specified by <code>l</code> of  the algebraic  group associated  to the  Coxeter group or Coxeter coset specified  by <code>W</code>. There are 3 possibilities  for <code>l</code>: if it is an integer, the  <code>l</code>-th unipotent character of <code>W</code> is  returned. If it is a string, the unipotent  character of <code>W</code> whose name is  <code>l</code> is returned (where the names are as given by <code>charnames(UnipotentCharacters(W))</code>). Finally, <code>l</code> can be a list  of length the number of  unipotent characters of <code>W</code>, which specifies the coefficient to give to each unipotent character.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; u=unichar(W,7)
+[G₂]:&lt;G₂[-1]&gt;
+
+julia&gt; v=unichar(W,&quot;G2[E3]&quot;)
+[G₂]:&lt;G₂[ζ₃]&gt;
+
+julia&gt; w=unichar(W,[1,0,0,-1,0,0,2,0,0,1])
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ″₁‚₃&gt;+2&lt;G₂[-1]&gt;+&lt;G₂[ζ₃²]&gt;
+
+julia&gt; unichar(W,fourier(UnipotentCharacters(W))[3,:])
+[G₂]:2//3&lt;φ′₁‚₃&gt;-1//3&lt;φ″₁‚₃&gt;+1//3&lt;φ₂‚₁&gt;+1//3&lt;G₂[1]&gt;-1//3&lt;G₂[ζ₃]&gt;-1//3&lt;G₂[ζ₃²]&gt;</code></pre><p>The  last line shows  the almost character  associated to the 3rd unipotent character of <code>W</code>.</p><p>some limited arithmetic is available on unipotent characters:</p><pre><code class="language-julia-repl hljs">julia&gt; coefficients(u) # so that u==unichar(W,coefficients(u))
+10-element Vector{Int64}:
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 1
+ 0
+ 0
+ 0
+
+julia&gt; w-2u
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ″₁‚₃&gt;+&lt;G₂[ζ₃²]&gt;
+
+julia&gt; scalar_product(w,w)
+7
+
+julia&gt; degree(w)
+Pol{Int64}: q⁵-q⁴-q³-q²+q+1</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L860-L916">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Base.show-Tuple{IO, UniChar}"><a class="docstring-binding" href="#Base.show-Tuple{IO, UniChar}"><code>Base.show</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>Base.show(io::IO,w::UniChar)</code></p><p>The  formatting  of  unipotent  characters  is  affected  by  IO property :compact .  If <code>true</code> (the default) they are printed in a compact form. Otherwise, they are printed one unipotent character per line:</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(w;compact=false)
+[G₂]:
+&lt;φ₁‚₀&gt;    1
+&lt;φ₁‚₆&gt;    0
+&lt;φ′₁‚₃&gt;   0
+&lt;φ″₁‚₃&gt;   -1
+&lt;φ₂‚₁&gt;    0
+&lt;φ₂‚₂&gt;    0
+&lt;G₂[-1]&gt;  2
+&lt;G₂[1]&gt;   0
+&lt;G₂[ζ₃]&gt;  0
+&lt;G₂[ζ₃²]&gt; 1</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L932-L953">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.deligne_lusztig_character"><a class="docstring-binding" href="#Chevie.Uch.deligne_lusztig_character"><code>Chevie.Uch.deligne_lusztig_character</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>deligne_lusztig_character(W,w)</code> or <code>dlchar(W,w)</code></p><p>This  function returns the Deligne-Lusztig character  <span>$R_𝐓 ^𝐆 (1)$</span> of the algebraic  group <code>𝐆</code> associated to the Coxeter group or Coxeter coset <code>W</code>. The  torus  <code>𝐓</code>  can  be  specified  in  3  ways:  if <code>w</code> is an integer, it represents the <code>w</code>-th conjugacy class (or <code>phi</code>-conjugacy class for a coset <code>Wϕ</code>)  of <code>W</code>. Otherwise  <code>w</code> can be  a word or  an element of  <code>W</code>, and it represents the class (or <code>ϕ</code>-class) of <code>w</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; dlchar(W,3)
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ₁‚₆&gt;-&lt;φ′₁‚₃&gt;+&lt;φ″₁‚₃&gt;
+
+julia&gt; dlchar(W,W(1))
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ₁‚₆&gt;-&lt;φ′₁‚₃&gt;+&lt;φ″₁‚₃&gt;
+
+julia&gt; dlchar(W,[1])
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ₁‚₆&gt;-&lt;φ′₁‚₃&gt;+&lt;φ″₁‚₃&gt;
+
+julia&gt; dlchar(W,[1,2])
+[G₂]:&lt;φ₁‚₀&gt;+&lt;φ₁‚₆&gt;-&lt;φ₂‚₁&gt;+&lt;G₂[-1]&gt;+&lt;G₂[ζ₃]&gt;+&lt;G₂[ζ₃²]&gt;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1099-L1125">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.deligne_lusztigCharTable"><a class="docstring-binding" href="#Chevie.Uch.deligne_lusztigCharTable"><code>Chevie.Uch.deligne_lusztigCharTable</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>deligne_lusztigCharTable(W)</code> or <code>dlCharTable(W)</code></p><p>for  each conjugacy class of <code>W</code>, gives the decomposition of <code>R_{T_w}^G</code> in unipotent characters.</p><pre><code class="language-julia-repl hljs">julia&gt; dlCharTable(W)
+6×10 Matrix{Int64}:
+ 1   1   1   1   2   2   0   0   0   0
+ 1  -1   1  -1   0   0   0   0   0   0
+ 1  -1  -1   1   0   0   0   0   0   0
+ 1   1   0   0  -1   0   1   0   1   1
+ 1   1   0   0   0  -1   0   1  -1  -1
+ 1   1  -1  -1   0   0  -2  -2   0   0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1073-L1089">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.almost_character"><a class="docstring-binding" href="#Chevie.Uch.almost_character"><code>Chevie.Uch.almost_character</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>almost_character(W,i)</code> or <code>almostchar(W,i)</code></p><p>This  function  returns  the  <code>i</code>-th  almost  unipotent  character  of  the algebraic  group 𝐆 associated to the Coxeter group or Coxeter coset <code>W</code>. If <code>φ</code> is the <code>i</code>-th irreducible character of <code>W</code>, the <code>i</code>-th almost character is  <span>$R_φ=W⁻¹∑_{w∈ W}  φ(w) R_{𝐓_w}^𝐆  (1)$</span> where  <span>$𝐓_w$</span> is  the maximal torus  associated  to  the  conjugacy  class  (or <code>ϕ</code>-conjugacy class for a coset) of <code>w</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:B,2)
+B₂
+
+julia&gt; almostchar(W,3)
+[B₂]:&lt;.11&gt;
+
+julia&gt; almostchar(W,1)
+[B₂]:1//2&lt;11.&gt;+1//2&lt;1.1&gt;-1//2&lt;.2&gt;-1//2&lt;B₂&gt;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1133-L1153">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.on_unipotents"><a class="docstring-binding" href="#Chevie.Uch.on_unipotents"><code>Chevie.Uch.on_unipotents</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>on_unipotents(W,aut)</code></p><p><code>W</code>  is  a  reflection  group  or  reflection  coset  representing a finite reductive group <span>$𝐆 ^F$</span>, and <code>aut</code> is an automorphism of <span>$𝐆 ^F$</span> (for <code>W</code> a  permutation group, this can be given as a permutation of the roots). The function  returns the permutation  of the unipotent  characters of <span>$𝐆 ^F$</span> induced  by <code>aut</code>. This makes sense  for Spetsial complex reflection groups and is implemented for them.</p><pre><code class="language-julia-repl hljs">julia&gt; WF=rootdatum(&quot;3D4&quot;)
+³D₄
+
+julia&gt; on_unipotents(Group(WF),WF.phi)
+(1,7,2)(8,12,9)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1245-L1262">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.deligne_lusztig_lefschetz"><a class="docstring-binding" href="#Chevie.Uch.deligne_lusztig_lefschetz"><code>Chevie.Uch.deligne_lusztig_lefschetz</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>deligne_lusztig_lefschetz(h,m=0)</code> or <code>dllefschetz(h,m=0)</code></p><p>Here <code>h</code> is an element of a Hecke algebra associated to a Coxeter group <code>W</code> or  Coxeter coset <code>Wϕ</code> which itself is  associated to an algebraic group <code>𝐆</code>.  By (<a href="../references/#dm85">Digne and Michel, 1985</a>), for <span>$g∈ 𝐆^F$</span>, the number of fixed points of <code>Fᵐ</code> on the Deligne-Lusztig variety associated to the element <code>wϕ∈Wϕ</code>, have for <code>m</code> divisible   by   a   sufficently   large   integer   <code>d</code>,  the  form  <span>$∑_φ φ_{(qᵐ)}(T_wϕ)R_φ(g)$</span>  where <code>φ</code>  runs over  the irreducible characters of <span>$Wϕ$</span>,  where  <span>$R_φ$</span>  is  the  corresponding almost character, and where <span>$φ_{(qᵐ)}$</span>  is a  character value  of the  Hecke algebra  <span>$H(Wϕ,qᵐ)$</span> of <span>$Wϕ$</span>  with  parameter  <code>qᵐ</code>.  This  expression  is  called the <em>Lefschetz character</em>  of  the  Deligne-Lusztig  variety.  If  we  consider <code>qᵐ</code> as an indeterminate  <code>x</code>, it can  be seen as  a sum of  unipotent characters with coefficients  character values of the  generic Hecke algebra <span>$H(Wϕ,x)$</span>. A more complicated formula involving the eigenvalues of Frobenius attached to unipotent characters applies for <code>m</code> not prime to <code>d</code>. The function returns this formula when a second parameter <code>m≠0</code> is given.</p><p>The  function &#39;dllefschetz&#39; takes  as argument a  Hecke element and returns the  corresponding Lefschetz character. This is defined on the whole of the Hecke  algebra by linearity.  The Lefschetz character  of various varieties related   to   Deligne-Lusztig   varieties,   like   their  completions  or desingularisation,  can be  obtained by  taking the  Lefschetz character at various elements of the Hecke algebra.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:A,2)
+A₂
+
+julia&gt; H=hecke(W,Pol(:q))
+hecke(A₂,q)
+
+julia&gt; T=Tbasis(H);
+
+julia&gt; dllefschetz(T(1,2))
+[A₂]:&lt;111&gt;-q&lt;21&gt;+q²&lt;3&gt;
+
+julia&gt; dllefschetz((T(1)+T())*(T(2)+T()))
+[A₂]:q&lt;21&gt;+(q²+2q+1)&lt;3&gt;</code></pre><p>The   last  line  shows  the   Lefschetz  character  of  the  Samelson-Bott desingularisation of the Coxeter element Deligne-Lusztig variety.</p><p>We now show an example with a coset (corresponding to the unitary group).</p><pre><code class="language-julia-repl hljs">julia&gt; H=hecke(spets(W,Perm(1,2)),Pol(:q)^2)
+hecke(²A₂,q²)
+
+julia&gt; T=Tbasis(H);dllefschetz(T(1))
+[²A₂]:-&lt;11&gt;-q&lt;²A₂&gt;+q²&lt;2&gt;</code></pre><p>Finally,  there is a second form <code>dllefschetz(H::HeckeAlgebra,w,i=0)</code> where the  arguments are a Hecke algebra and an  element of <code>w</code>. This may be used for  Spetses where we know the column of the <code>CharTable</code> of <code>H</code> for <code>w</code> but not other columns of the spetsial Hecke algebra charcater table.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1162-L1220">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.lusztig_induce"><a class="docstring-binding" href="#Chevie.Uch.lusztig_induce"><code>Chevie.Uch.lusztig_induce</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>lusztig_induce(W,u)</code></p><p><code>u</code>  should be a unipotent character of a parabolic subcoset of the Coxeter coset  <code>W</code>. It represents  a unipotent character  <code>λ</code> of a  Levi <code>𝐋</code> of the algebraic  group  <code>𝐆</code>  attached  to  <code>W</code>.  The  program returns the Lusztig induced <span>$R_𝐋^𝐆(λ)$</span>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; WF=spets(W)
+G₂
+
+julia&gt; T=subspets(WF,Int[],W(1))
+G₂₍₎=Φ₁Φ₂
+
+julia&gt; u=unichar(T,1)
+[G₂₍₎=Φ₁Φ₂]:&lt;Id&gt;
+
+julia&gt; lusztig_induce(WF,u)
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ₁‚₆&gt;-&lt;φ′₁‚₃&gt;+&lt;φ″₁‚₃&gt;
+
+julia&gt; dlchar(W,W(1))
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ₁‚₆&gt;-&lt;φ′₁‚₃&gt;+&lt;φ″₁‚₃&gt;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L999-L1026">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Uch.lusztig_restrict"><a class="docstring-binding" href="#Chevie.Uch.lusztig_restrict"><code>Chevie.Uch.lusztig_restrict</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>lusztig_restrict(R,u)</code></p><p><code>u</code>  should be a unipotent character of a parent Coxeter coset <code>W</code> of which <code>R</code> is a parabolic subcoset. It represents a unipotent character <code>γ</code> of the algebraic  group <code>𝐆</code> attached to <code>W</code>,  while <code>R</code> represents a Levi subgroup <code>L</code>. The program returns the Lusztig restriction <span>$*R_𝐋^𝐆(γ)$</span>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; WF=spets(W)
+G₂
+
+julia&gt; T=subspets(WF,Int[],W(1))
+G₂₍₎=Φ₁Φ₂
+
+julia&gt; u=dlchar(W,W(1))
+[G₂]:&lt;φ₁‚₀&gt;-&lt;φ₁‚₆&gt;-&lt;φ′₁‚₃&gt;+&lt;φ″₁‚₃&gt;
+
+julia&gt; lusztig_restrict(T,u)
+[G₂₍₎=Φ₁Φ₂]:4&lt;Id&gt;
+
+julia&gt; T=subspets(WF,Int[],W(2))
+G₂₍₎=Φ₁Φ₂
+
+julia&gt; lusztig_restrict(T,u)
+[G₂₍₎=Φ₁Φ₂]:0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L1032-L1062">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Lusztig.lusztig_induction_table"><a class="docstring-binding" href="#Chevie.Lusztig.lusztig_induction_table"><code>Chevie.Lusztig.lusztig_induction_table</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>lusztig_induction_table(R,W)</code></p><p><code>R</code>  should be a parabolic subgroup of the Coxeter group <code>W</code> or a parabolic subcoset  of  the  Coxeter  coset  <code>W</code>,  in  each  case representing a Levi subgroup  <code>𝐋</code> of  the algebraic  group <code>𝐆</code>  associated to <code>W</code>. The function returns  an <code>InductionTable</code>  representing the  Lusztig induction <span>$R_𝐋^𝐆$</span> between unipotent characters.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:B,3)
+B₃
+
+julia&gt; t=twistings(W,[1,3])
+2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+ B₃₍₁₃₎=Ã₁×A₁Φ₁
+ B₃₍₁₃₎=Ã₁×A₁Φ₂
+
+julia&gt; lusztig_induction_table(t[2],W)
+Lusztig induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃
+┌─────┬───────────────────────┐
+│     │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2│
+├─────┼───────────────────────┤
+│111. │     1    -1    -1    .│
+│11.1 │    -1     .     1   -1│
+│1.11 │     .     .    -1    .│
+│.111 │    -1     .     .    .│
+│21.  │     .     .     .    .│
+│1.2  │     1    -1     .    1│
+│2.1  │     .     1     .    .│
+│.21  │     .     .     .    .│
+│3.   │     .     .     .    1│
+│.3   │     .     1     1   -1│
+│B₂:2 │     .     .     1   -1│
+│B₂:11│     1    -1     .    .│
+└─────┴───────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Lusztig.jl#L219-L256">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families"><a class="docstring-binding" href="#Chevie.Families"><code>Chevie.Families</code></a> — <span class="docstring-category">Module</span></summary><section><div><p>Families of unipotent characters</p><p>The blocks of the (rectangular) matrix <span>$⟨Rᵪ,ρ⟩_{𝐆 ^F}$</span> when <code>χ</code> runs over <code>Irr(W)</code>  and  <code>ρ</code>  runs  over  the  unipotent  characters,  are called the <em>Lusztig  families</em>. When  <code>𝐆</code>  is split  and <code>W</code>  is a Coxeter group they correspond  on the <code>Irr(W)</code> side to two-sided Kazhdan-Lusztig cells – for split  Spetses they  correspond to  Rouquier blocks  of the  Spetsial Hecke algebra.  The matrix of scalar products  <span>$⟨Rᵪ,ρ⟩_{𝐆 ^F}$</span> can be completed to   a  square  matrix  <span>$⟨A_{ρ&#39;},ρ⟩_{𝐆  ^F}$</span>  where  <span>$A_{ρ&#39;}$</span>  are  the <em>characteristic  functions of character  sheaves</em> on <span>$𝐆  ^F$</span>; this square matrix is called the <em>Fourier matrix</em> of the family.</p><p>The  <code>UnipotentCharacters</code> object  in Chevie  has a  property <code>families</code>, a vector of <code>Family</code> objects containing information on each family, including the Fourier matrix. Here is an example.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; uc=UnipotentCharacters(W);
+
+julia&gt; uc.families
+3-element Vector{Family}:
+ Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10],ennola=-5)
+ Family(C₁,[1])
+ Family(C₁,[2])
+
+julia&gt; uc.families[1]
+Family(D(𝔖 ₃)) Drinfeld double of 𝔖 ₃, Lusztig′s version
+┌────────┬───────────────────────────────────────────────────────┐
+│label   │no eigen                                               │
+├────────┼───────────────────────────────────────────────────────┤
+│(1,1)*  │ 5     1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3│
+│(g₂,1)  │ 6     1 1//2  1//2     .     . -1//2 -1//2     .     .│
+│(g₃,1)  │ 4     1 1//3     .  2//3 -1//3  1//3     . -1//3 -1//3│
+│(1,ρ)   │ 3     1 1//3     . -1//3  2//3  1//3     . -1//3 -1//3│
+│(1,ε)-e │ 8     1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3│
+│(g₂,ε)  │ 7    -1 1//2 -1//2     .     . -1//2  1//2     .     .│
+│(g₃,ζ₃) │ 9    ζ₃ 1//3     . -1//3 -1//3  1//3     .  2//3 -1//3│
+│(g₃,ζ₃²)│10   ζ₃² 1//3     . -1//3 -1//3  1//3     . -1//3  2//3│
+└────────┴───────────────────────────────────────────────────────┘
+
+julia&gt; charnames(uc)[uc.families[1].charNumbers]
+8-element Vector{String}:
+ &quot;phi2,1&quot;
+ &quot;phi2,2&quot;
+ &quot;phi1,3&#39;&#39;&quot;
+ &quot;phi1,3&#39;&quot;
+ &quot;G2[1]&quot;
+ &quot;G2[-1]&quot;
+ &quot;G2[E3]&quot;
+ &quot;G2[E3^2]&quot;</code></pre><p>The Fourier matrix is obtained by <a href="#Chevie.Families.fourier"><code>fourier</code></a><code>(f)</code>; <a href="#Chevie.Chars.charnumbers-Tuple{Family}"><code>charnumbers</code></a><code>(f)</code>  returns the indices of the unipotent characters which are in the family. We obtain the list of eigenvalues of Frobenius for these  unipotent characters by <a href="#LinearAlgebra.eigen-Tuple{Family}"><code>eigen</code></a><code>(f)</code>. <a href="#Chevie.Families.special"><code>special</code></a><code>(f)</code> (resp.  <a href="#Chevie.Families.cospecial"><code>cospecial</code></a><code>(f)</code>) returns the  index in <code>f</code>  of the special (resp.  cospecial) character.The  Fourier matrix  and vector of eigenvalues satisfy   the   properties   of   <em>fusion   data</em>,  see  below.  The  field <code>f.charLabels</code>  is what is displayed in the column <code>labels</code> when displaying the  family. It contains labels naturally  attached to lines of the Fourier matrix.  In the case of reductive groups,  the family is always attached to the <a href="#Chevie.Families.drinfeld_double"><code>drinfeld_double</code></a> of a small finite group and the <code>.charLabels</code> come from this construction.</p><p>Methods  for  families  include  <a href="#Base.:*-Tuple{Family, Family}"><code>*</code></a>  (tensor product), <code>conj</code> (see <a href="../nf/#CyclotomicNumbers.galois-Tuple{Chevie.Nf.NumberField}"><code>galois</code></a>),  <a href="../coxgroups/#Base.length-Tuple{CoxeterGroup, Any}"><code>length</code></a> (the number of unipotent characters in the family), <a href="#Chevie.Families.Zbasedring"><code>Zbasedring</code></a></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L1-L74">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.Family"><a class="docstring-binding" href="#Chevie.Families.Family"><code>Chevie.Families.Family</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>Family(f [, charNumbers] ; opt)</code></p><p>This function creates a new family in two possible ways.</p><p>In  the first case <code>f</code> is a string or a symbol which denotes a family known to Chevie. Examples are <code>:S3, :S4, :S5</code> which denote the family obtained as the  Drinfeld double  of the  symmetric group  on 3,4,5  elements, or <code>:C2</code> which denotes the Drinfeld double of the cyclic group of order 2.</p><p>In the second case <code>f</code> is already a <code>struct Family</code>.</p><p>If given, the second argument becomes <code>f.charNumbers</code>.  If given,  the <code>opt</code> are added as fields to the resulting family.</p><p>If <code>opt</code> has a key <code>signs</code>, this should be a list of &#39;1&#39; and &#39;-1&#39;, and then the  Fourier matrix  is conjugated  by the  diagonal matrix of those signs. This  is used  in Spetses  to adjust  the matrix  to the choice of signs of unipotent degrees.</p><pre><code class="language-julia-repl hljs">julia&gt; Family(:C2)
+Family(C₂) Drinfeld double D(ℤ/2)
+┌──────┬────────────────────────────┐
+│label │eigen                       │
+├──────┼────────────────────────────┤
+│(1,1)*│    1 1//2  1//2  1//2  1//2│
+│(g₂,1)│    1 1//2  1//2 -1//2 -1//2│
+│(1,ε) │    1 1//2 -1//2  1//2 -1//2│
+│(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2│
+└──────┴────────────────────────────┘
+
+julia&gt; Family(:C2,4:7;signs=[1,-1,1,-1])
+Family(C₂) Drinfeld double D(ℤ/2)
+┌──────┬─────────────────────────────────────┐
+│label │no eigen signs                       │
+├──────┼─────────────────────────────────────┤
+│(1,1)*│ 4     1     1  1//2 -1//2 1//2 -1//2│
+│(g₂,1)│ 5     1    -1 -1//2  1//2 1//2 -1//2│
+│(1,ε) │ 6     1     1  1//2  1//2 1//2  1//2│
+│(g₂,ε)│ 7    -1    -1 -1//2 -1//2 1//2  1//2│
+└──────┴─────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L91-L134">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Chars.charnumbers-Tuple{Family}"><a class="docstring-binding" href="#Chevie.Chars.charnumbers-Tuple{Family}"><code>Chevie.Chars.charnumbers</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>charnumbers(f::Family)</code>: the indices of the unipotent characters of the family.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L196">source</a></section></details></article><article><details class="docstring" open="true"><summary id="CyclotomicNumbers.galois-Tuple{Family, Int64}"><a class="docstring-binding" href="#CyclotomicNumbers.galois-Tuple{Family, Int64}"><code>CyclotomicNumbers.galois</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>galois(f::Family,p::Int)</code></p><p><code>x-&gt;galois(x,p)</code>  is  applied  to  the  Fourier  matrix  and eigenvalues of Frobenius of the family.</p><pre><code class="language-julia-repl hljs">julia&gt; f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
+Family(0011) imprimitive family
+┌─────┬───────────────────────────────────────┐
+│label│no eigen signs      1       2#       3*│
+├─────┼───────────────────────────────────────┤
+│1    │ 4   ζ₃²    -1  √-3/3    √-3/3   -√-3/3│
+│2#   │ 3     1     1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+│3*   │ 2     1     1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+└─────┴───────────────────────────────────────┘
+
+julia&gt; galois(f,-1)
+Family(conj(0011)) conj(imprimitive family)
+┌─────┬───────────────────────────────────────┐
+│label│no eigen signs      1       2#       3*│
+├─────┼───────────────────────────────────────┤
+│1    │ 4    ζ₃    -1 -√-3/3   -√-3/3    √-3/3│
+│2#   │ 3     1     1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+│3*   │ 2     1     1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+└─────┴───────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L239-L266">source</a></section></details></article><article><details class="docstring" open="true"><summary id="PermGroups.Perms.invpermute-Tuple{Family, Perm}"><a class="docstring-binding" href="#PermGroups.Perms.invpermute-Tuple{Family, Perm}"><code>PermGroups.Perms.invpermute</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>invpermute(f::Family, p::Union{Perm,SPerm})</code></p><p>returns  a copy of  <code>f</code> with the  Fourier matrix, eigenvalues of Frobenius, <code>:charLabels…</code> invpermuted by <code>p</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
+Family(0011) imprimitive family
+┌─────┬───────────────────────────────────────┐
+│label│no eigen signs      1       2#       3*│
+├─────┼───────────────────────────────────────┤
+│1    │ 4   ζ₃²    -1  √-3/3    √-3/3   -√-3/3│
+│2#   │ 3     1     1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+│3*   │ 2     1     1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+└─────┴───────────────────────────────────────┘
+
+julia&gt; invpermute(f,Perm(1,2,3))
+Family(0011) permuted((1,2,3),imprimitive family)
+┌─────┬───────────────────────────────────────┐
+│label│no eigen signs       3*      1       2#│
+├─────┼───────────────────────────────────────┤
+│3*   │ 2     1     1 ζ₃²√-3/3 -√-3/3 -ζ₃√-3/3│
+│1    │ 4   ζ₃²    -1   -√-3/3  √-3/3    √-3/3│
+│2#   │ 3     1     1 -ζ₃√-3/3  √-3/3 ζ₃²√-3/3│
+└─────┴───────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L293-L320">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Base.conj-Tuple{Family}"><a class="docstring-binding" href="#Base.conj-Tuple{Family}"><code>Base.conj</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>conj(f::Family)</code>: is a synonym for &#39;galois(f,-1)&#39;.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L284">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.fourier"><a class="docstring-binding" href="#Chevie.Families.fourier"><code>Chevie.Families.fourier</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>fourier(uc::UnipotentCharacters)</code> the Lusztig Fourier matrix for <code>uc</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Uch.jl#L731">source</a></section><section><div><p><code>fourier(f::Family)</code>: the Fourier matrix of the family.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L187">source</a></section></details></article><article><details class="docstring" open="true"><summary id="LinearAlgebra.eigen-Tuple{Family}"><a class="docstring-binding" href="#LinearAlgebra.eigen-Tuple{Family}"><code>LinearAlgebra.eigen</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>eigen(f::Family)</code>: the Frobenius eigenvalues of the characters of the family.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L175">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Base.length-Tuple{Family}"><a class="docstring-binding" href="#Base.length-Tuple{Family}"><code>Base.length</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>length(f::Family)</code>: how many characters are in the family.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L178">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.drinfeld_double"><a class="docstring-binding" href="#Chevie.Families.drinfeld_double"><code>Chevie.Families.drinfeld_double</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>drinfeld_double(g;lu=false,pivotal=nothing)</code></p><p>Given  a (usually small) finite group  <code>Γ</code>, Lusztig has associated a family (a  Fourier matrix, a list of eigenvalues of Frobenius) which describes the representation ring of the Drinfeld double of the group algebra of <code>Γ</code>, and for   some  appropriate  small  groups  describes  a  family  of  unipotent characters. We do not explain the details of this construction, but explain how its final result building Lusztig&#39;s Fourier matrix, and a variant of it that we use in Spetses, from <code>Γ</code>.</p><p>The  elements of the family are in bijection  with the set <code>𝓜 (Γ)</code> of pairs <code>(x,φ)</code>  taken up to  <code>Γ</code>-conjugacy, where <code>x∈Γ</code>  and <code>φ</code> is an irreducible complex-valued   character  of  <code>C_Γ(x)</code>.  To  such  a  pair  <code>ρ=(x,φ)</code>  is associated  an  eigenvalue  of  Frobenius  defined  by  <span>$ω_ρ:=φ(x)/φ(1)$</span>. Lusztig  then defines a Fourier matrix <code>S₀</code> whose coefficient is given, for <code>ρ=(x,φ)</code> and <code>ρ&#39;=(x&#39;, φ&#39;)</code>, by:</p><p><span>${S_0}_{\rho,\rho&#39;}:=|C_Γ(x)⁻¹|∑_{\rho_1=(x_1,φ_1)}φ_1(x)φ(y_1)$</span></p><p>where  the sum is over all pairs <code>ρ₁∈𝓜 (Γ)</code> which are <code>Γ</code>-conjugate to <code>ρ&#39;</code> and  such that <span>$y₁∈ C_Γ(x)$</span>. This  coefficient also represents the scalar product <span>$⟨ρ,ρ&#39;⟩_{𝐆^F}$</span> of the corresponding unipotent characters.</p><p>A  way to understand the formula  for <span>${S_0}_{\rho,\rho&#39;}$</span> better is to consider  another basis  of the  complex vector  space with  basis <code>𝓜 (Γ)</code>, indexed  by the pairs <code>(x,y)</code> taken up  to <code>Γ</code>-conjugacy, where <code>x</code> and <code>y</code> are  commuting elements of  <code>Γ</code>. This basis  is called the  basis of Mellin transforms, and given by:</p><p><span>$(x,y)=∑_{φ∈ Irr(C_Γ(x))}φ(y)(x,φ)$</span></p><p>In  the  basis  of  Mellin  transforms,  the  linear  map  <code>S₀</code> is given by <code>(x,y)↦(x⁻¹,y⁻¹)</code>  and  the  linear  transformation  <code>T</code> which sends <code>ρ</code> to <code>ω_ρρ</code>   becomes  <code>(x,y)↦(x,xy)</code>.   These  are   particular  cases  of  the permutation  representation of <code>GL₂(ℤ)</code>  on the basis  of Mellin transforms where <span>$\begin{pmatrix}a&amp;b\cr c&amp;d\end{pmatrix}$</span> acts by <code>(x,y)↦(xᵃyᵇ,xᶜyᵈ)</code>.</p><p>Fourier  matrices in finite reductive groups  are given by the above matrix <code>S₀</code>.  But for non-rational Spetses, we use a different matrix <code>S</code> which in the  basis of Mellin transforms  is given by <code>(x,y)↦(y⁻¹,x)</code>. Equivalently, the  formula <span>$S_{ρ,ρ&#39;}$</span> differs from  the formula for <span>${S_0}_{ρ,ρ&#39;}$</span> in that  there is no complex conjugation of <code>χ₁</code>; thus the matrix <code>S</code> is equal to <code>S₀</code> multiplied on the right by the permutation matrix which corresponds to  <code>(x,φ)↦(x,φ)</code>. The advantage  of the matrix  <code>S</code> over <code>S₀</code>  is that the pair  <code>S,T</code> satisfies directly the axioms for fusion data (see below); also the matrix <code>S</code> is symmetric, while <code>S₀</code> is Hermitian.</p><p>Thus there are two variants of <code>drinfeld_double</code>:</p><p><code>drinfeld_double(g;lu=false)</code></p><p>returns  a family  containing Lusztig&#39;s  Fourier matrix  <code>S₀</code>, and an extra field  &#39;.perm&#39;  containing  the  permutation  of  the  indices  induced  by <code>(x,φ)↦(x,φ)</code>,  which allows  to recover  <code>S</code>, as  well as  an extra field `:lusztig&#39;, set to &#39;true&#39;.</p><p><code>drinfeld_double(g)</code></p><p>returns a family with the matrix <code>S</code>, which does not have fields &#39;.lusztig&#39; or &#39;.perm&#39;.</p><p>The family object &#39;f&#39; returned also has the properties:</p><ul><li><p><code>:group</code>: the group <code>Γ</code>.</p></li><li><p><code>:charLabels</code>: a list of labels describing the pairs <code>(x,φ)</code>, and thus also specifying in which order they are taken.</p></li><li><p><code>:fourierMat</code>: the Fourier matrix (the matrix <code>S</code> or <code>S₀</code> depending on the call).</p></li><li><p><code>:eigenvalues</code>: the eigenvalues of Frobenius.</p></li><li><p><code>:xy</code>: a list of pairs <code>(x,y)</code> which are representatives of the <code>Γ</code>-orbits of pairs of commuting elements.</p></li><li><p><code>:mellinLabels</code>: a list of labels describing the pairs <code>(x,y)</code>.</p></li><li><p><code>:mellin</code>:  the base change matrix between  the basis <code>(x,φ)</code> and the basis of   Mellin  transforms,   so  that   <code>f.fourierMat^(f.mellin^-1)</code>  is  the permutation  matrix (for <code>(x,y)↦(y⁻¹,x)</code>  or <code>(x,y)↦(y⁻¹,x⁻¹)</code> depending on the call).</p></li><li><p><code>:special</code>: the index of the special element, which is <code>(x,φ)=(1,1)</code>.</p></li></ul><pre><code class="language-julia-rep1 hljs">julia&gt; drinfeld_double(coxsym(3)) # needs &quot;using GAP&quot;
+Family(drinfeld_double(coxsym(3))) Drinfeld double D(coxsym(3))
+┌───────┬────────────────────────────────────────────────────┐
+│label  │eigen                                               │
+├───────┼────────────────────────────────────────────────────┤
+│(1,1)* │    1  1//6  1//3 1//6 -1//2 -1//2  1//3  1//3  1//3│
+│(1,X.2)│    1  1//3  2//3 1//3     .     . -1//3 -1//3 -1//3│
+│(1,X.3)│    1  1//6  1//3 1//6  1//2  1//2  1//3  1//3  1//3│
+│(21,1) │    1 -1//2     . 1//2  1//2 -1//2     .     .     .│
+│(21,-1)│   -1 -1//2     . 1//2 -1//2  1//2     .     .     .│
+│(3,1)  │    1  1//3 -1//3 1//3     .     .  2//3 -1//3 -1//3│
+│(3,ζ₃²)│   ζ₃  1//3 -1//3 1//3     .     . -1//3 -1//3  2//3│
+│(3,ζ₃) │  ζ₃²  1//3 -1//3 1//3     .     . -1//3  2//3 -1//3│
+└───────┴────────────────────────────────────────────────────┘
+
+julia&gt; drinfeld_double(coxsym(3);lu=true)
+Family(Ldrinfeld_double(coxsym(3))) Lusztig′sDrinfeld double D(coxsym(3))
+┌───────┬────────────────────────────────────────────────────┐
+│label  │eigen                                               │
+├───────┼────────────────────────────────────────────────────┤
+│(1,1)* │    1  1//6  1//3 1//6 -1//2 -1//2  1//3  1//3  1//3│
+│(1,X.2)│    1  1//3  2//3 1//3     .     . -1//3 -1//3 -1//3│
+│(1,X.3)│    1  1//6  1//3 1//6  1//2  1//2  1//3  1//3  1//3│
+│(21,1) │    1 -1//2     . 1//2  1//2 -1//2     .     .     .│
+│(21,-1)│   -1 -1//2     . 1//2 -1//2  1//2     .     .     .│
+│(3,1)  │    1  1//3 -1//3 1//3     .     .  2//3 -1//3 -1//3│
+│(3,ζ₃²)│   ζ₃  1//3 -1//3 1//3     .     . -1//3  2//3 -1//3│
+│(3,ζ₃) │  ζ₃²  1//3 -1//3 1//3     .     . -1//3 -1//3  2//3│
+└───────┴────────────────────────────────────────────────────┘</code></pre><p>The  keyword <code>pivotal</code>  describes the  pivotal structure  as a tuple of the pivotal  element and the vector  of values of the  pivotal character on the generators of <code>g</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L541-L657">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.ndrinfeld_double"><a class="docstring-binding" href="#Chevie.Families.ndrinfeld_double"><code>Chevie.Families.ndrinfeld_double</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>ndrinfeld_double(g)</code></p><p>This  function returns the number of elements that the family associated to the  Drinfeld double of the group <code>g</code> would have, without computing it. The evident advantage is the speed.</p><pre><code class="language-julia-repl hljs">julia&gt; Families.ndrinfeld_double(complex_reflection_group(5))
+378</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L749-L760">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.family_imprimitive"><a class="docstring-binding" href="#Chevie.Families.family_imprimitive"><code>Chevie.Families.family_imprimitive</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>family_imprimitive(S)</code></p><p><code>S</code> should be a symbol for a unipotent characters of an imprimitive complex reflection  group &#39;G(e,1,n)&#39; or &#39;G(e,e,n)&#39;. The function returns the family containing <code>S</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; family_imprimitive([[0,1],[1],[0]])
+Family(0011) imprimitive family
+┌─────┬──────────────────────────────┐
+│label│eigen      1       2#       3*│
+├─────┼──────────────────────────────┤
+│1    │  ζ₃²  √-3/3   -√-3/3    √-3/3│
+│2#   │    1 -√-3/3 ζ₃²√-3/3 -ζ₃√-3/3│
+│3*   │    1  √-3/3 -ζ₃√-3/3 ζ₃²√-3/3│
+└─────┴──────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L875-L893">source</a></section><section><div><p><code>family_imprimitive(ct,e)</code></p><p>returns  the family  attached to  <code>e</code>-symbols with  entries <code>ct</code>, following (<a href="../references/#mal95">Malle, 1995</a>; §4 for G(e,1,n) and §6 for G(e,e,n)).</p><p>The  Fourier  matrix  is  as  follows:  Let  <code>F</code>  be  the  set of functions <code>ct→0:e-1</code>  which are  injective restricted  to a  given value in <code>ct</code>, and with  the sum  of their  values mod.  <code>e</code> equal  to <code>m*binomial(e,2)</code> where <code>m=div(length(ct),e)</code>.  Then for <code>f∈F</code>  the list of  preimages of <code>f</code> is an <code>e</code>-symbol  <code>S(f)</code>. Conversely for a symbol  <code>S</code> there is a &#39;canonical&#39; map <code>f(S)</code>  which records the increasing positions  in the symbol of each value in  <code>ct</code>.  Then  <code>Fourier(S,T)=C∑_{f∈F∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}</code> where for  <code>f∈F</code> with image <code>f.(ct)</code>  <code>ε(f)=(-1)^{number of non-inversions in the list  f.(ct)}</code> and <code>f*f(T)</code>  is the scalar  product of vectors <code>f.(ct)</code> and <code>f(T).(ct)</code>. Finally <code>C=ζ₄^(-m*(binomial(e+1,2)-1))//√e^(e*m)</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L896-L912">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.FamiliesClassical"><a class="docstring-binding" href="#Chevie.Families.FamiliesClassical"><code>Chevie.Families.FamiliesClassical</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>FamiliesClassical(l)</code></p><p><code>l</code>  should be a list of symbols which classify the unipotent characters of a  classical reductive group, like <code>symbols(2,r)</code> for type <code>Bᵣ</code> or <code>Cᵣ</code>, or <code>symbols(2,r,0)</code>  for type <code>Dᵣ</code>. The function  returns the list of families determined  by these symbols.</p><pre><code class="language-julia-repl hljs">julia&gt; FamiliesClassical(symbols(2,3)) # for a reductive group of type B₃
+6-element Vector{Family}:
+ Family(112,[2])
+ Family(022,[6])
+ Family(3,[9])
+ Family(01123,[1, 3, 8, 11])
+ Family(0112233,[4])
+ Family(013,[5, 7, 10, 12])</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L992-L1009">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Base.:*-Tuple{Family, Family}"><a class="docstring-binding" href="#Base.:*-Tuple{Family, Family}"><code>Base.:*</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>f*g</code>:  returns the tensor product of two families <code>f</code> and <code>g</code>; the Fourier matrix  is the Kronecker product  of the matrices for  <code>f</code> and <code>g</code>, and the eigenvalues of Frobenius are the pairwise products.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L201-L205">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.special"><a class="docstring-binding" href="#Chevie.Families.special"><code>Chevie.Families.special</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>special(f::Family)</code> the index of the special character in <code>f</code></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L169">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.cospecial"><a class="docstring-binding" href="#Chevie.Families.cospecial"><code>Chevie.Families.cospecial</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>cospecial(f::Family)</code> the index of the cospecial character in <code>f</code></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L172">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Families.Zbasedring"><a class="docstring-binding" href="#Chevie.Families.Zbasedring"><code>Chevie.Families.Zbasedring</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>Zbasedring(f::Family)</code> or <code>Zbasedring(S,special=1)</code></p><p>All  the Fourier matrices <code>S</code> in Chevie are unitary, that is <code>S⁻¹=conj(S)</code>, and  have a  <em>special</em> line  <code>s</code> (the  line of  index <code>s=special(f)</code>  for a family  <code>f</code>) such that no entry <code>Sₛ,ᵢ</code>  is equal to <code>0</code>. Further, they have the  property that  the sums  <code>Cᵢ,ⱼ,ₖ=sumₗ Sᵢ,ₗ  Sⱼ,ₗ conj(Sₖ,ₗ)/Sₛ,ₗ</code> take integral  values. Finally,  <code>S</code> has  the property  that complex conjugation does a permutation with signs <code>σ</code> of the lines of <code>S</code>.</p><p>It  follows that we can define a <code>ℤ</code>-algebra <code>A</code> as follows: it has a basis <code>bᵢ</code>  indexed by the lines of <code>S</code>,  and has a multiplication defined by the fact  that the  coefficient of  <code>bᵢbⱼ</code> on  <code>bₖ</code> is  equal to <code>Cᵢ,ⱼ,ₖ</code>. This algebra  can be specified by giving a family <code>f</code> or just its Fourier matrix and the number of its special line.</p><p><code>A</code>  is commutative, and has as unit the element <code>bₛ</code>; the basis <code>σ(bᵢ)</code> is dual to <code>bᵢ</code> for the linear form <code>(bᵢ,bⱼ)=Cᵢ,ⱼ,σ₍ₛ₎</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=complex_reflection_group(4)
+G₄
+
+julia&gt; uc=UnipotentCharacters(W);f=uc.families[4];
+
+julia&gt; A=Zbasedring(fourier(f),1)
+ℤ-based ring dim.5
+
+julia&gt; b=basis(A)
+5-element Vector{AlgebraElt{Chevie.Families.ZBasedRing, Int64}}:
+ B₁
+ B₂
+ B₃
+ B₄
+ B₅
+
+julia&gt; b*permutedims(b)
+5×5 Matrix{AlgebraElt{Chevie.Families.ZBasedRing, Int64}}:
+ B₁  B₂      B₃      B₄        B₅
+ B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃
+ B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂
+ B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄
+ B₅  B₃      B₂      -B₄       B₁
+
+julia&gt; CharTable(A)
+CharTable(ℤ-based ring dim.5)
+┌───────────┬─────────────────┐
+│centralizer│5    5    5  5  5│
+├───────────┼─────────────────┤
+│           │1    2    3  4  5│
+├───────────┼─────────────────┤
+│1          │1  √-3 -√-3  2 -1│
+│2          │1    1    1  .  1│
+│3          │1   -1   -1  .  1│
+│4          │1    .    . -1 -1│
+│5          │1 -√-3  √-3  2 -1│
+└───────────┴─────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Families.jl#L1132-L1190">source</a></section></details></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../sscoset/">« Non-connected reductive groups</a><a class="docs-footer-nextpage" href="../ct/">Classtypes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 27 March 2026 16:57">Friday 27 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

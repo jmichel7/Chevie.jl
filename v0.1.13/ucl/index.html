@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Unipotent classes of reductive groups · Chevie.jl documentation</title><meta name="title" content="Unipotent classes of reductive groups · Chevie.jl documentation"/><meta property="og:title" content="Unipotent classes of reductive groups · Chevie.jl documentation"/><meta property="twitter:title" content="Unipotent classes of reductive groups · Chevie.jl documentation"/><meta name="description" content="Documentation for Chevie.jl documentation."/><meta property="og:description" content="Documentation for Chevie.jl documentation."/><meta property="twitter:description" content="Documentation for Chevie.jl documentation."/><meta property="og:url" content="https://juliadocs.github.io/Chevie.jl/ucl/"/><meta property="twitter:url" content="https://juliadocs.github.io/Chevie.jl/ucl/"/><link rel="canonical" href="https://juliadocs.github.io/Chevie.jl/ucl/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">Chevie.jl documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Chevie</a></li><li><span class="tocitem">Infrastructure</span><ul><li><a class="tocitem" href="../format/">formatting facilities</a></li><li><a class="tocitem" href="../symbols/">Symbols</a></li><li><a class="tocitem" href="../symfuncs/">Symmetric functions</a></li><li><a class="tocitem" href="../nf/">Number fields</a></li><li><a class="tocitem" href="../truncs/">Truncated Laurent series</a></li></ul></li><li><span class="tocitem">Reflection groups</span><ul><li><a class="tocitem" href="../permroot/">Finite reflection groups</a></li><li><a class="tocitem" href="../coxgroups/">Coxeter groups</a></li><li><a class="tocitem" href="../weyl/">Finite Coxeter groups, Weyl groups, crystallographic root systems</a></li><li><a class="tocitem" href="../chars/">Classes/characters of reflection groups</a></li></ul></li><li><span class="tocitem">Hecke algebras</span><ul><li><a class="tocitem" href="../hecke/">Hecke algebras</a></li><li><a class="tocitem" href="../kl/">Kazhdan-Lusztig polynomials and bases</a></li><li><a class="tocitem" href="../murphy/">Murphy basis</a></li><li><a class="tocitem" href="../algebras/">Algebras</a></li></ul></li><li><a class="tocitem" href="../garside/">Garside monoids and groups, braids.</a></li><li><span class="tocitem">Reductive groups</span><ul><li><a class="tocitem" href="../rootdata/">Reductive algebraic groups and root data</a></li><li><a class="tocitem" href="../semisimple/">Semisimple elements</a></li><li><a class="tocitem" href="../cosets/">Reflection cosets and Spets</a></li><li><a class="tocitem" href="../sscoset/">Non-connected reductive groups</a></li><li><a class="tocitem" href="../uch/">Unipotent characters</a></li><li><a class="tocitem" href="../ct/">Classtypes</a></li></ul></li><li><span class="tocitem">Eigenspaces</span><ul><li><a class="tocitem" href="../eigen/">Eigenspaces</a></li><li><a class="tocitem" href="../dseries/">d-Harish-Chandra series</a></li></ul></li><li><span class="tocitem">Unipotent elements</span><ul><li class="is-active"><a class="tocitem" href>Unipotent classes of reductive groups</a></li><li><a class="tocitem" href="../urad/">Unipotent Elements</a></li></ul></li><li><a class="tocitem" href="../gendec/">Decomposition Matrices</a></li><li><a class="tocitem" href="../references/">References</a></li><li><a class="tocitem" href="../dict/">Dictionary from GAP3/Chevie</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Unipotent elements</a></li><li class="is-active"><a href>Unipotent classes of reductive groups</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Unipotent classes of reductive groups</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jmichel7/Chevie.jl/blob/main/docs/src/ucl.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Unipotent-classes-of-reductive-groups"><a class="docs-heading-anchor" href="#Unipotent-classes-of-reductive-groups">Unipotent classes of reductive groups</a><a id="Unipotent-classes-of-reductive-groups-1"></a><a class="docs-heading-anchor-permalink" href="#Unipotent-classes-of-reductive-groups" title="Permalink"></a></h1><ul><li><a href="#Chevie.Ucl"><code>Chevie.Ucl</code></a></li><li><a href="#Chevie.Ucl.GreenTable"><code>Chevie.Ucl.GreenTable</code></a></li><li><a href="#Chevie.Ucl.ICCTable"><code>Chevie.Ucl.ICCTable</code></a></li><li><a href="#Chevie.Ucl.UnipotentClass"><code>Chevie.Ucl.UnipotentClass</code></a></li><li><a href="#Chevie.Ucl.UnipotentClasses"><code>Chevie.Ucl.UnipotentClasses</code></a></li><li><a href="#Chevie.Ucl.XTable"><code>Chevie.Ucl.XTable</code></a></li><li><a href="#Chevie.Ucl.UnipotentValues"><code>Chevie.Ucl.UnipotentValues</code></a></li><li><a href="#Chevie.Ucl.distinguished_parabolics"><code>Chevie.Ucl.distinguished_parabolics</code></a></li><li><a href="#Chevie.Ucl.induced_linear_form"><code>Chevie.Ucl.induced_linear_form</code></a></li><li><a href="#Chevie.Ucl.special_pieces"><code>Chevie.Ucl.special_pieces</code></a></li></ul><article><details class="docstring" open="true"><summary id="Chevie.Ucl"><a class="docstring-binding" href="#Chevie.Ucl"><code>Chevie.Ucl</code></a> — <span class="docstring-category">Module</span></summary><section><div><p>This  module gives information  about the unipotent  conjugacy classes of a connected  reductive group  <code>𝐆</code> over  an algebraically  closed field <code>k</code> of characteristic   <code>p</code>,  and  various  associated  invariants,  such  as  the generalised  Springer correspondence. The unipotent  classes depend on <code>p</code>; their  classification differs  when <code>p</code>  is not  <em>good</em> (that  is, when <code>p</code> divides  one  of  the  coefficients  of  the  highest  root  of  one of the irreducible  components). In good characteristic, the unipotent classes are in bijection with nilpotent orbits on the Lie algebra <code>𝔤</code> of <code>𝐆</code>.</p><p>For each unipotent conjugacy class, we give the following information for a representative <code>u</code> of that class:</p><ul><li><p>the centralizer <span>$C_𝐆 (u)$</span>, that we describe by the reductive part of <span>$C_𝐆  (u)^0$</span>, by the  group of components  <span>$A(u):=C_𝐆 (u)/C_𝐆 (u)^0$</span>, and by the dimension of its unipotent radical.</p></li><li><p>in good characteristic, the  Dynkin-Richardson  diagram.</p></li><li><p>the generalised  Springer correspondence,  attaching a  character of the Weyl group or a relative Weyl group to each character of <code>A(u)</code>.</p></li></ul><p>The  Dynkin-Richarson diagram is  attached to a  nilpotent element <span>$e$</span> of the  Lie algebra  <span>$𝔤$</span>. By  the Jacobson-Morozov  theorem there  exists an <span>$𝔰𝔩₂$</span> subalgebra of <span>$𝔤$</span> containing <span>$e$</span> as the element <span>$\begin{pmatrix}0&amp;1\\0&amp;0  \end{pmatrix}$</span>.  Let  <span>$𝐒$</span>  be  the  torus <span>$\begin{pmatrix}h&amp;0\\0&amp;h^{-1} \end{pmatrix}$</span> of <span>$SL₂$</span> and let <span>$𝐓$</span> be  a  maximal  torus  containing  <span>$𝐒$</span>,  so  that <span>$𝐒$</span> is the image of a one-parameter   subgroup  <span>$σ∈  Y(𝐓)$</span>.  Consider  the  root  decomposition <span>$𝔤=∑_{α∈Φ}𝔤_α$</span>  given by <span>$𝐓$</span> and the  root system <code>Φ</code>; then <span>$α↦⟨σ,α⟩$</span> defines  a linear form  on <span>$Φ$</span>, determined  by its value  on simple roots <code>Π</code>.  It is possible to choose a  system of simple roots such that <span>$⟨σ,α⟩≥ 0$</span>  for <span>$α∈Π$</span>,  and then  <span>$⟨σ,α⟩∈{0,1,2}$</span> for  any <span>$α∈Π$</span>. The Dynkin diagram  of  <span>$Π$</span>  decorated  by  these  values  <span>$0,1,2$</span>  is  called the Dynkin-Richardson  diagram  of  <span>$e$</span>,  and  in  good  characteristic  is a complete  invariant  of  the  <span>$𝔤$</span>-orbit  of  <span>$e$</span>. The Dynkin-Richardson diagrams thus classify unipotent classes of <code>𝐆</code> in good characteristic.</p><p>Another classification of unipotent classes was given by (<a href="../references/#bc76">Bala and Carter, 1976</a>). A standard  parabolic subgroup <code>𝐏</code> of <code>𝐆</code> associated with the subset <code>I⊂Π</code> of the simple roots is <em>distinguished</em> if the linear form <code>σ</code> taking the value <code>2</code> on <code>α∈ I</code> and <code>0</code> on other simple roots satisfies <code>2n₀+semisimplerank(𝐆)=n₂</code>,  where <code>nᵢ</code> is the number of roots in <code>Φ</code> where <code>σ</code>  takes the value <code>i</code>.  Given a distinguished parabolic  <code>𝐏</code>, there is a unique  unipotent class which is dense in the unipotent radical of <code>𝐏</code>. For this  class, the linear form described  by the Dynkin-Richardson diagram is equal  to  <code>σ</code>.  Such  unipotent  classes  are  called <em>distinguished</em>. The Bala-Carter theorem says that every unipotent class is distinguished in the smallest  Levi subgroup <code>𝐋</code> which  contains it, and that  such pairs of <code>𝐋</code> and the distinguished parabolic <code>𝐏</code> of <code>𝐋</code> taken up to <code>𝐆</code>-conjugacy are in bijection with unipotent classes of <code>𝐆</code>. The function <code>induced_linear_form</code> allows to find the Dynkin-Richardson diagram in <code>𝐆</code> of a unipotent class of <code>𝐋</code> and thus recover these diagrams from the Bala-Carter classification.</p><p>Let  <span>$ℬ$</span> be  the variety  of all  Borel subgroups  and let  <span>$ℬᵤ$</span> be the subvariety  of Borel subgroups  containing the unipotent  element <code>u</code>. Then <span>$dim C_𝐆(u)=rank 𝐆 + 2 dim ℬ_u$</span> and in good characteristic this dimension can  be computed from the linear  form <code>σ</code> defined by the Dynkin-Richardson diagram:  the dimension of the class of <code>u</code> is the number of roots <code>α</code> such that <span>$⟨σ,α⟩∉{0,1}$</span>.</p><p>We   now  describe  the  Springer  correspondence.  Indecomposable  locally constant  <span>$𝐆$</span>-equivariant  sheaves  on  a  unipotent  class <span>$C$</span>, called <em>local  systems</em>, are  parameterised by  irreducible characters of <span>$A(u)$</span> for  <code>u∈ C</code>. The <em>ordinary</em> Springer  correspondence is a bijection between irreducible  characters of the Weyl  group and a large  subset of the local systems,  containing all trivial local  systems (those parameterised by the trivial  character  of  <span>$A(u)$</span>  for  each  <span>$u$</span>).  More  generally,  the <em>generalised</em>  Springer correspondence  associates to  each local  system a (unique  up to <span>$𝐆$</span>-conjugacy) <em>cuspidal datum</em>,  a Levi subgroup <span>$𝐋$</span> of <span>$𝐆$</span>  and a <em>cuspidal</em> local system on  an unipotent class of <span>$𝐋$</span>, and a character  of the relative Weyl group <span>$W_𝐆 (𝐋):=N_𝐆 (𝐋)/𝐋$</span>. There are few cuspidal  local  systems  (at  most  one  in  each  dimension for classical groups).  The ordinary  Springer correspondence  is the  special case where <span>$𝐋$</span>  is a maximal torus, the cuspidal  local system is the trivial system on the identity element, and <span>$W_𝐆 (𝐋)=W$</span>, the Weyl group.</p><p>The  Springer correspondence gives information on the character values of a finite  reductive  group  as  follows:  assume  that <span>$k$</span> is the algebraic closure  of a finite field <span>$𝔽_q$</span> and that <span>$F$</span> is the Frobenius attached to  an <span>$𝔽_q$</span>-structure of  <span>$𝐆$</span>. Let <span>$C$</span>  be an <span>$F$</span>-stable unipotent class  and let <span>$u∈ C^F$</span>; we call <span>$C$</span> the <em>geometric class</em> of <span>$u$</span> and the <span>$𝐆^F$</span>-classes within <span>$C^F$</span> are parameterised by the <span>$F$</span>-conjugacy classes  of <span>$A(u)$</span>,  denoted by  <span>$H¹(F,A(u))$</span> (most  of the time we can find <span>$u∈ C$</span> such that <span>$F$</span> acts trivially on <span>$A(u)$</span> and <span>$H¹(F,A(u))$</span> parametrises  the conjugacy classes). To an <span>$F$</span>-stable character <span>$φ$</span> of <span>$A(u)$</span>  we associate  the <em>characteristic  function</em> of the corresponding local  system (actually  associated with  an extension  <span>$φ̃$</span> of  <span>$φ$</span> to <span>$A(u).F$</span>);  it is  a class  function <span>$Y_{u,φ}$</span>  on <span>$𝐆^F$</span> which can be normalised  so  that:  <span>$Y_{u,φ}(u₁)=φ̃(cF)$</span>  if  <span>$u₁$</span>  is geometrically conjugate   to  <span>$u$</span>  and  its   <span>$𝐆^F$</span>-class  is  parameterised  by  the <span>$F$</span>-conjugacy  class <span>$cF$</span> of  <span>$A(u)$</span>, otherwise <span>$Y_{u,φ}(u₁)=0$</span>. If the  pair  <span>$u,φ$</span>  corresponds  via  the  Springer  correspondence  to the character  <span>$χ$</span> of  <span>$W_𝐆(𝐋)$</span>, then  <span>$Y_{u,φ}$</span> is  also denoted <span>$Yᵪ$</span>. There  is another important class of functions indexed by local systems: to a  local  system  on  class  <span>$C$</span>  is  attached an intersection cohomology complex,  which is  a complex  of sheaves  supported on the closure <span>$C̄$</span>. Such a complex of sheaves is associated with its <em>characteristic function</em>, a class function of <span>$𝐆^F$</span> obtained by taking the alternating trace of the Frobenius acting on the stalks of the cohomology sheaves. If <span>$Y_ψ$</span> is the characteristic  function of a local  system, the characteristic function of the  corresponding intersection  cohomology complex  is denoted by <span>$X_ψ$</span>. This  function is supported on <span>$C̄$</span>, and Lusztig has shown that <span>$X_ψ=∑_χ P_{ψ,χ}  Yᵪ$</span> where <span>$P_{ψ,χ}$</span> are integer polynomials in <span>$q$</span> and <span>$Yᵪ$</span> are attached to local systems on classes lying in <span>$C̄$</span>.</p><p>Lusztig   and  Shoji  have  given  an   algorithm  to  compute  the  matrix <span>$P_{ψ,χ}$</span>, which is implemented in Chevie. The relation to the characters of   <span>$𝐆(𝔽_q)$</span>,   considering   for   simplicity   the  ordinary  Springer correspondence,  is that the  restriction to the  unipotent elements of the almost  character <span>$R_χ$</span> is equal to  <span>$q^{bᵪ} Xᵪ$</span>, where <span>$bᵪ$</span> is <span>$dim ℬᵤ$</span>  for an element <code>u</code> of  the class <code>C</code> such that  the support of <code>χ</code> is <span>$C̄$</span>.  The restrictions of the Deligne-Lusztig characters <span>$R_w$</span> for <code>w∈ W</code>  on the  unipotents are  called the  <em>Green functions</em>  and can  also be computed  by Chevie.  The values  of all  unipotent characters on unipotent elements  can also be  computed in principle  by applying Lusztig&#39;s Fourier transform  matrix (see the  section on the  Fourier matrix) but  there is a difficulty  in that the  <span>$Xᵪ$</span> must first  be multiplied by  some roots of unity  which are not known  in all cases (and  when known may depend on the congruence class of <span>$q$</span> modulo some small prime).</p><p>Finally,  we describe  how unipotent  classes of  <code>𝐆</code> are  parameterised in various   quasisimple  groups.   In  classical   types,  the   classes  are parametrised by partitions corresponding to the Jordan form in the standard representation. Thus,</p><ul><li>for <code>Aₙ</code> we have partitions of <code>n+1</code>.</li><li>for  <code>B_n</code> we have partitions of <code>2n+1</code>  where even parts occur an even number  of times. In characteristic  2, types B and  C are isogenous so have the same classification; thus see the next paragraph.</li><li>for  <code>C_n</code> we  have partitions  of <code>2n</code>  where odd  parts occur an even number  of times. In characteristic 2,  there are <code>2ᵏ</code> classes attached to  a partition where  <code>k</code> is the  number of even  parts which occur an even number of times.</li><li>for  <code>D_n</code> we have partitions of <code>2n</code>  where even parts occur an even number  of times,  excepted there  are two  classes when  all parts are even.  In characteristic 2, we have  partitions of <code>2n</code> where odd parts occur  an  even  number  of  times,  excepted  there are <code>2ᵏ+δ</code> classes attached  to a partition  where <code>k</code> is  the number of  even parts which occur an even number of times, and <code>δ</code> is 2 when all parts are even and 0 otherwise.</li></ul><p>In  exceptional  groups,  the  names  of  the  classes are derived from the Bala-Carter  classification. The name of a class parametrised by <code>(𝐋,𝐏)</code> is of  the form <code>l(p)</code>  where <code>l</code> is  the name of  <code>𝐋</code> and <code>(p)</code> is present if there  is more than one distinguished  parabolic in <code>𝐋</code> and describes which one  it is. Before the  Bala-Carter classification was universally adopted, Shoji  and  Mizuno  used  a  different  scheme  where a class was sometimes parametrised  by a reductive subgroup of maximal rank which was not a Levi. These  older labels  can be  obtained instead  by giving  the <code>IO</code> property <code>:shoji=&gt;true</code>  or <code>:mizuno=&gt;true</code>. In a  bad characteristic <code>p</code>, there are extra  classes.  Each  of  them  is  associated  with  a  class <code>c</code> in good characteristic and is called <code>(c)ₚ</code>.</p><p>We illustrate the above descriptions on some examples:</p><pre><code class="language-julia-repl hljs">julia&gt; UnipotentClasses(rootdatum(:sl,4))
+UnipotentClasses(sl₄)
+1111&lt;211&lt;22&lt;31&lt;4
+┌────┬───────────────────────────────────────────────────────────────┐
+│u   │D-R dℬ ᵤ B-C   C_𝐆(u) A₃(Φ₁³) A₁(A₁×A₁Φ₁)/-1 .(A₃)/ζ₄ .(A₃)/ζ₄³│
+├────┼───────────────────────────────────────────────────────────────┤
+│4   │222    0 222    q³.Z₄     1:4           -1:2    ζ₄:Id    ζ₄³:Id│
+│31  │202    1 22.    q⁴.Φ₁   Id:31                                  │
+│22  │020    2 2.2 q⁴.A₁.Z₂    2:22          11:11                   │
+│211 │101    3 2..  q⁵.A₁Φ₁  Id:211                                  │
+│1111│000    6 ...       A₃ Id:1111                                  │
+└────┴───────────────────────────────────────────────────────────────┘</code></pre><p>The first column of the table gives the name of the unipotent class, here a partition  describing  the  Jordan  form.  The  partial  order on unipotent classes  given by the Zariski closure is given before the table. The column <code>D-R</code>,   which   is   only   shown   in   good  characteristic,  gives  the Dynkin-Richardson  diagram  for  each  class;  the  column  <code>dBu</code> gives the dimension  of the variety  <span>$ℬ ᵤ$</span>. The  column <code>B-C</code> gives the Bala-Carter classification of <span>$u$</span>, that is in the case of <span>$sl₄$</span> it shows <span>$u$</span> as a regular  unipotent  in  a  Levi  subgroup  by  giving the Dynkin-Richardson diagram  of a regular unipotent (all  2&#39;s) for the entries corresponding to the  Levi and <code>.</code> for the entries  which not corresponding to the Levi. The column <code>C(u)</code> describes the group <span>$C_𝐆(u)$</span>: a power <span>$qᵈ$</span> describes that the  unipotent  radical  of  <span>$C_𝐆(u)$</span>  has  dimension  <span>$d$</span> (thus <span>$qᵈ$</span> rational  points); then follows a description  of the reductive part of the neutral  component of <span>$C_𝐆(u)$</span>, given by the name of its root datum. Then if  <span>$C_𝐆(u)$</span> is not connected, the description of <span>$A(u)$</span> is given using a  different vocabulary: a cyclic group of order  4 is given as <code>Z4</code>, and a symmetric group on 3 points would be given as <code>S3</code>.</p><p>For  example, the first  class <code>4</code> has  <span>$C_𝐆(u)^0$</span> unipotent of dimension <code>3</code> and <span>$A(u)$</span> equal to <code>Z4</code>, the cyclic group of order 4. The class <code>22</code> has  <span>$C_G(u)$</span> with unipotent radical of  dimension <code>4</code>, reductive part of type  <code>A1</code> and  <span>$A(u)$</span> is  <code>Z2</code>, the  cyclic group  of order 2. The other classes have <span>$C_𝐆(u)$</span> connected. For the class <code>31</code> the reductive part of <span>$C_G(u)$</span> is a torus of rank 1.</p><p>Then  there is a column  for each <em>Springer series</em>,  giving for each class the  pairs  &#39;a:b&#39;  where  &#39;a&#39;  is  the  name  of  the character of <span>$A(u)$</span> describing  the local system involved and &#39;b&#39;  is the name of the character of  the (relative) Weyl group corresponding by the Springer correspondence. At  the top of  the column is  the name of  the relative Weyl group, and in brackets  the name  of the  Levi affording  a cuspidal  local system; then, separated  by a <code>/</code>,  is a description  of the central character associated with  the Springer series  (omitted if this  central character is trivial): all  local systems in a given Springer  series have the same restriction to the  centre of <span>$𝐆$</span>. To see what the picture becomes for another algebraic group  in the same isogeny class, for example the adjoint group, one simply discards the Springer series whose central character becomes trivial on the centre  of <span>$𝐆$</span>; and each group <span>$A(u)$</span>  must be quotiented by the common kernel  of  the  remaining  characters.  Here  is the table for the adjoint group:</p><pre><code class="language-julia-repl hljs">julia&gt; UnipotentClasses(coxgroup(:A,3))
+UnipotentClasses(A₃)
+1111&lt;211&lt;22&lt;31&lt;4
+┌────┬────────────────────────────┐
+│u   │D-R dℬ ᵤ B-C  C_𝐆(u) A₃(Φ₁³)│
+├────┼────────────────────────────┤
+│4   │222    0 222      q³    Id:4│
+│31  │202    1 22.   q⁴.Φ₁   Id:31│
+│22  │020    2 2.2   q⁴.A₁   Id:22│
+│211 │101    3 2.. q⁵.A₁Φ₁  Id:211│
+│1111│000    6 ...      A₃ Id:1111│
+└────┴────────────────────────────┘</code></pre><p>Here is another example:</p><pre><code class="language-julia-repl hljs">julia&gt; UnipotentClasses(coxgroup(:G,2))
+UnipotentClasses(G₂)
+1&lt;A₁&lt;Ã₁&lt;G₂(a₁)&lt;G₂
+┌──────┬──────────────────────────────────────────┐
+│u     │D-R dℬ ᵤ B-C C_𝐆(u)         G₂(Φ₁²)  .(G₂)│
+├──────┼──────────────────────────────────────────┤
+│G₂    │ 22    0  22     q²         Id:φ₁‚₀       │
+│G₂(a₁)│ 20    1  20  q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id│
+│Ã₁    │ 01    2  .2  q³.A₁         Id:φ₂‚₂       │
+│A₁    │ 10    3  2.  q⁵.A₁        Id:φ″₁‚₃       │
+│1     │ 00    6  ..     G₂         Id:φ₁‚₆       │
+└──────┴──────────────────────────────────────────┘</code></pre><p>which illustrates that on class <code>G₂(a₁)</code> there are two local systems in the principal series of the Springer correspondence, and another cuspidal local system. It also illustrates how we represent the Bala-Carter classification in  general. If a class is attached to <code>(𝐋,𝐏)</code> then the simple roots in the complement  of <code>𝐋</code> have a <code>.</code>.  Those in <code>𝐋</code> have a  <code>0</code> or a <code>2</code>, the <code>2</code>s characterising <code>𝐏</code>. So, from the <code>B-C</code> column, we see that that <code>G₂(a₁)</code> is not  in a proper Levi, in which case the Bala-Carter diagram coincides with the Dynkin-Richardson diagram.</p><p>Characteristics 2 and 3 are not good for <code>G2</code>. To get the unipotent classes and  the Springer  correspondence in  a bad  characteristic, give  a second argument to the function <code>UnipotentClasses</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; UnipotentClasses(coxgroup(:G,2),3)
+UnipotentClasses(G₂,3)
+1&lt;A₁,(Ã₁)₃&lt;Ã₁&lt;G₂(a₁)&lt;G₂
+┌──────┬───────────────────────────────────────────┐
+│u     │dℬ ᵤ B-C C_𝐆(u)  G₂(Φ₁²) .(G₂) .(G₂)  .(G₂)│
+├──────┼───────────────────────────────────────────┤
+│G₂    │   0  22  q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id│
+│G₂(a₁)│   1  20  q⁴.Z₂   2:φ₂‚₁ 11:Id             │
+│Ã₁    │   2  .2     q⁶  Id:φ₂‚₂                   │
+│A₁    │   3  2.  q⁵.A₁ Id:φ″₁‚₃                   │
+│(Ã₁)₃ │   3  ??  q⁵.A₁ Id:φ′₁‚₃                   │
+│1     │   6  ..     G₂  Id:φ₁‚₆                   │
+└──────┴───────────────────────────────────────────┘</code></pre><p>The  function <code>ICCTable</code> gives the  transition matrix between the functions <span>$Xᵪ$</span>  and <span>$Y_ψ$</span>.</p><pre><code class="language-julia-repl hljs">julia&gt; uc=UnipotentClasses(coxgroup(:G,2));
+julia&gt; t=ICCTable(uc;q=Pol(:q))
+Coefficients of Xᵪ on Yᵩ for series L=G₂₍₎=Φ₁² W_G(L)=G₂
+┌──────┬─────────────────────────────┐
+│X\Y   │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1│
+├──────┼─────────────────────────────┤
+│Xφ₁‚₀ │ 1          .      1  1  1  1│
+│Xφ′₁‚₃│ .          1      .  1  . q²│
+│Xφ₂‚₁ │ .          .      1  1  1 Φ₈│
+│Xφ₂‚₂ │ .          .      .  1  1 Φ₄│
+│Xφ″₁‚₃│ .          .      .  .  1  1│
+│Xφ₁‚₆ │ .          .      .  .  .  1│
+└──────┴─────────────────────────────┘</code></pre><p>An example which illustrates how to get the <code>shoji</code> names of classes</p><pre><code class="language-julia-rep1 hljs">julia&gt; uc=UnipotentClasses(coxgroup(:F,4));
+
+julia&gt; uc.classes[10:end]
+7-element Vector{UnipotentClass}:
+ UnipotentClass(C₃(a₁))
+ UnipotentClass(F₄(a₃))
+ UnipotentClass(C₃)
+ UnipotentClass(B₃)
+ UnipotentClass(F₄(a₂))
+ UnipotentClass(F₄(a₁))
+ UnipotentClass(F₄)
+
+julia&gt; xdisplay(uc.classes[10:end],shoji=true)
+7-element Vector{UnipotentClass}:
+ UnipotentClass(A₁+B₂)
+ UnipotentClass(A₃+Ã₁)
+ UnipotentClass(C₃)
+ UnipotentClass(B₃)
+ UnipotentClass(C₃+A₁)
+ UnipotentClass(B₄)
+ UnipotentClass(F₄)</code></pre><p>In  the <code>ICCTable</code> the  row labels and  column labels show  the two ways of indexing  local systems: the row labels  give the character of the relative Weyl  group and the column labels give the  class and the name of the local system as a character of <code>A(u)</code>: for example, <code>G2(a1)</code> is the trivial local system  of the  class <code>G2(a1)</code>,  while <code>G2(a1)(21)</code>  is the local system on this class corresponding to the 2-dimensional character of <span>$A(u)=A₂$</span>.</p><p>The  data on unipotent classes for  arbitrary reductive groups are obtained as follows. We may reduce to the case where the radical is trivial, that is <code>𝐆</code>  is semisimple. Then <code>𝐆</code> is the quotient of a simply connected group by a  finite central group. The data  for quasi-simple simply connected groups have  been entered  by hand  for each  type and  a general simply connected group  is  a  direct  product  of  quasi-simple  ones.  In  such a group, a character  of <code>A(Z)</code>, the group of components of the centre, is attached to each  Springer series.  For an  isogenous reductive  group <code>𝐆&#39;</code> with centre <code>Z&#39;</code>  the group  <code>A(Z&#39;)</code> is  a quotient  of the  group <code>A(Z)</code>. The Springer series  for <code>𝐆&#39;</code> are those such  that the corresponding character of <code>A(Z)</code> factors through <code>A(Z&#39;)</code> (to compute <code>A(Z&#39;)</code> see <a href="../semisimple/#Chevie.Semisimple.algebraic_center"><code>algebraic_center</code></a>).  The  geometric  unipotent  classes of <code>𝐆</code> and <code>𝐆&#39;</code>  are in bijection. For  <code>u</code> a unipotent element  of <code>𝐆&#39;</code> (which we can also consider as a unipotent element of <code>𝐆</code>) the group <code>A₁=A(u)</code> in <code>𝐆&#39;</code> is a quotient of <code>A=A(u)</code> in <code>𝐆</code> which we can compute as follows: the Springer correspondence  for <code>𝐆&#39;</code> tells us which  characters of <code>A</code> survive in <code>𝐆&#39;</code>. Then <code>A&#39;</code> is the quotient of <code>A</code> by the common kernel of these characters.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L1-L338">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.UnipotentClasses"><a class="docstring-binding" href="#Chevie.Ucl.UnipotentClasses"><code>Chevie.Ucl.UnipotentClasses</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>UnipotentClasses(W[,p])</code></p><p><code>W</code> should be a <code>FiniteCoxeterGroup</code> record for a Weyl group or <code>rootdatum</code> describing  a reductive algebraic group <code>𝐆</code>.  The function returns a record containing information about the unipotent classes of <code>𝐆</code> in characteristic <code>p</code>  (if omitted, <code>p</code>  is assumed to  be any good  characteristic for <code>𝐆</code>). This contains the following fields:</p><p><code>group</code>: a pointer to <code>W</code></p><p><code>p</code>: the characteristic of the field for which the unipotent classes were computed. It is <code>0</code> for any good characteristic.</p><p><code>orderclasses</code>:  a list describing the Hasse diagram of the partial order induced   on   unipotent   classes   by   the  closure  relation.  That  is <code>.orderclasses[i]</code>  is the list of <code>j</code> such that <span>$C̄ⱼ⊋ C̄ᵢ$</span>  and  there  is no  class  <span>$Cₖ$</span>  such  that <span>$C̄ⱼ⊋ C̄ₖ⊋ C̄ᵢ$</span>.</p><p><code>classes</code>:  a list of records holding information for each unipotent class. See  the  help  for  <a href="#Chevie.Ucl.UnipotentClass"><code>UnipotentClass</code></a>  for  a  description of these records.</p><p><code>springerseries</code>:  a list of records, each  of which describes a Springer series  of <code>𝐆</code>.</p><p>The  records  describing  individual  Springer  series  have  the following fields:</p><p><code>levi</code>:the  indices of the  reflections corresponding to  the Levi subgroup <code>𝐋</code>  where  lives  the  cuspidal  local  system <code>ι</code> from which the Springer series is induced.</p><p><code>relgroup</code>: The relative Weyl group <span>$N_𝐆(𝐋,ι)/𝐋$</span>. The first series is the principal series for which <code>.levi=[]</code> and <code>.relgroup=W</code>.</p><p><code>locsys</code>:  a  list  of  length  <code>nconjugacy_classes(.relgroup)</code>, holding in <code>i</code>-th  position a  pair describing  which local  system corresponds to the <code>i</code>-th  character of  <span>$N_𝐆(𝐋,ι)$</span>. The  first element  of the  pair is the index  of the concerned unipotent class <code>u</code>, and the second is the index of the corresponding character of <code>A(u)</code>.</p><p><code>Z</code>:  the central character associated  to the Springer series, specified by its value on the generators of the center.</p><pre><code class="language-julia-repl hljs">julia&gt; W=rootdatum(:sl,4)
+sl₄
+
+julia&gt; uc=UnipotentClasses(W);
+
+julia&gt; uc.classes
+5-element Vector{UnipotentClass}:
+ UnipotentClass(1111)
+ UnipotentClass(211)
+ UnipotentClass(22)
+ UnipotentClass(31)
+ UnipotentClass(4)</code></pre><p>The  <code>show</code>  function  for  unipotent  classes  accepts  all the options of <code>showtable</code>  and of <code>charnames</code>. Giving the option <code>mizuno</code> (resp. <code>shoji</code>) uses  the names given by  (<a href="../references/#miz77">Mizuno, 1977</a>; <a href="../references/#miz80">Mizuno, 1980</a>) (resp. (<a href="../references/#shoji82">Shoji, 1982</a>)) for unipotent  classes. Moreover, there is also an option <code>fourier</code> which gives the  Springer  correspondence  tensored  with  the  sign  character of each relative   Weyl  group,  which   is  the  correspondence   obtained  via  a Fourier-Deligne  transform (here we  assume that <code>p</code>  is very good, so that there  is a nondegenerate  invariant bilinear form  on the Lie algebra, and also one can identify nilpotent orbits with unipotent classes).</p><p>Here is how to display the non-cuspidal part of the Springer correspondence of  the unipotent classes of <code>E₆</code> using the notations of (<a href="../references/#miz77">Mizuno, 1977</a>) for the  classes and those  of (<a href="../references/#frame51">Frame, 1951</a>) for  the characters of the Weyl group  and  of  (<a href="../references/#spalt85">Spaltenstein, 1985</a>)  for  the  characters  of  <code>G₂</code>  (this  is convenient for checking our data with (<a href="../references/#spalt85">Spaltenstein, 1985</a>) which used that same conventions):</p><pre><code class="language-julia-rep1 hljs">julia&gt; uc=UnipotentClasses(rootdatum(:E6sc));
+
+julia&gt; xdisplay(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
+      order=false)
+┌──────┬─────────────────────────────────────────────────────┐
+│u     │             E₆(Φ₁⁶) G₂(A₂×A₂Φ₁²)/ζ₃ G₂(A₂×A₂Φ₁²)/ζ₃²│
+├──────┼─────────────────────────────────────────────────────┤
+│E₆    │                1:1ₚ            ζ₃:1            ζ₃²:1│
+│E₆(a₁)│                1:6ₚ           ζ₃:εₗ           ζ₃²:εₗ│
+│D₅    │              Id:20ₚ                                 │
+│A₅+A₁ │        -1:15ₚ 1:30ₚ           ζ₃:θ′           ζ₃²:θ′│
+│A₅    │              1:15_q           ζ₃:θ″           ζ₃²:θ″│
+│D₅(a₁)│              Id:64ₚ                                 │
+│A₄+A₁ │              Id:60ₚ                                 │
+│D₄    │              Id:24ₚ                                 │
+│A₄    │              Id:81ₚ                                 │
+│D₄(a₁)│111:20ₛ 3:80ₛ 21:90ₛ                                 │
+│A₃+A₁ │              Id:60ₛ                                 │
+│2A₂+A₁│               1:10ₛ          ζ₃:ε_c          ζ₃²:ε_c│
+│A₃    │             Id:81ₚ′                                 │
+│A₂+2A₁│             Id:60ₚ′                                 │
+│2A₂   │              1:24ₚ′            ζ₃:ε            ζ₃²:ε│
+│A₂+A₁ │             Id:64ₚ′                                 │
+│A₂    │      11:15ₚ′ 2:30ₚ′                                 │
+│3A₁   │            Id:15_q′                                 │
+│2A₁   │             Id:20ₚ′                                 │
+│A₁    │              Id:6ₚ′                                 │
+│1     │              Id:1ₚ′                                 │
+└──────┴─────────────────────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L705-L812">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.UnipotentClass"><a class="docstring-binding" href="#Chevie.Ucl.UnipotentClass"><code>Chevie.Ucl.UnipotentClass</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>A <code>struct UnipotentClass</code> representing the class <code>C</code> of a unipotent element <code>u</code>  of the reductive  group <code>𝐆</code> with  Weyl group <code>W</code>,  contains always the following information</p><ul><li><code>.name</code>  The name of <code>C</code></li><li><code>.parameter</code> A parameter describing <code>C</code>. Sometimes the same as <code>.name</code>; a partition describing the Jordan form, for classical groups.</li><li><code>.dimBu</code> The dimension of the variety of Borel subgroups containing <code>u</code>.</li></ul><p>For  some  classes  in  types  <code>E₆,  E₇,  E₈</code>  there  is  a field <code>.mizuno</code> containing the names given by Mizuno for some classes, and for some classes in type <code>F₄</code> a field <code>.shoji</code> containing the names given by Shoji.</p><p>A  <code>UnipotentClass</code> contains also some of  the following information (all of it for some types and some characteristics but sometimes much less)</p><ul><li><code>.dynkin</code> the Dynkin-Richardson diagram of <code>C</code> (a vector giving a weight 0, 1 or 2 to the simple roots).</li><li><code>.dimred</code> the dimension of the reductive part of <code>C_G(u)</code>.</li><li><code>.red</code> a <code>CoxeterCoset</code> recording the type of the reductive part of <code>C_G(u)</code>, with the twisting induced by the Frobenius if any.</li><li><code>.Au</code> the group <code>A_G(u)=C_G(u)/C^0_G(u)</code>.</li><li><code>.balacarter</code> encodes the Bala-Carter classification of <code>C</code>, which says that <code>u</code> is distinguished in a Levi <code>L</code> (the Richardson class in a parabolic <code>P_L</code>) as a vector listing the indices of the simple roots in <code>L</code>, with those not in <code>P_L</code> negated.</li><li><code>.rep</code> a list of indices for roots such that if <code>U=UnipotentGroup(W)</code> then <code>prod(U,u.rep)</code> is a representative of <code>C</code> (which can be obtained also by <code>representative(W,u)</code>).</li><li><code>.dimunip</code> the dimension of the unipotent part of <code>C_G(u)</code>.</li><li><code>.AuAction</code> an <code>ExtendedCoxeterGroup</code> recording the action of <code>A_G(u)</code> on <code>red</code>.</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L353-L375">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.ICCTable"><a class="docstring-binding" href="#Chevie.Ucl.ICCTable"><code>Chevie.Ucl.ICCTable</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>ICCTable(uc,seriesNo=1;q=Pol())</code></p><p>This function gives the table of decompositions of the functions <span>$X_ι$</span> in terms  of the functions <span>$Y_ι$</span>. Here <code>ι</code> is a <code>𝐆</code>-equivariant local system on  the  class  <code>C</code>  of  a  unipotent  element  <code>u</code>. Such a local system is parametrised  by the pair  <code>(u,ϕ)</code> of <code>u</code>  and a character  of the group of components   <code>A(u)</code>   of   <span>$C_𝐆   (u)$</span>.   The  function  <span>$Y_ι$</span>  is  the characteristic   function  of  this   local  system  and   <span>$X_ι$</span>  is  the characteristic   function  of  the  corresponding  intersection  cohomology complex  on <code>C̄</code>. The  Springer correspondence says  that the local systems can  also be  indexed by  characters of  a relative  Weyl group.  Since the coefficient of <code>Xᵪ</code> on <code>Yᵩ</code> is <code>0</code> if <code>χ</code> and <code>φ</code> are not characters of the same  relative Weyl group (are not in  the same Springer series), the table is  for one  Springer series,  specified by  the argument  &#39;seriesNo&#39; (this defaults  to &#39;seriesNo=1&#39; which is the principal series). The decomposition multiplicities  are graded,  and are  given as  polynomials in one variable (specified by the argument <code>q</code>; if not given <code>Pol()</code> is assumed).</p><pre><code class="language-julia-repl hljs">julia&gt; uc=UnipotentClasses(coxgroup(:A,3));t=ICCTable(uc)
+Coefficients of Xᵪ on Yᵩ for series L=A₃₍₎=Φ₁³ W_G(L)=A₃
+┌─────┬────────────────┐
+│X\Y  │4 31 22 211 1111│
+├─────┼────────────────┤
+│X4   │1  1  1   1    1│
+│X31  │.  1  1  Φ₂   Φ₃│
+│X22  │.  .  1   1   Φ₄│
+│X211 │.  .  .   1   Φ₃│
+│X1111│.  .  .   .    1│
+└─────┴────────────────┘</code></pre><p>In  the  above  the  multiplicities  are  given  as  products of cyclotomic polynomials  to display them  more compactly. However  the format of such a table can be controlled more precisely.</p><p>For  instance,  one  can  ask  to  not  display  the entries as products of cyclotomic polynomials and not display the zeroes as &#39;.&#39;</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t;cycpol=false,dotzero=false)
+Coefficients of Xᵪ on Yᵩ for A3
+┌─────┬──────────────────┐
+│X\Y  │4 31 22 211   1111│
+├─────┼──────────────────┤
+│X4   │1  1  1   1      1│
+│X31  │0  1  1 q+1 q²+q+1│
+│X22  │0  0  1   1   q²+1│
+│X211 │0  0  0   1 q²+q+1│
+│X1111│0  0  0   0      1│
+└─────┴──────────────────┘</code></pre><p>Since  <code>show</code>  uses  the  function  <code>showtable</code>,  all  the  options of this function  are  also  available.  We  can  use  this to restrict the entries displayed  to a  given sublist  of the  rows and  columns (here the indices correspond  to the number  in Chevie of  the corresponding character of the relative Weyl group of the given Springer series):</p><pre><code class="language-julia-rep1 hljs">julia&gt; uc=UnipotentClasses(coxgroup(:F,4));
+julia&gt; t=ICCTable(uc);
+julia&gt; sh=[13,24,22,18,14,9,11,19];
+julia&gt; xdisplay(t,rows=sh,cols=sh)
+Coefficients of Xᵪ on Yᵩ for series L=F₄₍₎=Φ₁⁴ W_G(L)=F₄
+┌───────┬────────────────────────────────────────────┐
+│X\Y    │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾│
+├───────┼────────────────────────────────────────────┤
+│Xφ₉‚₁₀ │    1  .  .     .     .      .  .          .│
+│Xφ″₈‚₉ │    1  1  .     .     .      .  .          .│
+│Xφ′₈‚₉ │    1  .  1     .     .      .  .          .│
+│Xφ″₄‚₇ │    1  1  .     1     .      .  .          .│
+│Xφ′₆‚₆ │   Φ₄  1  1     1     1      .  .          .│
+│Xφ₄‚₈  │   q²  .  .     .     .      1  .          .│
+│Xφ″₉‚₆ │   Φ₄ Φ₄  .     1     .      .  1          .│
+│Xφ′₄‚₇ │   q²  . Φ₄     .     1      .  .          1│
+└───────┴────────────────────────────────────────────┘</code></pre><p>The  <code>ìo</code> option <code>rowlocsys=true</code>  will display local  systems also for the row labels.</p><p>The   function  &#39;ICCTable&#39;  returns  an   object  with  various  pieces  of information which can help further computations.</p><p><code>.scalar</code>:  this contains the table of  multiplicities <code>Pᵪᵩ</code> of the <code>Xᵪ</code> on the  <code>Yᵩ</code>.  One  should  pay  attention  that  by default, the table is not displayed  in the same order as the  stored |.scalar|, which is in order in Chevie  of  the  characters  in  the  relative  Weyl  group;  the  table is transposed,  then lines  and rows  are sorted  by <code>dimBu,class  no,index of character in A(u)</code> while displayed.</p><p><code>.group</code>: The group <code>W</code>.</p><p><code>.relgroup</code>: The relative Weyl group for the Springer series.</p><p><code>.series</code>: The index of the Springer series given for <code>W</code>.</p><p><code>.dimBu</code>: The list of <span>$dimℬᵤ$</span> for each local system <code>(u,φ)</code> in the series.</p><p><code>:L</code>:  The matrix of (unnormalised) scalar products of the functions <span>$Yᵩ$</span> with  themselves,  that  is  the  <span>$(φ,χ)$</span>  entry  is <span>$∑_{g∈𝐆(𝔽_q)} Yᵩ(g) Yᵪ(g)$</span>. This is thus a symmetric, block-diagonal matrix where the diagonal blocks  correspond to geometric unipotent conjugacy classes. This matrix is obtained as a by-product of Lusztig&#39;s algorithm to compute <span>$Pᵩᵪ$</span>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L1103-L1207">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.XTable"><a class="docstring-binding" href="#Chevie.Ucl.XTable"><code>Chevie.Ucl.XTable</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>XTable(uc;classes=false)</code></p><p>This  function presents  in a  different way  the information obtained from <code>ICCTable</code>. Let <span>$X̃_{u,ϕ}=q^{1/2(codim C-dim Z(𝐋 ))}X_{u,ϕ}$</span> where <code>C</code> is the  class of <code>u</code> and <code>Z(𝐋)</code> is the  center of Levi subgroup on which lives the cuspidal local system attached to the local system <code>(u,ϕ)</code>.</p><p>Then  <code>XTable(uc)</code> gives the decomposition of the functions <span>$X̃_{u,ϕ}$</span> on local   systems.  <code>t=XTable(uc,classes==true)</code>  gives  the  values  of  the functions   <span>$X̃_{u,ϕ}$</span>   on   unipotent   classes.   A   side  effect  of <code>classes=true</code>  is  to  compute  the  cardinal  of  the unipotent conjugacy classes,  available in <code>t.cardClass</code>; in this case displaying <code>t</code> will show the  cardinal  of  the  centralizers  of  unipotent  elements, available in <code>t.centClass</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; XTable(UnipotentClasses(W))
+Values of character sheaves X̃ᵪ of G₂ on local systems φ
+┌──────────┬───────────────────────────────────────────┐
+│X̃ᵪ|φ      │   1 A₁ Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂│
+├──────────┼───────────────────────────────────────────┤
+│X_φ₁‚₀^G₂ │   1  1  1           .          .      1  1│
+│X_φ₁‚₆^G₂ │  q⁶  .  .           .          .      .  .│
+│X_φ′₁‚₃^G₂│  q³  .  q           .          q      .  .│
+│X_φ″₁‚₃^G₂│  q³ q³  .           .          .      .  .│
+│X_φ₂‚₁^G₂ │ qΦ₈  q  q           .          .      q  .│
+│X_φ₂‚₂^G₂ │q²Φ₄ q² q²           .          .      .  .│
+│X_Id^.    │   .  .  .          q²          .      .  .│
+└──────────┴───────────────────────────────────────────┘</code></pre><p>The functions <code>X̃</code> in the first column are decorated by putting as an exponent the relative groups <span>$W_𝐆 (𝐋)$</span>.</p><pre><code class="language-julia-repl hljs">julia&gt; t=XTable(UnipotentClasses(W);classes=true)
+Values of character sheaves X̃ᵪ of G₂ on unipotent classes
+┌──────────┬─────────────────────────────────────────────────────────┐
+│X̃ᵪ|class  │           1     A₁     Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂│
+├──────────┼─────────────────────────────────────────────────────────┤
+│X_φ₁‚₀^G₂ │           1      1      1      1          1         1  1│
+│X_φ₁‚₆^G₂ │          q⁶      .      .      .          .         .  .│
+│X_φ′₁‚₃^G₂│          q³      .      q     2q          .        -q  .│
+│X_φ″₁‚₃^G₂│          q³     q³      .      .          .         .  .│
+│X_φ₂‚₁^G₂ │         qΦ₈      q      q      q          q         q  .│
+│X_φ₂‚₂^G₂ │        q²Φ₄     q²     q²      .          .         .  .│
+│X_Id^.    │           .      .      .     q²        -q²        q²  .│
+├──────────┼─────────────────────────────────────────────────────────┤
+│|C_𝐆(u)|  │q⁶Φ₁²Φ₂²Φ₃Φ₆ q⁶Φ₁Φ₂ q⁴Φ₁Φ₂    6q⁴        2q⁴       3q⁴ q²│
+└──────────┴─────────────────────────────────────────────────────────┘
+
+julia&gt; XTable(UnipotentClasses(W,2))
+Values of character sheaves X̃ᵪ of G₂ on local systems φ
+┌──────────┬──────────────────────────────────────────────────┐
+│X̃ᵪ|φ      │   1 A₁ Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂⁽¹¹⁾ G₂│
+├──────────┼──────────────────────────────────────────────────┤
+│X_φ₁‚₀^G₂ │   1  1  1           .          .      1      .  1│
+│X_φ₁‚₆^G₂ │  q⁶  .  .           .          .      .      .  .│
+│X_φ′₁‚₃^G₂│  q³  .  q           .          q      .      .  .│
+│X_φ″₁‚₃^G₂│  q³ q³  .           .          .      .      .  .│
+│X_φ₂‚₁^G₂ │ qΦ₈  q  q           .          .      q      .  .│
+│X_φ₂‚₂^G₂ │q²Φ₄ q² q²           .          .      .      .  .│
+│X_Id^.    │   .  .  .          q²          .      .      .  .│
+│X_Id^.    │   .  .  .           .          .      .      q  .│
+└──────────┴──────────────────────────────────────────────────┘
+
+julia&gt; XTable(UnipotentClasses(rootdatum(:sl,4)))
+Values of character sheaves X̃ᵪ of sl₄ on local systems φ
+┌────────┬────────────────────────────────────────────┐
+│X̃ᵪ|φ    │1111 211 22⁽¹¹⁾ 22 31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(ζ₄³)│
+├────────┼────────────────────────────────────────────┤
+│X₁₁₁₁^A₃│  q⁶   .      .  .  . .      .     .       .│
+│X₂₁₁^A₃ │q³Φ₃  q³      .  .  . .      .     .       .│
+│X₂₂^A₃  │q²Φ₄  q²      . q²  . .      .     .       .│
+│X₃₁^A₃  │ qΦ₃ qΦ₂      .  q  q .      .     .       .│
+│X₄^A₃   │   1   1      .  1  1 1      .     .       .│
+│X₁₁^A₁  │   .   .     q³  .  . .      .     .       .│
+│X₂^A₁   │   .   .     q²  .  . .      .     q       .│
+│X_Id^.  │   .   .      .  .  . .   q³⁄₂     .       .│
+│X_Id^.  │   .   .      .  .  . .      .     .    q³⁄₂│
+└────────┴────────────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L1274-L1361">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.GreenTable"><a class="docstring-binding" href="#Chevie.Ucl.GreenTable"><code>Chevie.Ucl.GreenTable</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>GreenTable(uc;classes=false)</code></p><p>Keeping the same notations as in the description of <code>XTable</code>, this function returns a table of the functions <span>$Q_{wF}$</span>, attached to elements <span>$wF∈ W_𝐆 (𝐋)⋅F$</span> where <span>$W_𝐆 (𝐋)$</span> are the relative weyl groups attached to cuspidal local  systems.  These  functions  are  defined  by <span>$Q_{wF}=∑_{u,ϕ} ϕ̃(wF) X̃_{u,ϕ}$</span>.  Note that for  the principal Springer  series, when <code>𝐋=𝐓</code> is a maximal  torus, the function <span>$Q_{wF}$</span> coincides with the unipotent values of  the  Deligne-Lusztig  character  <span>$R^𝐆_{𝐓_W}(1)$</span>.  As for <code>XTable</code>, by default  values are given  in terms of  local systems. If <code>classes=true</code> is given, then the values of the <span>$Q_{wF}$</span> on conjugacy classes are given.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; GreenTable(UnipotentClasses(W))
+Values of Green functions Q_wF of G₂ on local systems φ
+┌──────────┬──────────────────────────────────────────────────────────┐
+│Qᴵ_wF|φ   │        1     A₁       Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂│
+├──────────┼──────────────────────────────────────────────────────────┤
+│Q_A₀^G₂   │  Φ₂²Φ₃Φ₆   Φ₂Φ₃ (2q+1)Φ₂           .          q   2q+1  1│
+│Q_Ã₁^G₂   │-Φ₁Φ₂Φ₃Φ₆  -Φ₁Φ₃       Φ₂           .          q      1  1│
+│Q_A₁^G₂   │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁           .         -q      1  1│
+│Q_G₂^G₂   │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂           .         -q     Φ₂  1│
+│Q_A₂^G₂   │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂           .          q    -Φ₁  1│
+│Q_A₁+Ã₁^G₂│  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁           .         -q  -2q+1  1│
+│Q^.       │        .      .        .          q²          .      .  .│
+└──────────┴──────────────────────────────────────────────────────────┘</code></pre><p>The  functions <span>$Q_{wF}$</span> depend only on the conjugacy class of <code>wF</code>, so in the  first column the indices of <code>Q</code> are the names of the conjugacy classes of  <span>$W_𝐆(𝐋)$</span>. The exponents  are the names  of the groups <span>$W_𝐆(𝐋)$</span>. The validity  of  the  tables  is  for  <em>generic  <code>q</code></em>,  which  means that some assumptions on <code>q</code> may be necessary. For instance in the last table we need <code>q≡1  (mod 3)</code>. For <code>q≡-1  (mod 3)</code> the non-zero  entry in the last line is <code>-q²</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; GreenTable(UnipotentClasses(W);classes=true)
+Values of Green functions Q_wF of G₂ on unipotent classes
+┌───────────┬────────────────────────────────────────────────────────┐
+│Qᴵ_wF|class│        1     A₁       Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂│
+├───────────┼────────────────────────────────────────────────────────┤
+│Q_A₀^G₂    │  Φ₂²Φ₃Φ₆   Φ₂Φ₃ (2q+1)Φ₂   4q+1       2q+1        Φ₂  1│
+│Q_Ã₁^G₂    │-Φ₁Φ₂Φ₃Φ₆  -Φ₁Φ₃       Φ₂   2q+1          1       -Φ₁  1│
+│Q_A₁^G₂    │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁  -2q+1          1        Φ₂  1│
+│Q_G₂^G₂    │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂    -Φ₁         Φ₂      2q+1  1│
+│Q_A₂^G₂    │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂     Φ₂        -Φ₁     -2q+1  1│
+│Q_A₁+Ã₁^G₂ │  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁  -4q+1      -2q+1       -Φ₁  1│
+│Q^.        │        .      .        .     q²        -q²        q²  .│
+└───────────┴────────────────────────────────────────────────────────┘
+
+julia&gt; GreenTable(UnipotentClasses(rootdatum(:sl,4)))
+Values of Green functions Q_wF of sl₄ on local systems φ
+┌────────┬──────────────────────────────────────────────────────────────────┐
+│Qᴵ_wF|φ │     1111          211 22⁽¹¹⁾       22   31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(ζ₄³)│
+├────────┼──────────────────────────────────────────────────────────────────┤
+│Q₁₁₁₁^A₃│  Φ₂²Φ₃Φ₄ (3q²+2q+1)Φ₂      . (2q+1)Φ₂ 3q+1 1      .     .       .│
+│Q₂₁₁^A₃ │-Φ₁Φ₂Φ₃Φ₄   -q³+q²+q+1      .       Φ₂   Φ₂ 1      .     .       .│
+│Q₂₂^A₃  │  Φ₁²Φ₃Φ₄        -Φ₁Φ₄      .  2q²-q+1  -Φ₁ 1      .     .       .│
+│Q₃₁^A₃  │ Φ₁²Φ₂²Φ₄        -Φ₁Φ₂      .    -Φ₁Φ₂    1 1      .     .       .│
+│Q₄^A₃   │ -Φ₁³Φ₂Φ₃        Φ₁²Φ₂      .      -Φ₁  -Φ₁ 1      .     .       .│
+│Q₁₁^A₁  │        .            .   q²Φ₂        .    . .      .     q       .│
+│Q₂^A₁   │        .            .  -q²Φ₁        .    . .      .     q       .│
+│Q^.     │        .            .      .        .    . .   q³⁄₂     .       .│
+│Q^.     │        .            .      .        .    . .      .     .    q³⁄₂│
+└────────┴──────────────────────────────────────────────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L1433-L1504">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.UnipotentValues"><a class="docstring-binding" href="#Chevie.Ucl.UnipotentValues"><code>Chevie.Ucl.UnipotentValues</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>UnipotentValues(uc,classes=false)</code></p><p>This  function returns  a table  of the  values of  unipotent characters on local  systems (by  default) or  on unipotent  classes (if <code>classes=true</code>). These  tables are for <em>generic <code>q</code></em>, that is their validity depends on some assumptions  on <code>q</code> (sometimes <code>q</code> large enough, or for <code>G₂</code> when <code>q≡1 (mod 3)</code>).</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; UnipotentValues(UnipotentClasses(W);classes=true)
+Values of unipotent characters for G₂ on unipotent classes
+┌───────┬─────────────────────────────────────────────────────────────┐
+│       │        1          A₁     Ã₁   G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂│
+├───────┼─────────────────────────────────────────────────────────────┤
+│φ₁‚₀   │        1           1      1        1          1         1  1│
+│φ₁‚₆   │       q⁶           .      .        .          .         .  .│
+│φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3      q (q+5)q/3     -qΦ₁/3     qΦ₁/3  .│
+│φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3      .    qΦ₁/3     -qΦ₁/3  (q+2)q/3  .│
+│φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  qΦ₂/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  .│
+│φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2  qΦ₂/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  .│
+│G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2 -qΦ₁/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  .│
+│G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 -qΦ₁/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  .│
+│G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      .    qΦ₁/3     -qΦ₁/3  (q+2)q/3  .│
+│G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      .    qΦ₁/3     -qΦ₁/3  (q+2)q/3  .│
+└───────┴─────────────────────────────────────────────────────────────┘
+
+julia&gt; UnipotentValues(UnipotentClasses(W,3);classes=true)
+Values of unipotent characters for G₂ on unipotent classes
+┌───────┬─────────────────────────────────────────────────────────────────────┐
+│       │        1          A₁         Ã₁ G₂(a₁) G₂(a₁)₍₂₎    G₂       G₂_(ζ₃)│
+├───────┼─────────────────────────────────────────────────────────────────────┤
+│φ₁‚₀   │        1           1          1      1         1     1             1│
+│φ₁‚₆   │       q⁶           .          .      .         .     .             .│
+│φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3 -2q/3           q/3│
+│φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3        q/3  qΦ₂/3    -qΦ₁/3 -2q/3           q/3│
+│φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  (3q+1)q/6  qΦ₂/6    -qΦ₁/6  2q/3          -q/3│
+│φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2      qΦ₂/2 -qΦ₁/2     qΦ₂/2     .             .│
+│G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2     -qΦ₁/2 -qΦ₁/2     qΦ₂/2     .             .│
+│G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 (-3q+1)q/6  qΦ₂/6    -qΦ₁/6  2q/3          -q/3│
+│G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3   q/3 (-ζ₃+2ζ₃²)q/3│
+│G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3   q/3  (2ζ₃-ζ₃²)q/3│
+└───────┴─────────────────────────────────────────────────────────────────────┘
+
+┌───────┬─────────────────────────┐
+│       │     G₂_(ζ₃²)       (Ã₁)₃│
+├───────┼─────────────────────────┤
+│φ₁‚₀   │            1           1│
+│φ₁‚₆   │            .           .│
+│φ′₁‚₃  │          q/3  (2q²+1)q/3│
+│φ″₁‚₃  │          q/3    -qΦ₁Φ₂/3│
+│φ₂‚₁   │         -q/3 (2q+1)qΦ₂/6│
+│φ₂‚₂   │            .       qΦ₂/2│
+│G₂[-1] │            .      -qΦ₁/2│
+│G₂[1]  │         -q/3 (2q-1)qΦ₁/6│
+│G₂[ζ₃] │ (2ζ₃-ζ₃²)q/3    -qΦ₁Φ₂/3│
+│G₂[ζ₃²]│(-ζ₃+2ζ₃²)q/3    -qΦ₁Φ₂/3│
+└───────┴─────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L1545-L1607">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.induced_linear_form"><a class="docstring-binding" href="#Chevie.Ucl.induced_linear_form"><code>Chevie.Ucl.induced_linear_form</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>induced_linear_form(W, H, h)</code></p><p>This routine can be used to find the unipotent class in the reductive group with  Weyl group <code>W</code> which contains a  given unipotent class of a reductive subgroup of maximum rank represented by the reflection subgroup <code>H</code> of <code>W</code>.</p><p>The  argument <code>h</code> is a linear form on  the roots of <code>H</code>, given by its value on  the simple roots; this  linear form is extended  to the roots of <code>W</code> by <code>0</code>  on the orthogonal of the roots  of <code>H</code>; and finally the resulting form is  conjugated by an element of <code>W</code> so that it takes positive values on the simple roots. If the initial form describes a Dynkin-Richardson diagram for <code>H</code>, the result will describe a Dynkin-Richardson diagram for <code>W</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:F,4)
+F₄
+
+julia&gt; H=reflection_subgroup(W,[1,3])
+F₄₍₁₃₎=A₁×Ã₁Φ₁²
+
+julia&gt; induced_linear_form(W,H,[2,2])
+4-element Vector{Int64}:
+ 0
+ 1
+ 0
+ 0
+
+julia&gt; uc=UnipotentClasses(W);
+
+julia&gt; uc.classes[4].dynkin
+4-element Vector{Int64}:
+ 0
+ 1
+ 0
+ 0
+
+julia&gt; uc.classes[4]
+UnipotentClass(A₁+Ã₁)</code></pre><p>The  example above shows that the class containing the regular class of the Levi subgroup of type <code>A₁×Ã₁</code> is the class <code>A₁+Ã₁</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L416-L458">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.special_pieces"><a class="docstring-binding" href="#Chevie.Ucl.special_pieces"><code>Chevie.Ucl.special_pieces</code></a> — <span class="docstring-category">Function</span></summary><section><div><p>&#39;special_pieces(&lt;uc&gt;)&#39;</p><p>The special pieces form a partition of the unipotent variety of a reductive group  <code>𝐆</code> which  was first  defined in  (<a href="../references/#spalt82">Spaltenstein, 1982</a>; chap. III) as the fibres of <code>d^2</code>, where <code>d</code> is a &quot;duality map&quot;. Another definition is as the set  of classes in  the Zariski closure  of a special  class and not in the Zariski  closure of any smaller  special class, where a  special class is a class  such that the  trivial local system  on it corresponds  to a special character by the Springer correspondence.</p><p>Since   each  Lusztig  family  of  characters  contains  a  unique  speical character, special pieces are in bijection with lusztig families.</p><p>Each  piece is a union of unipotent  conjugacy classes so is represented in Chevie  as a  list of  class numbers.  Thus the  list of  special pieces is returned  as  a  list  of  lists  of  class  numbers. The list is sorted by increasing  piece dimension, while each piece is sorted by decreasing class dimension, so that the special class is listed first.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:G,2)
+G₂
+
+julia&gt; special_pieces(UnipotentClasses(W))
+3-element Vector{Vector{Int64}}:
+ [1]
+ [4, 3, 2]
+ [5]
+
+julia&gt; special_pieces(UnipotentClasses(W,3))
+3-element Vector{Vector{Int64}}:
+ [1]
+ [4, 3, 2, 6]
+ [5]</code></pre><p>The  example above shows  that the special  pieces may be  different in bad characteristic.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L1711-L1749">source</a></section></details></article><article><details class="docstring" open="true"><summary id="Chevie.Ucl.distinguished_parabolics"><a class="docstring-binding" href="#Chevie.Ucl.distinguished_parabolics"><code>Chevie.Ucl.distinguished_parabolics</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>distinguished_parabolics(W)</code></p><p>the  list of distinguished (in the  sense of Richardson) standard parabolic subgroups <code>W_I</code> of <code>W</code>, each given by the list <code>I</code> of indices in the simple reflections. The distinguished unipotent conjugacy classes of the reductive group  <code>𝐆</code> with Weyl group <code>W</code> consist of  the dense unipotent orbit in the unipotent  radical of a  parabolic subgroup <code>𝐏_I</code>  of <code>𝐆</code> associated with a distinguished  <code>W_I</code>.  Their  Dynkin-Richardson  diagram  contains  a  0 at indices  <code>I</code> and a 2 in other entries. If <code>𝐏_I=𝐋𝐔</code> is a Levi decomposition, <code>𝐏_I</code> is distinguished iff <code>dim 𝐋∩𝐆&#39;=dim 𝐔/𝐔&#39;</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; W=coxgroup(:F,4)
+F₄
+
+julia&gt; distinguished_parabolics(W)
+4-element Vector{Vector{Int64}}:
+ []
+ [3]
+ [1, 3]
+ [1, 3, 4]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/1051b90c2010eab7210e0bf4877d34ff31ef814c/src/Ucl.jl#L469-L492">source</a></section></details></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../dseries/">« d-Harish-Chandra series</a><a class="docs-footer-nextpage" href="../urad/">Unipotent Elements »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 27 March 2026 16:57">Friday 27 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
