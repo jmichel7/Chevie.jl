@@ -280,20 +280,7 @@ KLPol(W::Weyl.Affine,x...)=KLPol(W.G,x...)
 
 HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  H.rootpara[1]^length(H.W,x) : prod(H.rootpara[word(H.W,x)])
 
-struct HeckeCpElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,P,C}
-  d::ModuleElt{P,C}
-  H::TH
-end
-HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
-
-struct HeckeCElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,C,P}
-  d::ModuleElt{P,C}
-  H::TH
-end
-HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
-
-HeckeAlgebras.basisname(::HeckeCpElt)="C'"
-HeckeAlgebras.basisname(::HeckeCElt)="C"
+const sCp=Symbol("C'")
 
 """
 `Cpbasis(H)`
@@ -320,11 +307,12 @@ julia> Cp(k)
 (v²+v⁻²)C′₁
 ```
 """
-Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeCpElt(ModuleElt(one(H.W)=>one(coefftype(H))),H) : Cpbasis(H,x...)
-Cpbasis(H::HeckeAlgebra,w::Vector{<:Integer})=HeckeCpElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
-Cpbasis(H::HeckeAlgebra,w::Vararg{Integer})=Cpbasis(H,collect(w))
-Cpbasis(H::HeckeAlgebra,w)=Cpbasis(H,word(H.W,w))
-Cpbasis(::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
+Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? basis(Val(sCp),H,H.W()) : 
+  basis(Val(sCp),H,x...)
+Algebras.basis(::Val{sCp},::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
+
+Algebras.basis(::Val{b},H::HeckeAlgebra,w::Vector{<:Integer})where b=
+  basis(Val(b),H,H.W(w...))
 
 """
 `Cbasis(H::HeckeAlgebra)`
@@ -382,11 +370,8 @@ julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
  3  -v-v⁻¹  0  0  -v-v⁻¹  2  0  0  1  0
 ``` 
 """
-Cbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeCElt(ModuleElt(one(H.W)=>one(coefftype(H))),H) : Cbasis(H,x...)
-Cbasis(H::HeckeAlgebra,w::Vector{<:Integer})=HeckeCElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
-Cbasis(H::HeckeAlgebra,w::Vararg{Integer})=Cbasis(H,collect(w))
-Cbasis(H::HeckeAlgebra,w)=Cbasis(H,word(H.W,w))
-Cbasis(::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
+Cbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeElt{:C}(ModuleElt(one(H.W)=>one(coefftype(H))),H) : basis(Val(:C),H,x...)
+Algebras.basis(::Val{:C},::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
 
 # To convert from "T", we use the fact that the transition matrix M from
 # any  KL  bases to  the  standard  basis  is triangular  with  diagonal
@@ -394,7 +379,7 @@ Cbasis(::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
 # lower triangular for the C and  C' bases, and upper triangular for the
 # D and D' bases which is what index(maximum or minimum) is for.
 # klbasis is usually a functor, not a function
-function toKL(h::HeckeTElt,klbasis,index)
+function toKL(h::HeckeElt{:T},klbasis,index)
   H=h.H
   res=klbasis(zero(h.d),H)
   rootpara(H)
@@ -404,14 +389,14 @@ function toKL(h::HeckeTElt,klbasis,index)
     tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) 
                        for (w,c) in h.d.d[findall(==(i),l)];check=false),H)
     res+=tmp
-    h-=Tbasis(H,tmp)
+    h-=Tbasis(H)(tmp)
   end
   res
 end
 
-Cpbasis(h::HeckeTElt)=toKL(h,HeckeCpElt,maximum)
+Cpbasis(h::HeckeElt{:T})=toKL(h,HeckeElt{sCp},maximum)
 
-Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
+Cbasis(h::HeckeElt{:T})=toKL(h,HeckeElt{:C},maximum)
 
 function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
@@ -430,7 +415,7 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
     else
       res=getCp(H,s)*getCp(H,s*w)
       tmp=zero(H)
-      for (e,coef) in res::HeckeTElt{HeckeAlgebra{C,P,TW},typeof(un),P}
+      for (e,coef) in res::HeckeElt{:T,HeckeAlgebra{C,P,TW},typeof(un),P}
         if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
       end
       res-=tmp
@@ -449,13 +434,13 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
           bar(qx*inv(T(inv(elm[j])))[x])*coeff[j],1:i-1))*inv(qx)
       end
     end
-    res=HeckeTElt(ModuleElt(Pair.(elm,coeff)),H)
+    res=HeckeElt{:T}(ModuleElt(Pair.(elm,coeff)),H)
   end
   cdict[w]=res
 end
 
 """
-`Tbasis(h::HeckeCpElt)` 
+`Tbasis(h::HeckeElt{Symbol("C'")})` 
 
 converts the element `h` of the `C'` basis to the `T` basis.
 
@@ -494,15 +479,15 @@ negative  part of ``∑_{x<y≤w} R_{x,y} P_{y,w}``  which allows to compute it
 by  induction on `l(w)-l(x)`. The code is based on GAP3/Chevie code of Jean
 Michel and François Digne (1999).
 """
-HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h)
+HeckeAlgebras.Tbasis(h::HeckeElt{Symbol("C'")})=sum(getCp(h.H,e)*c for (e,c) in h)
 
-function HeckeAlgebras.Tbasis(h::HeckeCElt)
+function HeckeAlgebras.Tbasis(h::HeckeElt{:C})
   sum(h)do (e,c)
     alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e)
   end
 end
 
-Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
+Base.:*(a::HeckeElt{sCp},b::HeckeElt{sCp})=Cpbasis(Tbasis(a)*Tbasis(b))
 
 #----------------------------------Left cells --------------------------
 @GapObj struct LeftCell{G<:Group}
@@ -986,7 +971,7 @@ julia> sum(l.*map(i->almostchar(W,i),eachindex(l)))
 """
 function Lusztigaw(W,w)
   v=Pol()
-  l=char_values(Tbasis(hecke(W,v^2;rootpara=v),w))*(-v)^-length(W,w)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*(-v)^-length(W,w)
   map((c,a)->c[-a],l,charinfo(W).a)
 end
 
@@ -1017,7 +1002,7 @@ julia> sum(l.*map(i->almostchar(W,i),eachindex(l)))
 """
 function LusztigAw(W,w)
   v=Pol()
-  l=char_values(Tbasis(hecke(W,v^2;rootpara=v),w))*v^-length(W,w)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*v^-length(W,w)
   map((c,a)->c[nref(W)-a],l,charinfo(W).A)
 end
 

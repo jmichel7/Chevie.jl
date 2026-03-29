@@ -29,7 +29,7 @@ julia> H=hecke(W,Pol(:q))
 hecke(A₂,q)
 
 julia> l=Tbasis(H).(elements(W))
-6-element Vector{HeckeTElt{HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Pol{Int64}, Perm{Int16}}}:
+6-element Vector{HeckeElt{:T, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Pol{Int64}, Perm{Int16}}}:
  T.
  T₁
  T₂
@@ -38,7 +38,7 @@ julia> l=Tbasis(H).(elements(W))
  T₁₂₁
 
 julia> Murphy.SpechtModules(H,false);Murphybasis(H).(l)
-6-element Vector{Chevie.Murphy.HeckeMElt{Pol{Int64}, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+6-element Vector{HeckeElt{:M, HeckeAlgebra{Pol{Int64}, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Pol{Int64}, Tuple{Int64, Int64, Int64}}}:
  M(1/2/3,1/2/3)
  -M(1/2/3,1/2/3)+M(12/3,12/3)
  -M(1/2/3,1/2/3)+q⁻¹M(12/3,12/3)+q⁻¹M(12/3,13/2)+q⁻¹M(13/2,12/3)+q⁻¹M(13/2,13/2)-q⁻¹M(123,123)
@@ -113,16 +113,6 @@ function SpechtModules(H,t::Bool)
   H.Murphy.SpechtModules[]=t
 end
 SpechtModules(H)=H.Murphy.SpechtModules[]
-
-struct HeckeMElt{C,TH}<:HeckeElt{TH,C,Tuple{Int,Int,Int}}
-  d::ModuleElt{Tuple{Int,Int,Int},C} # has better merge performance than Dict
-  H::TH
-end
-
-HeckeAlgebras.clone(h::HeckeMElt,d)=HeckeMElt(d,h.H)
-Base.zero(::Type{HeckeMElt},H::HeckeAlgebra)=HeckeMElt(zero(ModuleElt{Tuple{Int,Int,Int},coefftype(H)}),H)
-Base.zero(h::HeckeMElt)=zero(HeckeMElt,h.H)
-HeckeAlgebras.basisname(::HeckeMElt)="M"
 
 Murphycache=Dict{Tuple{Int,Any},Any}()
 
@@ -223,7 +213,7 @@ function Xt(H::HeckeAlgebra,t::InfoTableau)
       ModuleElt([k*t.wd=>c for (k,c) in Xt(H,InfoTableau(H,t.mu,1)).d])
     end
   end
-  HeckeTElt(mm,H)
+  HeckeElt{:T}(mm,H)
 end
 
 # given a pair (s,t) of tableaux, return the basis element 
@@ -235,11 +225,11 @@ function MurphyToT(H::HeckeAlgebra, s::InfoTableau, t::InfoTableau)
     else (Tbasis(H)(inv(s.wd))*Xt(H, t)).d
     end
   end
-  HeckeTElt(mm,H)
+  HeckeElt{:T}(mm,H)
 end
 
 # convert Murphy basis to T-basis
-function HeckeAlgebras.Tbasis(M::HeckeMElt)
+function HeckeAlgebras.Tbasis(M::HeckeElt{:M})
  sum(c*MurphyToT(M.H,InfoTableau(M.H,i,t1),InfoTableau(M.H,i,t2))
        for ((i,t1,t2),c) in M.d)
 end
@@ -263,7 +253,7 @@ function TtoMurphy(H::HeckeAlgebra,w)
       res.d
     end
   end
-  HeckeMElt(mm,H)
+  HeckeElt{:M}(mm,H)
 end
 
 # Murphybasis(H) creates a function which will return a Murphy basis element
@@ -271,8 +261,8 @@ end
 function Murphybasis(H::HeckeAlgebra)
   initMurphy(H)
   f(h::HeckeElt)=f(Tbasis(h))
-  f(h::HeckeTElt)=sum(c*TtoMurphy(h.H,w) for (w,c) in h.d)
-  f(h::HeckeMElt)=h
+  f(h::HeckeElt{:T})=sum(c*TtoMurphy(h.H,w) for (w,c) in h.d)
+  f(h::HeckeElt{:M})=h
   function f(s,t)
     if !istableau(s) || !istableau(t)
         error("<s> and <t> must be standard tableaux")
@@ -282,7 +272,7 @@ function Murphybasis(H::HeckeAlgebra)
     imu=code_partition(H, mu)
     is=InfoTableau(H, imu, s)
     it=InfoTableau(H, imu, t)
-    HeckeMElt(ModuleElt((imu,is.ind,it.ind)=>one(coefftype(H))),H)
+    HeckeElt{:M}(ModuleElt((imu,is.ind,it.ind)=>one(coefftype(H))),H)
   end
 end
 
@@ -295,7 +285,7 @@ function StringTableau(io::IO,t)
   end
 end
 
-function Base.show(io::IO, h::HeckeMElt)
+function Base.show(io::IO, h::HeckeElt{:M})
   function showbasis(io::IO,(mu,s,t))
     TeX=get(io,:TeX,false)
     t=h.H.Murphy.Tableaux[mu][t]
@@ -303,8 +293,8 @@ function Base.show(io::IO, h::HeckeMElt)
     if SpechtModules(h.H)
       TeX ? StringTableau(io,t)*"\n" : string("S(",StringTableau(io,t),")")
     else 
-      string(HeckeAlgebras.basisname(h),"(",StringTableau(io,s),",",
-                              StringTableau(io,t),")",TeX ? "\n" : "")
+      string(basis(h),"(",StringTableau(io,s),",",
+                          StringTableau(io,t),")",TeX ? "\n" : "")
     end
   end
   show(IOContext(io,:showbasis=>showbasis),h.d)
@@ -319,13 +309,13 @@ function PositionIn(tab, i)
   error(i," is not contained in the tableau ",StringTableau(rio(),tab))
 end
 
-function Base.:*(m::HeckeMElt, h::HeckeTElt)
+function Base.:*(m::HeckeElt{:M}, h::HeckeElt{:T})
   H=h.H
   if H!==m.H error("not elements of the same algebra") end
   W=H.W
   q=H.para[1][1]
   # mh=return value, initially zero with respect to the Murphy basis
-  mh=zero(HeckeMElt,H)
+  mh=zero(m)
   for (w,hcoeff) in h.d
     mw=m
     for r in word(W,w) # multiply one simple reflection at a time
@@ -357,14 +347,14 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
               append!(mr,(coeff*GarnirExpansion(H, nodeR, s, t)).d.d)
         end
       end
-      mw=HeckeMElt(ModuleElt(mr),H)
+      mw=HeckeElt{:M}(ModuleElt(mr),H)
     end
     mh+=hcoeff*mw
   end
   mh
 end
 
-Base.:*(h::HeckeTElt,m::HeckeMElt)=α(α(m)*α(h))
+Base.:*(h::HeckeElt{:T},m::HeckeElt{:M})=α(α(m)*α(h))
 
 # The  real  work:  <node>=(r,c)  is  the  coordinate where the tableau <t>
 # becomes  non-standard; ie. if <t>(r,c)=x  then <t>(r+1,c)=x+1 and we want
@@ -413,7 +403,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::InfoTableau,t::InfoTableau)
       # Because of our choice of g all of the LH tableaux are standard, except
       # the last  and the term on the RHS. We'll worry about the RHS later.
       # First we spin out the tableaux on the left hand side.
-      mres=zero(HeckeMElt,H).d.d
+      mres=zero(ModuleElt{Tuple{Int,Int,Int},coefftype(H)}).d
       for J in combinations(a:b, node.col)
         if J != a:a+node.col-1
           gtab[node.row+1][1:node.col]=J
@@ -457,7 +447,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::InfoTableau,t::InfoTableau)
         K=setdiff(J,[a-1,b])
         h=inv.(vcat(reduced(reflection_subgroup(W,K),
                             reflection_subgroup(W,J))...))
-        h=HeckeTElt(ModuleElt([w=>one(coefftype(H)) for w in h];check=false),H)
+        h=HeckeElt{:T}(ModuleElt([w=>one(coefftype(H)) for w in h];check=false),H)
         # the multiplication below is quite costly as it is recursive; 
         # but it is only done once as we store the result in g.Garnir.
         tab1=firstTableau(H,tnu)
@@ -467,24 +457,24 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::InfoTableau,t::InfoTableau)
     # Next we worry about the element <w> above (remember t=g*w).
     # This multiplication is usually recursive.
     if !isempty(w)
-      t.Garnir[rt]=(HeckeMElt(g.Garnir[rg],H)*Tbasis(H)(w...)).d
+     t.Garnir[rt]=(HeckeElt{:M}(g.Garnir[rg],H)*Tbasis(H)(w...)).d
     end
   end
   # Finally we have to put <s> back into the equation. If we are working
   # in just the Specht module <s> is almost irrelevant; but in general it 
   # affects tnu in strange ways (hence it might be better to cache the
   # full expansion rather than just the right hand side). 
-  if s.ind==1 HeckeMElt(t.Garnir[rt],H)
-  else α(α(HeckeMElt(t.Garnir[rt],H))*Tbasis(H)(s.wd))
+  if s.ind==1 HeckeElt{:M}(t.Garnir[rt],H)
+  else α(α(HeckeElt{:M}(t.Garnir[rt],H))*Tbasis(H)(s.wd))
   end
 end
 
-Base.:*(a::HeckeMElt,b::HeckeMElt)=a*Tbasis(a.H)(b)
+Base.:*(a::HeckeElt{:M},b::HeckeElt{:M})=a*Tbasis(a.H)(b)
 
 # This is the anti-isomorphism of the Hecke algebra given by T_i -> T_i;
 # on the Murphy basis we have α(M_{s,t})=M_{t,s} (α also called * by many)
-function Garside.α(h::HeckeMElt)
-  HeckeMElt(ModuleElt((mu,t,s)=>c for ((mu,s,t),c) in h.d),h.H)
+function Garside.α(h::HeckeElt{:M})
+  HeckeElt{:M}(ModuleElt((mu,t,s)=>c for ((mu,s,t),c) in h.d),h.H)
 end
 
 # Compute the Gram matrix of a Specht module w.r.t. its Murphy basis.
