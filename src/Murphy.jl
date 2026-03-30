@@ -229,7 +229,7 @@ function MurphyToT(H::HeckeAlgebra, s::InfoTableau, t::InfoTableau)
 end
 
 # convert Murphy basis to T-basis
-function HeckeAlgebras.Tbasis(M::HeckeElt{:M})
+function HeckeAlgebras.HeckeElt(::Val{:T},M::HeckeElt{:M})
  sum(c*MurphyToT(M.H,InfoTableau(M.H,i,t1),InfoTableau(M.H,i,t2))
        for ((i,t1,t2),c) in M.d)
 end

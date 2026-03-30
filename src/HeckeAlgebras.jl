@@ -819,11 +819,14 @@ Algebras.basis(::HeckeElt{b})where b=b
 Base.broadcastable(h::HeckeElt)=Ref(h)
 
 Base.:+(a::HeckeElt{t}, b::HeckeElt{t})where t=clone(a,a.d+b.d)
+Base.:+(a::HeckeElt{t}, b::HeckeElt{t1})where {t,t1}=a+HeckeElt(Val(t),b)
 Base.:-(a::HeckeElt)=clone(a,-a.d)
 Base.:-(a::HeckeElt{t}, b::HeckeElt{t})where t=clone(a,a.d-b.d)
+Base.:-(a::HeckeElt{t}, b::HeckeElt{t1})where {t,t1}=a-HeckeElt(Val(t),b)
 
 Base.:*(a::HeckeElt, b::Union{Number,Pol,Mvp})=clone(a,a.d*b)
 Base.:*(b::Union{Number,Pol,Mvp}, a::HeckeElt)=a*b
+Base.:*(h::HeckeElt{b},h1::HeckeElt)where b=HeckeElt(Val(b),HeckeElt(Val(:T),h)*HeckeElt(Val(:T),h1))
 
 Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                         Base.power_by_squaring(inv(a),-n)
@@ -861,7 +864,7 @@ julia> representation(T(1,2)^2,2)
 """
 function Chars.representation(h::HeckeElt,r)
   H=h.H
-  h=Tbasis(H)(h)
+  h=HeckeElt(Val(:T),h)
   if H isa HeckeCoset
     res=zero(r.gens[1])
     for (p,c) in h
@@ -882,13 +885,13 @@ Chars.representation(h::HeckeElt,i::Integer)=representation(h,representation(h.H
 
 function Groups.gens(H::HeckeAlgebra{C,T,TW})where {C,T,TW}
   get!(H,:gens)do
-    map(i->Tbasis(H,H.W(i)),1:ngens(H.W))
+    map(i->Tbasis(H)(H.W(i)),1:ngens(H.W))
   end::Vector{HeckeElt{:T,HeckeAlgebra{C,T,TW},C,T}}
 end
 
 function Base.one(H::HeckeAlgebra{C,T,TW})where {C,T,TW}
   get!(H,:one)do
-   Tbasis(H)(one(H.W))
+    Tbasis(H)(one(H.W))
   end::HeckeElt{:T,HeckeAlgebra{C,T,TW},C,T}
 end
 
@@ -924,21 +927,21 @@ julia> T=Tbasis(H);T(1)^3
 qT.+(q-1)T₁+(q-1)T₁₁
 ```
 """
-Tbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? basis(Val(:T),H,H.W()) : basis(Val(:T),H,x...)
-function Algebras.basis(::Val{:T},H::HeckeAlgebra{C,T,TW},w::Vector{<:Integer}) where {C,T,TW<:Group{T}}
-  ww=H.W(w...)::T
-  if length(w)==1 && w[1]>0 basis(Val(:T),H,ww)
-  elseif all(>(0),w) && H.W isa CoxeterGroup && length(H.W,ww)==length(w)
-    basis(Val(:T),H,ww)
-  else prod(i->i>0 ? basis(Val(:T),H,H.W(i)) : inv(basis(Val(:T),H,H.W(-i))),w)
+Tbasis(H::HeckeAlgebra)=(x...)->HeckeElt(Val(:T),H,x...)
+function HeckeElt(::Val{:T},H::HeckeAlgebra,w::Vector{<:Integer})
+  if length(w)==1 && w[1]>0 return HeckeElt(Val(:T),H,gens(H.W)[w[1]]) end
+  ww=H.W(w...)
+  if all(>(0),w) && H.W isa CoxeterGroup && length(H.W,ww)==length(w)
+    HeckeElt(Val(:T),H,ww)
+  else prod(i->i>0 ? HeckeElt(Val(:T),H,H.W(i)) : inv(HeckeElt(Val(:T),H,H.W(-i))),w)
   end
 end
-Algebras.basis(::Val{b},H::HeckeAlgebra,w::Vararg{Integer})where b=
-  basis(Val(b),H,collect(w))
-Algebras.basis(::Val{b},::HeckeAlgebra,h::HeckeElt{b})where b=h
-Algebras.basis(::Val{:T},::HeckeAlgebra,h::HeckeElt{b})where b=Tbasis(h)
-Algebras.basis(::Val{b},H::HeckeAlgebra{C,T},w::T)where {b,C,T}=HeckeElt{b}(MM(w=>one(coefftype(H));check=false),H)
-Tbasis(h::HeckeElt{:T})=h
+HeckeElt(::Val{b},H::HeckeAlgebra)where b=HeckeElt(Val(b),H,H.W())
+HeckeElt(::Val{b},H::HeckeAlgebra,w::Vararg{Integer})where b=
+  HeckeElt(Val(b),H,collect(w))
+HeckeElt(::Val{b},::HeckeAlgebra,h::HeckeElt)where b=HeckeElt(Val(b),h)
+HeckeElt(::Val{b},h::HeckeElt{b})where b=h
+HeckeElt(::Val{b},H::HeckeAlgebra{C,T},w::T)where {b,C,T}=HeckeElt{b}(MM(w=>one(coefftype(H));check=false),H)
 
 # for each parameter p relation T^length(p)=lower terms
 function polynomial_relations(H::HeckeAlgebra{C})where C
@@ -994,6 +997,11 @@ end
 function Base.:*(a::HeckeElt{:T}, b::HeckeElt{:T})
   if iszero(a) return a end
   if iszero(b) return b end
+  if a.H isa HeckeCoset && b.H isa HeckeAlgebra
+    return clone(a,(clone(b,a.d)*Frobenius(a.H.W)(b)).d)
+  elseif a.H isa HeckeAlgebra && b.H isa HeckeCoset
+    return clone(b,(a*clone(a,b.d)).d)
+  end
   W=a.H.W
   innermul(W,a,b)  # function barrier needed for performance
 end
@@ -1091,7 +1099,7 @@ function class_polynomials(h::HeckeElt)
     para=H.para
   end
   minl=length.(word.(conjugacy_classes(WF)))
-  h=Tbasis(H)(h)
+  h=HeckeElt(Val(:T),h)
 # Since  vF is not of minimal length in its class there exists wF conjugate
 # by   cyclic  shift  to  vF  and  a  generating  reflection  s  such  that
 # l(swFs)=l(vF)-2. Return T_sws.T_s^2
@@ -1554,17 +1562,13 @@ for these cosets. This is used to compute such character tables.
   W::TW
 end
 
-Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? basis(Val(:T),H,H.W()) : basis(Val(:T),H,x...)
-Algebras.basis(::Val{:T},::HeckeCoset,h::HeckeElt{:T})=h
-Algebras.basis(::Val{:T},::HeckeCoset,h::HeckeElt)=Tbasis(h)
-Tbasis(H::HeckeCoset,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
-Algebras.basis(::Val{b},H::HeckeCoset,w::Vararg{Integer})where b=
-  basis(Val(b),H,collect(w))
-Algebras.basis(::Val{:T},H::HeckeCoset,w::Integer)=basis(Val(:T),H,[w])
-Algebras.basis(::Val{b},::HeckeCoset,h::HeckeElt{b})where b=h
-Algebras.basis(::Val{:T},H::HeckeCoset,w)=HeckeElt{:T}(MM(w=>one(coefftype(H.H));check=false),H)
-Base.:*(h::HeckeElt{:T,HeckeAlgebra},h1::HeckeElt{:T,HeckeCoset})=clone(h1,(h*clone(h,h1.d)).d)
-Base.:*(h1::HeckeElt{:T,HeckeCoset},h::HeckeElt{:T,HeckeAlgebra})=clone(h1,(clone(h,h1.d)*Frobenius(h1.H.W)(h)).d)
+Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? HeckeElt(Val(:T),H,H.W()) : HeckeElt(Val(:T),H,x...)
+HeckeElt(::Val{b},::HeckeCoset,h::HeckeElt)where b=HeckeElt(Val(b),h)
+HeckeElt(::Val{:T},H::HeckeCoset,w::Vector{<:Integer})=HeckeElt(Val(:T),H,H.W(w...))
+HeckeElt(::Val{b},H::HeckeCoset,w::Vararg{Integer})where b=
+  HeckeElt(Val(b),H,H.W(w...))
+HeckeElt(::Val{:T},H::HeckeCoset,w::Integer)=HeckeElt(Val(:T),H,H.W(w))
+HeckeElt(::Val{:T},H::HeckeCoset,w)=HeckeElt{:T}(MM(w=>one(coefftype(H.H));check=false),H)
 
 "`hecke(HF::HeckeCoset)` returns the underlying Hecke algebra"
 hecke(HF::HeckeCoset)=HF.H

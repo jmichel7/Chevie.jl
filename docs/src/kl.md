@@ -7,7 +7,7 @@ Pages=["kl.md"]
 KL
 KLPol
 KL.critical_pair
-Tbasis(::KL.HeckeCpElt)
+HeckeElt(::Val{:T},::HeckeElt{Symbol("C'")})
 Cbasis
 Cpbasis
 character

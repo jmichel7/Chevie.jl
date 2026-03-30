@@ -300,19 +300,20 @@ hecke(B₂,Pol{Int64}[v⁴, v²])
 julia> Cp=Cpbasis(H);h=Cp(1)^2
 (v²+v⁻²)C′₁
 
-julia> k=Tbasis(h)
+julia> k=Tbasis(H)(h)
 (1+v⁻⁴)T.+(1+v⁻⁴)T₁
 
 julia> Cp(k)
 (v²+v⁻²)C′₁
 ```
 """
-Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? basis(Val(sCp),H,H.W()) : 
-  basis(Val(sCp),H,x...)
-Algebras.basis(::Val{sCp},::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
+Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeElt(Val(sCp),H,H.W()) : 
+  HeckeElt(Val(sCp),H,x...)
+HeckeAlgebras.HeckeElt(::Val{sCp},h::HeckeElt{sCp})=h
+HeckeAlgebras.HeckeElt(::Val{sCp},h::HeckeElt)=Cpbasis(h)
 
-Algebras.basis(::Val{b},H::HeckeAlgebra,w::Vector{<:Integer})where b=
-  basis(Val(b),H,H.W(w...))
+HeckeAlgebras.HeckeElt(::Val{b},H::HeckeAlgebra,w::Vector{<:Integer})where b=
+  HeckeElt(Val(b),H,H.W(w...))
 
 """
 `Cbasis(H::HeckeAlgebra)`
@@ -370,8 +371,9 @@ julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
  3  -v-v⁻¹  0  0  -v-v⁻¹  2  0  0  1  0
 ``` 
 """
-Cbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeElt{:C}(ModuleElt(one(H.W)=>one(coefftype(H))),H) : basis(Val(:C),H,x...)
-Algebras.basis(::Val{:C},::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
+Cbasis(H::HeckeAlgebra)=(x...)->HeckeElt(Val(:C),H,x...)
+HeckeAlgebras.HeckeElt(::Val{:C},h::HeckeElt)=HeckeElt(Val(:C),HeckeElt(Val(:T),h))
+HeckeAlgebras.HeckeElt(::Val{:C},h::HeckeElt{:C})=h
 
 # To convert from "T", we use the fact that the transition matrix M from
 # any  KL  bases to  the  standard  basis  is triangular  with  diagonal
@@ -389,14 +391,14 @@ function toKL(h::HeckeElt{:T},klbasis,index)
     tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) 
                        for (w,c) in h.d.d[findall(==(i),l)];check=false),H)
     res+=tmp
-    h-=Tbasis(H)(tmp)
+    h-=HeckeElt(Val(:T),tmp)
   end
   res
 end
 
-Cpbasis(h::HeckeElt{:T})=toKL(h,HeckeElt{sCp},maximum)
+HeckeAlgebras.HeckeElt(::Val{sCp},h::HeckeElt{:T})=toKL(h,HeckeElt{sCp},maximum)
 
-Cbasis(h::HeckeElt{:T})=toKL(h,HeckeElt{:C},maximum)
+HeckeAlgebras.HeckeElt(::Val{:C},h::HeckeElt{:T})=toKL(h,HeckeElt{:C},maximum)
 
 function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
@@ -440,7 +442,7 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
 end
 
 """
-`Tbasis(h::HeckeElt{Symbol("C'")})` 
+`Tbasis(H)(h::HeckeElt{Symbol("C'")})` 
 
 converts the element `h` of the `C'` basis to the `T` basis.
 
@@ -465,7 +467,7 @@ B₃
 julia> @Pol v;H=hecke(W,v^2,rootpara=v)
 hecke(B₃,v²,rootpara=v)
 
-julia> C=Cpbasis(H); Tbasis(C(1,2))
+julia> C=Cpbasis(H); Tbasis(H)(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 
@@ -479,15 +481,13 @@ negative  part of ``∑_{x<y≤w} R_{x,y} P_{y,w}``  which allows to compute it
 by  induction on `l(w)-l(x)`. The code is based on GAP3/Chevie code of Jean
 Michel and François Digne (1999).
 """
-HeckeAlgebras.Tbasis(h::HeckeElt{Symbol("C'")})=sum(getCp(h.H,e)*c for (e,c) in h)
+HeckeAlgebras.HeckeElt(::Val{:T},h::HeckeElt{sCp})=sum(getCp(h.H,e)*c for (e,c) in h)
 
-function HeckeAlgebras.Tbasis(h::HeckeElt{:C})
+function HeckeAlgebras.HeckeElt(::Val{:T},h::HeckeElt{:C})
   sum(h)do (e,c)
     alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e)
   end
 end
-
-Base.:*(a::HeckeElt{sCp},b::HeckeElt{sCp})=Cpbasis(Tbasis(a)*Tbasis(b))
 
 #----------------------------------Left cells --------------------------
 @GapObj struct LeftCell{G<:Group}

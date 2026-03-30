@@ -8,7 +8,7 @@ HeckeAlgebras
 hecke(::Group,::Vector{<:Vector{C}}) where C
 Tbasis(::HeckeAlgebra)
 alt
-α(::HeckeTElt)
+α(::HeckeElt{:T})
 CharTable(::HeckeAlgebra)
 central_monomials
 class_polynomials
