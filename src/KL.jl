@@ -145,8 +145,8 @@ end;
 ```
 """
 module KL
-export KLPol, Cpbasis, Cbasis, LeftCell, left_cells, character, Lusztigaw, 
- LusztigAw, AsymptoticAlgebra, Wgraph
+export KLPol, Cpbasis, Cbasis, Dpbasis, Dbasis, LeftCell, left_cells, character,
+       Lusztigaw, LusztigAw, AsymptoticAlgebra, Wgraph
 using ..Chevie
 
 """
@@ -306,14 +306,46 @@ julia> k=Tbasis(H)(h)
 julia> Cp(k)
 (v²+v⁻²)C′₁
 ```
-"""
-Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeElt(Val(sCp),H,H.W()) : 
-  HeckeElt(Val(sCp),H,x...)
-HeckeAlgebras.HeckeElt(::Val{sCp},h::HeckeElt{sCp})=h
-HeckeAlgebras.HeckeElt(::Val{sCp},h::HeckeElt)=Cpbasis(h)
 
-HeckeAlgebras.HeckeElt(::Val{b},H::HeckeAlgebra,w::Vector{<:Integer})where b=
-  HeckeElt(Val(b),H,H.W(w...))
+To convert the element `h` of the `C'` basis to the `T` basis,
+for one-parameter Hecke algebras, we use the formulae:
+``C'_w=Σ_{y≤w}P_{y,w}(q)q^{-l(w)/2}T_y``
+and if ``sw<w`` then
+
+``C'ₛ C'_{sw}=C'_w+Σ_{y<sw}μ(y,sw)C'_y=Σ_{v≤w}μᵥ Tᵥ``
+
+where
+
+``μᵥ=P_{v,w}(q)q^{-l(w)/2}+Σ_{v≤y≤sw}μ(y,sw)P_{v,y}(q)q^{-l(y)/2}``
+
+It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leading
+coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
+occurs in the formula for ``μᵥ``).
+
+```julia-repl
+julia> W=coxgroup(:B,3)
+B₃
+
+julia> @Pol v;H=hecke(W,v^2,rootpara=v)
+hecke(B₃,v²,rootpara=v)
+
+julia> C=Cpbasis(H); Tbasis(H)(C(1,2))
+v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
+```
+For general Hecke algebras, we follow [lus83; formula 2.2](@cite)
+
+`` \\overline{P_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
+
+where  ``R_{x,y}=\\overline{(t_{y^{-1}}^{-1}|t_x)}`` where `t` is the basis
+with  parameters  ``q_s,-q_s^{-1}``.  It  follows  that  ``P_{x,w}`` is the
+negative  part of ``∑_{x<y≤w} R_{x,y} P_{y,w}``  which allows to compute it
+by  induction on `l(w)-l(x)`. The code is based on GAP3/Chevie code of Jean
+Michel and François Digne (1999).
+"""
+function Cpbasis(H::HeckeAlgebra)
+  rootpara(H)
+  f(x...)=HeckeElt(Val(sCp),H,x...)
+end
 
 """
 `Cbasis(H::HeckeAlgebra)`
@@ -371,42 +403,43 @@ julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
  3  -v-v⁻¹  0  0  -v-v⁻¹  2  0  0  1  0
 ``` 
 """
-Cbasis(H::HeckeAlgebra)=(x...)->HeckeElt(Val(:C),H,x...)
-HeckeAlgebras.HeckeElt(::Val{:C},h::HeckeElt)=HeckeElt(Val(:C),HeckeElt(Val(:T),h))
-HeckeAlgebras.HeckeElt(::Val{:C},h::HeckeElt{:C})=h
+function Cbasis(H::HeckeAlgebra)
+  rootpara(H)
+  f(x...)=HeckeElt(Val(:C),H,x...)
+end
 
-# To convert from "T", we use the fact that the transition matrix M from
-# any  KL  bases to  the  standard  basis  is triangular  with  diagonal
-# coefficient on  T_w equal  to rootpara(H,w)^-1.  The transition  matrix is
-# lower triangular for the C and  C' bases, and upper triangular for the
-# D and D' bases which is what index(maximum or minimum) is for.
-# klbasis is usually a functor, not a function
+"""
+To  convert from `:T`, we use the  fact that the transition matrix `M` from
+any  KL bases to the standard basis is triangular with diagonal coefficient
+on  `T_w`  equal  to  `rootpara(H,w)^-1`.  The  transition  matrix is lower
+triangular for the `C` and `C'` bases, and upper triangular for the `D` and
+`D'` bases which is what index(`maximum` or `minimum`) is for. `klbasis` is
+usually a functor, not a function.
+"""
 function toKL(h::HeckeElt{:T},klbasis,index)
   H=h.H
   res=klbasis(zero(h.d),H)
-  rootpara(H)
   while !iszero(h)
     l=length.(Ref(H.W),keys(h))
     i=index(l)
     tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) 
                        for (w,c) in h.d.d[findall(==(i),l)];check=false),H)
     res+=tmp
-    h-=HeckeElt(Val(:T),tmp)
+    h-=HeckeElt{:T}(tmp)
   end
   res
 end
 
-HeckeAlgebras.HeckeElt(::Val{sCp},h::HeckeElt{:T})=toKL(h,HeckeElt{sCp},maximum)
+HeckeAlgebras.HeckeElt{sCp}(h::HeckeElt{:T})=toKL(h,HeckeElt{sCp},maximum)
 
-HeckeAlgebras.HeckeElt(::Val{:C},h::HeckeElt{:T})=toKL(h,HeckeElt{:C},maximum)
+HeckeAlgebras.HeckeElt{:C}(h::HeckeElt{:T})=toKL(h,HeckeElt{:C},maximum)
 
 function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
+  un=one(inv(H.rootpara[1]))
   cdict=get!(H,Symbol("C'->T"))do
-    un=one(inv(rootpara(H)[1]))
     Dict(one(W)=>one(H)*un)
   end
-  un=one(inv(H.rootpara[1]))
   if haskey(cdict,w) return cdict[w] end
   T=Tbasis(H)
   if equalpara(H)
@@ -441,53 +474,111 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   cdict[w]=res
 end
 
+HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sCp})=sum(getCp(h.H,e)*c for (e,c) in h)
+
+HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{:C})=
+    sum(alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e) for (e,c) in h)
+
+HeckeAlgebras.alt(h::HeckeElt{sCp})=
+sum(HeckeElt{:C}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
+
+HeckeAlgebras.alt(h::HeckeElt{:C})=
+sum(HeckeElt{sCp}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
+
+HeckeAlgebras.β(h::HeckeElt{sCp})=
+  sum(HeckeElt{:D}(ModuleElt(longest(h.H.W)*p=>bar(c)),h.H) for (p,c) in h)
+
+HeckeAlgebras.β(h::HeckeElt{:C})=
+  sum(HeckeElt{sDp}(ModuleElt(longest(h.H.W)*p=>bar(c)),h.H) for (p,c) in h)
+
 """
-`Tbasis(H)(h::HeckeElt{Symbol("C'")})` 
+`Dbasis(H)`
 
-converts the element `h` of the `C'` basis to the `T` basis.
-
-For one-parameter Hecke algebras, we use the formulae:
-``C'_w=Σ_{y≤w}P_{y,w}(q)q^{-l(w)/2}T_y``
-and if ``sw<w`` then
-
-``C'ₛ C'_{sw}=C'_w+Σ_{y<sw}μ(y,sw)C'_y=Σ_{v≤w}μᵥ Tᵥ``
-
-where
-
-``μᵥ=P_{v,w}(q)q^{-l(w)/2}+Σ_{v≤y≤sw}μ(y,sw)P_{v,y}(q)q^{-l(y)/2}``
-
-It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leading
-coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
-occurs in the formula for ``μᵥ``).
+returns  a function which gives the  `D`-basis of the Iwahori-Hecke algebra
+`H=hecke(W,v^2)`   of   the   finite   Coxeter   group   `W`.  See  [lus85;
+(5.1)](@cite)).  This can be  defined by ``D(x)=v^{-l(w_0)}C'(xw_0)T(w_0)``
+for  `x∈W`, where `w₀` is the longest element of `W`. The `D`-basis is dual
+to  the `C`-basis  with respect  to the  non-degenerate form `H×H→ℤ[v,v⁻¹]:
+(h1,h2)↦  τ(h1.h2)`  where  `τ:H→  ℤ[v,v⁻¹]  is  the  linear form such that
+`τ(T())=1` and `τ(T(x))=0` for `x≠1`. We have `D(x)=β(C'(w_0x)` for `x∈W`.
 
 ```julia-repl
-julia> W=coxgroup(:B,3)
-B₃
+julia> @Pol v;H=hecke(coxgroup(:B,2),v^2)
+hecke(B₂,v²)
 
-julia> @Pol v;H=hecke(W,v^2,rootpara=v)
-hecke(B₃,v²,rootpara=v)
+julia> T=Tbasis(H);D=Dbasis(H);
 
-julia> C=Cpbasis(H); Tbasis(H)(C(1,2))
-v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
+julia> D(T(1))
+v³D₂₁₂-v²D₂₁+vD₁-v⁴D₁₂₁₂+v³D₁₂₁-v²D₁₂
+
+julia> β(D(1))
+C′₂₁₂
 ```
-
-For general Hecke algebras, we follow [lus83; formula 2.2](@cite)
-
-`` \\overline{P_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
-
-where  ``R_{x,y}=\\overline{(t_{y^{-1}}^{-1}|t_x)}`` where `t` is the basis
-with  parameters  ``q_s,-q_s^{-1}``.  It  follows  that  ``P_{x,w}`` is the
-negative  part of ``∑_{x<y≤w} R_{x,y} P_{y,w}``  which allows to compute it
-by  induction on `l(w)-l(x)`. The code is based on GAP3/Chevie code of Jean
-Michel and François Digne (1999).
 """
-HeckeAlgebras.HeckeElt(::Val{:T},h::HeckeElt{sCp})=sum(getCp(h.H,e)*c for (e,c) in h)
+function Dbasis(H::HeckeAlgebra)
+  rootpara(H)
+  f(x...)=HeckeElt(Val(:D),H,x...)
+end
 
-function HeckeAlgebras.HeckeElt(::Val{:T},h::HeckeElt{:C})
-  sum(h)do (e,c)
-    alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e)
+function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{:D})
+  H=h.H
+  sum(h)do (p,c)
+    c*β(getCp(H,longest(H.W)*p))
   end
 end
+
+HeckeAlgebras.HeckeElt{:D}(h::HeckeElt{:T})=toKL(h,HeckeElt{:D},minimum)
+
+const sDp=Symbol("D'")
+
+"""
+`Dpbasis(H)`
+
+returns  a function which gives the `D'`-basis of the Iwahori-Hecke algebra
+`H=hecke(W,v^2)`   of   the   finite   Coxeter   group   `W`  (see  [lus85;
+(5.1)](@cite).  This can  be defined  by ``D'(x)=v^{-l(w_0)}C(xw_0)T(w_0)``
+for  `x∈W`, where  `w₀` is  the longest  element of  `W`. The `D'`-basis is
+basis dual to the `C'`-basis with respect to the non-degenerate form `H × H
+→  ℤ[v,v⁻¹], (h1,h2) → τ(h1 .  h2)` where `τ : H  → ℤ[v,v⁻¹]` is the linear
+form   such   that   `τ(T())=1`   and   `τ(T(x))=0`   for  `x≠1`.  We  have
+`D'(x)=(-1)^(length(W,x))alt(D(x)) for `x∈W`.
+
+```julia-repl
+julia> @Pol v;H=hecke(coxgroup(:B,2),v^2)
+hecke(B₂,v²)
+
+julia> T=Tbasis(H);Dp=Dpbasis(H);alt(Dp(1))
+-D₁
+
+julia> Dp(1)^3
+(v+2v⁻¹-5v⁻⁵-9v⁻⁷-8v⁻⁹-4v⁻¹¹-v⁻¹³)D′.+(v²+2+v⁻²)D′₁
+```
+"""
+function Dpbasis(H::HeckeAlgebra)
+  rootpara(H)
+  f(x...)=HeckeElt(Val(sDp),H,x...)
+end
+
+function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sDp})
+  H=h.H
+  sum(h)do (p,c)
+    c*(-1)^length(H.W,p)*alt(β(getCp(H,longest(H.W)*p)))
+  end
+end
+
+HeckeAlgebras.HeckeElt{sDp}(h::HeckeElt{:T})=toKL(h,HeckeElt{sDp},minimum)
+
+HeckeAlgebras.alt(h::HeckeElt{sDp})=
+sum(HeckeElt{:D}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
+
+HeckeAlgebras.alt(h::HeckeElt{:D})=
+sum(HeckeElt{sDp}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
+
+HeckeAlgebras.β(h::HeckeElt{sDp})=
+  sum(HeckeElt{:C}(ModuleElt(longest(h.H.W)*p=>bar(c)),h.H) for (p,c) in h)
+
+HeckeAlgebras.β(h::HeckeElt{:D})=
+  sum(HeckeElt{sCp}(ModuleElt(longest(h.H.W)*p=>bar(c)),h.H) for (p,c) in h)
 
 #----------------------------------Left cells --------------------------
 @GapObj struct LeftCell{G<:Group}

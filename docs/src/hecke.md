@@ -6,9 +6,10 @@ Pages=["hecke.md"]
 ```@docs
 HeckeAlgebras
 hecke(::Group,::Vector{<:Vector{C}}) where C
-Tbasis(::HeckeAlgebra)
+Tbasis
 alt
 α(::HeckeElt{:T})
+β
 CharTable(::HeckeAlgebra)
 central_monomials
 class_polynomials

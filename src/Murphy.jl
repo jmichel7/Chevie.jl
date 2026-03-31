@@ -229,8 +229,8 @@ function MurphyToT(H::HeckeAlgebra, s::InfoTableau, t::InfoTableau)
 end
 
 # convert Murphy basis to T-basis
-function HeckeAlgebras.HeckeElt(::Val{:T},M::HeckeElt{:M})
- sum(c*MurphyToT(M.H,InfoTableau(M.H,i,t1),InfoTableau(M.H,i,t2))
+function HeckeAlgebras.HeckeElt{:T}(M::HeckeElt{:M})
+  sum(c*MurphyToT(M.H,InfoTableau(M.H,i,t1),InfoTableau(M.H,i,t2))
        for ((i,t1,t2),c) in M.d)
 end
 
@@ -260,9 +260,7 @@ end
 # from a pair of tableaux or some HeckeElt.
 function Murphybasis(H::HeckeAlgebra)
   initMurphy(H)
-  f(h::HeckeElt)=f(Tbasis(h))
-  f(h::HeckeElt{:T})=sum(c*TtoMurphy(h.H,w) for (w,c) in h.d)
-  f(h::HeckeElt{:M})=h
+  f(h::HeckeElt)=HeckeElt{:M}(h)
   function f(s,t)
     if !istableau(s) || !istableau(t)
         error("<s> and <t> must be standard tableaux")
@@ -275,6 +273,9 @@ function Murphybasis(H::HeckeAlgebra)
     HeckeElt{:M}(ModuleElt((imu,is.ind,it.ind)=>one(coefftype(H))),H)
   end
 end
+
+HeckeAlgebras.HeckeElt{:M}(h::HeckeElt{:T})=
+  sum(c*TtoMurphy(h.H,w) for (w,c) in h.d)
 
 function StringTableau(io::IO,t)
   TeX=get(io,:TeX,false)

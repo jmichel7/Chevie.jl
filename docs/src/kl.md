@@ -7,9 +7,10 @@ Pages=["kl.md"]
 KL
 KLPol
 KL.critical_pair
-HeckeElt(::Val{:T},::HeckeElt{Symbol("C'")})
 Cbasis
 Cpbasis
+Dbasis
+Dpbasis
 character
 representation(::LeftCell,H)
 WGraphToRepresentation
