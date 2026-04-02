@@ -474,13 +474,13 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   cdict[w]=res
 end
 
-HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sCp})=sum(getCp(h.H,e)*c for (e,c) in h)
+HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sCp})=sum(getCp(h.H,e)*c for (e,c) in h;init=zero(h.H))
 
 HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{:C})=
-    sum(alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e) for (e,c) in h)
+  sum(alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e) for (e,c) in h;init=zero(h.H))
 
 HeckeAlgebras.alt(h::HeckeElt{sCp})=
-sum(HeckeElt{:C}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
+ sum(HeckeElt{:C}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
 
 HeckeAlgebras.alt(h::HeckeElt{:C})=
 sum(HeckeElt{sCp}(ModuleElt(p=>bar(c)*(-1)^length(h.H.W,p)),h.H) for (p,c) in h)
@@ -522,7 +522,7 @@ end
 
 function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{:D})
   H=h.H
-  sum(h)do (p,c)
+  sum(h;init=zero(H))do (p,c)
     c*β(getCp(H,longest(H.W)*p))
   end
 end
@@ -561,7 +561,7 @@ end
 
 function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sDp})
   H=h.H
-  sum(h)do (p,c)
+  sum(h;init=zero(H))do (p,c)
     c*(-1)^length(H.W,p)*alt(β(getCp(H,longest(H.W)*p)))
   end
 end

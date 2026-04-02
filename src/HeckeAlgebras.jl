@@ -835,6 +835,10 @@ Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.show(io::IO, ::MIME"text/latex", h::HeckeElt)=print(io,TeXs(h))
 
 function Base.show(io::IO, h::HeckeElt{b})where b
+  if iszero(h) 
+    print(io,"0",string(b),hasdecor(io) ? "." : "()")
+    return
+  end
   function showbasis(io::IO,e)
     w=word(h.H.W,e)
     res=string(b)
@@ -1049,8 +1053,9 @@ q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁
 ```
 """
 function alt(a::HeckeElt{:T})
-  clone(a,MM(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
-                for i in word(a.H.W,w))* bar(c) for (w,c) in a;check=false))
+  if iszero(a) return a end
+  clone(a,MM(w=>bar(c)* (isone(w) ? 1 : inv(prod(prod(a.H.para[i])
+        for i in word(a.H.W,w)))) for (w,c) in a;check=false))
 end
 
 """
@@ -1061,7 +1066,8 @@ end
 `q_{w_0}⁻¹T_{w_0w}`.
 """
 function β(a::HeckeElt{:T})
- clone(a,MM(longest(a.H.W)*w=>bar(c)* bar(rootpara(a.H,longest(a.H.W)))
+  if iszero(a) return a end
+  clone(a,MM(longest(a.H.W)*w=>bar(c)*bar(rootpara(a.H,longest(a.H.W)))
       for (w,c) in a))
 end
 
