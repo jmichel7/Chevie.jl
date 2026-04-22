@@ -434,47 +434,48 @@ HeckeAlgebras.HeckeElt{sCp}(h::HeckeElt{:T})=toKL(h,HeckeElt{sCp},maximum)
 
 HeckeAlgebras.HeckeElt{:C}(h::HeckeElt{:T})=toKL(h,HeckeElt{:C},maximum)
 
-function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
+function getCp(H,w::P)where P
   W=H.W
-  un=one(inv(H.rootpara[1]))
-  cdict=get!(H,Symbol("C'->T"))do
-    Dict(one(W)=>one(H)*un)
+  u=inv(H.rootpara[1])
+  Tres=HeckeElt{:T,typeof(H),typeof(u),P}
+  cdict::Dict{P,Tres}=get!(H,Symbol("C'->T"))do
+    Dict(one(W)=>(one(H)*one(u)))
   end
-  if haskey(cdict,w) return cdict[w] end
-  T=Tbasis(H)
-  if equalpara(H)
-    l=firstleftdescent(W,w)
-    s=gens(W)[l]
-    if w==s
-      return cdict[w]=inv(H.rootpara[l])*(T(s)-H.para[l][2]*one(H))
-    else
-      res=getCp(H,s)*getCp(H,s*w)
-      tmp=zero(H)
-      for (e,coef) in res::HeckeElt{:T,HeckeAlgebra{C,P,TW},typeof(un),P}
-        if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
+  get!(cdict,w)do
+    if equalpara(H)
+      l=firstleftdescent(W,w)
+      s=gens(W)[l]
+      if w==s return (u*(Tbasis(H)(s)-H.para[l][2]*one(H))) end
+      res::Tres=getCp(H,s)*getCp(H,s*w)
+      tmp=zero(res)
+      for (e,coef) in res
+       if e!=w 
+         a=rootpara(H,e)::typeof(u)
+         tmp+=positive_part(coef*a)*getCp(H,e) end
       end
-      res-=tmp
-    end
-  else #code from JM & FD (1999)
-    elm=reduce(vcat,reverse(bruhatless(W,w)))
-    coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
-    f(w)= w==one(W) ? 1 : prod(y->-H.para[y][2],word(W,w))
-    for i in 2:length(elm)
-      x=elm[i]
-      qx=rootpara(H,x)
-      z=critical_pair(W,x,w)
-      if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(==(z),elm)]
-      else
-        coeff[i]=-negative_part(sum(j->
-          bar(qx*inv(T(inv(elm[j])))[x])*coeff[j],1:i-1))*inv(qx)
+      res-tmp
+    else #code from JM & FD (1999)
+      elm=reduce(vcat,reverse(bruhatless(W,w)))
+      coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
+      f(w)= w==one(W) ? 1 : prod(y->-H.para[y][2],word(W,w))
+      for i in 2:length(elm)
+        x=elm[i]
+        qx=rootpara(H,x)
+        z=critical_pair(W,x,w)
+        if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(==(z),elm)]
+        else
+          coeff[i]=-negative_part(sum(j->
+            bar(qx*inv(Tbasis(H)(inv(elm[j])))[x])*coeff[j],1:i-1))*inv(qx)
+        end
       end
+      HeckeElt{:T}(ModuleElt(Pair.(elm,coeff)),H)
     end
-    res=HeckeElt{:T}(ModuleElt(Pair.(elm,coeff)),H)
   end
-  cdict[w]=res
 end
 
-HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sCp})=sum(getCp(h.H,e)*c for (e,c) in h;init=zero(h.H))
+function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sCp})
+  sum(getCp(h.H,e)*c for (e,c) in h;init=zero(h.H))
+end
 
 HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{:C})=
   sum(alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e) for (e,c) in h;init=zero(h.H))

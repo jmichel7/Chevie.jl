@@ -1,6 +1,7 @@
 module Gt
 using ..Chevie
-export RationalUnipotentClasses, closed_subsystems, ClassTypes
+export RationalUnipotentClasses, closed_subsystems, closed_subsystemsPoset,
+ closed_subsystems_reps, ClassTypes
 
 struct RationalUnipotentClasses
   WF
@@ -33,12 +34,18 @@ function Base.show(io::IO,::MIME"text/plain",cl::RationalUnipotentClasses)
                                                   col_labels=["centralizer"])
 end
 
-# build the 2N×2N array sumr: sumr[i,j]=k if root(W,i)+root(W,j)=root(W,k)
-#                                       0 if root(W,i)+root(W,j) is not a root
+"""
+`sumr(W)` where `W` is a Weyl group
+
+if `N=nref(W)` build the `2N×2N` array `W.sumr` such that `sumr[i,j]==k` if
+`root(W,i)+root(W,j)=root(W,k)`  and `==0 if `root(W,i)+root(W,j)` is not a
+root.
+"""
 function sumr(W)
   get!(W,:sumr)do
     function possum(i,j)
-      p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
+      s=roots(W,i)+roots(W,j)
+      p=findfirst(==(s),roots(W))
       isnothing(p) ? 0 : p
     end
     [possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
@@ -65,7 +72,7 @@ function closure(W,l)
 end
 
 """
-`closed_subsystems(W)` 
+`closed_subsystemsPoset(W)` 
 
 `W`  should  be  a  Weyl  group.  The  function returns the Poset of closed
 subsystems  of the root system of `W`. Each closed subsystem is represented
@@ -79,7 +86,7 @@ from  some exceptions  in characteristics  2 and  3, see [mt11; Proposition
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> closed_subsystems(W)
+julia> closed_subsystemsPoset(W)
 1 2<1 4<4<∅
 1 2<1 5<1<∅
 1 2<2 6<6<∅
@@ -91,7 +98,7 @@ julia> closed_subsystems(W)
 3 5<3<∅
 ```
 """
-function closed_subsystems(W)
+function closed_subsystemsPoset(W)
   get!(W, :closedsubsets)do
   l = [Int[]]
   ldict=Dict{Vector{Int},Int}()
@@ -119,7 +126,7 @@ function closed_subsystems(W)
   end
 end
 
-function closed_subsystems(W::CoxeterCoset)
+function closed_subsystemsPoset(W::CoxeterCoset)
   get!(W, :closedsubsets)do
     P=closed_subsystems(Group(W))
     P=induced(P,filter(x->onsets(x,W.phi)==x,P.elements))
@@ -129,6 +136,111 @@ function closed_subsystems(W::CoxeterCoset)
     end
     P
   end
+end
+
+"""
+`closed_subsystems(W)` 
+
+`W`  should be a Weyl group. The function returns the list, sorted by rank,
+of  closed subsystems of the  root system of `W`.  Each closed subsystem is
+represented  by the list of indices of its simple roots. If `W` is the Weyl
+group  of  a  reductive  group  `𝐆  `,  then closed subsystem correspond to
+reductive  subgroups of maximal rank. And all such groups are obtained this
+way,  apart from  some exceptions  in characteristics  2 and  3, see [mt11;
+Proposition 13.4](@cite).
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> closed_subsystems(W)
+12-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [2]
+ [3]
+ [4]
+ [5]
+ [6]
+ [1, 2]
+ [1, 4]
+ [1, 5]
+ [2, 6]
+ [3, 5]
+```
+"""
+function closed_subsystems(W;verbose=false) # code from Meinolf Geck
+  mat=sumr(W)
+  systems=[Int[]]
+  prev=map(i->[i],1:nref(W))
+  append!(systems,prev)
+  if verbose print("#I 1 ",length(prev)," ") end
+  for k in 1:ngens(W)-1
+    new=Vector{Int}[]
+    for s in prev, r in s[end]+1:nref(W)
+      if all(i->iszero(mat[r,i+nref(W)]),s) push!(new,vcat(s,[r])) end
+    end
+    append!(systems,new)
+    if verbose print(length(new)," ") end
+    prev=new
+  end
+  if verbose println("total ",length(systems)) end
+  systems
+end
+
+"""
+`closed_subsystems_reps(W)` 
+
+`W`  should be  a Weyl  group. The  function returns representatives of the
+`W`-orbits  of closed subsystems of the root system of `W`, sorted by rank.
+Each  closed subsystem is represented by the  list of indices of its simple
+roots.  If `W`  is the  Weyl group  of a  reductive group `𝐆 `, then closed
+subsystem  correspond to reductive subgroups of  maximal rank. And all such
+groups are obtained this way, apart from some exceptions in characteristics
+2 and 3, see [mt11; Proposition 13.4](@cite).
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> map(I->reflection_subgroup(W,I),closed_subsystems_reps(W))
+6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:
+ G₂₍₎=Φ₁²
+ G₂₍₁₎=A₁Φ₁
+ G₂₍₂₎=Ã₁Φ₁
+ G₂
+ G₂₍₁₄₎=A₁×Ã₁
+ G₂₍₁₅₎=A₂
+```
+"""
+function closed_subsystems_reps(W;verbose=false)# code from Meinolf Geck
+  function subsorbits(W,sys::Vector{Vector{Int}}) # W-orbits representatives on subsystems list sys
+    rest=eachindex(sys)
+    orb=Int[]
+    while !isempty(rest)
+      push!(orb,rest[1])
+      r=filter(i->transporting_elt(W,sys[rest[1]],sys[i],onsets)!==nothing,rest)
+      rest=setdiff(rest,r)
+    end
+    sys[orb]::Vector{Vector{Int}}
+  end
+  mat=sumr(W)
+  systems=[Int[]]
+  prev=map(x->[x],unique(simple_reps(W,1:ngens(W))))
+  append!(systems,prev)
+  if verbose print("#I 1 ",length(prev)," ") end
+  for k in 1:ngens(W)-1
+    new=Vector{Int}[]
+    for s in prev, r in s[end]+1:nref(W)
+      if all(i->iszero(mat[r,i+nref(W)]),s) push!(new,vcat(s,[r])) end
+    end
+    new=subsorbits(W,new)
+    append!(systems,new)
+    if verbose print(length(new)," ") end
+    prev=new
+  end
+  if verbose println("total ",length(systems)) end
+  systems
 end
 
 @GapObj struct ClassType
@@ -358,7 +470,7 @@ function nconjugacy_classes(r::ClassType,WF,p)
     HF=r.CGs
     H=Group(HF)
     W=Group(WF)
-    P=closed_subsystems(W)
+    P=closed_subsystemsPoset(W)
     elts=copy(P.elements)
     elts=filter(x->onsets(x,HF.phi)==x && issubset(inclusiongens(H),x),elts)
     P=induced(P,elts)
