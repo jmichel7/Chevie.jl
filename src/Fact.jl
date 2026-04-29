@@ -6,7 +6,7 @@ Factoring polynomials over the rationals:
 module Fact
 import Primes: Primes, factor, nextprime
 using LinearAlgebra:exactdiv
-using LaurentPolynomials: Pol, shift, degree, derivative, valuation, coefficients
+using LaurentPolynomials: Pol, shift, degree, derivative, valuation, coefficients, discriminant
 using ..FiniteFields: FFE
 using ..Modulo: Modulo, Mod
 using ..Combinat: combinations, npartitions

@@ -978,7 +978,7 @@ function showcentralizer(io::IO,u)
     res=haskey(u,:AuAction) ||
         (haskey(u,:dimred) && iszero(u.dimred)) ? "." : "?"
     if any(isnothing,chevieget.(refltype(u.Au),:AuName)) error("HHHH") end
-    res*=fromTeX(io,join(chevieget.(refltype(u.Au),:AuName),"×"))
+    res*fromTeX(io,join(chevieget.(refltype(u.Au),:AuName),"×"))
   end
   if haskey(u,:dimunip)
     if u.dimunip>0 c*=sprint(show,Mvp(:q)^u.dimunip;context=io) end

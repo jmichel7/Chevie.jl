@@ -469,8 +469,10 @@ for the simples x and v
 """
 function α2(M::LocallyGarsideMonoid,x,v)
   while true
-    i=findfirst(i->isleftdescent(M,v,i) && isrightascent(M,x,i),
+    i=let v=v,x=x
+      findfirst(i->isleftdescent(M,v,i) && isrightascent(M,x,i),
                 eachindex(M.atoms))
+    end
     if isnothing(i) return (x,v) end
     a=atom(M,i)
     x=*(M,x,a) # could use mul! if make a copy of x first

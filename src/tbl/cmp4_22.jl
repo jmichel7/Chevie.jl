@@ -13,7 +13,7 @@
 # -- there is a misprint in the numerator of the relative degrees of the 
 #    3-dimensional characters of G19: it should read x₁¹⁰x₂¹⁵y₁⁷z₁³z₄¹²
 
-const G4_22IndexChars_dict=Dict{Int,Any}((i=>Dict() for i in 4:22)...)
+const G4_22IndexChars_dict=Dict(i=>Dict{Any,Vector{Int}}() for i in 4:22)
 
 CheckIndexChars::Bool=false
 
@@ -1545,8 +1545,10 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
   function evaluate(c, e, x, n, p)
     r=n
     for (cc,ee) in zip(c,e) if cc!=0 r=gcd(r,ee) end end
-    rt=root(x,div(n,r))*E(n,p*r)
-    map((cc,ee)->cc*rt^div(ee,r),c,e)
+    rot=root(x,div(n,r))*E(n,p*r)
+    let r=r
+      map((cc,ee)->cc*rot^div(ee,r),c,e)
+    end
   end
   res=Dict{Symbol, Any}(:name=>string("H(G",ST,")"),:ST=>ST,:parameter=>
     para,:dim=>2,:reflclasses =>[3])
@@ -1623,7 +1625,7 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       end
    #  l=map(x->filter(i->l[i]==x,eachindex(l)), sort(unique(l)))
       l=map(x->findall(==(x),l), unique(sort(l)))
-      o=filter(x->count(j->j in x,i)>1,l)
+    # o=filter(x->count(j->j in x,i)>1,l)
     # println(" over-represented by ", intersect(union(o...), i)," : ", o)
     # println(" absent : ",filter(x->iszero(count(j->j in x,i)),l))
       l=first.(l)
@@ -2003,7 +2005,7 @@ chevieset(:G4_22, :malleclasses, ST->malleclasses4_22[G4_22type(ST)])
 
 chevieset(:G4_22, :indexclasses, function(ST)
   p=chevieget(:G4_22, :malleclasses)(ST)
-  g(a,b)=filter(i->mod(p[i][2],a)==b[p[i][1]],1:length(p))
+  g(a,b)=findall(((i1,i2),)->mod(i2,a)==b[i1],p)
   if     ST==4  g(6, [0, 3, 2, 0])
   elseif ST==5  g(2, [0, 1, 0, 0])
   elseif ST==6  g(3, [0, 0, 2, 0])
@@ -2031,28 +2033,28 @@ chevieset(:G4_22, :classwords, function(ST)
   p=chevieget(:G4_22, :malleclasses)(ST)
   f(class,z)=vcat([Int[],[1],[2],[3],[3,3]][class[1]],repeat(z,class[2]))
   h(z,l)=map(x->Replace(f(x, z), l...),p[indexclasses])
-  if ST==4 h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-  elseif ST==5 h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-  elseif ST==6 h([3, 1], [[2], Int[], [3], [2]])
-  elseif ST==7 h([1, 2, 3], Vector{Int}[])
-  elseif ST==8 h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-  elseif ST==9 h([3, 1], [[2], Int[], [3], [2]])
-  elseif ST==10 h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-  elseif ST==11 h([1, 2, 3], Vector{Int}[])
-  elseif ST==12 h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
+  if ST==4 h([3, 1], [[2]=>Int[], [1, 3, 1]=>[2], [3]=>[1]])
+  elseif ST==5 h([2, 3], [[1]=>Int[], [2]=>[1], [3]=>[2]])
+  elseif ST==6 h([3, 1], [[2]=>Int[], [3]=>[2]])
+  elseif ST==7 h([1, 2, 3], Pair{Int,Int}[])
+  elseif ST==8 h([3, 1], [[2]=>Int[], [1, 3, 1]=>[2], [3]=>[1]])
+  elseif ST==9 h([3, 1], [[2]=>Int[], [3]=>[2]])
+  elseif ST==10 h([2, 3], [[1]=>Int[], [2]=>[1], [3]=>[2]])
+  elseif ST==11 h([1, 2, 3], Pair{Int,Int}[])
+  elseif ST==12 h([1, 2], [[3]=>Int[], [2, 1, 2, 1, 2]=>[2, 3]])
   elseif ST==13
-    map(x->Replace(x,[0],[1,2,3,1,2,3,1,2,3]),[Int[],[0],[0,0],[0,0,0],[2],
+    map(x->Replace(x,[0]=>[1,2,3,1,2,3,1,2,3]),[Int[],[0],[0,0],[0,0,0],[2],
       [2,0],[3,1,2],[3,1,2,0],[3,1,2,0,0],[3,1,2,0,0,0],[2,3,1,2,1],
       [2,3,1,2,1,0],[2,3,1,2,1,0,0],[2,3,1,2,1,0,0,0],[1],[1,0]])
-  elseif ST==14 h([1, 2], [[3], Int[]])
-  elseif ST==15 h([1,2,3],[[3,3],[4],[3,1,2,3],[4,1,2],[4],[3]])
-  elseif ST==16 h([3, 1], [[2], Int[], [1, 3, 1], [2], [3], [1]])
-  elseif ST==17 h([3, 1], [[2], Int[], [3], [2]])
-  elseif ST==18 h([2, 3], [[1], Int[], [2], [1], [3], [2]])
-  elseif ST==19 h([1, 2, 3], Int[])
-  elseif ST==20 h([1,2],[[3],Int[],[1,1],Int[],[1,2,1],[3],[2],[1],[3],[2]])
-  elseif ST==21 h([1, 2], [[3], Int[]])
-  elseif ST==22 h([1, 2], [[3], Int[], [2, 1, 2, 1, 2], [2, 3]])
+  elseif ST==14 h([1, 2], [[3]=>Int[]])
+  elseif ST==15 h([1,2,3],[[3,3]=>[4],[3,1,2,3]=>[4,1,2],[4]=>[3]])
+  elseif ST==16 h([3, 1], [[2]=>Int[], [1, 3, 1]=>[2], [3]=>[1]])
+  elseif ST==17 h([3, 1], [[2]=>Int[], [3]=>[2]])
+  elseif ST==18 h([2, 3], [[1]=>Int[], [2]=>[1], [3]=>[2]])
+  elseif ST==19 h([1, 2, 3], Pair{Int,Int}[])
+  elseif ST==20 h([1,2],[[3]=>Int[],[1,1]=>Int[],[1,2,1]=>[3],[2]=>[1],[3]=>[2]])
+  elseif ST==21 h([1, 2], [[3]=>Int[]])
+  elseif ST==22 h([1, 2], [[3]=>Int[], [2, 1, 2, 1, 2]=>[2, 3]])
   end
 end)
 
@@ -2077,8 +2079,10 @@ chevieset(:G4_22, :classnames, function(ST)
   elseif ST==21 z="1212121212";c="zzzzzzzzz12121212"
   elseif ST==22 z="123123123123123";c="123"
   end
-  map(x->isempty(x) ? "." : replace(replace("123"[x],z=>"z"),c=>"c"),
+  let z=z,c=c
+    map(x->isempty(x) ? "." : replace(replace("123"[x],z=>"z"),c=>"c"),
       chevieget(:G4_22,:classwords)(ST))
+  end
 end)
 
 chevieset(:G4_22, :classinfo, function(ST)

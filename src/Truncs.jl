@@ -271,7 +271,9 @@ function continued_fraction(f::Trunc,i=length(f))
   end
   f=Trunc(v.//f.c[1],0)
   while true
-    pow=findfirst(i->f.c[i]!=prevf.c[i],1:length(f))
+    pow=let f=f, prevf=prevf
+      findfirst(i->f.c[i]!=prevf.c[i],1:length(f))
+    end
     if isnothing(pow) return p end
     c=(f.c[pow]-prevf.c[pow])
     push!(p,Pol([c],pow-1))

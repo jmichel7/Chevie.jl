@@ -599,7 +599,8 @@ chevieset(:imp, :classinfo, function (p, q, r)
 # z:=stu generates Z(G(p,2,2)) and z':=z^e1 generates Z(G(p,q,2))
 # relations for G(p,2,2) are stu=tus=ust
 # relations for G(p,q,2) are s'tu=tus' and [z',u]=1
-    res=Dict{Symbol, Any}(:classwords=>[],:classparams=>[],:classnames=>[])
+  res=Dict{Symbol, Any}(:classwords=>Vector{Int}[],:classparams=>Vector{Int}[],
+                        :classnames=>String[])
     for i in 0:p-1
       for j in 0:div(p-i-1,2)
         if mod(j+i,e1)==0

@@ -457,10 +457,14 @@ function schur_functor(A::AbstractMatrix,λ)
   #print(size(M),"=>")
   M=M[filter(i->!iszero(@view M[i,:]),axes(M,1)),
       filter(i->!iszero(@view M[:,i]),axes(M,2))]
-  m=sort.(collectby(i->M[:,i],axes(M,2)))
+  m=let M=M
+    sort.(collectby(i->M[:,i],axes(M,2)))
+  end
   m=sort(m)
   M=M[:,first.(m)]
-  M=map(x->sum(M[x,:],dims=1)[1,:],m)
+  M=let M=M
+    map(x->sum(M[x,:],dims=1)[1,:],m)
+  end
   M=improve_type(toM(M))
   #println(size(M))
   #M
@@ -1002,7 +1006,7 @@ function showperiodic(io::IO,v::Vector{Int})
     end
     i+=1
   end
-  res*=joindigits(@view v[prev:end])
+  res*joindigits(@view v[prev:end])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)

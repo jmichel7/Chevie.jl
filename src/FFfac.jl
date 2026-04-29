@@ -134,6 +134,7 @@ function Primes.factor(f::Pol{FFE{p}},
 end
 
 using LaTeXStrings
+using ..Format: xrepr
 function Base.show(io::IO, ::MIME"text/latex",f::Primes.Factorization{<:Pol})
   print(io,latexstring(xrepr(MIME("text/plain"),f,TeX=true)))
 end

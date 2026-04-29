@@ -344,7 +344,7 @@ Michel and François Digne (1999).
 """
 function Cpbasis(H::HeckeAlgebra)
   rootpara(H)
-  f(x...)=HeckeElt(Val(sCp),H,x...)
+  (x...)->HeckeElt(Val(sCp),H,x...)
 end
 
 """
@@ -405,7 +405,7 @@ julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
 """
 function Cbasis(H::HeckeAlgebra)
   rootpara(H)
-  f(x...)=HeckeElt(Val(:C),H,x...)
+  (x...)->HeckeElt(Val(:C),H,x...)
 end
 
 """
@@ -518,7 +518,7 @@ C′₂₁₂
 """
 function Dbasis(H::HeckeAlgebra)
   rootpara(H)
-  f(x...)=HeckeElt(Val(:D),H,x...)
+  (x...)->HeckeElt(Val(:D),H,x...)
 end
 
 function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{:D})
@@ -557,7 +557,7 @@ julia> Dp(1)^3
 """
 function Dpbasis(H::HeckeAlgebra)
   rootpara(H)
-  f(x...)=HeckeElt(Val(sDp),H,x...)
+  (x...)->HeckeElt(Val(sDp),H,x...)
 end
 
 function HeckeAlgebras.HeckeElt{:T}(h::HeckeElt{sDp})

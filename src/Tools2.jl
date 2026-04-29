@@ -10,7 +10,7 @@ using CycPols: CycPols, CycPol
 using Primes: Primes
 using PermGroups: Group
 using Combinat: Combinat, collectby
-using LinearAlgebra: LinearAlgebra, tr
+using LinearAlgebra: LinearAlgebra
 using GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using GroupPresentations: Presentation
 using ..Chars: CharTable

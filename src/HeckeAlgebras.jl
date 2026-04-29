@@ -441,7 +441,6 @@ function hecke(W::Group,p::Tuple;rootpara=fill(missing,ngens(W)))
   else
     s=simple_reps(W,1:ngens(W))
     C=sort(unique(s))
-    para=fill(first(p),ngens(W))
     para=map(i->p[findfirst(==(s[i]),C)],1:ngens(W))
     rootpara=map(i->rootpara[findfirst(==(s[i]),C)],1:ngens(W))
   end
@@ -1391,7 +1390,7 @@ end
 function simplify(res::FactSchur)
   R=Rational{Int}
   T=Cyc{R}
-  evcyc=NamedTuple{(:pol,:monomial,:power),Tuple{CycPol{T},Mvp{T,R},R}}[]
+  evcyc=@NamedTuple{pol::CycPol{T},monomial::Mvp{T,R},power::R}[]
   factor=res.factor
   for (pol,monomial) in res.vcyc
     k=scalar(monomial)
@@ -1425,7 +1424,7 @@ function simplify(res::FactSchur)
     push!(evcyc,(pol=pol,monomial=monomial,power=power))
   end
   if isempty(evcyc)
-    FactSchur(factor,NamedTuple{(:pol,:monomial),Tuple{CycPol{T},Mvp{T,R}}}[])
+    FactSchur(factor,@NamedTuple{pol::CycPol{T},monomial::Mvp{T,R}}[])
   else
     vcyc=map(collectby(x->x.monomial,evcyc))do fil
       D=lcm(map(x->denominator(x.power), fil))

@@ -270,8 +270,12 @@ function factorset(s)
     a=findfirst(y->issubset(r,y),s2)
     if 2length(s2)!=length(s) || isnothing(a) continue end
     j=setdiff(s2[a],r)
-    s1=sort(unique(map(x->setdiff(x, i), s1)))
-    s2=sort(unique(map(x->setdiff(x, j), s2)))
+    s1=let i=i 
+      sort(unique(map(x->setdiff(x, i), s1)))
+    end
+    s2=let j=j
+      sort(unique(map(x->setdiff(x, j), s2)))
+    end
     if length(i)==1 i=i[1] end
     if length(j)==1 j=j[1] end
     if s1==s2 return vcat([[i, j]], factorset(s1)) end

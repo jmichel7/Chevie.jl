@@ -224,7 +224,8 @@ module Weyl
 
 export two_tree, rootdatum, torus, istorus, derived_datum,
  dim, dimension, with_inversions, standard_parabolic, describe_involution,
- rootlengths, highest_short_root, badprimes, ComplexReflectionGroup, affine
+ rootlengths, highest_short_root, badprimes, ComplexReflectionGroup, affine,
+ parabolic_subgroups
 
 using ..Chevie
 #------------------------ Cartan matrices ----------------------------------
@@ -402,7 +403,7 @@ julia> two_tree(cartan(:E,8))
 ```
 """
 two_tree=function(m::AbstractMatrix)
-  function branch(x)
+  function branch(x,line)
     while true
       found=false
       for i in axes(m,2)
@@ -419,9 +420,9 @@ two_tree=function(m::AbstractMatrix)
     end
   end
   line=[1]
-  branch(1)
+  branch(1,line)
   l=length(line)
-  branch(1)
+  branch(1,line)
   line=vcat(line[end:-1:l+1],line[1:l])
   l=length(line)
   for i in 1:l for j in 1:i-2 
@@ -430,7 +431,7 @@ two_tree=function(m::AbstractMatrix)
   r=size(m,1)
   if l==r return line end
   p=findfirst(x->any(i->!(i in line)&&(m[x,i]!=0),1:r),line)
-  branch(line[p])
+  branch(line[p],line)
   if length(line)!=r return nothing end
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
@@ -985,8 +986,10 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
     mats=reflectionMatrix.(eachrow(rr),eachrow(cr)) # reflrep
     u=toM(r)
     # permutations of the roots effected by mats
-    # gens=map(M->sortPerm(eachrow(u*M),mats).\sortPerm(r)
-    gens=map(M->Perm(Vector{Perms.Idef}(indexin(eachrow(u*M),r))),mats)
+  # gens=map(M->sortPerm(eachrow(u*M)),mats).\sortPerm(r)
+    gens=let r=r
+      map(M->Perm(Vector{Perms.Idef}(indexin(eachrow(u*M),r))),mats)
+    end
     coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
     coroots[axes(cr,1)].=eachrow(cr)
     G=PRG(gens,one(gens[1]),mats,r,coroots,
@@ -1283,7 +1286,7 @@ julia> diagram(W)
 Ã₄   1———2———3———4
 ```
 """
-function affine(W)
+function affine(W;rational=true)
   t=refltype(W)
   if length(t)!=1 || !(t[1].series in Symbol.('A':'G'))
     error("affine needs an irreducible Weyl group")
@@ -1294,6 +1297,7 @@ function affine(W)
   end
   ex=vcat(1:semisimplerank(W),2*nref(W))
   C=improve_type([cartan(W.G,i,j) for i in ex, j in ex])
+  if rational C//=1 end # so inv works
   res=Affine(W,coxgroup(C),Dict{Symbol,Any}())
   res.refltype=t
   res
@@ -1310,7 +1314,7 @@ PermRoot.refltype(W::Affine)=W.refltype
  Groups.gens, Groups.ngens, Groups.word, #PermGroups.reduced,
  FinitePosets.Poset, CoxGroups.isleftdescent,
  CoxGroups.bruhatless, CoxGroups.coxmat,
- CoxGroups.leftdescents, PermRoot.semisimplerank
+ CoxGroups.leftdescents, PermRoot.cartan, PermRoot.semisimplerank
 
 ## Given an affine Weyl group W, x a vector in the basis of
 ## simple roots of W.W and w in W, returns the image of x under w.
@@ -1329,9 +1333,49 @@ function Perms.reflength(W::Affine,w)
   l=push!(map(i->refls(W0,i),eachindex(gens(W0))),refls(W0,nref(W0)))
   p=reflength(W0,prod(l[word(W,w)]))
   dimw=minimum(length.(filter(x->GenLinearAlgebra.rank(vcat(mov,
-     roots(W0,x)))==length(x),ParabolicSubgroups(W0))))
+     roots(W0,x)))==length(x),parabolic_subgroups(W0))))
   2*dimw-p
 end
+
+"""
+`parabolic_subgroups(W)`
+ 
+returns  the  list  of  all  parabolic  subgroups  of  `W`.  These  are the
+conjugates  of the  groups returned  by `parabolic_reps(W)`; they
+are  also in bijection with the flats of the hyperplane arrangement defined
+by  `W`.  To  save  memory,  the  list  is  given  as  a list of generating
+reflections  for each group. For each element  `I` of this list, one has to
+call `reflection_subgroup(W,I)` to actually get the corresponding group.
+ 
+```julia-repl
+julia> Weyl.parabolic_subgroups(coxgroup(:A,3))
+15-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [4]
+ [2]
+ [6]
+ [5]
+ [3]
+ [1, 2]
+ [1, 5]
+ [3, 4]
+ [2, 3]
+ [1, 3]
+ [4, 5]
+ [2, 6]
+ [1, 2, 3]
+```
+"""
+function parabolic_subgroups(W::FiniteCoxeterGroup)
+  get!(W,:parabolic_subgroups)do
+    vcat(map(parabolic_reps(W))do x
+      r=vcat(reduced(reflection_subgroup(W,x),W)...)
+      unique!(map(y->sort!(ontuples(x,y)),r))
+    end...)
+  end
+end
+
 # a benchmark on julia 1.0.2
 #```benchmark
 #julia> @btime length(elements(coxgroup(:E,7)))

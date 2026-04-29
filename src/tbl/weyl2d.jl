@@ -116,7 +116,7 @@ function (l,para,_)
   chr=filter(i->chevieget("2D",:IsPreferred)(pp[i]),chr)
   T=Tbasis(hecke(coxgroup(:B,l),param))
   tbl[:irreducibles]=permutedims(toM(map(x->char_values(
-    T(1,Replace(x,[1],[1,2,1])...),hi[:irreducibles][chr,:]),
+    T(1,Replace(x,[1]=>[1,2,1])...),hi[:irreducibles][chr,:]),
                                        tbl[:classwords])))
   AdjustHeckeCharTable(tbl,para)
 end)

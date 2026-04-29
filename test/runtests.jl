@@ -424,7 +424,11 @@ end
 end
 @testset "Gt.jl" begin
 @test mytest("Gt.jl","W=coxgroup(:G,2)","G₂")
-@test mytest("Gt.jl","closed_subsystems(W)","1 2<1 4<4<∅\n1 2<1 5<1<∅\n1 2<2 6<6<∅\n1 2<3 5<5<∅\n1 4<1\n1 5<6\n1 5<5\n2 6<2<∅\n3 5<3<∅")
+@test mytest("Gt.jl","closed_subsystemsPoset(W)","1 2<1 4<4<∅\n1 2<1 5<1<∅\n1 2<2 6<6<∅\n1 2<3 5<5<∅\n1 4<1\n1 5<6\n1 5<5\n2 6<2<∅\n3 5<3<∅")
+@test mytest("Gt.jl","W=coxgroup(:G,2)","G₂")
+@test mytest("Gt.jl","closed_subsystems(W)","12-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [1, 2]\n [1, 4]\n [1, 5]\n [2, 6]\n [3, 5]")
+@test mytest("Gt.jl","W=coxgroup(:G,2)","G₂")
+@test mytest("Gt.jl","map(I->reflection_subgroup(W,I),closed_subsystems_reps(W))","6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:\n G₂₍₎=Φ₁²\n G₂₍₁₎=A₁Φ₁\n G₂₍₂₎=Ã₁Φ₁\n G₂\n G₂₍₁₄₎=A₁×Ã₁\n G₂₍₁₅₎=A₂")
 @test mytest("Gt.jl","t=ClassTypes(rootdatum(:sl,3))","ClassTypes(A₂,good characteristic)\n┌──────────┬─────────┐\n│C_G(s)    │ |C_G(s)|│\n├──────────┼─────────┤\n│A₂₍₎=Φ₁²  │      Φ₁²│\n│A₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂│\n│A₂₍₎=Φ₃   │       Φ₃│\n│A₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂│\n│A₂        │q³Φ₁²Φ₂Φ₃│\n└──────────┴─────────┘")
 end
 @testset "HeckeAlgebras.jl" begin

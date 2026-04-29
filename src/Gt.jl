@@ -175,7 +175,7 @@ function closed_subsystems(W;verbose=false) # code from Meinolf Geck
   prev=map(i->[i],1:nref(W))
   append!(systems,prev)
   if verbose print("#I 1 ",length(prev)," ") end
-  for k in 1:ngens(W)-1
+  for _ in 1:ngens(W)-1
     new=Vector{Int}[]
     for s in prev, r in s[end]+1:nref(W)
       if all(i->iszero(mat[r,i+nref(W)]),s) push!(new,vcat(s,[r])) end
@@ -229,7 +229,7 @@ function closed_subsystems_reps(W;verbose=false)# code from Meinolf Geck
   prev=map(x->[x],unique(simple_reps(W,1:ngens(W))))
   append!(systems,prev)
   if verbose print("#I 1 ",length(prev)," ") end
-  for k in 1:ngens(W)-1
+  for _ in 1:ngens(W)-1
     new=Vector{Int}[]
     for s in prev, r in s[end]+1:nref(W)
       if all(i->iszero(mat[r,i+nref(W)]),s) push!(new,vcat(s,[r])) end

@@ -178,7 +178,7 @@ end
 
 # cutz(l,z) for word l returns a,l' such that l'=replace a times z->[] in l
 function cutz(l,z)
-  l1=Chevie.Replace(l,z,Int[])
+  l1=Chevie.Replace(l,z=>Int[])
   div(length(l)-length(l1),length(z)),l1
 end
 

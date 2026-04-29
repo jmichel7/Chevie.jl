@@ -34,19 +34,19 @@ chevieset(:F4,:classnames,["A_0","4A_1","2A_1","A_2","D_4","D_4(a_1)",
   "A_2+\\tilde A_1","B_3","B_2+A_1","A_1+\\tilde A_1","B_2","A_3+\\tilde A_1",
   "B_4"])
 
-chevieset(:F4,:classinfo,function() # representatives are "very good" see [gm97]
-  res=Dict{Symbol,Any}(:classwords=>map(x->Replace(x,[0],1:4),
-    [[],[0,0,0,0,0,0],[2,3,2,3],[2,1],[0,2,3,2,3,4,3],[0,0,0],[4,3],
+chevieset(:F4,:classwords,map(x->Replace(x,[0]=>[1,2,3,4]),
+    [Int[],[0,0,0,0,0,0],[2,3,2,3],[2,1],[0,2,3,2,3,4,3],[0,0,0],[4,3],
      [1,2,1,3,2,3,0],[0,0,0,0],[0,0],[0],[1],[2,3,2,3,4,3,2,3,4],[1,4,3],
      [4,3,2],[2,3,2,1,3],[3],[1,2,1,3,2,1,3,2,3],[2,1,4],[3,2,1],[2,4,3,2,3],
-     [1,3],[3,2],[0,0,0,2,3],[0,2,3]]),
+     [1,3],[3,2],[0,0,0,2,3],[0,2,3]]))
+
+chevieset(:F4,:classinfo, # representatives are "very good" see [gm97]
+  Dict{Symbol,Any}(:classwords=>chevieget(:F4,:classwords),
   :classnames=>chevieget(:F4,:classnames),
+  :classparams=>chevieget(:F4,:classnames),
   :classes=>[1,1,18,32,32,12,32,32,16,16,96,12,12,96,96,72,12,12,96,96,72,72,36,36,144],
-  :orders => [1,2,2,3,6,4,3,6,3,6,12,2,2,6,6,4,2,2,6,6,4,2,4,4,8])
-  res[:classparams]=res[:classnames]
-  res[:powermaps]=chevieget(:F4,:PowerMaps)
-  res
-end)
+  :orders=>[1,2,2,3,6,4,3,6,3,6,12,2,2,6,6,4,2,2,6,6,4,2,4,4,8],
+  :powermaps=>chevieget(:F4,:PowerMaps)))
 
 chevieset(:F4, :charparams,[[1,0],[1,12,2],[1,12,1],[1,24],[2,4,2],
     [2,16,1],[2,4,1],[2,16,2],[4,8],[9,2],[9,6,2],[9,6,1],[9,10],[6,6,1],
@@ -141,11 +141,11 @@ chevieset(:F4, :HeckeCharTable, function (param, _)
   tbl=Dict{Symbol, Any}(:identifier=>"H(F4)",
     :text=>"origin: Meinolf Geck, April 1992",
     :parameter => [u, u, v, v], :size => 1152)
-  merge!(tbl,chevieget(:F4, :classinfo)())
+  merge!(tbl,chevieget(:F4, :classinfo))
   merge!(tbl,chevieget(:F4, :charinfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   dual(f)=map((a,w)->a*(-u)^count(j->j in [1,2],w)*(-v)^count(j->j in [3,4],w),
-                                  f(uinv,vinv),tbl[:classwords])
+              f(uinv,vinv),tbl[:classwords])
   f4(u,v)=[1,1,1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1]
   f2(u,v)=[1,u^12,u^2,u^2,u^4,u^6,1,u^6,u^8,u^4,u^2,u,u^3,
    u,u,u^3,-1,-u^6,-u^2,-u^2,-u^2,-u,-u,-u^7,-u^3]

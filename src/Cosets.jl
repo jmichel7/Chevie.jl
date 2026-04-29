@@ -1025,7 +1025,6 @@ function spets(W::PermRootGroup,F::AbstractMatrix;NC=false)
     l=Root1.(l)
     if nothing in l
       error("only reflection cosets of finite order implemented")
-      return nothing
     end
     l=argmin(x->(order(x),exponent(x)),l) # choose simplest scal
     (l,map(x->x.ind[findfirst(==(l),x.scal)],scal))
@@ -1033,7 +1032,7 @@ function spets(W::PermRootGroup,F::AbstractMatrix;NC=false)
   if any(isnothing,s)
     ChevieErr("Spets(",W,",F=",F,
     " must normalize set of roots of parent up to scalars.\n")
-    return false
+    return
   end
   scalars=first.(s[simple_reps(W)[eachindex(gens(W))]])
   perm=fill(0,length(roots(W)))

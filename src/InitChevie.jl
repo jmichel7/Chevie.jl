@@ -271,10 +271,10 @@ function chevieget(t::TypeIrred,f::Symbol,extra...)
     if haskey(t,:orbit) t=t.orbit[1] end
 if debug
     if haskey(t,:cartanType) && f in needcartantype
-      println("$n.$f(",(t.extra...,extra...,t.cartanType),")")
+      println("$(t.cheviefile).$f(",(t.extra...,extra...,t.cartanType),")")
 @time o(textra...,extra...,t.cartanType)
     else 
-     println("$n.$f(",(t.extra...,extra...),")")
+      println("$(t.cheviefile).$f(",(t.extra...,extra...),")")
 @time o(textra...,extra...)
     end
 else

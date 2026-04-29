@@ -416,15 +416,15 @@ chevieset(:families,:X,function(p)
 end)
 
 function SubFamily(f::Family,ind,scal,label)
-  ind=filter(i->ind(f,i),1:length(f.eigenvalues))
+  inds=filter(i->ind(f,i),1:length(f.eigenvalues))
   res=Family()
-  res.fourierMat=f.fourierMat[ind,ind].*scal
-  res.eigenvalues=f.eigenvalues[ind]
-  res.charLabels=f.charLabels[ind]
+  res.fourierMat=f.fourierMat[inds,inds].*scal
+  res.eigenvalues=f.eigenvalues[inds]
+  res.charLabels=f.charLabels[inds]
   res.name="$(f.name)_{[$label]}"
-  if haskey(f,:charSymbols) res.charSymbols=f.charSymbols[ind] end
+  if haskey(f,:charSymbols) res.charSymbols=f.charSymbols[inds] end
   if haskey(f,:group) res.group=f.group end
-  ss=findfirst(==(special(f)),ind)
+  ss=findfirst(==(special(f)),inds)
   if ss!==nothing res.special=ss end
   res
 end
@@ -494,7 +494,6 @@ chevieset(:families,:Dihedral,function(e)
   end
 # the cuspidal chars are S(k,l) where 0<k<l<e-k
   nc=vcat(nc,[[k,l] for k in 1:e1-1 for l in k+1:e-k-1])
-  c=a->E(e,a)+E(e,-a)
   f=Family()
   f.eigenvalues=map(s->E(e,-prod(s[1:2])),nc)
   f.size=length(nc)
@@ -503,6 +502,7 @@ chevieset(:families,:Dihedral,function(e)
   f.name="0"^(e-2)*"11"
   f.explanation="Dihedral($e) family"
   f.printname="Family(:Dihedral)($e)"
+  c=a->E(e,a)+E(e,-a)
   if iseven(e)
     f.fourierMat=map(nc)do i
       map(nc)do j
@@ -528,11 +528,11 @@ chevieset(:families,:Dihedral,function(e)
 # *(-1)^count(iszero,[i[1],j[1]])*  This sign is in
 # [Malle, "Unipotente Grade", Beispiel 6.29]
   end
-  c=filter(function(i)
-            p=findfirst(==([nc[i][1],e-nc[i][2]]),nc)
-            !isnothing(p) && p>i
-          end,1:length(nc))
-  f.perm=prod(c;init=Perm()) do i
+  cc=filter(1:length(nc))do i
+    p=findfirst(==([nc[i][1],e-nc[i][2]]),nc)
+    !isnothing(p) && p>i
+  end
+  f.perm=prod(cc;init=Perm()) do i
     Perm(i,findfirst(==([nc[i][1],e-nc[i][2]]),nc))
   end
   f

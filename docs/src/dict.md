@@ -1,10 +1,11 @@
-# Dictionary from GAP3/Chevie
+## Dictionary from GAP3/Chevie
 on the left a Chevie/Gap3 expression and on the right the Chevie/Julia translation
 ```
 AbelianGenerators                           abelian_gens
 AbelianInvariants                           abelian_invariants
 Add                                         push!
 Affine                                      affine
+AffineRootAction                            Weyl.AffineRootAction
 AlgebraicCentre                             algebraic_center
 AlmostCharacter                             almost_character or almostchar
 Append                                      append!
@@ -70,7 +71,7 @@ CoxeterElements(W[,l])                      elements(W[,l])
 CoxeterGroup("A",5)                         coxeter_group(:A,5) or coxgroup
 CoxeterGroupByCartanMatrix(C)               coxeter_group(C) or coxgroup
 CoxeterGroupByCoxeterMatrix(C)              coxeter_group(cartan(C)) or coxgroup
-CoxeterGroupHyperoctaedralGroup(n)          coxeter_hyperoctaedral_group(n) or coxhyp
+CoxeterGroupHyperoctaedralGroup(n)          coxeter_hyperoctahedral_group(n) or coxhyp
 CoxeterGroupSymmetricGroup(n)               coxeter_symmetric_group(n) or coxsym
 CoxeterLength(W,w)                          length(W,w)
 CoxeterMatrix                               coxmat or coxeter_matrix
@@ -261,6 +262,7 @@ OrderFFE                                    order
 OrderMod(n,m)                               order(Mod{m}(n))
 ParabolicClosure                            parabolic_closure
 ParabolicRepresentatives                    parabolic_reps
+ParabolicSubgroups                          parabolic_subgroups
 PartBeta                                    partβ
 Partition                                   partition
 Partitions                                  partitions
@@ -339,7 +341,7 @@ RootDatum                                   rootdatum
 RootsCartan(m)                              roots(m)
 Rotation(v,i)                               circshift(v,-i)
 Rotations(v)                                circshift.(Ref(v),length(v):-1:1)
-ScalarProduct                               Chars.scalarproduct
+ScalarProduct                               scalar_product
 ScalMvp                                     scalar
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor

@@ -153,8 +153,8 @@ export UnipotentElement, UnipotentGroup, reorder, abelianpart
 @GapObj struct UnipotentGroup
   W
   order::Vector{Int} # total order on roots used to normalize unipotents
-  special::Vector{NamedTuple{(:r,:s,:rs,:N,:comm),
-                             Tuple{Int,Int,Int,Int,Vector{NTuple{4,Int}}}}}
+  special::Vector{@NamedTuple{r::Int,s::Int,rs::Int,N::Int,
+                              comm::Vector{NTuple{4,Int}}}}
 end
 
 @doc """
@@ -299,7 +299,7 @@ N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)=
 function N(W,special,Nc,a::Integer,b::Integer;scaled=false)
   ra= a<0 ? -roots(W,-a) : roots(W,a)
   rb= b<0 ? -roots(W,-b) : roots(W,b)
-  c=findfirst(==(ra+rb),roots(W))
+  c=n⁰(W,ra+rb)
   if isnothing(c) return 0 end
   l(r)=rootlengths(W,r)
   lc=l(c)
@@ -329,7 +329,9 @@ function Ncarter(W,special)
   for i in 1:ns
     if i==1 || special[i-1].rs!=special[i].rs #extraspecial
       (r,s,_)=special[i]
-      Nc[i]=(N=count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3),)
+      Nc[i]=(N=let r=r,s=s
+               count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3)
+              end,)
     else # special of sum rs
       (r1,s1,rs1)=special[i]
       l=rootlengths(W)[rs1] # length of root r
@@ -377,7 +379,7 @@ function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
   if roots(W,nref(W).+(1:nref(W)))!=-roots(W,1:nref(W)) error() end
   # compute special pairs for the order 1:nref(W). That is pairs
   # where r<s and r+s is a root
-  special=NamedTuple{(:r,:s,:rs),NTuple{3,Int}}[]
+  special=@NamedTuple{r::Int,s::Int,rs::Int}[]
   for s in 1:nref(W), r in 1:s-1
     pos=n⁰(W,roots(W,r)+roots(W,s))
     if !isnothing(pos) push!(special,(r=r,s=s,rs=pos)) end
@@ -391,7 +393,7 @@ function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
   if isnothing(chevalley) N=Ncarter(W,special) 
   else  N=fill((N=0,),2*ns)
     for i in eachindex(special)
-      r,s,rs=special[i]
+      r,s,_=special[i]
       N[i]=(N=first(chevalley[(r,s)]),)
     end
   end

@@ -8,7 +8,7 @@ using Combinat: tally
 using PermGroups: Group, gens, word, PermGroup, isabelian, ordergens, Coset
 using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor, Root1, num
-using FiniteFields: FiniteFields, FFE, Z, Mod
+using FiniteFields: FiniteFields, Z, Mod
 using ..Chevie: Chevie, order
 
 #------------------ improve_type

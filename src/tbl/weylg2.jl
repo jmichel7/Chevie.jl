@@ -40,7 +40,7 @@ chevieset(:G2, :PowerMaps,
           [nothing,[1,1,1,5,5,1],[1,2,3,6,1,6],nothing,[1,2,3,4,5,6]])
 
 chevieset(:G2, :classinfo, Dict{Symbol, Any}(
-  :classwords =>[[],[2],[1],[1,2],[1,2,1,2],[1,2,1,2,1,2]],
+  :classwords =>[Int[],[2],[1],[1,2],[1,2,1,2],[1,2,1,2,1,2]],
   :classnames => chevieget(:G2, :classnames),
   :classparams => chevieget(:G2, :classnames),
   :powermaps => chevieget(:G2, :PowerMaps),

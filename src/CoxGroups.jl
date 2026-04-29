@@ -152,11 +152,12 @@ using ..Chevie
 abstract type CoxeterGroup{T}<:Group{T} end
 
 """
-`firstleftdescent(W,w)`
+`firstleftdescent(W,w₁,...,wₙ)`
 
-returns the index in `gens(W)` of the first element of the left descent set
-of  `w` --- that is, the first  `i` such that if `s=W(i)` then `l(sw)<l(w).
-It returns `nothing` for `one(W)`.
+returns  the index  in `gens(W)`  of the  first element of the simultaneous
+left  descent set of  `w₁,...,wₙ` --- that  is, the first  `i` such that if
+`s=W(i)`  then `l(swᵢ)<l(wᵢ)` for  all `i`. It  returns `nothing` if no `i`
+satisfies that.
 
 ```julia-repl
 julia> W=coxsym(3)
@@ -166,9 +167,8 @@ julia> firstleftdescent(W,Perm(2,3))
 2
 ```
 """
-function firstleftdescent(W::CoxeterGroup{T},w::T)where T
-  findfirst(i->isleftdescent(W,w,i),eachindex(gens(W)::Vector{T}))
-end
+firstleftdescent(W::CoxeterGroup{T},elts::Vararg{T,N}) where {T,N}=
+  findfirst(i->all(b->isleftdescent(W,b,i),elts),eachindex(gens(W)::Vector{T}))
 
 """
 `leftdescents(W,w)`
@@ -220,13 +220,13 @@ julia> word(W,w)
 The  result  of   `word`  is  the  lexicographically  smallest reduced word
 for `w` (for the ordering of the Coxeter generators given by `gens(W)`).
 """
-function Groups.word(W::CoxeterGroup{T},w)where T
+function Groups.word(W::CoxeterGroup{T},w::T)where T
   ww=Int[]
   while true
     i=firstleftdescent(W,w)
     if i===nothing return ww end
     push!(ww,i)
-    w=(gens(W)::Vector{T})[i]*w
+    w=W(i)*w
   end
 end
 
@@ -370,8 +370,8 @@ function Groups.elements(W::CoxeterGroup{T}, l::Integer)::Vector{T} where T
     end
   # @show l,W,H,rc
     v=T[]
-    for i in max(0,l+1-length(rc)):l, x in rc[1+l-i]
-      append!(v,elements(H,i).*Ref(x))
+    for i in max(0,l+1-length(rc)):l, x in rc[1+l-i], s in elements(H,i)
+      push!(v,s*x)
     end
   # if applicable(nref,W) # this does not reduce much time
   #   N=nref(W)
@@ -568,30 +568,34 @@ julia> bruhatPoset(W,W(1,3))
 .<3,1<13
 ```
 """
-function bruhatPoset(W::CoxeterGroup,w=longest(W))
+function bruhatPoset(W::CoxeterGroup{T},w=longest(W)::T)where T
   if isone(w)
     p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
   p=bruhatPoset(W,W(s)*w)
+  A=p.action::Vector{Vector{Int}}
+  H=hasse(p)
   l=length(p)
   # action: the Cayley graph: for generator i, action[i][w]=sw
   # where w and sw are represented by their index in :elements
-  new=filter(k->iszero(p.action[s][k]),1:l)
+  new=filter(k->iszero(A[s][k]),1:l)
   append!(p.elements,Ref(W(s)).*p.elements[new])
-  append!(hasse(p),map(x->Int[],new))
-  p.action[s][new]=l.+(1:length(new))
+  append!(H,map(x->Int[],new))
+  A[s][new]=l.+(1:length(new))
   for i in eachindex(gens(W))
-    append!(p.action[i],i==s ? new : fill(0,length(new)))
+    append!(A[i],i==s ? new : fill(0,length(new)))
   end
-  for i in 1:length(new) push!(hasse(p)[new[i]],l+i) end
+  for i in 1:length(new) push!(H[new[i]],l+i) end
   for i in 1:l
-    j=p.action[s][i]
+    j=A[s][i]
     if j>i
-      for h in p.action[s][hasse(p)[i]]
-        if h>l push!(hasse(p)[j],h)
-          k=findfirst(==(p.elements[h]/p.elements[j]),gens(W))
-          if k!==nothing p.action[k][j]=h;p.action[k][h]=j end
+      for h in A[s][H[i]]
+        if h>l push!(H[j],h)
+          v=p.elements::Vector{T}
+          e=v[h]/v[j]
+          k=findfirst(==(e),gens(W))
+          if k!==nothing A[k][j]=h;A[k][h]=j end
         end
       end
     end
@@ -632,7 +636,7 @@ julia> words(W,longest(W))
  [3, 2, 3, 1, 2, 3]
 ```
 """
-function Groups.words(W::CoxeterGroup{T},w::T)where T
+function Groups.words(W::CoxeterGroup{T},w::T)::Vector{Vector{Int}}where T
   if isone(w) return [Int[]] end
   reduce(vcat,map(x->pushfirst!.(words(W,W(x)*w),x),leftdescents(W,w)))
 end
@@ -829,9 +833,9 @@ julia> longest(coxsym(4))
 (1,4)(2,3)
 ```
 """
-function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W)))
+function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}=eachindex(gens(W))) where T
   if length(I)==ngens(W) && !isfinite(W) error(W," must be finite") end
-  w=one(W)
+  w::T=one(W)
   i=1
   while i<=length(I)
     if isleftdescent(W,w,I[i]) i+=1
@@ -839,7 +843,7 @@ function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W))
       i=1
     end
   end
-  w
+  w::T
 end
 
 abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
@@ -948,6 +952,7 @@ Symbols.rank(W::CoxSym)=ngens(W)+1
 PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.n)
 PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),W.n)
 PermRoot.reflrep(W::CoxSym)=reflrep.(Ref(W),1:ngens(W))
+@inline Groups.gens(W::CoxSym{T})where T=gens(W.G)::Vector{Perm{T}}
 
 """
 `isleftdescent(W::CoxeterGroup,w,i::Integer)`
@@ -1151,9 +1156,9 @@ const coxgroup=coxeter_group
 maxpara(W::MatCox)=1:ngens(W)-1
 
 function PermRoot.reflection_subgroup(W::MatCox,I::AbstractVector{Int})
-  if length(I)>0 n=maximum(I)
-    if I!=1:n error(I," should be 1:n for some n") end
-  else n=0 end
+  if length(I)>0 
+    if I!=1:maximum(I) error(I," should be 1:n for some n") end
+  end
   MatCox(gens(W)[I],Dict{Symbol,Any}())
 end
 

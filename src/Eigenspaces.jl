@@ -327,7 +327,6 @@ function split_levis(WF,d::Root1,ad)
       f=intersect(fusion_conjugacy_classes(HF, WF), cl)
       if isempty(f)
         error("fusion is wrong")
-        return nothing
       end
 #   println("class=",cl[1]," cl=",cl," f=",f)
       cl=setdiff(cl,f)
@@ -341,7 +340,7 @@ function split_levis(WF,d::Root1,ad)
       push!(res, HF)
     end
   end
-  return res
+  res
 end
 
 """
@@ -358,7 +357,7 @@ function Weyl.standard_parabolic(W::PermRootGroup, H)
   I=combinations(eachindex(gens(W)),length(hr))
   # I=map(x->inclusion(W,x),parabolic_reps(W))
   I=filter(l->length(reflection_subgroup(W,l))==length(H),I)
-  try_=function(a)
+  function try_(a)
     H1=H
     w=Perm()
     C=W
@@ -382,7 +381,6 @@ function Weyl.standard_parabolic(W::PermRootGroup, H)
     end
   end
   InfoChevie("# ****** ",H," is not conjugate to a standard parabolic\n")
-  return nothing
 end
 
 """

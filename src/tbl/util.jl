@@ -40,8 +40,8 @@ function exceptioCharName(para)
   res
 end
 
-function Replace(s,p...)
-  for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
+function Replace(s::Vector{T},p::Pair{Vector{T},Vector{T}}...)where T
+  for (src,tgt) in p
     res=empty(s)
     i=0
     while i+length(src)<=length(s)

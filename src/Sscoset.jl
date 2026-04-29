@@ -179,7 +179,6 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   labels=joindigits.(orbits(WF.phi, inclusion(W,1:nref(W))))
   good=map(p->Cyc(prod(i->t^roots(W,i),p[1]))*Cso(WF)[p[1][1]]==1,Rs)
   Rs=Rs[good]
-  labels=labels[good]
   cRs=map(x->x[3], Rs)
   cRs=map(x->solutionmat(WF.Ys, x), cRs)
   scRs=sum.(Iterators.product(cRs, cRs))
