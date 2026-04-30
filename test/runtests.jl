@@ -1086,6 +1086,7 @@ end
 @test mytest("Weyl.jl","splat(H).(elH)==splat(W).(elW)","true")
 @test mytest("Weyl.jl","W=affine(coxgroup(:A,4))","Ã₄")
 @test mytest("Weyl.jl","diagram(W)","————5————\n      /         \\\nÃ₄   1———2———3———4")
+@test mytest("Weyl.jl","Weyl.parabolic_subgroups(coxgroup(:A,3))","15-element Vector{Vector{Int64}}:\n []\n [1]\n [4]\n [2]\n [6]\n [5]\n [3]\n [1, 2]\n [1, 5]\n [3, 4]\n [2, 3]\n [1, 3]\n [4, 5]\n [2, 6]\n [1, 2, 3]")
 end
 @testset "complexr.jl" begin
 @test mytest("complexr.jl","G=complex_reflection_group(4)","G₄")

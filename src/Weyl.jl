@@ -1286,7 +1286,7 @@ julia> diagram(W)
 Ã₄   1———2———3———4
 ```
 """
-function affine(W;rational=true)
+function affine(W;int=false)
   t=refltype(W)
   if length(t)!=1 || !(t[1].series in Symbol.('A':'G'))
     error("affine needs an irreducible Weyl group")
@@ -1297,7 +1297,7 @@ function affine(W;rational=true)
   end
   ex=vcat(1:semisimplerank(W),2*nref(W))
   C=improve_type([cartan(W.G,i,j) for i in ex, j in ex])
-  if rational C//=1 end # so inv works
+  if !int C//=1 end # so inv works
   res=Affine(W,coxgroup(C),Dict{Symbol,Any}())
   res.refltype=t
   res
@@ -1311,7 +1311,7 @@ Base.show(io::IO,W::Affine)=print(io,refltype(W))
 PermRoot.refltype(W::Affine)=W.refltype
 
 @forward Affine.G Base.length, Base.one,
- Groups.gens, Groups.ngens, Groups.word, #PermGroups.reduced,
+ Groups.gens, Groups.ngens, # Groups.word, PermGroups.reduced,
  FinitePosets.Poset, CoxGroups.isleftdescent,
  CoxGroups.bruhatless, CoxGroups.coxmat,
  CoxGroups.leftdescents, PermRoot.cartan, PermRoot.semisimplerank

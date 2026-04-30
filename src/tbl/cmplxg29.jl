@@ -114,9 +114,12 @@ chevieset(:G29,:sparse_fakedegrees,[[1,0],[1,40],[1,4,1,8,1,12,1,16],
   [1,6,2,10,4,14,5,18,5,22,4,26,2,30,1,34],[2,9,4,13,5,17,5,21,4,25,3,29,1,33],
   [1,7,3,11,4,15,5,19,5,23,4,27,2,31],[2,8,4,12,6,16,6,20,6,24,4,28,2,32]])
 
-chevieset(:G29,:root,function(para,rootpara)
+#chevieset(:G29,:root,
+CHEVIE[:G29][:root]=
+  function(para,rootpara)
   if ismissing(rootpara[1]) root(prod(para[1])) else E(4)*rootpara[1] end
-end)
+end
+#)
 
 # Computed JM oct. 2005. Completed 18th column nov. 2012 using:
 # The  representative  w=3123cc  of  18th  class satisfies w^2=z2323 in BW,

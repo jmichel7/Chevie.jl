@@ -1458,7 +1458,7 @@ rightlcm(elts::Vararg{GarsideElt,N}) where N=reverse(leftlcm(map(reverse,elts)..
 Cosets.Frobenius(x::GarsideElt,phi)=clone(x,Frobenius.(x.elm,phi))
 
 """
-`image(b::GarsideElt)`
+`image(b::GarsideElt)` or `image(b::LocallyGarsideElt)`
 
 This  function is defined only if `b`  is an element of an interval monoid,
 for instance a braid. It returns the image of `b` in the group of which the
@@ -1484,6 +1484,12 @@ julia> word(W,p)
 """
 function image(a::GarsideElt)
   if IntervalStyle(a.M)==Interval() a.M.δ^a.pd*prod(a.elm)
+  else error(a," should be an element of an interval monoid")
+  end
+end
+
+function image(a::LocallyGarsideElt)
+  if IntervalStyle(a.M)==Interval() prod(a.elm)
   else error(a," should be an element of an interval monoid")
   end
 end
