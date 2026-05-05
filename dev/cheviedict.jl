@@ -3,7 +3,7 @@ ChevieDict::Dict{String,String}=Dict(
 "AbelianInvariants"=>"abelian_invariants",
 "Add"=>"push!",
 "Affine"=>"affine",
-#AffineRootAction
+"AffineRootAction"=>"Weyl.AffineRootAction",
 "AlgebraicCentre"=>"algebraic_center",
 "AlmostCharacter"=>"almost_character or almostchar",
 "Append"=>"append!",
@@ -276,7 +276,7 @@ ChevieDict::Dict{String,String}=Dict(
 "W.OrdersGeneratingReflections"=>"ordergens(W) or orders_of_generators(W)",
 "ParabolicClosure"=>"parabolic_closure",
 "ParabolicRepresentatives"=>"parabolic_reps",
-#ParabolicSubgroups
+"ParabolicSubgroups"=>"parabolic_subgroups",
 "PartBeta"=>"partβ",
 "Partition"=>"partition",
 "Partitions"=>"partitions",
