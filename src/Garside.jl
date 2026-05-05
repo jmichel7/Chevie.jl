@@ -573,6 +573,23 @@ end
 
 PermGroups.word(::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
 
+function divisors(f,M::LocallyGarsideMonoid,s,i=-1)
+  rest=[(left=one(M),right=s)]
+  res=typeof(rest)[]
+  while !isempty(rest)
+    if (f==first && length(res)==i)
+       return f.(rest)
+    end
+    push!(res,rest)
+    new=empty(rest)
+    for x in rest, j in leftdescents(M,x.right)
+      push!(new,(left=*(M,x.left,M.atoms[j]),right=\(M,M.atoms[j],x.right)))
+    end
+    rest=unique(new)
+  end
+  map(x->f.(x),f==first ? res : reverse(res))
+end
+
 """
 left_divisors(M::LocallyGarsideMonoid, s)
 
@@ -608,20 +625,31 @@ julia> map(x->B.(x),left_divisors(B,W(1,3,2)))
  [δ]
 ```
 """
-function left_divisors(M::LocallyGarsideMonoid,s,i=-1)
-  rest=[(left=one(M),right=s)]
-  res=typeof(rest)[]
-  while !isempty(rest)
-    if length(res)==i return first.(rest) end
-    push!(res,rest)
-    new=empty(rest)
-    for x in rest, i in leftdescents(M,x.right)
-      push!(new,(left=*(M,x.left,M.atoms[i]),right=\(M,M.atoms[i],x.right)))
-    end
-    rest=unique(new)
-  end
-  map(x->first.(x),res)
-end
+left_divisors(M::LocallyGarsideMonoid,s,i=-1)=divisors(first,M,s,i)
+
+"""
+right_divisors(M::LocallyGarsideMonoid, s)
+
+all  the left-divisors  of the  simple element  `s` of  `M`, as a vector of
+vectors   of  simples,  where  the  i+1-th  vector  of  simples  holds  the
+left-divisors  of length i in the atoms.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> B=BraidMonoid(W)
+BraidMonoid(A₃)
+
+julia> map(x->B.(x),right_divisors(B,W(1,3,2)))
+4-element Vector{Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
+ [.]
+ [2]
+ [32, 12]
+ [132]
+```
+"""
+right_divisors(M::LocallyGarsideMonoid,s)=divisors(last,M,s,-1)
 
 CoxGroups.leftdescents(M::LocallyGarsideMonoid,s)=
      filter(i->isleftdescent(M,s,i),eachindex(M.atoms))
@@ -819,6 +847,7 @@ rightgcd(M::ArtinMonoid{T},simp::Vararg{T,N}) where {T,N}=
 #---------------------------------------------------------------------
 abstract type MonoidElt end
 abstract type LocallyGarsideElt{T,TM<:LocallyGarsideMonoid}<:MonoidElt end
+Base.broadcastable(b::LocallyGarsideElt)=Ref(b)
 
 struct GarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   M::TM
@@ -951,6 +980,30 @@ julia> left_divisors(B(1,5,4,3),1)
 """
 left_divisors(b::LocallyGarsideElt)=left_divisors(b,Int[])
 left_divisors(b::LocallyGarsideElt,i::Integer)=left_divisors(b,Int[],i)
+"""
+`right_divisors(b::LocallyGarsideElt])`
+
+returns  all right-divisors  of `b`  if the  monoid of  `b` has a `reverse`
+operation.
+
+```julia-repl
+julia> B=DualBraidMonoid(coxsym(4))
+DualBraidMonoid(𝔖 ₄,c=[1, 3, 2])
+
+julia> right_divisors(B(1,5,4,3))
+10-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
+ .
+ 2
+ 3
+ 4.3
+ 1.4.3
+ 6.4.3
+ 5
+ 25
+ 45.3
+ 15.4.3
+```
+"""
 right_divisors(b::LocallyGarsideElt)=map(reverse,left_divisors(reverse(b)))
 
 """

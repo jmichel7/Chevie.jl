@@ -135,6 +135,8 @@ function Base.show(io::IO, t::TypeIrred)
           elseif t.cartanType==root(2) s=:Bsym
           else ct=t.cartanType
           end
+        elseif s==:B̃
+          if t.cartanType==1 s=:C̃ end
         elseif s==:F
           if t.cartanType==1 s=:F
           elseif t.cartanType==root(2) s=:Fsym

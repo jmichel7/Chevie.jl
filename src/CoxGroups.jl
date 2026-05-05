@@ -167,7 +167,7 @@ julia> firstleftdescent(W,Perm(2,3))
 2
 ```
 """
-firstleftdescent(W::CoxeterGroup{T},elts::Vararg{T,N}) where {T,N}=
+firstleftdescent(W::CoxeterGroup{<:T},elts::Vararg{T,N}) where {T,N}=
   findfirst(i->all(b->isleftdescent(W,b,i),elts),eachindex(gens(W)::Vector{T}))
 
 """
@@ -220,7 +220,7 @@ julia> word(W,w)
 The  result  of   `word`  is  the  lexicographically  smallest reduced word
 for `w` (for the ordering of the Coxeter generators given by `gens(W)`).
 """
-function Groups.word(W::CoxeterGroup{T},w::T)where T
+function Groups.word(W::CoxeterGroup{<:T},w::T)where T
   ww=Int[]
   while true
     i=firstleftdescent(W,w)
@@ -833,7 +833,7 @@ julia> longest(coxsym(4))
 (1,4)(2,3)
 ```
 """
-function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}=eachindex(gens(W))) where T
+function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}) where T
   if length(I)==ngens(W) && !isfinite(W) error(W," must be finite") end
   w::T=one(W)
   i=1
@@ -844,6 +844,12 @@ function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}=eachindex(gens(
     end
   end
   w::T
+end
+
+function longest(W::CoxeterGroup)
+  get!(W,:longest)do
+    longest(W,eachindex(gens(W)))
+  end
 end
 
 abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
@@ -1119,7 +1125,7 @@ end
 
 Base.one(W::MatCox)=one(W(1))
 PermRoot.cartan(W::MatCox)=W.cartan
-isleftdescent(::MatCox,w,i::Int)=real(sum(w[i,:]))<0
+isleftdescent(::MatCox,w,i::Int)=real(sum(@view w[i,:]))<0
 
 """
 `coxeter_group(C)` or `coxgroup(C)`

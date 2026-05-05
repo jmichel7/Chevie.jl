@@ -8,7 +8,7 @@ HeckeAlgebras
 hecke(::Group,::Vector{<:Vector{C}}) where C
 Tbasis
 alt
-α(::HeckeElt{:T})
+Garside.α(::HeckeElt{:T})
 β
 CharTable(::HeckeAlgebra)
 central_monomials

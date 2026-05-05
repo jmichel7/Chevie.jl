@@ -8,7 +8,7 @@ isleftdescent(::CoxSym,::Any,::Int)
 isrightdescent
 firstleftdescent
 leftdescents(::CoxeterGroup,w)
-word(::CoxeterGroup,::Any)
+word(::CoxeterGroup{T},W::T)where T
 length(::CoxeterGroup,w)
 longest
 elements(::CoxeterGroup,::Int)

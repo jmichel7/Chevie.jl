@@ -732,13 +732,16 @@ function Base.show(io::IO,d::Diagram,::Val{Symbol("B̃")})
   v=d.t.indices
   r=length(v)-1
   c=d.t.cartanType
-  if c==1 || r==2
+  if c==1
     println(io,"C̃",stringind(io,r)," ",v[1]," > ",join(v[2:end-1]," - ")," < ",v[r+1])
   else
-    s=string("B̃",stringind(io,r)," ",v[1]," < ",join(v[2:end-2]," - "))
-    println(io," "^(length(s)-2),v[r+1])
-    println(io," "^(length(s)-2),"|")
-    println(io,s," - ",v[r])
+    if r==2 println(io,"C̃",stringind(io,r)," ",v[2]," > ",v[1]," < ",v[3])
+    else
+      s=string("B̃",stringind(io,r)," ",v[1]," < ",join(v[2:end-2]," - "))
+      println(io," "^(length(s)-2),v[r+1])
+      println(io," "^(length(s)-2),"|")
+      println(io,s," - ",v[r])
+    end
   end
 end
 
