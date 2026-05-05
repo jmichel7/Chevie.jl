@@ -883,9 +883,10 @@ end
 clone(b::GenGarsideElt,elm;check=true)=GarsideElt(b.M,elm;check)
 clone(b::GarsideElt{T,TM},elm::AbstractVector{T},pd=b.pd;check=true) where{T,TM}=
    GarsideElt(b.M,elm,pd;check)
-Base.one(b::LocallyGarsideElt)=clone(b,empty(b.elm),0;check=false)
+Base.one(b::LocallyGarsideElt)=clone(b,empty(b.elm);check=false)
 Base.isone(b::GarsideElt)=isempty(b.elm) && iszero(b.pd)
 Base.copy(b::GarsideElt)=clone(b,copy(b.elm);check=false)
+Base.copy(b::GenGarsideElt)=clone(b,copy(b.elm);check=false)
 
 function Base.cmp(a::GarsideElt,b::GarsideElt)
   c=cmp(a.pd,b.pd)
