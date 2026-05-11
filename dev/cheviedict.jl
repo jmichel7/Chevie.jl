@@ -459,14 +459,13 @@ GarsideWords             =>  elements
 You can then access online help for the functions you have found.
 """
 function gap(s)
-  if !(s isa Regex) s=Regex(s,"i") end
-  kk=filter(x->occursin(s,x),keys(ChevieDict))
+  kk=filter(contains(s isa Regex ? s : Regex(s,"i")),keys(ChevieDict))
   if isempty(kk) 
     println("no match")
-    return
+  else
+    pad=maximum(length(k) for k in kk)+2
+    print(join(sort([rpad(k,pad)*"=>  "*ChevieDict[k]*"\n" for k in kk]),""))
   end
-  pad=maximum(length(k) for k in kk)+2
-  print(join(sort([rpad(k,pad)*"=>  "*ChevieDict[k]*"\n" for k in kk]),""))
 end
 
 function fixdoc()
