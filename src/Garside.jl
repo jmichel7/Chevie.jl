@@ -897,10 +897,18 @@ end
 
 Base.isless(a::GarsideElt,b::GarsideElt)=cmp(a,b)==-1
 Base.:(==)(a::GarsideElt,b::GarsideElt)=a.pd==b.pd && a.elm==b.elm
+Base.:(==)(a::LocallyGarsideElt,b::LocallyGarsideElt)=a.elm==b.elm
 
 # hash is needed for using GarsideElt in Sets/Dicts
 function Base.hash(a::GarsideElt, h::UInt)
   h=hash(a.pd, h)
+  for e in a.elm
+    h=hash(e, h)
+  end
+  h
+end
+
+function Base.hash(a::LocallyGarsideElt, h::UInt)
   for e in a.elm
     h=hash(e, h)
   end
