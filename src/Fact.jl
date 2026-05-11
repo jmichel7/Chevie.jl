@@ -747,9 +747,8 @@ end
 #  HenselBound(<pol>,[<minpol>,<den>]) . . . Bounds for Factor coefficients
 #    if the computation takes place over an algebraic extension, then
 #    minpol and denominator must be given
-function HenselBound(pol,arg...) # not completely translated from GAP
-  if length(arg)>0
-    n,d=arg
+function HenselBound(pol,n=1,d=0) # not completely translated from GAP
+  if n>1
     dis=discriminant(n)
     nalpha=RootBound(n)
     if !(all(IsRat, pol[:coefficients]))
@@ -770,8 +769,6 @@ function HenselBound(pol,arg...) # not completely translated from GAP
       pol=Polynomial(Rationals, pol[:coefficients])
     end
     n=degree(n)
-  else
-    n=1
   end
   rb=0
   bea=BeauzamyBound(pol)

@@ -259,7 +259,8 @@ function saturate_left(gens,v)
   newl=1
   while newl>l
     l=newl
-    v=rowspace(vcat(v,map(g->g.*v,gens)...))
+    for g in gens append!(v,g.*v) end
+    v=rowspace(v)
     newl=length(v)
   end
   v
@@ -270,7 +271,8 @@ function saturate_right(gens,v)
   newl=1
   while newl>l
     l=newl
-    v=rowspace(vcat(v,map(g->v.*g,gens)...))
+    for g in gens append!(v,v.*g) end
+    v=rowspace(v)
     newl=length(v)
   end
   v
@@ -714,7 +716,9 @@ end;
 function idempotents(A::GrothendieckRing{T}) where T
   e=map(i->sum((conj.(A.ct.irr[:,i]).//A.ct.centralizers[i]).*basis(A)),1:dim(A))
   if char(T)==0 return e end
-  e=map(i->sum(e[i]),pprimesections(A.G,char(T)))
+  e=let e=e 
+    map(i->sum(e[i]),pprimesections(A.G,char(T)))
+  end
   map(x->AlgebraElt(A,ModuleElt(k=>T(c) for (k,c) in x.d)),e)
 end
 

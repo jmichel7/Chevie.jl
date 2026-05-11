@@ -881,12 +881,13 @@ function GarsideElt(M::LocallyGarsideMonoid,elm::AbstractVector;check=true)
 end
 
 clone(b::GenGarsideElt,elm;check=true)=GarsideElt(b.M,elm;check)
-clone(b::GarsideElt{T,TM},elm::AbstractVector{T},pd=b.pd;check=true) where{T,TM}=
+clone(b::GarsideElt{T,TM},elm::AbstractVector{T},pd=b.pd;check=true)where{T,TM}=
    GarsideElt(b.M,elm,pd;check)
 Base.one(b::LocallyGarsideElt)=clone(b,empty(b.elm);check=false)
+Base.one(b::GarsideElt)=clone(b,empty(b.elm),0;check=false)
+Base.isone(b::LocallyGarsideElt)=isempty(b.elm)
 Base.isone(b::GarsideElt)=isempty(b.elm) && iszero(b.pd)
-Base.copy(b::GarsideElt)=clone(b,copy(b.elm);check=false)
-Base.copy(b::GenGarsideElt)=clone(b,copy(b.elm);check=false)
+Base.copy(b::LocallyGarsideElt)=clone(b,copy(b.elm);check=false)
 
 function Base.cmp(a::GarsideElt,b::GarsideElt)
   c=cmp(a.pd,b.pd)
@@ -931,7 +932,7 @@ function left_divisors(b::LocallyGarsideElt,avoid)
   end
   res=[M()]
   for x in s
-    append!(res,x.*left_divisors(x\b,rightascents(M,x)))
+    append!(res,map(y->x*y,left_divisors(x\b,rightascents(M,x))))
   end
   res
 end
@@ -944,7 +945,7 @@ function left_divisors(b::LocallyGarsideElt,avoid,i)
   for j in 1:min(length(s)-1,i)
     sj=filter(x->isempty(intersect(leftdescents(M,x),avoid)),s[j+1])
     for x in sj
-      append!(res,x.*left_divisors(x\b,rightascents(M,x),i-j))
+      append!(res,map(y->x*y,left_divisors(x\b,rightascents(M,x),i-j)))
     end
   end
   res

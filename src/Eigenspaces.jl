@@ -350,12 +350,17 @@ Let  `H` be a  reflection subgroup of  `W`. Returns an  element `w∈ W` such
 that  `H^w` is a standard  parabolic subgroup of `W`  (or nothing if `H` is
 not parabolic or not conjugate to a standard parabolic).
 """
-function Weyl.standard_parabolic(W::PermRootGroup, H)
+function Weyl.standard_parabolic(W::PermRootGroup, H;all=false)
   hr=inclusiongens(H,W)
 # println("hr=",hr)
   if issubset(hr,eachindex(gens(W))) return Perm() end
-  I=combinations(eachindex(gens(W)),length(hr))
-  # I=map(x->inclusion(W,x),parabolic_reps(W))
+  if !isparabolic(H) 
+    InfoChevie("# ****** ",H," is not parabolic\n")
+    return
+  end
+  I=if all combinations(eachindex(gens(W)),length(hr))
+    else   parabolic_reps(W,length(hr))
+    end
   I=filter(l->length(reflection_subgroup(W,l))==length(H),I)
   function try_(a)
     H1=H

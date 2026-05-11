@@ -1504,7 +1504,7 @@ function recompute_parabolic_reps(W) # W irreducible
     push!(l,new)
   end
   l=map(vcat(l...))do v
-    p=standard_parabolic(W,v)
+    p=standard_parabolic(W,v;all=true)
     if p!==nothing v=v^p end
     v
   end

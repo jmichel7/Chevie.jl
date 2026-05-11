@@ -1227,7 +1227,7 @@ function PermRoot.refltype(WF::PRC)
   # roots are permuted by res.twist, and in type ^3D_4 the permutation 
   # of the simple roots is 1 -> 2 -> 4 -> 1:
   # in type 4G333 restore the indices to be in 1,2,3
-    typ=map(typ)do a
+    map(typ)do a
       i=a.orbit[1].indices
       b=a.orbit[1]
       if b.series==:D && b.rank==4
