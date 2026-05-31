@@ -1231,7 +1231,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
                             sum(f.*decompose_tensor(R,i,j,k))
      for i in 1:n,j in 1:n], res.blocks) # //1 needed in D7
   if subst tbl=map(y->map(x->x(var),y),tbl); q=var end
-  res.scalar=tbl[1]
+  res.scalar=tbl[3]
   res.locsys=ss[:locsys]
 # res.L=tbl[2]*GenericOrder(W,q)/prod(ReflectionDegrees(R),d->q^d-1)/
 #   q^(W.semisimplerank-R.semisimplerank);
