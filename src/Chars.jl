@@ -455,8 +455,10 @@ function schur_functor(A::AbstractMatrix,λ)
      end)),elements(Sn))
   end
   #print(size(M),"=>")
-  M=M[filter(i->!iszero(@view M[i,:]),axes(M,1)),
+  M=let M=M
+    M[filter(i->!iszero(@view M[i,:]),axes(M,1)),
       filter(i->!iszero(@view M[:,i]),axes(M,2))]
+  end
   m=let M=M
     sort.(collectby(i->M[:,i],axes(M,2)))
   end
@@ -466,8 +468,6 @@ function schur_functor(A::AbstractMatrix,λ)
     map(x->sum(M[x,:],dims=1)[1,:],m)
   end
   M=improve_type(toM(M))
-  #println(size(M))
-  #M
 end
 
 "`dim_schur(n,λ)` the dimension of `schur_functor(M,λ)` for `M` of size (n,n)"

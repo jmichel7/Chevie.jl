@@ -5,14 +5,14 @@ using Chairmarks
 #1.8.5 45s (6.10M alloc: 400MB, 0.63% gc, 5.94% compilation 77% recompilation)
 #1.9.3 51s (2.26M alloc: 150MiB, 0.10% gc, 1.59% compilation 78% recompilation)
 #1.10.2 40.6s (4.00M alloc: 301 MiB, 0.19% gc, 3.12% compilation 9% recompilation)
-#1.11.5 134.18s (4.35M alloc: 262.139 MiB, 0.25% gc, 0.93% compilation 59% recompilation)
 #1.11.6 127.57s (4.28M alloc: 260.566 MiB, 0.25% gc, 0.99% compilation 83% recompilation)
+#1.13.rc1 138.65s (4.11M alloc: 249.850 MiB, 0.30% gc, 0.99% compilation 91% recompilation)
 
 #julia> @b test_w0(coxsym(7))
 #1.9.4   10.091 ms (182390 allocs: 12.981 MiB)
 #1.10.3  11.648 ms (182389 allocs: 12.981 MiB)
 #1.11.rc 11.671 ms (237323 allocs: 13.295 MiB)
-#1.13β3   5.952 ms (110660 allocs: 9.560 MiB)
+#1.13.rc1 5.115 ms (110521 allocs: 9.555 MiB)
 test_w0(W)=Tbasis(hecke(W,Pol()))(longest(W))^2
 """
 test_w0:=function(n)local W,T,H,q,w02; # GAP3 takes 75ms for n=7
@@ -67,7 +67,7 @@ end;
 #julia> @b test_kl1(coxgroup(:A,4))
 #1.10.2  24.752 ms (403416 allocs: 43.278 MiB)
 #1.11.rc 22.338 ms (702087 allocs: 42.652 MiB)
-#1.13β3  22.856 ms (673616 allocs: 40.444 MiB)
+#1.13rc1 21.275 ms (662695 allocs: 42.389 MiB)
 function test_kl1(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)
@@ -85,6 +85,7 @@ end;
 #julia> @b test_kl2(coxgroup(:A,4))
 #1.10.3  4.526 ms (87990 allocs: 7.199 MiB)
 #1.11.rc 3.689 ms (164568 allocs: 6.847 MiB)
+#1.13rc1 3.272 ms (174385 allocs: 7.292 MiB)
 function test_kl2(W)
   el=elements(W)
   maximum(degree(KLPol(W,x,y)) for x in el, y in el)
@@ -129,7 +130,7 @@ end;
 #1.9.4  43.756 ms (1780874 allocs: 57.071 MiB)
 #1.10.3 42.886 ms (1795660 allocs: 57.618 MiB)
 #1.11.0 44.514 ms (1795664 allocs: 57.618 MiB)
-#1.11.5 49.851 ms (1795660 allocs: 60.905 MiB)
+#1.13rc1 44.256 ms (1794432 allocs: 66.132 MiB)
 function test_hm(rtype,rank)
   m=[rtype(1)//(n+m) for n in 1:rank, m in 1:rank]
   one(m)==m*inv(m)
@@ -162,6 +163,7 @@ end;
 #1.10.3 19.070 μs (429 allocs: 28.953 KiB)
 #1.11.rc 15.460 μs (819 allocs: 29.016 KiB)
 #1.12.rc 13.428 μs (788 allocs: 27.719 KiB)
+#1.13rc1 12.333 μs (788 allocs: 27.719 KiB)
 
 # @b ((x,y)=Mvp.(:x,:y);inv(Frac.([x+y x-y;x+1 y+1])))
 #1.6.3 187.233 μs (3941 allocations: 291.50 KiB)
@@ -171,17 +173,20 @@ end;
 #1.10.3 153.370 μs (3631 allocs: 243.969 KiB)
 #1.11.rc 122.602 μs (4994 allocs: 223.609 KiB)
 #1.12.rc 112.564 μs (4925 allocs: 222.156 KiB)
+#1.13rc1 90.863 μs (4910 allocs: 208.734 KiB)
 # [[x+y,x-y],[x+1,y+1]]^-1; # GAP3 3.1ms
 
 # @b CycPols.p(Pol()) #GAP3 1.25 ms
 #1.8.5   254.158 μs (5626 allocations: 416.19 KiB)
 #1.10.3  261.749 μs (5240 allocs: 394.188 KiB)
 #1.11.rc 224.240 μs (7381 allocs: 379.156 KiB)
+#1.13rc1 205.738 μs (7521 allocs: 329.984 KiB)
 
 # @b CycPols.p(1) #GAP3 142μs
 #1.8.5   5.140 μs (101 allocations: 19.88 KiB)
 #1.10.3  6.162 μs (101.75 allocs: 21.152 KiB)
 #1.11.rc 5.819 μs (151 allocs: 21.012 KiB)
+#1.13rc1 5.169 μs (171 allocs: 18.922 KiB)
 u=CycPols.p(Pol());
 # @b u _(1) #GAP3 40μs
 #1.8.5   24.669 μs (553 allocations: 41.91 KiB)

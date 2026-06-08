@@ -1977,7 +1977,7 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     else Q=0
     end
     function pos(t,i)
-      for j in 1:length(t), k in 1:length(t[j])
+      for j in eachindex(t), k in eachindex(t[j])
         l=findfirst(==(i),t[j][k])
         if !isnothing(l) return [j,k,l] end
       end
@@ -1988,20 +1988,20 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     map(2:r)do i
       toM(map(enumerate(T))do (j,t)
         a=pos(t,i);b=pos(t,i-1)
-        t=map(l->map(copy,l),t)
+        t=map(l->copy.(l),t)
         t[a[1]][a[2]][a[3]]=i-1;t[b[1]][b[2]][b[3]]=i #exchange i,i-1
-        if para[2][1]==-para[2][2]
-          if a[1]==b[1] tll=para[2][1]//(a[3]+b[2]-a[2]-b[3])
-          else tll=0
+        tll=if para[2][1]==-para[2][2]
+          if a[1]==b[1] para[2][1]//(a[3]+b[2]-a[2]-b[3])
+          else 0//1
           end
-        else tll=sum(para[2])//(1-ct(b)//ct(a))
+        else sum(para[2])//(1-ct(b)//ct(a))
         end
-        v=fill(0//1,length(T))*tll
+        v=fill(zero(tll),length(T))
         v[j]=tll
         pp=findfirst(==(t),T)
         if !isnothing(pp) v[pp]=tll-para[2][2] end
         v
-       end)*prod(prod,para)^0
+       end)
     end)
   else
     S=chevieget(:imp, :charinfo)(p, q, r)[:charparams][i]
@@ -2068,8 +2068,8 @@ end)
 
 chevieset(:imp, :Representation, function (p, q, r, i;gen=false)
   o=chevieget(:imp,:ordergens)(p,q,r)
-  chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->
-    x==2 ? [1,-1] : Cyc.(E.(x,0:x-1)),o),fill(1,r+1),i;gen)
+  chevieget(:imp, :HeckeRepresentation)(p,q,r,
+    map(x->x==1 ? [1] : x==2 ? [1,-1] : Cyc.(E.(x,0:x-1)),o),fill(1,r+1),i;gen)
 end)
 
 # the family of uc containing symbols
