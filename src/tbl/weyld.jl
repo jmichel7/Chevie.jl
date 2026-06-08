@@ -458,8 +458,9 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
 end
   for (i,ss) in enumerate(uc[:springerSeries])
-  # cases when the local systems are not in the unipotent Lusztig series
-  # see [Appendix, dlm]
+  # ss[:hc]=0 when the local systems are not in the unipotent Lusztig series
+  # see [Appendix, dlm]. 
+  # ss[:hc]=i when cuspidal local system is fourier(cuspidal i-th HC series)
     if char!=2 if i>1 ss[:hc]=0 end
     else
       if !all(isone,ss[:Z]) ss[:hc]=0 end
