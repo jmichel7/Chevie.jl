@@ -1314,7 +1314,8 @@ PermRoot.refltype(W::Affine)=W.refltype
  Groups.gens, Groups.ngens, # Groups.word, PermGroups.reduced,
  FinitePosets.Poset, CoxGroups.isleftdescent,
  CoxGroups.bruhatless, CoxGroups.coxmat,
- CoxGroups.leftdescents, PermRoot.cartan, PermRoot.semisimplerank
+ CoxGroups.leftdescents, PermRoot.cartan, PermRoot.reflrep,
+ PermRoot.semisimplerank
 
 ## Given an affine Weyl group W, x a vector in the basis of
 ## simple roots of W.W and w in W, returns the image of x under w.
