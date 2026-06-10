@@ -1125,6 +1125,8 @@ end
 
 Base.one(W::MatCox)=one(W(1))
 PermRoot.cartan(W::MatCox)=W.cartan
+PermRoot.reflrep(W::MatCox)=gens(W)
+PermRoot.reflrep(W::MatCox,w)=w
 isleftdescent(::MatCox,w,i::Int)=real(sum(@view w[i,:]))<0
 
 """
