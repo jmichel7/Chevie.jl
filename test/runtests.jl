@@ -1052,6 +1052,8 @@ end
 @test mytest("Weyl.jl","cartan(:F,4)","4×4 Matrix{Int64}:\n  2  -1   0   0\n -1   2  -1   0\n  0  -2   2  -1\n  0   0  -1   2")
 @test mytest("Weyl.jl","cartan(:I,2,5)","2×2 Matrix{Cyc{Int64}}:\n       2  ζ₅²+ζ₅³\n ζ₅²+ζ₅³        2")
 @test mytest("Weyl.jl","cartan(:Bsym,2)","2×2 Matrix{Cyc{Int64}}:\n   2  -√2\n -√2    2")
+@test mytest("Weyl.jl","cartan(:Bsym,2)==symmetrization(cartan(:B,2))","true")
+@test mytest("Weyl.jl","symmetrization(cartan(:F,4))==cartan(:Fsym,4)","true")
 @test mytest("Weyl.jl","two_tree(cartan(:A,4))","4-element Vector{Int64}:\n 1\n 2\n 3\n 4")
 @test mytest("Weyl.jl","two_tree(cartan(:E,8))","(4, [2], [3, 1], [5, 6, 7, 8])")
 @test mytest("Weyl.jl","W=complex_reflection_group(30)","H₄")

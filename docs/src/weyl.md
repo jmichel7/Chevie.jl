@@ -5,6 +5,7 @@ Pages=["weyl.md"]
 ```@docs
 Weyl
 cartan(::Symbol,::Integer,::Integer)
+symmetrization
 roots(::AbstractMatrix)
 two_tree
 reflection_subgroup(::Weyl.FCG,::AbstractVector{<:Integer})

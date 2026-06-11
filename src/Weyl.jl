@@ -225,7 +225,7 @@ module Weyl
 export two_tree, rootdatum, torus, istorus, derived_datum,
  dim, dimension, with_inversions, standard_parabolic, describe_involution,
  rootlengths, highest_short_root, badprimes, ComplexReflectionGroup, affine,
- parabolic_subgroups
+ parabolic_subgroups,symmetrization
 
 using ..Chevie
 #------------------------ Cartan matrices ----------------------------------
@@ -259,6 +259,12 @@ cartanmats[:a]=cartanmats[:A]=function(r)
   end
   m
 end
+cartanmats[:Ã]=function(r)
+  if r==1 return [2 -2;-2 2] end
+  m=cartanmats[:A](r+1)
+  m[1,end]=m[end,1]=-1
+  m
+end
 cartanmats[:b]=cartanmats[:B]=function(r,cartanType=2)
   m=cartanmats[:A](r)
   if r>1 
@@ -273,9 +279,20 @@ cartanmats[:bsym]=cartanmats[:Bsym]=function(r)
   m[1:2,1:2]=cartanmats[:Isym](2,4)
   m
 end
+cartanmats[:B̃]=function(r,cartanType=2)
+  if r==2 return [2 -2 -2;-1 2 0;-1 0 2] end
+  m=cartanmats[:B](r+1,cartanType)
+  m[end,end-2:end]=m[end-2:end,end]=[-1,0,2]
+  m
+end
 cartanmats[:c]=cartanmats[:C]=function(r)
   m=cartanmats[:A](r)
   if r>1 m[2,1]=-2 end
+  m
+end
+cartanmats[:C̃]=function(r)
+  m=cartanmats[:C](r+1)
+  m[end-1,end]=-2
   m
 end
 cartanmats[:d]=cartanmats[:D]=function(r)
@@ -283,10 +300,27 @@ cartanmats[:d]=cartanmats[:D]=function(r)
   u=min(r,3); m[1:u,1:u]=[2 0 -1; 0 2 -1;-1 -1 2][1:u,1:u]
   m
 end
+cartanmats[:D̃]=function(r)
+  m=cartanmats[:D](r+1)
+  if r==3 m[1,4]=m[4,1]=-1 end
+  m[end,end-2:end]=m[end-2:end,end]=[-1,0,2]
+  m
+end
 cartanmats[:e]=cartanmats[:E]=function(r)
   if r>8 error("type :E is defined only for rank ≤8") end
   m=cartanmats[:A](r)
   u=1:min(r,4); m[u,u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][u,u]
+  m
+end
+cartanmats[:Ẽ]=function(r)
+  if r>8 error("type :Ẽ is defined only for rank ≤8") end
+  m=cartanmats[:A](r+1)
+  u=1:4; m[u,u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][u,u]
+  if r<8 m[end,end-1]=m[end-1,end]=0 end
+  if r==5 m[end,3]=m[3,end]=-1
+  elseif r==6 m[end,2]=m[2,end]=-1
+  elseif r==7 m[end,1]=m[1,end]=-1
+  end
   m
 end
 cartanmats[:f]=cartanmats[:F]=function(r,cartanType=1)
@@ -296,6 +330,10 @@ cartanmats[:f]=cartanmats[:F]=function(r,cartanType=1)
   else m=typeof(cartanType//1).(m);m[3,2]=-2//cartanType;m[2,3]=-cartanType
   end
   m
+end
+cartanmats[:F̃]=function(r,cartanType=1)
+  if r!=4 error("type :F̃ is defined only for rank 4") end
+  [2 -1 0 0 -1; -1 2 -1 0 0; 0 -2 2 -1 0; 0 0 -1 2 0; -1 0 0 0 2]
 end
 cartanmats[:fsym]=cartanmats[:Fsym]=function(r)
   if r!=4 error("type :Fsym is defined only for rank 4") end
@@ -310,6 +348,10 @@ cartanmats[:g]=cartanmats[:G]=function(r,cartanType=1)
   else m=typeof(cartanType//1).(m);m[1,2]=-cartanType;m[2,1]=-3//cartanType
   end
   m
+end
+cartanmats[:G̃]=function(r,cartanType=1)
+  if r!=2 error("type :G̃ is defined only for rank 2") end
+  [2 -1 -1; -3 2 0; -1 0 2]
 end
 cartanmats[:gsym]=cartanmats[:Gsym]=_->cartanmats[:Isym](2,6)
 cartanmats[:h]=cartanmats[:H]=function(r)
@@ -334,13 +376,15 @@ end
 """
 `cartan(type, rank [,bond])`
 
-the  Cartan matrix for a  finite Coxeter group described  by type and rank.
-The  recognized types are `:A, :B, :Bsym, :C, :D, :E, :F, :Fsym, :G, :Gsym,
-:I,  :H`. For type `:I` a third  argument must be given describing the bond
-between the two generators. The `sym` types correspond to
-(non-crystallographic)  root systems where all  roots have the same length;
-they  afford automorphisms that  the crystallographic root  system does not
-afford, which allow to define the "very twisted" Chevalley groups.
+the  Cartan matrix  for a  Coxeter group  described by  type and  rank. The
+recognized  types are `:A, :B, :Bsym, :C, :D, :E, :F, :Fsym, :G, :Gsym, :I,
+:H`,  and the affine  types `:Ã, :B̃,  :C̃, :D̃, :Ẽ,  :F̃, :G̃`. For type
+`:I`  a third argument  must be given  describing the bond  between the two
+generators.  The  `sym`  types  correspond  to  (non-crystallographic) root
+systems  where all  roots have  the same  length; they afford automorphisms
+that  the  crystallographic  root  system  does  not afford, which allow to
+define  the "very  twisted" Chevalley  groups. These  matrices can  also be
+obtain by `symmetrization` of the non-symmetric ones.
 
 ```julia-repl
 julia> cartan(:F,4)
@@ -359,6 +403,9 @@ julia> cartan(:Bsym,2)
 2×2 Matrix{Cyc{Int64}}:
    2  -√2
  -√2    2
+
+julia> cartan(:Bsym,2)==symmetrization(cartan(:B,2))
+true
 ```
 """
 function PermRoot.cartan(t::Symbol,r::Integer,args::Number...)
@@ -366,6 +413,28 @@ function PermRoot.cartan(t::Symbol,r::Integer,args::Number...)
   else error("unknown Cartan type $(repr(t)). Known types are:\n",
              join(sort(repr.(collect(keys(cartanmats)))),", "))
   end
+end
+
+"""
+`symmetrization(M::Matrix)`
+symmetrize the cartan matrix `M`.
+```julia-repl
+julia> symmetrization(cartan(:F,4))==cartan(:Fsym,4)
+true
+```
+"""
+function symmetrization(M::Matrix)
+  if M==permutedims(M) return M end
+  M*=E(1)
+  for i in axes(M,1)
+    for j in 1:i-1
+      if M[i,j]!=M[j,i]
+        a=-root(M[i,j]*M[j,i])
+        M[i,j]=M[j,i]=a
+      end
+    end
+  end
+  M
 end
 
 """
@@ -877,14 +946,18 @@ CoxGroups.isrightdescent(W::FCG,w,i::Integer)=preimage(i,w)>W.N
 """
 `coxeter_group(type,rank[,bond];sc=false)` (or `coxgroup`)
 
-Constructs  the finite Coxeter group of given `type` and `rank` (and `bond`
-for  dihedral  groups).  If  `C=cartan(type,rank[,bond])`,  the function is
-equivalent  to `rootdatum(C)`  (the adjoint  root datum).  If `sc=true` the
-function  is equivalent  to `rootdatum(permutedims(C),one(C))`  (the simply
-connected root datum).
+Constructs  the Coxeter  group of  given `type`  and `rank` (and `bond` for
+dihedral  groups). For a type  in `:A` to `:I`  or in `:Bsym, :Fsym, :Gsym,
+:Isym`,  if  `C=cartan(type,rank[,bond])`,  the  function  is equivalent to
+`rootdatum(C)`  (the  adjoint  root  datum).  If  `sc=true` the function is
+equivalent to `rootdatum(permutedims(C),one(C))` (the simply connected root
+datum). 
 
-The  resulting object `W`, a  `FiniteCoxeterGroup`, has an additional entry
-compared to a `PermRootGroup`.
+The  affine  types  are  also  understood, for example `coxgroup(:Ã,3)` is
+equivalent to `affine(coxgroup(:A,3))`.
+
+For  finite types, the resulting object `W`, a `FiniteCoxeterGroup`, has an
+additional entry compared to a `PermRootGroup`.
 
   - `W.rootdec`:  the roots, given  as linear combinations of simple roots.
     The  first `nref(W)` roots  are the positive  roots, the last `nref(W)`
@@ -932,8 +1005,18 @@ julia> reflrep(W) # generators as matrices in the basis `simpleroots(W)`
  [1 3; 0 -1]
 ```
 """
-CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Number...;sc=false)=iszero(r) ? coxgroup() :
-sc ? rootdatum(permutedims(cartan(t,r,b...)),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b...))
+function CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Number...;sc=false)
+  if iszero(r) return coxgroup() end
+  if t in (:A, :B, :Bsym, :C, :D, :E, :F, :Fsym, :G, :Gsym, :H, :I, :Isym, :a,
+           :b, :bsym, :c, :d, :e, :f, :fsym, :g, :gsym, :h, :i, :isym)
+    if sc rootdatum(permutedims(cartan(t,r,b...)),Matrix{Int}(I,r,r))
+    else rootdatum(cartan(t,r,b...))
+    end
+  else affine(coxgroup(affdict[t],r))
+  end
+end
+
+affdict=Dict(:Ã=>:A,:B̃=>:B,:C̃=>:C,:D̃=>:D,:Ẽ=>:E,:F̃=>:F,:G̃=>:G)
 
 "`coxeter_group()` or `coxgroup()` the trivial Coxeter group"
 CoxGroups.coxeter_group()=FCG(PRG(0),Vector{Int}[],0,Dict{Symbol,Any}())
