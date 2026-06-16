@@ -799,6 +799,11 @@ function braid_relations(t::TypeIrred)
   haskey(t,:indices) ? map(x->map(y->t.indices[y],x),r) : r
 end
 
+function braid_relations(W::CoxeterGroup)
+  m=coxmat(cartan(W))
+  vcat(map(i->map(j->Chevie.braidrel(i,j,m[i,j]),1:i-1),axes(m,1))...)
+end
+
 braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
 # construct Coxeter generators and rootinclusion of reflection subgroup

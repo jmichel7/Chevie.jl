@@ -648,7 +648,25 @@ function isrepresentation(H::HeckeAlgebra,t;details=false)
   res
 end
 
-isrepresentation(W,t;details=false)=isrepresentation(hecke(W),t;details)
+function isrepresentation(W,t;details=false)
+  res=true
+  for (i,o) in enumerate(ordergens(W))
+    rel=isone(W(i)^o)
+    if !rel
+      if !details return false end
+      println("Error in ",ordinal(i)," order relation");
+      res=false
+    end
+  end
+  for (l,r) in braid_relations(W)
+    if prod(t[l])!=prod(t[r])
+      if !details return false end
+      println("Error in relation ",l,"=",r)
+      res=false
+    end
+  end
+  res
+end
 
 """
 `reflection_representation(H::HeckeAlgebra)` or `reflrep(H)`
