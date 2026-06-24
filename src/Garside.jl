@@ -674,7 +674,8 @@ induced by conjugation by `M.δ` (that is `x^(M.δ^i)`).
 """
 function δad(M::GarsideMonoid,x,i::Integer=1)
   if IntervalStyle(M)==Interval() #horrible: has to know interval exists
-    return iszero(i) ? x : x^(M.δ^mod(i,M.orderδ))
+    return iszero(i) ? x : hasfield(typeof(M),:orderδ) ? 
+           x^(M.δ^mod(i,M.orderδ)) : x^(M.δ^i)
   end
   for _ in i:-1:1 x=rightcomplδ(M,rightcomplδ(M,x)) end
   for _ in i:-1   x=leftcomplδ(M,leftcomplδ(M,x)) end
