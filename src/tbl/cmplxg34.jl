@@ -5145,7 +5145,7 @@ end)
 
 chevieset(:G34, :HeckeRepresentation, function (para, _, i)
   r,p=para[1]
-  f1(p)=map(x->[p;;],1:6)
+  f1(p)=map(_->[p;;],1:6)
   f3(x,y,a)=WGraph2Representation([[[1,2,3,4,5],[1,2,3,4,6],[1,2,3,5,6],
     [1,2,4,5,6],[1,3,4,5,6],[2,3,4,5,6]],[[1,2,-y,x],[2,3,-y,x],
     [3,4,a*x^-1*y^2,-(a^2)*x^2*y^-1],[3,5,-y,x],[4,5,x,-y],[5,6,x,-y]]],[x,y])*x^0*y^0

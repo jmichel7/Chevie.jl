@@ -467,7 +467,7 @@ function schur_functor(A::AbstractMatrix,λ)
   M=let M=M
     map(x->sum(M[x,:],dims=1)[1,:],m)
   end
-  M=improve_type(toM(M))
+  improve_type(toM(M))
 end
 
 "`dim_schur(n,λ)` the dimension of `schur_functor(M,λ)` for `M` of size (n,n)"

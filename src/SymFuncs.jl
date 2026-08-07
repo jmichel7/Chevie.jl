@@ -265,13 +265,13 @@ function SymFunc(::Val{b},p::Partition)where b
 end
 
 function SymFunc(::Val{b},w1::Vector{<:Integer},
-     w::Vararg{<:Vector{<:Integer}})where b
+     w::Vararg{Vector{<:Integer}})where b
   if length(w)==0 SymFunc(Val(b),Partition(w1))
   else SymFunc(Val(b),PartitionTuple(pushfirst!(collect(w),w1)))
   end
 end
 
-function SymFunc(::Val{b},w::Vararg{<:Integer})where b
+function SymFunc(::Val{b},w::Vararg{Integer})where b
   SymFunc(Val(b),convert(Vector{Int},collect(w)))
 end
 
@@ -496,7 +496,7 @@ Base.:(==)(a::WreathSymFunc,b::WreathSymFunc)=basis(a)==basis(b) && a.d==b.d
 function tens(aa::SymFunc...)
   if length(aa)<2 error() end
   b=basis(aa[1])
-  for a in aa[2:end] a=SymFunc(Val(b),a) end
+  aa=SymFunc.(Val(b),aa)
   m=ModuleElt(map(cartesian(map(x->pairs(x.d),aa)...))do pp
                PartitionTuple(first.(pp))=>prod(last.(pp))
               end)
@@ -633,7 +633,7 @@ end
 Base.getindex(g::WreathSymFunc,f0::WreathSymFunc,f1::WreathSymFunc)=plethysm(g,f0,f1)
 
 Base.getindex(a::WreathSymFunc,p::PartitionTuple)=a.d[p]
-Base.getindex(a::WreathSymFunc,x::Vararg{<:Vector{<:Int}})=a.d[PartitionTuple(collect(x))]
+Base.getindex(a::WreathSymFunc,x::Vararg{Vector{<:Int}})=a.d[PartitionTuple(collect(x))]
 
 #@test mytest("SymFuncs.jl","SymFuncs.p(Partition(3,2,1))","p₃₂₁")
 #@test mytest("SymFuncs.jl","SymFuncs.p([3,2,1])","p₃₂₁")

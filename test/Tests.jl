@@ -1716,7 +1716,7 @@ function Tgaloisauts(W)
       gm=m.^Ref(g)
       p=PermX(W,gm)
       if !(p in W) || gm!=reflrep(W,p) 
-        ChevieErr("refrep(",W,") is not galois(",k,")-stable\n")
+        ChevieErr("reflrep(",W,") is not galois(",k,")-stable\n")
         return
       end
     end

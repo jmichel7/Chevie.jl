@@ -895,7 +895,7 @@ chevieset(:imp,:FactorizedSchurElement,function(p,q,r,phi,para,_)
       m=p
     end
     if para[1]==map(i->E(p//q,i-1),1:p//q)
-      para=[E.(i,0:p-1),para[2]]
+      para=[E.(p,0:p-1),para[2]]
     else
       para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]],para[2]]
     end
@@ -1453,7 +1453,7 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
            [-1 1-x 1-x 0;0 0 1 0;0 x -1+x 0;0 -1+x -1+x -1],
            [-1+x -x 0 0;-1 0 0 0;0 0 -1 0;0 0 0 -1],
            [0 0 0 1;0 -1 0 0;0 0 -1 0;x 0 0 -1+x]],
-       x->[[-1;;],[-1;;],[-1;;],[-1;;]],
+       _->[[-1;;],[-1;;],[-1;;],[-1;;]],
        x->[[x 1-x -1+x -x+x^2 x-x^2 0;0 -1+x 0 0 -x x-x^2;
             0 0 -1+x -x 0 x-x^2;0 0 -1 0 0 -1+x;0 -1 0 0 0 -1+x;0 0 0 0 0 -1],
            [x 0 0 0 0 0;0 0 0 0 x 0;0 0 0 x 0 0;0 0 1 -1+x 0 0;
@@ -1527,7 +1527,7 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
        [x -1 0 0 1 x;0 -1 0 0 0 0;0 0 -1 0 0 0;0 0 -1 x 1 x;
         0 0 0 0 -1 0;0 0 0 0 0 -1]]
       end
-      f5(x)=[[-1;;],[-1;;],[-1;;],[-1;;]]
+      f5(_)=[[-1;;],[-1;;],[-1;;],[-1;;]]
       function f7(x,j) 
       [[-1 0 0 0 0 0;x x 0 0 0 0;x 0 x 0 0 0;0 0 0 -1 0 0;
         0 0 0 0 -1 0;0 0 0 -j*x^2 x x],

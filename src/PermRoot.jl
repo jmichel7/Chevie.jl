@@ -1941,13 +1941,13 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   end
   I=Vector{Int}(I)
   if NC
-    if I==eachindex(gens(W)) G=W
+    if I==eachindex(gens(W))
       inclu=collect(eachindex(roots(W)))
     else
       G=PRG(roots(W,I),coroots(W,I);NC=true)
       inclu=Int.(indexin(G.roots,W.roots))
     end
-    restr=zeros(Int,length(W.roots));restr[inclu]=1:length(inclu)
+    restr=zeros(Int,length(W.roots));restr[inclu]=eachindex(inclu)
     return PRSG(refls(W,I),one(W),inclu,restr,W,Dict{Symbol,Any}())
   end
   if haskey(W.reflsubgroups,I) return W.reflsubgroups[I] end

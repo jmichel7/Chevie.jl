@@ -67,7 +67,7 @@ chevieset("2I", :HeckeCharTable, function (m, param, rootpara)
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   cl=chevieget("2I",:classinfo)(m)
   cos(i)=E(2m,i)+E(2m,-i)
-  ct=map(i->map(_->cos(1)*0*v,cl[:classwords]), cl[:classwords])
+  ct=map(_->map(_->cos(1)*0*v,cl[:classwords]), cl[:classwords])
   ct[1]=map(i->q^length(i),cl[:classwords])
   ct[2]=map(i->(-1)^length(i),cl[:classwords])
   for i in 1:div(m-1,2)
@@ -182,9 +182,9 @@ chevieset("2I", :UnipotentCharacters,function(e)
     end
   end
   uc[:charParams]=vcat(chevieget(:I, :charinfo)(e)[:charparams][1:2],ac)
-  uc[:almostCharSymbols]=vcat(CharSymbol.([map(x->[0],1:e),
-                                           map(x->[0,1],1:e)]),map(ac)do s
-    S=map(i->[0],1:e)
+  uc[:almostCharSymbols]=vcat(CharSymbol.([map(_->[0],1:e),
+                                           map(_->[0,1],1:e)]),map(ac)do s
+    S=map(_->[0],1:e)
     k,l=s
     S[k+1]=Int[]
     S[l+1]=Int[]
@@ -194,7 +194,7 @@ chevieset("2I", :UnipotentCharacters,function(e)
   end)
   uc[:almostCharSymbols][1].S[e]=[2]
   uc[:almostCharSymbols][2].S[e]=[1, 2]
-  uc[:charSymbols]=vcat(CharSymbol.([map(x->[0],1:e),map(x->[0,1],1:e)]),
+  uc[:charSymbols]=vcat(CharSymbol.([map(_->[0],1:e),map(_->[0,1],1:e)]),
                         map(symUnp)do s
     k=div(s[1]+1,2)
     l=div(s[2]+1,2)
@@ -217,8 +217,8 @@ chevieset("2I", :UnipotentCharacters,function(e)
      name=string("?",2+length(ac)),special=1)
   f.printname=f.name
   uc[:families]=[Family(:C1,[1]),Family(:C1,[2]),f]
-  uc[:a]=vcat([0,e],map(x->1,ac))
-  uc[:A]=vcat([0,e],map(x->e-1,ac))
+  uc[:a]=vcat([0,e],map(_->1,ac))
+  uc[:A]=vcat([0,e],map(_->e-1,ac))
   if e==5
 # Modified 25-8-2004 to fit with H3, H4
 # [lus93], [gm03], H4 in [lus94] are like the old version

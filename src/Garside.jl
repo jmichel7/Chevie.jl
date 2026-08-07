@@ -521,7 +521,7 @@ leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
 
 atom(M::LocallyGarsideMonoid,i)=M.atoms[i]
 
-function (M::LocallyGarsideMonoid{T})(l::Vararg{<:Integer})where {T}
+function (M::LocallyGarsideMonoid{T})(l::Vararg{Integer})where {T}
   if isempty(l) return GarsideElt(M,T[];check=false) end
   if l[1]>0 res=GarsideElt(M,[atom(M,l[1])];check=false)
   else res=inv(M(-l[1]))
@@ -1978,7 +1978,7 @@ function mapbetween(C::Category{TO,TM},o,o1)where {TO,TM}
 end
 
 # returns atoms from a in F-twisted s-conjugacy category
-function conjatoms(a,::Val{s}=Val(:sc),F::Function=(x,y=1)->x)where s
+function conjatoms(a,::Val{s}=Val(:sc),F::Function=(x,_=1)->x)where s
   M=a.M
   res=typeof(a)[]
   for i in eachindex(M.atoms)
@@ -2046,7 +2046,7 @@ swap(b)=/(reverse(fraction(b))...)
 # given a Garside element a assumed to be in SSS(a) and a simple x, 
 # returns the minimal m such that x<m and a^m is in SSS(a). 
 # m is simple. See algorithm 5 in Franco-Gonzales 1
-function minc(a,x,::Val{:ss},F::Function=(x,y=1)->x)
+function minc(a,x,::Val{:ss},F::Function=(x,_=1)->x)
   ai=inv(a)
   while true
     m=x
@@ -2062,7 +2062,7 @@ end
 if the normal form of `b` is `Δⁱb₁…bₙ` then 
 `preferred_prefix(b)=inv(bₙ)*α(bₙΔ⁻ⁱ(b₁))`.
 """
-function preferred_prefix(b::GarsideElt,F::Function=(x,y=1)->x)
+function preferred_prefix(b::GarsideElt,F::Function=(x,_=1)->x)
   M=b.M
   if isempty(b.elm) return one(M) end
   o=b.elm[end]
@@ -2083,7 +2083,7 @@ end
 # representativeSC(b) returns
 # (conj=minimal r such that b^r is in a sliding circuit,
 #  circuit=sliding circuit of b^r)
-function representativeSC(b::GarsideElt,F::Function=(x,y=1)->x)
+function representativeSC(b::GarsideElt,F::Function=(x,_=1)->x)
   seen=Set{typeof(b)}()
   l=[(b,one(b))]
   while !(b in seen)
@@ -2179,7 +2179,7 @@ julia> conjcat(w;ss=Val(:ss)).obj # the super summit set
  21324
 ```
 """
-function conjcat(b,F::Function=(x,y=1)->x;ss=Val(:sc))
+function conjcat(b,F::Function=(x,_=1)->x;ss=Val(:sc))
   if ss==Val(:sc) || ss==Val(:ss) b=representativeSC(b,F).circuit[1] end
   Category(x->conjatoms(x,ss,F),b;action=(b,m)->^(b,m,F))
 end
@@ -2232,7 +2232,7 @@ julia> ^(b,B(1,2,4,3,1,2),F)
 343123
 ```
 """
-function conjugating_elt(b,c,F::Function=(x,y=1)->x;ss=Val(:sc))
+function conjugating_elt(b,c,F::Function=(x,_=1)->x;ss=Val(:sc))
   if ss==Val(:sc) || ss==Val(:ss)
     bconj=representativeSC(b,F)
     cconj=representativeSC(c,F)
@@ -2315,7 +2315,7 @@ julia> centralizer_gens(w,F)
  312343123
 ```
 """
-function centralizer_gens(b,F::Function=(x,y=1)->x;ss=Val(:sc))
+function centralizer_gens(b,F::Function=(x,_=1)->x;ss=Val(:sc))
  if ss==Val(:ss) || ss==Val(:sc)
     b=representativeSC(b,F)
     a=b.conj

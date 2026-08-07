@@ -36,7 +36,7 @@ chevieset(:I, :classinfo, function (m)
   res=chevieget(:imp,:classinfo)(m,m,2)
   res[:classwords][end]=[1]
   l=length(res[:orders])
-  l=iseven(m) ? vcat([1,l,l-1],2:l-2) : l=vcat([1,l],2:l-1)
+  l=iseven(m) ? vcat([1,l,l-1],2:l-2) : vcat([1,l],2:l-1)
   for k in (:classes,:orders,:classwords,:centralizers,:classparams)
     res[k]=res[k][l]
   end
@@ -232,16 +232,16 @@ end)
 # They are reduced in the sense of symbols(e,2,0)
 chevieset(:I,:ParameterToSymbol,function(e,p)
   if p==[0]
-    S=map(x->[0],1:e)
+    S=map(_->[0],1:e)
     S[e]=[2]
   elseif p==[1]
-    S=map(x->[0,1],1:e)
+    S=map(_->[0,1],1:e)
     S[e]=[1,2]
   elseif length(p)==3
-    S=push!(map(x->[0],1:e//2-1),[1])
+    S=push!(map(_->[0],1:e//2-1),[1])
     return CharSymbol(S,2,(p[3]+1)//2)
   elseif iseven(e)
-    S=map(x->[0],1:e)
+    S=map(_->[0],1:e)
     if p[1]==0 S[[e,e-p[2]]]=[[1],[1]]
     else
       S[[0,mod(p[2]-p[1],e)].+1]=[[0,1],[0,1]]
@@ -281,8 +281,8 @@ chevieset(:I, :UnipotentCharacters, function(e)
   uc[:parameters]=vcat([[0],[1]],uc[:families][1][:parameters])
   uc[:charSymbols]=map(p->chevieget(:I,:ParameterToSymbol)(e,p),uc[:parameters])
   # for S(k,l) the b is min(k+l,e-k-l)
-  uc[:a]=vcat([0,e],map(x->1,uc[:families][1][:parameters]))
-  uc[:A]=vcat([0,e],map(x->e-1,uc[:families][1][:parameters]))
+  uc[:a]=vcat([0,e],map(_->1,uc[:families][1][:parameters]))
+  uc[:A]=vcat([0,e],map(_->e-1,uc[:families][1][:parameters]))
   if e==5 uc[:curtis]=[2, 1, 3, 4, 6, 5] end
   uc
 end)

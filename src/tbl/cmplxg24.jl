@@ -118,7 +118,7 @@ end)
 chevieset(:G24,:galomorphisms,perm"(5,6)(9,10)")
 
 chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
-  f1(r)=map(x->[r;;],1:3)
+  f1(r)=map(_->[r;;],1:3)
   f3(p,r,b)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
     [1,3,p,-r],[2,3,r*(b+1),p*b]]],[p,r]).*(p^0*r^0)
   f7(p,r)=WGraph2Representation([[[2,3],[2,3],[1,3],[1,3],[1,2],[1,2]],

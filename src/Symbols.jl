@@ -925,7 +925,7 @@ symbols(e,r,c=1,def=0)=vcat(Symbolsshape.(r,shapesSymbols(e,r,c,def))...)
 function Δ(S,e)
   l=length(S)
   if l<2 return one(CycPol) end
-  v=sum(e*S[i] for i in 1:l for j in i+1:l)
+  v=sum(e*S[i] for i in 1:l for _ in i+1:l)
   p=[k//(e*(S[j]-S[i])) for i in 1:l for j in i+1:l for k in 0:e*(S[j]-S[i])-1]
   CycPol(1,v,ModuleElt(p.=>1))
 end

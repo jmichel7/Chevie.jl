@@ -590,7 +590,7 @@ function QuotientAu(Au,chars)
         t=copy(refltype(Au))
         p=findfirst(t->t.indices==p,refltype(Au))
 	t[p].p/=length(k)
-        return finish(ReflectionGroup(t...),map(x->[x],eachindex(gens(Au))))
+        return finish(reflection_group(t...),map(x->[x],eachindex(gens(Au))))
       end
      elseif xrepr(rio(),Au)=="A₁×B₂" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
@@ -623,7 +623,7 @@ function AdjustAu!(classes,springerseries)
     if haskey(u,:AuAction)
       R=u.AuAction.group
       if rank(R)==0
-        u.AuAction=ExtendedCox(R,[fill(0,0,0) for x in f.gens])
+        u.AuAction=ExtendedCox(R,[fill(0,0,0) for _ in f.gens])
       else
        if isempty(f.gens) F0s=[reflrep(R,R())]
        else F0s=map(x->prod(u.AuAction.F0s[x]),f.gens)

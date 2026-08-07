@@ -40,13 +40,18 @@ chevieset(:F4,:classwords,map(x->Replace(x,[0]=>[1,2,3,4]),
      [4,3,2],[2,3,2,1,3],[3],[1,2,1,3,2,1,3,2,3],[2,1,4],[3,2,1],[2,4,3,2,3],
      [1,3],[3,2],[0,0,0,2,3],[0,2,3]]))
 
+chevieset(:F4, :powermaps, [nothing,
+  [1,1,1,4,4,2,7,7,9,9,10,1,1,7,7,3,1,1,4,4,3,1,3,3,6],
+  [1,2,3,1,2,6,1,2,1,2,6,12,13,12,13,16,17,18,17,18,21,22,23,24,25],
+  nothing,1:25,nothing,1:25,nothing,nothing,nothing,1:25])
+
 chevieset(:F4,:classinfo, # representatives are "very good" see [gm97]
   Dict{Symbol,Any}(:classwords=>chevieget(:F4,:classwords),
   :classnames=>chevieget(:F4,:classnames),
   :classparams=>chevieget(:F4,:classnames),
   :classes=>[1,1,18,32,32,12,32,32,16,16,96,12,12,96,96,72,12,12,96,96,72,72,36,36,144],
   :orders=>[1,2,2,3,6,4,3,6,3,6,12,2,2,6,6,4,2,2,6,6,4,2,4,4,8],
-  :powermaps=>chevieget(:F4,:PowerMaps)))
+  :powermaps=>chevieget(:F4,:powermaps)))
 
 chevieset(:F4, :charparams,[[1,0],[1,12,2],[1,12,1],[1,24],[2,4,2],
     [2,16,1],[2,4,1],[2,16,2],[4,8],[9,2],[9,6,2],[9,6,1],[9,10],[6,6,1],
@@ -111,11 +116,6 @@ chevieset(:F4,:orbits,[ [ 1, 25, 5, 29, 2, 11, 26, 35,
   [ 3, 6, 27, 7, 8, 10, 30, 31, 4, 12, 13, 32, 34, 28, 15, 36, 37, 17, 39,
   19, 41, 21, 43, 45 ] ] )
 
-chevieset(:F4, :PowerMaps, [nothing,
-  [1,1,1,4,4,2,7,7,9,9,10,1,1,7,7,3,1,1,4,4,3,1,3,3,6],
-  [1,2,3,1,2,6,1,2,1,2,6,12,13,12,13,16,17,18,17,18,21,22,23,24,25],
-  nothing,1:25,nothing,1:25,nothing,nothing,nothing,1:25])
-
 chevieset(:F4,:sparse_fakedegrees,
 [[1,0],[1,12],[1,12],[1,24],[1,4,1,8],[1,16,1,20],[1,4,1,8],[1,16,1,20],[1,8,
 2,12,1,16],[1,2,1,4,2,6,1,8,2,10,1,12,1,14],[1,6,1,8,2,10,1,12,2,14,1,16,1,
@@ -146,12 +146,12 @@ chevieset(:F4, :HeckeCharTable, function (param, _)
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
   dual(f)=map((a,w)->a*(-u)^count(j->j in [1,2],w)*(-v)^count(j->j in [3,4],w),
               f(uinv,vinv),tbl[:classwords])
-  f4(u,v)=[1,1,1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1]
-  f2(u,v)=[1,u^12,u^2,u^2,u^4,u^6,1,u^6,u^8,u^4,u^2,u,u^3,
+  f4(_,_)=[1,1,1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1]
+  f2(u,_)=[1,u^12,u^2,u^2,u^4,u^6,1,u^6,u^8,u^4,u^2,u,u^3,
    u,u,u^3,-1,-u^6,-u^2,-u^2,-u^2,-u,-u,-u^7,-u^3]
-  f6(u,v)=[2,2*v^6,v^2+1,2,2*v^3,2*v^3,-v,-v^2,-v^4,-v^2,-v,
+  f6(_,v)=[2,2*v^6,v^2+1,2,2*v^3,2*v^3,-v,-v^2,-v^4,-v^2,-v,
     -2,-2*v^3,v,v,-1-v^2,v-1,-1+v^3,v-1,v-1,0,1-v,1-v,v^3-v^4,0]
-  f8(u,v)=[2,2*u^6,u^2+1,-u,-u^2,2*u^3,2,2*u^3,-u^4,-u^2,-u,
+  f8(u,_)=[2,2*u^6,u^2+1,-u,-u^2,2*u^3,2,2*u^3,-u^4,-u^2,-u,
     -1+u,u^3-1,-1+u,-1+u,0,-2,-2*u^3,u,u,-u^2-1,-u+1,-u+1,-u^4+u^3,0]
   f11(u,v)=[9,9*v^4*u^8,v^2*u^2+1-4*u*v+3*u^2,-3*u+3*u^2,0,
    -3*v^2*u^4,3-3*v,0,0,0,0,6*u-3,-3*v^2*u^2+2*v^3*u^3+3*u*v^2+u^3,
@@ -979,7 +979,7 @@ chevieset(:F4, :UnipotentClasses, function(p,_)
     if !haskey(c,:Au) c[:Au] = Z(1) end
     if !haskey(c,:AuAction)
       c[:AuAction]=ExtendedReflectionGroup(c[:red],
-        map(x->Matrix(1I,rank(c[:red]),rank(c[:red])),1:semisimplerank(c[:Au])))
+        map(_->Matrix(1I,rank(c[:red]),rank(c[:red])),1:semisimplerank(c[:Au])))
     end
   end
   uc

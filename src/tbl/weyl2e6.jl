@@ -255,7 +255,7 @@ chevieset("2E6", :HeckeCharTable, function (param, rootparam)
   v=ismissing(rootparam[1]) ? root(q) : rootparam[1]
   tbl=Dict{Symbol, Any}(:identifier => "H(^2E6)",
     :text => "origin: Jean Michel, June 1996",
-    :parameter=>map(i->[q,-1],1:6),
+    :parameter=>map(_->[q,-1],1:6),
     :sqrtParameter=>fill(v,6),:size=>51840,
     :cartan=>chevieget("2E6", :cartan),
     :irreducibles=>map(i->map(j->j(v),i),

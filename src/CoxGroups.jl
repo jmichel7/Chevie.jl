@@ -570,7 +570,7 @@ julia> bruhatPoset(W,W(1,3))
 """
 function bruhatPoset(W::CoxeterGroup{T},w=longest(W)::T)where T
   if isone(w)
-    p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
+    p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(_->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
   p=bruhatPoset(W,W(s)*w)
@@ -581,7 +581,7 @@ function bruhatPoset(W::CoxeterGroup{T},w=longest(W)::T)where T
   # where w and sw are represented by their index in :elements
   new=filter(k->iszero(A[s][k]),1:l)
   append!(p.elements,Ref(W(s)).*p.elements[new])
-  append!(H,map(x->Int[],new))
+  append!(H,map(_->Int[],new))
   A[s][new]=l.+(1:length(new))
   for i in eachindex(gens(W))
     append!(A[i],i==s ? new : fill(0,length(new)))
@@ -1131,7 +1131,7 @@ end
 Base.one(W::MatCox)=one(W(1))
 PermRoot.cartan(W::MatCox)=W.cartan
 PermRoot.reflrep(W::MatCox)=gens(W)
-PermRoot.reflrep(W::MatCox,w)=w
+PermRoot.reflrep(::MatCox,w)=w
 PermRoot.reflrep(W::MatCox,i::Integer)=W(i)
 isleftdescent(::MatCox,w,i::Int)=real(sum(@view w[i,:]))<0
 

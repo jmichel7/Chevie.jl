@@ -331,10 +331,6 @@ cartanmats[:f]=cartanmats[:F]=function(r,cartanType=1)
   end
   m
 end
-cartanmats[:F̃]=function(r,cartanType=1)
-  if r!=4 error("type :F̃ is defined only for rank 4") end
-  [2 -1 0 0 -1; -1 2 -1 0 0; 0 -2 2 -1 0; 0 0 -1 2 0; -1 0 0 0 2]
-end
 cartanmats[:fsym]=cartanmats[:Fsym]=function(r)
   if r!=4 error("type :Fsym is defined only for rank 4") end
   m=Cyc.(cartanmats[:A](r))
@@ -348,10 +344,6 @@ cartanmats[:g]=cartanmats[:G]=function(r,cartanType=1)
   else m=typeof(cartanType//1).(m);m[1,2]=-cartanType;m[2,1]=-3//cartanType
   end
   m
-end
-cartanmats[:G̃]=function(r,cartanType=1)
-  if r!=2 error("type :G̃ is defined only for rank 2") end
-  [2 -1 -1; -3 2 0; -1 0 2]
 end
 cartanmats[:gsym]=cartanmats[:Gsym]=_->cartanmats[:Isym](2,6)
 cartanmats[:h]=cartanmats[:H]=function(r)

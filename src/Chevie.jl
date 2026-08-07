@@ -114,9 +114,9 @@ using UsingMerge
  eigen, det_bareiss, dot
 @reexport using PermGroups
 @reexport using SignedPerms
-@usingmerge verbose=true reexport CyclotomicNumbers
 @reexport using CyclotomicNumbers: bracket_if_needed, 
   format_coefficient, stringind
+@usingmerge verbose=true reexport CyclotomicNumbers
 @usingmerge verbose=true reexport FiniteFields
 @reexport using CycPols
 @reexport using CycPols: stringprime

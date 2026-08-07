@@ -180,7 +180,7 @@ chevieset(:G27, :galomorphisms,[perm"(4,8)(6,19)(7,20)(12,28)(14,27)(15,26)",
   perm"(6,7)(11,13)(14,15)(17,18)(19,20)(22,23)(24,25)(26,27)(30,31)(32,33)"])
 
 chevieset(:G27, :HeckeRepresentation, function (para, _, i)
-  f1(r)=map(x->[r;;],1:3)
+  f1(r)=map(_->[r;;],1:3)
   function f3(r, p, j, d)
     c=(2+j^2*(1-d))//2
     WGraph2Representation([[[1,2],[1,3],[2,3]],[[1,2,-2,p*r],[1,3,-c,(p*r)//c],
@@ -188,7 +188,7 @@ chevieset(:G27, :HeckeRepresentation, function (para, _, i)
   end
   f11(r,p)=WGraph2Representation([[[1,2],[1,3],[1,3],[2],[2,3]],[[1,2,p,0],[1,3,-p,r],[1,5,p,-r],[2,4,0,p],[2,5,p,-r],[3,4,r,-p],[3,5,p,0]]],[p,r])*p^0*r^0
   f12(r,p)=WGraph2Representation([[[1,3],[1,2],[1,2],[3],[2,3]],[[1,2,0,r],[1,3,p,-r],[2,4,r,0],[3,4,-r,p],[1,5,-p,r],[2,5,-p,r],[3,5,0,r]]],[p,r])*p^0*r^0
-  f15(x,y,j)=WGraph2Representation([[[1],[1],[2],[2],[3],[3]],[[1,4,x,-y],[1,5,x,-y],[2,3,y,-x],[2,6,j^2*x,-j*y],[3,5,2y,0],[3,6,2x,-y],[4,5,-j*y,0],[4,6,-j*x,0]]],[x,y])*x^0*r^0
+  f15(x,y,j)=WGraph2Representation([[[1],[1],[2],[2],[3],[3]],[[1,4,x,-y],[1,5,x,-y],[2,3,y,-x],[2,6,j^2*x,-j*y],[3,5,2y,0],[3,6,2x,-y],[4,5,-j*y,0],[4,6,-j*x,0]]],[x,y])*x^0*y^0
   function f19(x,y,d,sgn)
     v=-sgn*root(-x*y)
     expandrep(3, 8, Tuple{typeof(d*v//2), Vector{Int64}}[((-1//2)d*x+(-3//2)x,

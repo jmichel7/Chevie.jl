@@ -960,7 +960,7 @@ function family_imprimitive(ct,e)
          map(j->CharSymbol(s.S,m,j),0:m-1), mult, symbs[reduced]))
     mat=toL(mat)
     mat=reduce(vcat,map((m,l)->map(
-       i->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[reduced])),1:m),
+       _->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[reduced])),1:m),
                          mult, mat[reduced]))
     mult=vcat(fill.(mult,mult)...)
     for (i,si) in pairs(symbs), (j,sj) in pairs(symbs)
@@ -1114,7 +1114,7 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
   end
   append!(t,toL(foo.(fourier(f))))
   if maximum(length.(row_labels))<=4 append!(col_labels,row_labels)
-  else append!(col_labels,map(x->" ",row_labels))
+  else append!(col_labels,map(_->" ",row_labels))
   end
   showtable(io,permutedims(toM(t));row_labels,col_labels,rows_label="\\mbox{label}")
 end

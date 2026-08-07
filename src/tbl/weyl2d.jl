@@ -145,7 +145,7 @@ chevieset("2D", :UnipotentCharacters, function(rank)
   end
   uc[:a]=valuation_gendeg.(uc[:charSymbols])
   uc[:A]=degree_gendeg.(uc[:charSymbols])
-  uc[:almostCharSymbols]=map(i->CharSymbol([[0],[0]]),
+  uc[:almostCharSymbols]=map(_->CharSymbol([[0],[0]]),
                     1:sum(x->length(x[:charNumbers]),uc[:harishChandra]))
   for d in  4*(0:isqrt(div(rank,4)))
     r=div(d^2,4)
@@ -153,7 +153,6 @@ chevieset("2D", :UnipotentCharacters, function(rank)
       TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
       :eigenvalue=>(-1)^div(d+1,4))
     s[:cuspidalName]="D"*stringind(rio(TeX=true),r)
-    r=s[:relativeType].rank
     if d==0
       # order differs from Symbols.Symbolsshape(n,[d,0]) for d=0
       symbols=map(x->Symbol_partition_tuple(x,d),

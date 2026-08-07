@@ -413,7 +413,7 @@ function FitParameter(sch, m::AbstractVector{<:Rational{<:Integer}})
   function poss(i)
     # for each element (m_k,c_k) of tally(m) p will hold a minimal
     # corresponding possible set of j=σ(i)-σ(l) for l such that m_l=m_k
-    p=map(x->collect(0:e-1),a)
+    p=map(_->collect(0:e-1),a)
     avail=eachindex(a)
     good=Int[]
     term(j,k)=CycPol(1-E(e,j)*Pol([1],Int(den*(m[i]-first(a[k])))))
@@ -1063,7 +1063,6 @@ function paramcyclic(s::Series)
   Schur=map(x->degree(s)//Schur[x]*signs(s)[x],1:e(s))
   s.eigen=eigen(uc)[charnumbers(s)]
   LFrob=eigen(UnipotentCharacters(s.levi))[s.cuspidal]
-  m=degrees(Group(s.spets))
   s.delta=lcm(map(x->order(Root1(x[2])),filter(x->x[1]!=1,degrees(s.spets))))
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
   param(j,i)=Mvp(:q)^mC(s)[j]*Root1(;r=rr(j,i))
@@ -1099,7 +1098,7 @@ function paramcyclic(s::Series)
   end
   mmp=map(x->(x[1],map(y->mod(y,e(s))+1,map(j->j.+(r-1),x[2]))), mmp)
   r=fill(0,e(s))
-  s.permutable=map(x->0,charnumbers(s))
+  s.permutable=map(_->0,charnumbers(s))
   j=1
   for i in mmp
     a=arrangements(i[2], length(i[2]))
@@ -1155,7 +1154,7 @@ function getHecke(s)
     t=copy(t[1])
     scal=t.scalar
     InfoChevie("# removing scal==", scal, "\n")
-    t.scalar=map(x->1,t.scalar)
+    t.scalar=map(_->1,t.scalar)
     if t.orbit[1].series==:B && t.orbit[1].rank==2 && t.twist==perm"(1,2)"
       t.orbit[1].cartanType=E(8)-E(8, 3)
     end

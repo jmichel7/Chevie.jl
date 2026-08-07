@@ -428,7 +428,7 @@ end
 
 function hecke(W::Group,p::C=1;rootpara=missing)where C
   if ngens(W)==0 para=Vector{C}[]
-  elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
+  elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for _ in ordergens(W)]
   else para=map(o->vcat([p],E.(o,1:o-1)),ordergens(W))
   end
   hecke(W,para;rootpara=fill(rootpara,ngens(W)))
@@ -648,7 +648,7 @@ function isrepresentation(H::HeckeAlgebra,t;details=false)
   res
 end
 
-function isrepresentation(W,t;details=false)
+function isrepresentation(W::Group,t;details=false)
   res=true
   for (i,o) in enumerate(ordergens(W))
     rel=isone(W(i)^o)
@@ -666,6 +666,21 @@ function isrepresentation(W,t;details=false)
     end
   end
   res
+end
+
+function isrepresentation(WF::Spets,r;details=false)
+  res=true
+  W=Group(WF)
+  for i in eachindex(gens(W))
+    j=action(W,i,WF.phi)
+    if r.gens[i]*r.F!=r.F*r.gens[j]
+      if !details return false end
+      println("Error: F does not send ",ordinal(i)," generator to ",ordinal(j),
+               " generator");
+      res=false
+    end
+  end
+  isrepresentation(W,r.gens;details) && res
 end
 
 """

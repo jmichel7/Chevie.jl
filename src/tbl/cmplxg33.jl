@@ -454,7 +454,7 @@ end)
 chevieset(:G33,:galomorphisms,perm"(4,5)(6,7)(10,11)(12,13)(14,15)(16,17)(18,19)(20,21)(25,26)(28,29)")
 
 chevieset(:G33, :HeckeRepresentation, function (para, rootpara, i)
-  f1(r)=map(x->[r;;],1:5)
+  f1(r)=map(_->[r;;],1:5)
   f5(x,y,j)=WGraph2Representation([[[2,3,4,5],[1,3,4,5],[1,2,4,5],[1,2,3,5],
     [1,2,3,4]],[[1,2,x,-y],[2,3,-j*y,j^2*x],[2,4,-y,x],[3,4,x,-y],[4,5,x,-y]]],
     [x,y])*y^0*x^0

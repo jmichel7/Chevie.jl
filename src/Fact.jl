@@ -656,7 +656,6 @@ function ApproxRootBound(f::Pol{<:Rational})
   f=shift(f,-f.v)
   # probably first test, whether polynomial should be inverted. However,
   # we expect roots larger than one.
-  d=degree(f)
   f=Pol(reverse(f.c))
   app=1//2
   diff=1//4
@@ -710,14 +709,11 @@ end
 
 # bound for absolute value of (complex) roots of f
 function RootBound(f)
-  # valuation gives only 0 as zero, this can be neglected
-  if f.v>0 f=shift(f,-f.v) end
-  # normieren
-  f=f//f[end]
+  if f.v>0 f=shift(f,-f.v) end # f.v gives only 0 as zero, they can be neglected
+  f=f//f[end] # make monic
   a=ApproxRootBound(f)
   # did the numerical part fail?
   if isnothing(a)
-    b=f.baseRing
     b=Pol([2],degree(f))-Pol(abs.(f.c))
     a=ApproxRootBound(b)
     if isnothing(a)
@@ -777,7 +773,7 @@ function HenselBound(pol,n=1,d=0) # not completely translated from GAP
   w=sum(i->i^2,pol.c)
   # we want an upper bound of the root
   # As we nowhere selected a specific galois representative,
-  # this bound (which is rational!) will bound all conjugactes as well.
+  # this bound (which is rational!) will bound all conjugates as well.
   lm=Integer(ceil(sqrt(w)))
   lb=2^div(degree(pol), 2)*lm # unused
   bound=map(1:degree(pol))do k

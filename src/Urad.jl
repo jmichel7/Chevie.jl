@@ -407,7 +407,7 @@ function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
     end
     m
   end
-  comm=[NTuple{4,Int}[] for i in 1:2*ns]
+  comm=[NTuple{4,Int}[] for _ in 1:2*ns]
   for (i,(r,s,rs)) in enumerate(special)
     for c in [[1, 1], [2, 1], [1, 2], [3, 1], [1, 3], [3, 2], [2, 3]]
 # possible (i,j) such that there may exist a root is+jr.

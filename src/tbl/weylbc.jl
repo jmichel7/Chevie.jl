@@ -349,7 +349,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,cartanType)
   for cl in ss
     cc = Dict{Symbol, Any}(:parameter => symbol2para(cl[1].symbol))
     v=cl[1].Au
-    cc[:Au]=isempty(v) ? coxgroup() : prod(map(x->coxgroup(:A,1),v))
+    cc[:Au]=isempty(v) ? coxgroup() : prod(map(_->coxgroup(:A,1),v))
     if char!=2
       cc[:dynkin] = part2dynkin(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])

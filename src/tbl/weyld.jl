@@ -286,7 +286,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       else                           res[:Z]=iseven(n) ? [-1,1] : [-1]
       end
       res[:relgroup]=coxgroup(defect==0 ? :D : :B, rank)
-      res[:locsys]=[[0,0] for i in 1:nconjugacy_classes(res[:relgroup])]
+      res[:locsys]=[[0,0] for _ in 1:nconjugacy_classes(res[:relgroup])]
       res
   end
   for cl in ss
@@ -303,7 +303,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       cc[:name]=joindigits(cc[:parameter])
     end
     cc[:Au]=isempty(cl[1].Au) ? coxgroup() :
-       prod(coxgroup(:A,1) for i in eachindex(cl[1].Au))
+       prod(coxgroup(:A,1) for _ in eachindex(cl[1].Au))
     if char != 2
       cc[:red]=coxgroup()
       for j in tally(cc[:parameter])
@@ -363,25 +363,25 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        l=vcat(1:i,i+2:2:n)
        s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
        if mod(n, 2) == 0 s[:Z]=[-1,-1] else s[:Z]=[E(4)] end
-       s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
+       s[:locsys]=[[0,0] for _ in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        if d==0 l=vcat([1], 4:2:n) end
        s=Dict(:relgroup => coxgroup(:B, div(n-i,2)),:levi=>l)
        if mod(n,2)==0 s[:Z]=[1,-1]
        else s[:Z]=[-(E(4))]
        end
-       s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
+       s[:locsys]=[[0,0] for _ in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        i=4d^2+d
        if d != 0 && i <= n
          l=vcat(1:i, i+2:2:n)
          s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
          if mod(n,2)==0 s[:Z]=[-1,-1] else s[:Z]=[E(4)] end
-         s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
+         s[:locsys]=[[0,0] for _ in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
          s=Dict(:relgroup=>coxgroup(:B,div(n-i,2)),:levi=>l)
          if mod(n, 2) == 0 s[:Z]=[1, 1] else s[:Z]=[-(E(4))] end
-         s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
+         s[:locsys]=[[0,0] for _ in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
        end
      end

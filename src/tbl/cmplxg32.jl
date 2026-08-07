@@ -85,7 +85,7 @@ end)
 
 # Irrationality of chars:
 # f36,f45 use E(3); f64 uses root(v*w); f81 uses root(u*v*w,3)
-chevieset(:G32, :HeckeCharTable, function (para, rt)
+chevieset(:G32, :HeckeCharTable, function(para,_)
   # possibilities are a=+-1 c=+-1 b in 1, -1, 3, -3 e in +-1,+-3,+-5
   a=b=c=e=1
 # a=Mvp(:a); b=Mvp(:b); c=Mvp(:c); e=Mvp(:e);
@@ -120,7 +120,7 @@ v^20*w^60*(v^2+3*w^2),-v^5*w^16*(2*w+v),-2*v^10*w^33*(-w+v)*(v*w+v^2+w^2),
 2*v^10*w^31*(w+v),-v^5*w^15*(v+3*w),-4*v^5*w^15,-2*v^15*w^46*(w+v),
 -v^15*w^45*(v^2+3*w^2),v^10*w^30*(v+3*w),-v^15*w^45*(v+3*w),
 -4*v^25*w^75,-4*v^15*w^45,4*v^10*w^30,4*v^20*w^60]
-  f5(u,v,w)=[5,2*u+3*w,w*(2*u+w),2*u*w+u^2+2*w^2,2*u^2+3*w^2,w^3,
+  f5(u,_,w)=[5,2*u+3*w,w*(2*u+w),2*u*w+u^2+2*w^2,2*u^2+3*w^2,w^3,
 w*(u*w+u^2+w^2),u*w^2,u*w^2+u^2*w+u^3+2*w^3,-u^2*w^2,
 u^4*w^9*(u*w+u^2+w^2)*(-u^4-u*w^3+w^4),w*(u*w^2+u^3+w^3),0,2*u^2*w^2+u^4+2*w^4,
 w^3*(-2*u^3*w-2*u^4+w^4),w^4,w*(-u*w^3-u^2*w^2-u^3*w-u^4+w^4),0,-u^4*w^4,
