@@ -1429,15 +1429,20 @@ julia> representation(complex_reflection_group(24),3)
 """
 function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   tt=refltype(W)
-  if isempty(tt) return Matrix{Int}[] end
-  if length(tt)==1 return chevieget(tt[1],:Representation,i) end
+  pt=perm(inv(sortPerm(indices(tt))))
+  if isempty(tt) return W isa Spets ? (gens=Matrix{Int}[], F=fill(0,0,0)) : Matrix{Int}[]
+  end
+  if length(tt)==1 
+    r=representation(tt[1],i,chevieget(tt[1],:Representation,i))
+    W isa Spets ? (gens=r.gens[pt],r.F) : r[pt]
+  end
   v=lin2cart(chevieget.(tt,:nconjugacy_classes),i)
-  mm=chevieget.(tt,:Representation,v)
+  mm=map((t,j)->representation(t,j,chevieget(t,:Representation,j)),tt,v)
   if any(isnothing,mm) || any(==(false),mm) return nothing end
   if W isa Spets
-    FF=map(x->x.F,mm)
+    FF=getindex.(mm,:F)
     F=length(FF)==1 ? FF[1] : kron(FF...)
-    mm=map(x->x.gens,mm)
+    mm=getindex.(mm,:gens)
   end
   n=length(tt)
   if n==1 reps=mm[1]
@@ -1447,7 +1452,32 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
       end
     end...)
   end
-  (W isa Spets) ? (gens=reps,F) : reps
+  (W isa Spets) ? (gens=reps[pt],F) : reps[pt]
+end
+
+# compute F and gens when F-orbit is not trivial
+function representation(t::TypeIrred,i::Integer,rr)
+  if !haskey(t,:orbit) return rr end
+  if isone(t.twist) gens=rr;F=one(rr[1])
+  else gens=rr.gens;F=rr.F end
+  l=length(t.orbit)
+  if l==1 return (gens=gens,F=F) end
+  r=size(gens[1],1)
+  gens=vcat(map(1:l)do i
+    map(gens)do m
+      kron(map(k->k==i ? m : one(m),1:l)...)
+    end
+   end...)
+  FF=zero(gens[1])
+  shape=fill(r,l)
+  for i in 1:r^l 
+    tup=collect(lin2cart(shape,i))
+    for j in 1:r 
+      FF[i,cart2lin(shape,vcat([j],tup[1:length(tup)-1]))]=F[tup[end],j]
+    end
+  end
+  F=FF
+  (gens=gens,F=F)
 end
 
 """

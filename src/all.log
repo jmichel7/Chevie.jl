@@ -1,0 +1,1626 @@
+======== diagnostics for . =========
+======== diagnostics for . =========
+ 0:00:00.026
+======== diagnostics for A1 =========
+[Discriminant(A1)]not implemented
+ 0:00:00.060
+======== diagnostics for 2A2 =========
+[Series(2A2)]^1 not equal to pi(A2)
+ 0:00:00.114
+======== diagnostics for A2 =========
+[Discriminant(A2)]not implemented
+ 0:00:00.128
+======== diagnostics for I2(5) =========
+[GaloisAutomorphisms(I2(5))]not Galois stable
+[GaloisAutomorphisms(I2(5))]not Galois stable
+[UdFdImprimitive(I2(5))]Deg(01,0,01,,)=-ud where ud=ER(5)/5qP1^2P2
+[Discriminant(I2(5))]not implemented
+ 0:00:00.174
+======== diagnostics for B2 =========
+[UnipotentCentralizers(B2)]311.2:q^3.(q-1)?Z2 => 2q^3P1 (is 2q^3P2)
+[Discriminant(B2)]not implemented
+ 0:00:00.238
+======== diagnostics for G2 =========
+[UdFdImprimitive(G2)]Deg(01,01,0,,,0)=-ud where ud=1/6qP1^2P6
+[UdFdImprimitive(G2)]Deg(01,0,0,01,,)=-ud where ud=1/3qP1^2P2^2
+[UdFdImprimitive(G2)]Deg(01,01,,0,0,)=-ud where ud=1/3qP1^2P2^2
+ 0:00:00.470
+======== diagnostics for A3 =========
+[Discriminant(A3)]not implemented
+ 0:00:00.233
+======== diagnostics for 2Bsym2 =========
+[UdFdImprimitive(2Bsym2)]Deg(02,,0,0)=-ud where ud=1
+[UdFdImprimitive(2Bsym2)]Deg(1,1,0,0)=-fd where fd=qP1P2
+ 0:00:00.071
+======== diagnostics for 2Gsym2 =========
+ 0:00:00.110
+======== diagnostics for 2I2(5) =========
+[UdFdImprimitive(2I2(5))]Deg(02,,0,0,0)=-ud where ud=1
+[UdFdImprimitive(2I2(5))]Deg(01,0,,,01)=(-5+ER(5))/10qP1P'10 but ud=(5+
+ER(5))/10qP1P"10
+[UdFdImprimitive(2I2(5))]Deg(01,,0,1,0)=(5+ER(5))/10qP1P"10 but ud=
+(5-ER(5))/10qP1P'10
+[UdFdImprimitive(2I2(5))]Deg(01,,1,0,0)=-ud where ud=-ER(5)/5qP1P2^2
+[UdFdImprimitive(2I2(5))]Deg(01,,0,0,1)=-ud where ud=-ER(5)/5qP1P2^2
+[UdFdImprimitive(2I2(5))]Deg(1,1,0,0,0)=E5^2fd where fd=qP1P3
+[UdFdImprimitive(2I2(5))]Deg(1,0,1,0,0)=E5^3fd where fd=q^2P1
+[Series(2I2(5))]-E(5)^3-series R^{2I2(5)}_{(q^2+(-1-ER(5))/2q+1)}() W_G(L,c)=
+Z5predicted eigenvalues cannot match actual
+[Series(2I2(5))]^1 not equal to pi(I2(5))
+[Series(2I2(5))]-E(5)^3-series R^{2I2(5)}_{(q^2+(-1-ER(5))/2q+1)}() W_G(L,c)=
+Z5predicted eigenvalues cannot match actual
+ 0:00:00.122
+======== diagnostics for 2Isym2(8) =========
+[UdFdImprimitive(2Isym2(8))]Deg(02,,0,0,0,0,0,0)=-ud where ud=1
+[UdFdImprimitive(2Isym2(8))]Deg(01,0,,,01,0,0,0)=-ud where ud=(-E16^5+
+E16^3)/4qP1P2P'16
+[UdFdImprimitive(2Isym2(8))]Deg(01,0,,0,0,,01,0)=-ud where ud=(-E16^7-E16^5+
+E16^3+E16)/8qP1P2(q+E16^9)(q+E16^13)(q+E16^3)(q+E16^7)
+[UdFdImprimitive(2Isym2(8))]Deg(01,0,0,,,0,01,0)=-ud where ud=(-E16^7+
+E16^5-E16^3+E16)/8qP1P2(q+E16^9)(q+E16^11)(q+E16^5)(q+E16^7)
+[UdFdImprimitive(2Isym2(8))]Deg(1,1,0,0,0,0,0,0)=Ifd where fd=qP1P2P3P6
+[UdFdImprimitive(2Isym2(8))]Deg(1,0,1,0,0,0,0,0)=E8^3fd where fd=q^2P1P2P4
+[UdFdImprimitive(2Isym2(8))]Deg(1,0,0,1,0,0,0,0)=-fd where fd=q^3P1P2
+ 0:00:00.224
+======== diagnostics for G5 =========
+ 0:00:00.317
+======== diagnostics for 2A3 =========
+ 0:00:00.227
+======== diagnostics for G4 =========
+[G4_22indexClasses(G4)]
+indexclasses |7 16 21 27 31 37
+_______________________________
+fusion to G7 |3  5  7  9 11 14
+classtext    |7 16 21 27 31 37
+ 0:00:00.500
+======== diagnostics for G9 =========
+[G4_22indexClasses(G9)]
+ indexclasses | 4 10 16 22 42 48 54 60 64 70 76 82
+___________________________________________________
+fusion to G11 |16 22  4 10 54 60 42 48 76 82 64 70
+classtext     | 4 10 16 22 42 48 54 60 64 70 76 82
+ 0:00:01.089
+======== diagnostics for G12 =========
+[G4_22indexClasses(G12)]
+ indexclasses |13 25 45 57 64 76 91
+____________________________________
+fusion to G11 | 2  3  4  5  6  7  8
+classtext     |13 25 45 57 64 76 91
+ 0:00:00.762
+======== diagnostics for G13 =========
+[Hgal(G13)]Hgal wrong for 7
+[Hgal(G13)]Hgal wrong for 8
+ 0:00:00.516
+======== diagnostics for 3D4 =========
+[UnipotentClasses(3D4)]1.1=11111111. dimBu=>12 and Springer[1.2]=>6
+[UnipotentClasses(3D4)]2.1=221111. dimBu=>7 and Springer[1.6]=>3
+[UnipotentClasses(3D4)]3.2=3311.2 dimBu=>3 and Springer[1.7]=>6
+[UnipotentClasses(3D4)]4.1=3221. dimBu=>4 and Springer[1.3]=>7
+[UnipotentClasses(3D4)]5.1=71. dimBu=>0 and Springer[1.1]=>6
+[UnipotentClasses(3D4)]6.1=53. dimBu=>1 and Springer[1.5]=>4
+[UnipotentClasses(3D4)]1.1=11111111. dimBu=>12 and Springer[1.2]=>6
+[UnipotentClasses(3D4)]2.1=(22)1111. dimBu=>7 and Springer[1.6]=>3
+[UnipotentClasses(3D4)]3.2=3311.2 dimBu=>3 and Springer[1.7]=>6
+[UnipotentClasses(3D4)]4.1=2222. dimBu=>4 and Springer[1.3]=>7
+[UnipotentClasses(3D4)]5.2=62.2 dimBu=>0 and Springer[1.1]=>6
+[UnipotentClasses(3D4)]6.1=44. dimBu=>1 and Springer[1.5]=>4
+ 0:00:00.538
+======== diagnostics for 2A4 =========
+[Series(2A4)]^1 not equal to pi(A4)
+ 0:00:00.534
+======== diagnostics for G312 =========
+[DegreesFromHC(G312)((q-1)^2)]Parameter: computed:[1,1] stored:[[1,0,0],1] 
+for G312
+[Discriminant(G312)]not implemented
+ 0:00:00.433
+======== diagnostics for G333 =========
+[UdFdImprimitive(G333)]Deg(012,,)=-ud where ud=-ER(-3)/3qP1^3P2
+[UdFdImprimitive(G333)]Deg(012,012,)=-ud where ud=ER(-3)/3q^4P1^3P2
+[Discriminant(G333)]not implemented
+ 0:00:00.818
+======== diagnostics for B3 =========
+[UnipotentCentralizers(B3)]31111.2:q^5.A1xA1?Z2 => 2q^7P1^2P2^2 (is 
+2q^7P1P2P4)
+[UnipotentCentralizers(B3)]511.2:q^4.(q-1)?Z2 => 2q^4P1 (is 2q^4P2)
+[UnipotentCentralizers(B3)]331.2:q^6.(q-1)?Z2 => 2q^6P1 (is 2q^6P2)
+[Discriminant(B3)]not implemented
+ 0:00:00.801
+======== diagnostics for C3 =========
+[UnipotentCentralizers(C3)]2211.2:q^7.A1.(q-1)?Z2 => 2q^8P1^2P2 (is 
+2q^8P1P2^2)
+[Discriminant(C3)]not implemented
+ 0:00:00.802
+======== diagnostics for A4 =========
+[Discriminant(A4)]not implemented
+ 0:00:00.602
+======== diagnostics for G7 =========
+ 0:00:00.844
+======== diagnostics for G10 =========
+ 0:00:01.657
+======== diagnostics for G22 =========
+[GaloisAutomorphisms(G22)]k_W=NF(20,[ 1, 9 ]) but matrices over CF(20)
+[G4_22indexClasses(G22)]
+ indexclasses |16 31 46 61 76 96 111 126 141 160 175 190 205 214 229 244 259
+_____________________________________________________________________________
+fusion to G19 | 2  3  4  5  6  7   8   9  10  11  12  13  14  15  16  17  18
+classtext     |16 31 46 61 76 96 111 126 141 160 175 190 205 214 229 244 259
+ 0:00:25.382
+======== diagnostics for G443 =========
+[FakeDegreesInduce(G443) from2B?2(-I-1)[E8^3]<2,1>.(q-I)]quotient [ 1, 1, -1 ]
+[DegreesFromHC(G443)(B?2(-I-1)<2,1>.(q-1))]Schur(Hecke(Z4,[[q^2,Iq^2,-1,
+-I]]))=-ud
+[GendegsHCInduce(G443)[ 1, 2 ]]Relgroups:G443,Z4
+[GendegsHCInduce(G443)[ 1, 2 ]]udLevi*index[6]=-viaHCInductionTable[6]
+[LusztigInduction(G443)]non-positive RLG for untwisted L
+[LusztigInduction(G443) from B?2(-I-1)<2,1>.(q-1)][4/16,1/6] of 
+HCInductionTable
+      |B2
+__________
+B2:1  | 1
+B2:I  | 1
+B2:-1 | 1
+B2:-I | 1
+,LusztigInduction
+      |B2
+__________
+B2:1  |-1
+B2:I  |-1
+B2:-1 |-1
+B2:-I |-1
+[LusztigInduction(G443)]a[3]=-b[3]
+[LusztigInduction(G443)]a[4]=-b[4]
+[LusztigInduction(G443)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,
+E(8)^3]]
+[LusztigInduction(G443) from 2B?2(-I-1)[E8^3]<2,1>.(q-I)]  RLG(2B2[1,3])=
+[G443]=<.1.1.1>-<..11.1>-<.1..2>+<B2:-1>+<G4,4,3[I]>
+  (I-1)/2qP1^2P2P3P"4P8 instead of (-I+1)/2qP1^2P2P3P"4P8 quotient -1
+[LusztigInduction(G443) from 2B?2(-I-1)[E8^3]<2,1>.(q-I)]  RLG(2B2[1,5])=
+[G443]=<.1.1.1>-<.1..11>-<..1.2>+<B2:I>-<G4,4,3[-I]>
+  (I-1)/2qP1^2P2P3P"4P8 instead of (-I+1)/2qP1^2P2P3P"4P8 quotient -1
+[LusztigInduction(G443)]#I WARNING: ambiguity in scalars:[[1,E(8)^5],[1,E(8)]]
+[Series(G443)]non-positive RLG for untwisted L
+[Series(G443)]# WGL:2/4 fix c
+[Series(G443)]-1-series R^{G443}_{B?2(-I-1)[I]<46,2>.(q+1)}(11.) W_G(L,c)=
+Z2non-integral ratio=1/2
+[Series(G443)]# WGL:2/4 fix c
+[Series(G443)]-1-series R^{G443}_{B?2(-I-1)[I]<46,2>.(q+1)}(.2) W_G(L,c)=
+Z2non-integral ratio=1/2
+[Series(G443)]-1-series R^{G443}_{B?2(-I-1)[I]<46,2>.(q+1)}(11.) W_G(L,c)=
+Z2non-integral ratio=1/2
+[Series(G443)]-1-series R^{G443}_{B?2(-I-1)[I]<46,2>.(q+1)}(.2) W_G(L,c)=
+Z2non-integral ratio=1/2
+[ParameterExponents(G443)from B?2(-I-1)<2,1>.(q-1):[ 3 ]]non-positive RLG for 
+untwisted L
+[HCSeries(G443)]non-positive RLG for untwisted L
+[Discriminant(G443)]not implemented
+ 0:00:01.229
+======== diagnostics for H3 =========
+[GaloisAutomorphisms(H3)]not Galois stable
+[GaloisAutomorphisms(H3)]not Galois stable
+[Series(H3)]-1-series R^{H3}_{2I2(5).(q+1)}(2I2(5)[1,3]) H_G(L,c)=Hecke(A1,
+-q^5) actual eigen differ from predicted eigen
+[Series(H3)]predicted=-1*actual
+[Series(H3)]-1-series R^{H3}_{2I2(5).(q+1)}(2I2(5)[1,7]) H_G(L,c)=Hecke(A1,
+-q^5) actual eigen differ from predicted eigen
+[Series(H3)]predicted=-1*actual
+[Series(H3)]should not have perm
+[Series(H3)]should not have perm
+ 0:00:02.210
+======== diagnostics for 2D4 =========
+[UnipotentClasses(2D4)]1.1=11111111. dimBu=>12 and Springer[1.1]=>6
+[UnipotentClasses(2D4)]2.1=311111. dimBu=>6 and Springer[1.3]=>7
+[UnipotentClasses(2D4)]3.1=221111. dimBu=>7 and Springer[1.2]=>6
+[UnipotentClasses(2D4)]4.1=5111. dimBu=>2 and Springer[1.7]=>6
+[UnipotentClasses(2D4)]5.2=3311.2 dimBu=>3 and Springer[1.5]=>4
+[UnipotentClasses(2D4)]6.1=3221. dimBu=>4 and Springer[1.6]=>3
+[UnipotentClasses(2D4)]7.1=71. dimBu=>0 and Springer[1.9]=>2
+[UnipotentClasses(2D4)]8.1=53. dimBu=>1 and Springer[1.8]=>2
+[UnipotentClasses(2D4)]1.1=11111111. dimBu=>12 and Springer[1.1]=>6
+[UnipotentClasses(2D4)]2.1=221111. dimBu=>6 and Springer[1.3]=>7
+[UnipotentClasses(2D4)]3.1=(22)1111. dimBu=>7 and Springer[1.2]=>6
+[UnipotentClasses(2D4)]4.1=4211. dimBu=>2 and Springer[1.7]=>6
+[UnipotentClasses(2D4)]5.2=3311.2 dimBu=>3 and Springer[1.5]=>4
+[UnipotentClasses(2D4)]6.1=2222. dimBu=>4 and Springer[1.6]=>3
+[UnipotentClasses(2D4)]7.2=62.2 dimBu=>0 and Springer[1.9]=>2
+[UnipotentClasses(2D4)]8.1=44. dimBu=>1 and Springer[1.8]=>2
+[UnipotentCentralizers(2D4)]3311.1:q^8.(q+1)^2?Z2 => 2q^8P2^2 (is 2q^8P1P2)
+[UnipotentCentralizers(2D4)]3311.2:q^8.(q+1)^2?Z2 => 2q^8P2^2 (is 2q^8P1P2)
+[Series(2D4)]# WGL:2/4 fix c
+[Series(2D4)]# WGL:2/4 fix c
+[Series(2D4)]-1-series R^{2D4}_{(q-1)(q+1)^3}() H_G(L,c)=Hecke(B?3(-1)<2,3,1>,
+[-q,q^2,-q]) actual eigen differ from predicted eigen
+[Series(2D4)][1/1,5/10] of 
+
+          |111. .111 21. 2.1 1.2
+_________________________________
+actual    |   1    1   1   1   1
+,
+          |111. .111 21. 2.1 1.2
+_________________________________
+predicted |  -1   -1  -1  -1  -1
+[HCSeries(2D4)]para=Permuted(stored para),(1,2)
+ 0:00:01.281
+======== diagnostics for G6 =========
+[Series(G6)]should not have perm
+ 0:00:01.958
+======== diagnostics for 2A5 =========
+[Series(2A5)]^1 not equal to pi(A5)
+[Series(2A5)]-E(3)^2-series R^{2A5}_{(q+1)(q^2-q+1)^2}() H_G(L,c)=
+Hecke(G312(rec()),[[E3^2q^2,-E3^2q,E3^2],-q^3]) actual eigen differ from 
+predicted eigen
+[Series(2A5)]predicted=E(3)^2*actual
+ 0:00:01.231
+======== diagnostics for 2Fsym4 =========
+[Series(2Fsym4)]-1-series R^{2Fsym4}_{(q-1)^2(q+1)^2}() H_G(L,c)=Hecke(I?(1+
+1/2*E(8)-1/2*E(8)^3)(8),[q^4,q^2]) actual eigen differ from predicted eigen
+[Series(2Fsym4)][1/1,2/7] of 
+
+          |phi{2,1} phi{2,3}
+_____________________________
+actual    |       1        1
+,
+          |phi{2,1} phi{2,3}
+_____________________________
+predicted |      -1       -1
+[Series(2Fsym4)]E(8)-series R^{2Fsym4}_{(q^2-ER(2)q+1)^2}() H_G(L,c)=Hecke(G8,
+[[-Iq^2,E8q,E8^3q,-I]]) actual eigen differ from predicted eigen
+[Series(2Fsym4)][1/1,12/16] of 
+
+          |phi{1,0} phi{1,8} 2B2[1,3]:2 2B2[1,5]:2 2F4[-1]
+___________________________________________________________
+actual    |       1        1       E8^3       E8^5      -1
+
+          |2F4^4[-1] 2B2[1,3]:11 2B2[1,5]:11 phi{1,4}' 2F4^2[I]
+________________________________________________________________
+actual    |       -1        E8^3        E8^5         1        I
+
+          |2F4^2[-I] phi{1,4}''
+________________________________
+actual    |       -I          1
+,
+          |phi{1,0} phi{1,8} 2B2[1,3]:2 2B2[1,5]:2 2F4[-1]
+___________________________________________________________
+predicted |      -1       -1         E8       E8^7       1
+
+          |2F4^4[-1] 2B2[1,3]:11 2B2[1,5]:11 phi{1,4}' 2F4^2[I]
+________________________________________________________________
+predicted |        1          E8        E8^7        -1       -I
+
+          |2F4^2[-I] phi{1,4}''
+________________________________
+predicted |        I         -1
+ 0:00:01.155
+======== diagnostics for G8 =========
+[G4_22indexClasses(G8)]
+ indexclasses |7 13 19 28 34 39 45 51 57 61 67 73 79 85 91
+___________________________________________________________
+fusion to G11 |3  5  7  9 11 13 15 17 19 21 23 26 28 30 32
+classtext     |7 13 19 28 34 39 45 51 57 61 67 73 79 85 91
+[Series(G8)]should not have perm
+[Series(G8)]E(4)-series R^{G8}_{Z4.(q-I)}(Z4^1022) W_G(L,c)=Z4 actual eigen 
+differ from predicted eigen
+[Series(G8)]predicted=-1*actual
+ 0:00:02.322
+======== diagnostics for G24 =========
+[Series(G24)]should not have perm
+[Series(G24)]should not have perm
+ 0:00:02.982
+======== diagnostics for D4 =========
+[UnipotentCentralizers(D4)]3311.2:q^8.(q-1)^2?Z2 => 2q^8P1^2 (is 2q^8P2^2)
+[Discriminant(D4)]not implemented
+ 0:00:01.813
+======== diagnostics for A5 =========
+[Discriminant(A5)]not implemented
+ 0:00:04.388
+======== diagnostics for G334 =========
+[DegreesFromHC(G334)(G333.(q-1))]Parameter: computed:[3] stored:[[3,0,0]] for 
+Z3
+[UdFdImprimitive(G334)]Deg(013,,)=-ud where ud=-ER(-3)/3qP1^3P2^2P4
+[UdFdImprimitive(G334)]Deg(0123,1,0)=-ud where ud=E3^2/3q^4P1^3P2^2P4P"9
+[UdFdImprimitive(G334)]Deg(0123,0,1)=-ud where ud=-E3/3q^4P1^3P2^2P4P'9
+[UdFdImprimitive(G334)]Deg(013,012,)=-ud where ud=E3/3q^4P1^3P2^2P4P'9
+[UdFdImprimitive(G334)]Deg(012,013,)=-ud where ud=-E3^2/3q^4P1^3P2^2P4P"9
+[UdFdImprimitive(G334)]Deg(0123,0123,1)=-ud where ud=ER(-3)/3q^10P1^3P2^2P4
+[Series(G334)][ 2, 3, 2, 3, 2, 3 ]^2 not equal to pi(G632(rec()))
+[Series(G334)]E(3)-series R^{G334}_{(q-1)(q-E3)^3}() H_G(L,c)=
+Hecke(G313(rec()),[[E3q^2,q,E3^2],E3^2q,E3^2q]) actual eigen differ from 
+predicted eigen
+[Series(G334)]Permuted columns:
+G3,3,3[E3]:E3^2->G3,3,3[E3^2]:E3^2->G3,3,3[E3^2]:E3->G3,3,3[E3]:1->G3,3,
+3[E3]:E3->G3,3,3[E3^2]:1
+[HCSeries(G334)]charnum=Permuted(stored),(1,2,3)
+[HCSeries(G334)]para[1] not found
+[Discriminant(G334)]not implemented
+ 0:00:05.692
+======== diagnostics for B4 =========
+[UnipotentCentralizers(B4)]3111111.2:q^7.A3?Z2 => 2q^13P1^3P2^2P3P4 (is 
+2q^13P1^2P2^3P4P6)
+[UnipotentCentralizers(B4)]51111.2:q^6.A1xA1?Z2 => 2q^8P1^2P2^2 (is 
+2q^8P1P2P4)
+[UnipotentCentralizers(B4)]33111.2:q^10.A1.(q-1)?Z2 => 2q^11P1^2P2 (is 
+2q^11P1P2^2)
+[UnipotentCentralizers(B4)]32211.2:q^12.A1.(q-1)?Z2 => 2q^13P1^2P2 (is 
+2q^13P1P2^2)
+[UnipotentCentralizers(B4)]711.2:q^5.(q-1)?Z2 => 2q^5P1 (is 2q^5P2)
+[Discriminant(B4)]not implemented
+ 0:00:03.322
+======== diagnostics for C4 =========
+[UnipotentCentralizers(C4)]2222.2:q^10.A1xA1?Z2 => 2q^12P1^2P2^2 (is 
+2q^12P1P2P4)
+[UnipotentCentralizers(C4)]221111.2:q^11.B2<2,1>.(q-1)?Z2 => 2q^15P1^3P2^2P4 
+(is 2q^15P1^2P2^3P4)
+[UnipotentCentralizers(C4)]44.2:q^7.(q-1)?Z2 => 2q^7P1 (is 2q^7P2)
+[UnipotentCentralizers(C4)]422.2:q^9.(q-1)?Z2 => 2q^9P1 (is 2q^9P2)
+[Discriminant(C4)]not implemented
+ 0:00:03.212
+======== diagnostics for F4 =========
+[NrSemisimple(F4)]found nr elem=q^24-q^26-q^29-3q^30-q^31-4q^32+
+q^33-q^35-4q^36+2q^37+4q^38-2q^40+q^41+5q^42+q^43+3q^44-q^45+2q^46+
+q^47-q^48-2q^49-q^50+q^52 instead of q^24-q^26-q^30+q^34-q^36+2q^38-q^40+
+q^42-q^46-q^50+q^52
+[Series(F4)]E(3)-series R^{F4}_{(q^2+q+1)^2}() H_G(L,c)=Hecke(G5(2-ER(-3)),
+[[E3q^2,E3,E3q]]) actual eigen differ from predicted eigen
+[Series(F4)]Permuted columns:
+F4[E3]->F4^2[1]
+[Series(F4)]-E(3)^2-series R^{F4}_{(q^2-q+1)^2}() H_G(L,c)=Hecke(G5(2-ER(-3)),
+[[E3^2q^2,-E3^2q,E3^2]]) actual eigen differ from predicted eigen
+[Series(F4)]Permuted columns:
+phi{12,4}->F4[E3]
+ 0:00:16.037
+======== diagnostics for G15 =========
+ 0:00:04.438
+======== diagnostics for G16 =========
+[G4_22indexClasses(G16)]
+ indexclasses |7 13 19 25 31 37 43 49 55 64 70 76 82 88 93 99 105 111 117 123
+______________________________________________________________________________
+fusion to G19 |3  5  7  9 11 13 15 17 19 21 23 25 27 29 31 33  35  37  39  41
+classtext     |7 13 19 25 31 37 43 49 55 64 70 76 82 88 93 99 105 111 117 123
+
+ indexclasses |129 135 141 147 151 157 163 169 175 181 187 193 199 205 211
+___________________________________________________________________________
+fusion to G19 | 43  45  47  49  51  53  55  57  59  62  64  66  68  70  72
+classtext     |129 135 141 147 151 157 163 169 175 181 187 193 199 205 211
+
+ indexclasses |217 223 229 235 241 247 253 259 265
+___________________________________________________
+fusion to G19 | 74  76  78  80  82  84  86  88  90
+classtext     |217 223 229 235 241 247 253 259 265
+ 0:00:30.464
+======== diagnostics for G20 =========
+[G4_22indexClasses(G20)]
+ indexclasses |11 21 31 41 51 66 76 86 91 101 111 121 131 141 155 165 175 185
+______________________________________________________________________________
+fusion to G19 | 6 11 16 21 26 31 36 41 46  51  56  61  66  71  76  81  86  91
+classtext     |11 21 31 41 51 66 76 86 91 101 111 121 131 141 155 165 175 185
+
+ indexclasses |195 205 219 229 239 249 259 269
+_______________________________________________
+fusion to G19 | 96 101 106 111 116 121 126 131
+classtext     |195 205 219 229 239 249 259 269
+ 0:00:28.487
+======== diagnostics for G25 =========
+[Series(G25)]-1-series R^{G25}_{(Z3xZ3)[-1,-1]<50,3>.(q+1)}(Z3,Z3) W_G(L,c)=
+Z6non-integral ratio=1/3
+[Series(G25)]-1-series R^{G25}_{(Z3xZ3)[-1,-1]<50,3>.(q+1)}(Z3,Z3) W_G(L,c)=
+Z6non-integral ratio=1/3
+[Series(G25)]-E(3)^2-series R^{G25}_{(q-E3^2)(q+E3^2)^2}() H_G(L,c)=Hecke(G5,
+[E3^2q^2,-E3q]) actual eigen differ from predicted eigen
+[Series(G25)]Permuted columns:
+Z3:1..1->Z3,Z3:E3->phi{6,4}''
+ 0:00:07.688
+======== diagnostics for 2A6 =========
+[Series(2A6)]-E(3)^2-series R^{2A6}_{2A3<3,4,5>.(q+1)(q^2-q+1)}(.2) W_G(L,c)=
+Z3non-integral ratio=3/2
+[Series(2A6)]^1 not equal to pi(A6)
+[Series(2A6)]-E(3)^2-series R^{2A6}_{2A3<3,4,5>.(q+1)(q^2-q+1)}(.2) W_G(L,c)=
+Z3non-integral ratio=3/2
+[Series(2A6)]-E(3)^2-series R^{2A6}_{(q+1)^2(q^2-q+1)^2}() H_G(L,c)=
+Hecke(G312(rec()),[[E3q^4,E3,E3q^2],-q^3]) actual eigen differ from predicted 
+eigen
+[Series(2A6)]predicted=E(3)*actual
+ 0:00:02.372
+======== diagnostics for A6 =========
+ 0:00:05.090
+======== diagnostics for D5 =========
+[UnipotentCentralizers(D5)]331111.2:q^12.A1xA1.(q-1)?Z2 => 2q^14P1^3P2^2 (is 
+2q^14P1P2^2P4)
+[UnipotentCentralizers(D5)]5311.2:q^10.(q-1)?Z2 => 2q^10P1 (is 2q^10P2)
+[Series(D5)]# WGL:3/6 fix c
+[Series(D5)]# WGL:3/6 fix c
+ 0:00:04.820
+======== diagnostics for 2D5 =========
+[UnipotentClasses(2D5)]1.1=1111111111. dimBu=>20 and Springer[1.1]=>10
+[UnipotentClasses(2D5)]2.1=31111111. dimBu=>12 and Springer[1.4]=>8
+[UnipotentClasses(2D5)]4.1=511111. dimBu=>6 and Springer[1.11]=>4
+[UnipotentClasses(2D5)]6.1=322111. dimBu=>8 and Springer[1.8]=>5
+[UnipotentClasses(2D5)]7.1=7111. dimBu=>2 and Springer[1.16]=>1
+[UnipotentClasses(2D5)]8.2=5311.2 dimBu=>3 and Springer[1.13]=>6
+[UnipotentClasses(2D5)]9.1=222211. dimBu=>10 and Springer[1.3]=>20
+[UnipotentClasses(2D5)]11.1=3331. dimBu=>5 and Springer[1.10]=>8
+[UnipotentClasses(2D5)]12.1=5221. dimBu=>4 and Springer[1.14]=>2
+[UnipotentClasses(2D5)]14.1=3322. dimBu=>6 and Springer[1.7]=>12
+[UnipotentClasses(2D5)]15.1=73. dimBu=>1 and Springer[1.17]=>2
+[UnipotentClasses(2D5)]16.1=55. dimBu=>2 and Springer[1.15]=>4
+[UnipotentClasses(2D5)]1.1=1111111111. dimBu=>20 and Springer[1.1]=>10
+[UnipotentClasses(2D5)]2.1=22111111. dimBu=>12 and Springer[1.4]=>8
+[UnipotentClasses(2D5)]4.1=421111. dimBu=>6 and Springer[1.11]=>4
+[UnipotentClasses(2D5)]6.1=222211. dimBu=>8 and Springer[1.8]=>5
+[UnipotentClasses(2D5)]7.2=6211.2 dimBu=>2 and Springer[1.16]=>1
+[UnipotentClasses(2D5)]8.2=4411.2 dimBu=>3 and Springer[1.13]=>6
+[UnipotentClasses(2D5)]9.1=(2222)11. dimBu=>10 and Springer[1.3]=>20
+[UnipotentClasses(2D5)]11.1=4222. dimBu=>4 and Springer[1.14]=>2
+[UnipotentClasses(2D5)]12.1=3322. dimBu=>5 and Springer[1.10]=>8
+[UnipotentClasses(2D5)]14.1=64. dimBu=>1 and Springer[1.17]=>2
+[UnipotentClasses(2D5)]15.1=33(22). dimBu=>6 and Springer[1.7]=>12
+[UnipotentClasses(2D5)]16.1=55. dimBu=>2 and Springer[1.15]=>4
+[UnipotentCentralizers(2D5)]331111.1:q^12.(A1xA1).(q+1)?Z2 => 2q^14P1P2^2P4 
+(is 2q^14P1^2P2P4)
+[UnipotentCentralizers(2D5)]331111.2:q^12.(A1xA1).(q+1)?Z2 => 2q^14P1P2^2P4 
+(is 2q^14P1^2P2^3)
+[UnipotentCentralizers(2D5)]5311.2:q^10.(q+1)?Z2 => 2q^10P2 (is 2q^10P1)
+[Series(2D5)]# WGL:3/6 fix c
+[Series(2D5)]# WGL:3/6 fix c
+[Series(2D5)]E(4)-series R^{2D5}_{(q+1)(q^2+1)^2}() H_G(L,c)=
+Hecke(G412(rec()),[[Iq^3,I,Iq,Iq^2],-q^2]) actual eigen differ from predicted 
+eigen
+[Series(2D5)][1/1,6/14] of 
+
+          |2.11 21.1 22. .22 1.21 11.2
+_______________________________________
+actual    |   1    1   1   1    1    1
+,
+          |2.11 21.1 22. .22 1.21 11.2
+_______________________________________
+predicted |  -1   -1  -1  -1   -1   -1
+ 0:00:06.561
+======== diagnostics for G14 =========
+[G4_22indexClasses(G14)]
+ indexclasses |64 68 72 76 80 84
+_________________________________
+fusion to G11 |76 80 84 64 68 72
+classtext     |64 68 72 76 80 84
+[Ennola(G14)]Ambiguity in Ennola:[ [ 1 ], [ 32 ], [ 2 ], [ 8 ], [ -4, -5 ], [ 
+-2 ] ]
+[Series(G14)]Hecke(G14,E3^2q) wrong set of SchurElements
+[Series(G14)]Hecke(G14,-E3q) wrong set of SchurElements
+[Series(G14)]E(3)-series R^{G14}_{(q-E3)^2}() H_G(L,c)=Hecke(G14,E3^2q) 
+actual eigen differ from predicted eigen
+[Series(G14)]Permuted columns:
+phi{1,8}->G14[E3]->phi{2,11}->phi{2,9}->Z3:E3^2->G14^5[E3]->phi{4,
+7}->G14^2[E3]->G14^6[E3]->G14[E9^8]->G14^2[1]->phi{2,5}->phi{2,
+12}->Z3:-E3^2->G14^4[E3]->G14[E9^2]->G14[E9^5]->Z3:1->G14^2[E3^2]->phi{2,
+8}->phi{2,15}->phi{1,28}
+[Series(G14)]should not have perm
+[Series(G14)]-E(3)^2-series R^{G14}_{(q+E3^2)^2}() H_G(L,c)=Hecke(G14,-E3q) 
+actual eigen differ from predicted eigen
+[Series(G14)]Permuted columns:
+phi{2,12}->G14[E3]->G14[-E3]->phi{4,5} phi{2,4}->Z3:-E3->G14[-1] phi{3,
+4}->G14[E3^2] G14[1]->G14^6[-1]->G14[-E3^2]->G14^7[-1]->Z3:-1 
+G14^4[E3]->G14^2[-E3]->G14^2[E9^2]->G14^2[E9^5]->Z3:1
+[Series(G14)]should not have perm
+ 0:00:29.401
+======== diagnostics for E6 =========
+[Series(E6)]E(3)-series R^{E6}_{(q^2+q+1)^3}() H_G(L,c)=Hecke(G25,[[E3q^2,E3,
+E3q]]) actual eigen differ from predicted eigen
+[Series(E6)]Permuted columns:
+E6[E3]->E6[E3^2]
+[Series(E6)]-E(3)^2-series R^{E6}_{(q^2+q+1)(q^2-q+1)^2}() H_G(L,c)=Hecke(G5,
+[[E3q^4,E3,E3q^2],[E3^2q^2,-E3^2q,E3^2]]) actual eigen differ from predicted 
+eigen
+[Series(E6)]Permuted columns:
+E6[E3]->E6[E3^2]
+ 0:00:07.450
+======== diagnostics for G11 =========
+ 0:00:11.461
+======== diagnostics for G29 =========
+[FakeDegreesInduce(G29) from2B?2(-I-1)[E8]<2,3>.(q-1)(q+I)]quotient [ 1, 1, 
+-1 ]
+[FakeDegreesInduce(G29) from2B?2(-I-1)[E8]<2,3>.(q^2+I)]quotient [ 1, 1, -1 ]
+[FakeDegreesInduce(G29) from2B?2(-I-1)[E8^3]<2,3>.(q+1)(q+I)]quotient [ 1, 1, 
+-1 ]
+[GendegsHCInduce(G29)[ 2, 3, 4 ]]Relgroups:G29,G412(rec()),Z4,Z4
+[GendegsHCInduce(G29)[ 2, 3, 4 ]]udLevi*index[11]=-viaHCInductionTable[11]
+[GendegsHCInduce(G29)[ 2, 3, 4 ]]udLevi*index[12]=-viaHCInductionTable[12]
+[GendegsHCInduce(G29)[ 2, 3, 4 ]]udLevi*index[13]=-viaHCInductionTable[13]
+[GendegsHCInduce(G29)[ 2, 3, 4 ]]udLevi*index[14]=-viaHCInductionTable[14]
+[LusztigInduction(G29)]a[3]=-b[3]
+[LusztigInduction(G29)]a[4]=-b[4]
+[LusztigInduction(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^5],[1,E(8)]]
+[LusztigInduction(G29) from 2B?2(-I-1)[E8]<2,3>.(q-1)(q+I)]  RLG(2B2[1,3])=
+[G29]=<phi{4,24}>+<phi{4,1}>+<phi{5,16}>+<phi{6,12}>-<phi{6,10}'>-<phi{6,
+10}''>+<phi{6,10}'''>+<phi{10,18}>+<phi{10,2}>-<phi{10,6}>-<phi{15,12}''>+
+<phi{20,6}>+<phi{20,9}>-<phi{24,6}>-<phi{24,9}>+<B2:2...>+<B2:1.1..>-<G4,4,
+3[-I]:1>+<B2:1..1.>+<B2:1...1>-<G4,4,3[-I]:I>-<G4,4,3[-I]:-I>+<B2:11...>-<G4,
+4,3[-I]:-1>
+  (I+1)/2qP1^2P2^3P3P4^2P'4P5P6P8P10P12P20 instead of 
+(-I-1)/2qP1^2P2^3P3P4^2P'4P5P6P8P10P12P20 quotient -1
+[LusztigInduction(G29) from 2B?2(-I-1)[E8]<2,3>.(q-1)(q+I)]  RLG(2B2[1,5])=
+[G29]=<phi{4,4}>+<phi{4,23}>+<phi{5,8}>+<phi{6,12}>-<phi{6,10}'>-<phi{6,
+10}''>+<phi{6,10}'''>+<phi{10,18}>+<phi{10,2}>-<phi{10,14}>-<phi{15,4}''>+
+<phi{20,10}>+<phi{20,7}>-<phi{24,6}>-<phi{24,7}>+<G4,4,3[I]:1>+<B2:...2>+
+<B2:.1..1>+<B2:1...1>+<G4,4,3[I]:-I>+<G4,4,3[I]:I>+<G4,4,3[I]:-1>+<B2:..1.1>+
+<B2:...11>
+  (I+1)/2qP1^2P2^3P3P4^2P'4P5P6P8P10P12P20 instead of 
+(-I-1)/2qP1^2P2^3P3P4^2P'4P5P6P8P10P12P20 quotient -1
+[LusztigInduction(G29)]a[3]=-b[3]
+[LusztigInduction(G29)]a[4]=-b[4]
+[LusztigInduction(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^5],[1,E(8)]]
+[LusztigInduction(G29) from 2B?2(-I-1)[E8]<2,3>.(q^2+I)]  RLG(2B2[1,3])=[G29]=
+-<phi{4,24}>+<phi{4,1}>+<phi{20,10}>-<phi{20,7}>+<B2:2...>-<B2:...2>+<G4,4,
+3[I]:-1>+<G4,4,3[-I]:-1>
+  (-I-1)/2qP1^3P2^3P3P4^3P5P6P'8P10P12P20 instead of (I+
+1)/2qP1^3P2^3P3P4^3P5P6P'8P10P12P20 quotient -1
+[LusztigInduction(G29) from 2B?2(-I-1)[E8]<2,3>.(q^2+I)]  RLG(2B2[1,5])=[G29]=
+<phi{4,4}>-<phi{4,23}>-<phi{20,6}>+<phi{20,9}>+<G4,4,3[I]:1>+<G4,4,3[-I]:1>+
+<B2:11...>-<B2:...11>
+  (-I-1)/2qP1^3P2^3P3P4^3P5P6P'8P10P12P20 instead of (I+
+1)/2qP1^3P2^3P3P4^3P5P6P'8P10P12P20 quotient -1
+[LusztigInduction(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,
+E(8)^3]]
+[LusztigInduction(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,
+E(8)^3]]
+[LusztigInduction(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,
+E(8)^3]]
+[LusztigInduction(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^5],[1,E(8)]]
+[LusztigInduction(G29)]non-positive RLG for untwisted L
+[LusztigInduction(G29) from G443<3,2,4>.(q-1)][14/68,4/16] of 
+HCInductionTable
+         |B2:1 B2:I B2:-1 B2:-I
+________________________________
+B2:2...  |   1    0     0     0
+B2:.2..  |   0    1     0     0
+B2:1.1.. |   1    1     0     0
+B2:..2.  |   0    0     1     0
+B2:...2  |   0    0     0     1
+B2:1..1. |   1    0     1     0
+B2:.1..1 |   0    1     0     1
+B2:.1.1. |   0    1     1     0
+B2:1...1 |   1    0     0     1
+B2:11... |   1    0     0     0
+B2:.11.. |   0    1     0     0
+B2:..1.1 |   0    0     1     1
+B2:..11. |   0    0     1     0
+B2:...11 |   0    0     0     1
+,LusztigInduction
+         |B2:1 B2:I B2:-1 B2:-I
+________________________________
+B2:2...  |  -1    0     0     0
+B2:.2..  |   0   -1     0     0
+B2:1.1.. |  -1   -1     0     0
+B2:..2.  |   0    0    -1     0
+B2:...2  |   0    0     0    -1
+B2:1..1. |  -1    0    -1     0
+B2:.1..1 |   0   -1     0    -1
+B2:.1.1. |   0   -1    -1     0
+B2:1...1 |  -1    0     0    -1
+B2:11... |  -1    0     0     0
+B2:.11.. |   0   -1     0     0
+B2:..1.1 |   0    0    -1    -1
+B2:..11. |   0    0    -1     0
+B2:...11 |   0    0     0    -1
+[LusztigInduction(G29)]Failed
+[LusztigInduction(G29)]Failed
+[LusztigInduction(G29)]Failed
+[Series(G29)]non-positive RLG for untwisted L
+[Series(G29)]non-positive RLG for untwisted L
+[Series(G29)]non-positive RLG for untwisted L
+[Series(G29)]Failed
+[Series(G29)]-1-series R^{G29}_{G443[-1]<3,2,4>.(q+1)}(G4,4,3[I]) W_G(L,c)=
+Z4:RLG failed
+[Series(G29)]Failed
+[Series(G29)]-1-series R^{G29}_{G443[-1]<3,2,4>.(q+1)}(G4,4,3[-I]) W_G(L,c)=
+Z4:RLG failed
+[Series(G29)]non-positive RLG for untwisted L
+[Series(G29)]fixing dimension of variety to be divisible by e=12
+[Series(G29)]Failed
+[Series(G29)]E(4)-series R^{G29}_{G443[I]<3,2,4>.(q-I)}(G4,4,3[I]) W_G(L,c)=
+Z4:RLG failed
+[Series(G29)]Failed
+[Series(G29)]E(4)-series R^{G29}_{G443[I]<3,2,4>.(q-I)}(G4,4,3[-I]) W_G(L,c)=
+Z4:RLG failed
+[Series(G29)]non-positive RLG for untwisted L
+[Series(G29)]fixing dimension of variety to be divisible by e=12
+[Series(G29)]a[3]=-b[3]
+[Series(G29)]a[4]=-b[4]
+[Series(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,E(8)^3]]
+[Series(G29)]a[3]=-b[3]
+[Series(G29)]a[4]=-b[4]
+[Series(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,E(8)^3]]
+[Series(G29)]a[3]=-b[3]
+[Series(G29)]a[4]=-b[4]
+[Series(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,E(8)^3]]
+[Series(G29)]E(8)-series R^{G29}_{2B?2(-I-1)[E8^3]<2,3>.(q^2-I)}(2B2[1,3]) 
+W_G(L,c)=Z8:Deg RLG<>Sum(eps[i]*ud[i])
+[Series(G29)]E(8)-series R^{G29}_{2B?2(-I-1)[E8^3]<2,3>.(q^2-I)}(2B2[1,3]) 
+W_G(L,c)=Z8 no combination has right span
+[Series(G29)]a[3]=-b[3]
+[Series(G29)]a[4]=-b[4]
+[Series(G29)]#I WARNING: ambiguity in scalars:[[1,E(8)^7],[1,E(8)^3]]
+[Series(G29)]E(8)-series R^{G29}_{2B?2(-I-1)[E8^3]<2,3>.(q^2-I)}(2B2[1,5]) 
+W_G(L,c)=Z8:Deg RLG<>Sum(eps[i]*ud[i])
+[Series(G29)]E(8)-series R^{G29}_{2B?2(-I-1)[E8^3]<2,3>.(q^2-I)}(2B2[1,5]) 
+W_G(L,c)=Z8 no combination has right span
+[Series(G29)]fixing dimension of variety by xiL-xiG=6
+[Series(G29)]should not have perm
+[Series(G29)]should not have perm
+[Series(G29)]E(4)-series R^{G29}_{G443[I]<3,2,4>.(q-I)}(G4,4,3[I]) W_G(L,c)=
+Z4 actual eigen differ from predicted eigen
+[Series(G29)]predicted=E(4)*actual
+[Series(G29)]E(4)-series R^{G29}_{G443[I]<3,2,4>.(q-I)}(G4,4,3[-I]) W_G(L,c)=
+Z4 actual eigen differ from predicted eigen
+[Series(G29)]predicted=E(4)*actual
+[Series(G29)]E(4)-series R^{G29}_{B?2(-I-1)[-I]<2,3>.(q-I)^2}(1.1) H_G(L,c)=
+Hecke(G412(rec())<2,1>,[Iq^3,[-q^2,-Iq^2,-1,-I]]) actual eigen differ from 
+predicted eigen
+[Series(G29)]Permuted columns:
+G4,4,3[I]:-I->G4,4,3[-I]:-I
+[Series(G29)]E(4)-series R^{G29}_{(q-I)^4}() H_G(L,c)=Hecke(G29,-Iq) actual 
+eigen differ from predicted eigen
+[Series(G29)]Permuted columns:
+G29[E8^3]->G29[E8^7]
+[Series(G29)]should not have perm
+[ParameterExponents(G29)from B?2(-I-1)<2,3>.(q-1)^2:[ 4 ]]non-positive RLG 
+for untwisted L
+[ParameterExponents(G29)from G443<3,2,4>.(q-1):[ 1 ]]non-positive RLG for 
+untwisted L
+[ParameterExponents(G29)from G443<3,2,4>.(q-1):[ 1 ]]non-positive RLG for 
+untwisted L
+[HCSeries(G29)]non-positive RLG for untwisted L
+[HCSeries(G29)]non-positive RLG for untwisted L
+[HCSeries(G29)]non-positive RLG for untwisted L
+[HCSeries(G29)]para[1] not found
+[HCSeries(G29)]para[2] found at [ 1 ]
+ 0:00:17.531
+======== diagnostics for B5 =========
+[UnipotentCentralizers(B5)]311111111.2:q^9.D4?Z2 => 2q^21P1^4P2^4P3P4^2P6 (is 
+2q^21P1^3P2^3P3P4P6P8)
+[UnipotentCentralizers(B5)]5111111.2:q^8.A3?Z2 => 2q^14P1^3P2^2P3P4 (is 
+2q^14P1^2P2^3P4P6)
+[UnipotentCentralizers(B5)]3311111.2:q^14.B2.(q-1)?Z2 => 2q^18P1^3P2^2P4 (is 
+2q^18P1^2P2^3P4)
+[UnipotentCentralizers(B5)]3221111.2:q^18.A1xA1xA1?Z2 => 2q^21P1^3P2^3 (is 
+2q^21P1^2P2^2P4)
+[UnipotentCentralizers(B5)]71111.2:q^7.A1xA1?Z2 => 2q^9P1^2P2^2 (is 
+2q^9P1P2P4)
+[UnipotentCentralizers(B5)]33311.2:q^15.A1.(q-1)?Z2 => 2q^16P1^2P2 (is 
+2q^16P1P2^2)
+[UnipotentCentralizers(B5)]52211.2:q^13.A1.(q-1)?Z2 => 2q^14P1^2P2 (is 
+2q^14P1P2^2)
+[UnipotentCentralizers(B5)]911.2:q^6.(q-1)?Z2 => 2q^6P1 (is 2q^6P2)
+[UnipotentCentralizers(B5)]33221.2:q^17.A1.(q-1)?Z2 => 2q^18P1^2P2 (is 
+2q^18P1P2^2)
+[UnipotentCentralizers(B5)]551.2:q^10.(q-1)?Z2 => 2q^10P1 (is 2q^10P2)
+[UnipotentCentralizers(B5)]533.2:q^12.(q-1)?Z2 => 2q^12P1 (is 2q^12P2)
+[Series(B5)]-E(3)^2-series R^{B5}_{B2.(q+1)(q^2-q+1)}(11.) W_G(L,c)=Z6 actual 
+eigen differ from predicted eigen
+[Series(B5)]predicted=-1*actual
+[Series(B5)]-E(3)^2-series R^{B5}_{B2.(q+1)(q^2-q+1)}(B2) W_G(L,c)=Z6 actual 
+eigen differ from predicted eigen
+[Series(B5)]predicted=-1*actual
+[HCSeries(B5)]para[1] found at [ 2 ]
+[HCSeries(B5)]para[2] found at [ 1, 3 ]
+[HCSeries(B5)]para[3] found at [ 2 ]
+ 0:00:13.348
+======== diagnostics for C5 =========
+[UnipotentCentralizers(C5)]3322.2:q^15.A1.(q-1)?Z2 => 2q^16P1^2P2 (is 
+2q^16P1P2^2)
+[UnipotentCentralizers(C5)]222211.2:q^18.A1xA1xA1?Z2 => 2q^21P1^3P2^3 (is 
+2q^21P1^2P2^2P4)
+[UnipotentCentralizers(C5)]22111111.2:q^15.C3.(q-1)?Z2 => 2q^24P1^4P2^3P3P4P6 
+(is 2q^24P1^3P2^4P3P4P6)
+[UnipotentCentralizers(C5)]4411.2:q^11.A1.(q-1)?Z2 => 2q^12P1^2P2 (is 
+2q^12P1P2^2)
+[UnipotentCentralizers(C5)]622.2:q^10.(q-1)?Z2 => 2q^10P1 (is 2q^10P2)
+[UnipotentCentralizers(C5)]442.2:q^12.(q-1)?Z2 => 2q^12P1 (is 2q^12P2)
+[UnipotentCentralizers(C5)]42211.2:q^15.A1.(q-1)?Z2 => 2q^16P1^2P2 (is 
+2q^16P1P2^2)
+[Series(C5)][ 2, 3, 2, 3, 1, 3, 2, 3, 1 ]^2 not equal to pi(B?3(-1/2)<2,3,1>)
+[Series(C5)]-1-series R^{C5}_{B2<2,1>.(q+1)^3}(1.1) H_G(L,c)=
+Hecke(B?3(-1/2)<2,3,1>,[[1,q],[1,q^3],[1,q]]) actual eigen differ from 
+predicted eigen
+[Series(C5)][1/1,2/10] of 
+
+          |B2:.21 B2:21.
+_________________________
+actual    |    -1     -1
+,
+          |B2:.21 B2:21.
+_________________________
+predicted |     1      1
+[Series(C5)]-E(3)^2-series R^{C5}_{B2<2,1>.(q+1)(q^2-q+1)}(.2) W_G(L,c)=Z6 
+actual eigen differ from predicted eigen
+[Series(C5)]predicted=-1*actual
+[Series(C5)]-E(3)^2-series R^{C5}_{B2<2,1>.(q+1)(q^2-q+1)}(B2) W_G(L,c)=Z6 
+actual eigen differ from predicted eigen
+[Series(C5)]predicted=-1*actual
+[HCSeries(C5)]para=Permuted(stored para),(1,2)
+ 0:00:14.271
+======== diagnostics for G26 =========
+[Series(G26)]scals=[ [ 1 ], [ -1 ] ] unimplemented
+[Series(G26)]scals=[ [ E(3) ], [ 1 ] ] unimplemented
+[Series(G26)]E(3)-series R^{A1[E3]<44>xZ3.(q-E3)}_{Z3<2>.(q-E3)^2}(E3^2) 
+W_G(L,c)=Z2 eigenvalue ratios=[ 1, E(3)^2 ]
+[Series(G26)]fixing dimension of variety to be divisible by e=12
+[Series(G26)]scals=[ [ E(3)^2 ], [ -1 ] ] unimplemented
+[Series(G26)]-E(3)^2-series R^{A1[E3^2]<44>xZ3[-1].(q+E3^2)}_{Z3[-1]<2>.(q+
+E3^2)^2}(E3) W_G(L,c)=Z2 eigenvalue ratios=[ 1, E(3) ]
+[Series(G26)]fixing dimension of variety by xiL-xiG=8
+[Series(G26)]-1-series R^{G26}_{Z3[-1]<2>.(q+1)^2}(Z3) H_G(L,c)=
+Hecke(G622(rec()),[[1,E3q^2,E3^2q^2],[1,q^3],-q]) actual eigen differ from 
+predicted eigen
+[Series(G26)]Permuted columns:
+G26^2[-E3^2]->Z3:....2.->Z3:....11.->G26^3[E3^2] G26^2[E3^2]->G26^3[-E3^2]
+[Series(G26)]-1-series R^{G26}_{(q+1)^3}() H_G(L,c)=Hecke(G26,-q) actual 
+eigen differ from predicted eigen
+[Series(G26)]Permuted columns:
+G26[I]->G26[-I] G26^2[1]->G26[-1] G26^2[-1]->G26^3[1]
+[Series(G26)]scals=[ [ E(3) ], [ 1 ] ] unimplemented
+[Series(G26)]E(3)-series R^{A1[E3]<44>xZ3.(q-E3)}_{Z3<2>.(q-E3)^2}(E3^2) 
+W_G(L,c)=Z2 eigenvalue ratios=[ 1, E(3)^2 ]
+[Series(G26)]scals=[ [ E(3)^2 ], [ -1 ] ] unimplemented
+[Series(G26)]-E(3)^2-series R^{A1[E3^2]<44>xZ3[-1].(q+E3^2)}_{Z3[-1]<2>.(q+
+E3^2)^2}(E3) W_G(L,c)=Z2 eigenvalue ratios=[ 1, E(3) ]
+[Series(G26)]-E(3)^2-series R^{G26}_{(q+E3^2)^3}() H_G(L,c)=Hecke(G26,-E3q) 
+actual eigen differ from predicted eigen
+[Series(G26)]Permuted columns:
+G26[I]->G26[-I] phi{8,6}''->G26^2[-1] G4:1->phi{1,12}
+[Series(G26)]should not have perm
+ 0:00:24.034
+======== diagnostics for A7 =========
+ 0:00:06.498
+======== diagnostics for 2E6 =========
+[Series(2E6)]^1 not equal to pi(E6)
+[Series(2E6)]E(4)-series R^{2E6}_{(q+1)^2(q^2+1)^2}() H_G(L,c)=Hecke(G8,
+[[Iq^3,I,Iq,Iq^2]]) actual eigen differ from predicted eigen
+[Series(2E6)][1/1,7/16] of 
+
+          |phi{6,6}'' phi{8,3}' phi{2,4}' phi{2,16}'' phi{8,9}''
+_________________________________________________________________
+actual    |         1         1         1           1          1
+
+          |phi{6,6}' 2E6[1]
+____________________________
+actual    |        1      1
+,
+          |phi{6,6}'' phi{8,3}' phi{2,4}' phi{2,16}'' phi{8,9}''
+_________________________________________________________________
+predicted |        -1        -1        -1          -1         -1
+
+          |phi{6,6}' 2E6[1]
+____________________________
+predicted |       -1     -1
+[Series(2E6)]-E(3)^2-series R^{2E6}_{(q^2-q+1)^3}() H_G(L,c)=Hecke(G25,
+[[E3^2q^2,-E3^2q,E3^2]]) actual eigen differ from predicted eigen
+[Series(2E6)]Permuted columns:
+2E6[E3]->2E6[E3^2]
+ 0:00:14.130
+======== diagnostics for 2A7 =========
+[Series(2A7)]-E(5)^3-series R^{2A7}_{2A2<4,5>.(q+1)(q^4-q^3+q^2-q+1)}(2A2) 
+W_G(L,c)=Z5non-integral ratio=5/2
+[Series(2A7)]^1 not equal to pi(A7)
+[Series(2A7)]E(4)-series R^{2A7}_{(q-1)^2(q+1)(q^2+1)^2}() H_G(L,c)=
+Hecke(G412(rec()),[[Iq^3,-Iq^2,Iq,-I],q^4]) actual eigen differ from 
+predicted eigen
+[Series(2A7)][1/1,4/14] of 
+
+          |2.2 2.11 11.2 11.11
+_______________________________
+actual    |  1    1    1     1
+,
+          |2.2 2.11 11.2 11.11
+_______________________________
+predicted | -1   -1   -1    -1
+[Series(2A7)]-E(5)^3-series R^{2A7}_{2A2<4,5>.(q+1)(q^4-q^3+q^2-q+1)}(2A2) 
+W_G(L,c)=Z5non-integral ratio=5/2
+ 0:00:11.306
+======== diagnostics for G17 =========
+ 0:00:37.325
+======== diagnostics for H4 =========
+[GaloisAutomorphisms(H4)]not Galois stable
+[GaloisAutomorphisms(H4)]not Galois stable
+[Series(H4)]-E(5)^3-series R^{2I2(5)<14,25>.(q^2+(-1-ER(5))/2q+1)}_{(q^2+
+(-1-ER(5))/2q+1)^2}() W_G(L,c)=Z5predicted eigenvalues cannot match actual
+[Series(H4)]-E(5)^3-series R^{2I2(5)<8,15>.(q^2+(-1-ER(5))/2q+1)}_{(q^2+
+(-1-ER(5))/2q+1)^2}() W_G(L,c)=Z5predicted eigenvalues cannot match actual
+[Series(H4)]-1-series R^{H4}_{2I2(5).(q+1)^2}(2I2(5)[1,3]) H_G(L,c)=
+Hecke(I?(-18*E(5)-7*E(5)^2-7*E(5)^3-18*E(5)^4)(10)<2,1>,[-q^5,-q]) actual 
+eigen differ from predicted eigen
+[Series(H4)][1/1,4/8] of 
+
+          |I2(5)[1,3]:phi{1,0} I2(5)[1,3]:phi{1,5}'
+____________________________________________________
+actual    |               E5^2                 E5^2
+
+          |I2(5)[1,3]:phi{1,5}'' I2(5)[1,3]:phi{1,10}
+______________________________________________________
+actual    |                 E5^2                 E5^2
+,
+          |I2(5)[1,3]:phi{1,0} I2(5)[1,3]:phi{1,5}'
+____________________________________________________
+predicted |              -E5^2                -E5^2
+
+          |I2(5)[1,3]:phi{1,5}'' I2(5)[1,3]:phi{1,10}
+______________________________________________________
+predicted |                -E5^2                -E5^2
+[Series(H4)]-1-series R^{H4}_{2I2(5).(q+1)^2}(2I2(5)[1,7]) H_G(L,c)=
+Hecke(I?(-18*E(5)-7*E(5)^2-7*E(5)^3-18*E(5)^4)(10)<2,1>,[-q^5,-q]) actual 
+eigen differ from predicted eigen
+[Series(H4)][1/1,4/8] of 
+
+          |I2(5)[1,2]:phi{1,0} I2(5)[1,2]:phi{1,5}'
+____________________________________________________
+actual    |               E5^3                 E5^3
+
+          |I2(5)[1,2]:phi{1,5}'' I2(5)[1,2]:phi{1,10}
+______________________________________________________
+actual    |                 E5^3                 E5^3
+,
+          |I2(5)[1,2]:phi{1,0} I2(5)[1,2]:phi{1,5}'
+____________________________________________________
+predicted |              -E5^3                -E5^3
+
+          |I2(5)[1,2]:phi{1,5}'' I2(5)[1,2]:phi{1,10}
+______________________________________________________
+predicted |                -E5^3                -E5^3
+[Series(H4)]-1-series R^{H4}_{(q+1)^4}() H_G(L,c)=Hecke(H4,-q) actual eigen 
+differ from predicted eigen
+[Series(H4)]Permuted columns:
+H3[I]:2->H3[-I]:2->H3[I]:11
+[Series(H4)]E(3)-series R^{H4}_{(q^2+q+1)^2}() H_G(L,c)=Hecke(G20,[[E3q^2,E3,
+E3q]]) actual eigen differ from predicted eigen
+[Series(H4)]Permuted columns:
+H4^2[1]->H4^3[E3] H4^3[1]->H4^2[E3] H4[E3]->H4^5[1]
+[Series(H4)]E(4)-series R^{H4}_{(q^2+1)^2}() H_G(L,c)=Hecke(G22,-q^2) actual 
+eigen differ from predicted eigen
+[Series(H4)]Permuted columns:
+H4[I]->H4^7[-1]->H4[-I]->H4^5[1] phi{8,13}->H4[-1]
+[Series(H4)]E(5)-series R^{H4}_{(q^2+(1-ER(5))/2q+1)^2}() H_G(L,c)=Hecke(G16,
+[[E5^3q^2,q,E5q,E5^3,E5^3q]]) actual eigen differ from predicted eigen
+[Series(H4)]Permuted columns:
+I2(5)[1,2]:phi{1,0}->I2(5)[1,3]:phi{1,0} I2(5)[1,2]:phi{1,10}->I2(5)[1,
+3]:phi{1,10} I2(5)[1,2]:phi{2,4}->I2(5)[1,3]:phi{2,4} I2(5)[1,3]:phi{1,
+5}'->I2(5)[1,2]:phi{1,5}' H4[E5^3]->H4^6[E5]->H4[E5^2]->H4^3[1]
+[Series(H4)]-E(3)^2-series R^{H4}_{(q^2-q+1)^2}() H_G(L,c)=Hecke(G20,
+[[E3^2q^2,-E3^2q,E3^2]]) actual eigen differ from predicted eigen
+[Series(H4)]Permuted columns:
+H4^2[E3]->phi{24,6} H4^3[E3]->phi{24,12} H3[I]:2->H3[-I]:2->H3[I]:11 
+H4^7[-1]->H4[-E3]
+[Series(H4)]-E(5)^3-series R^{H4}_{2I2(5).(q^2+(-1-ER(5))/2q+1)}(2I2(5)[1,5]) 
+W_G(L,c)=Z10 actual eigen differ from predicted eigen
+[Series(H4)]predicted=-1*actual
+[Series(H4)]-E(5)^3-series R^{2I2(5)<14,25>.(q^2+(-1-ER(5))/2q+1)}_{(q^2+
+(-1-ER(5))/2q+1)^2}() W_G(L,c)=Z5predicted eigenvalues cannot match actual
+[Series(H4)]-E(5)^3-series R^{2I2(5)<8,15>.(q^2+(-1-ER(5))/2q+1)}_{(q^2+
+(-1-ER(5))/2q+1)^2}() W_G(L,c)=Z5predicted eigenvalues cannot match actual
+[Series(H4)]should not have perm
+ 0:02:17.798
+======== diagnostics for G33 =========
+[DegreesFromHC(G33)(G333<4,2,3>.(q-1)^2)]Schur(Hecke(G4,q^3))=-ud
+[DegreesFromHC(G33)(G333<4,2,3>.(q-1)^2)]Schur(Hecke(G4,[[q^3,E3q^3,E3^2]]))=
+-ud
+[GendegsHCInduce(G33)[ 2, 3, 4 ]]Relgroups:G33,G4,G4
+[GendegsHCInduce(G33)[ 2, 3, 4 ]]udLevi*index[11]=-viaHCInductionTable[11]
+[GendegsHCInduce(G33)[ 2, 3, 4 ]]udLevi*index[12]=-viaHCInductionTable[12]
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]Relgroups:G33,G4,G4
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]udLevi*index[18]=-viaHCInductionTable[18]
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]udLevi*index[19]=-viaHCInductionTable[19]
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]udLevi*index[20]=-viaHCInductionTable[20]
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]udLevi*index[21]=-viaHCInductionTable[21]
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]udLevi*index[22]=-viaHCInductionTable[22]
+[GendegsHCInduce(G33)[ 1, 2, 3, 4 ]]udLevi*index[23]=-viaHCInductionTable[23]
+[LusztigInduction(G33)]non-positive RLG for untwisted L
+[LusztigInduction(G33) from G333<4,2,3>.(q-1)^2][14/64,2/12] of 
+HCInductionTable
+                      |G3,3,3[E3] G3,3,3[E3^2]
+_______________________________________________
+G3,3,3[E3]:phi{1,0}   |         1            0
+G3,3,3[E3]:phi{2,3}   |         2            0
+G3,3,3[E3]:phi{2,1}   |         2            0
+G3,3,3[E3^2]:phi{1,4} |         0            1
+G3,3,3[E3^2]:phi{1,0} |         0            1
+G3,3,3[E3^2]:phi{2,1} |         0            2
+G3,3,3[E3]:phi{3,2}   |         3            0
+G3,3,3[E3^2]:phi{3,2} |         0            3
+G3,3,3[E3^2]:phi{2,5} |         0            2
+G3,3,3[E3^2]:phi{2,3} |         0            2
+G3,3,3[E3]:phi{1,8}   |         1            0
+G3,3,3[E3]:phi{1,4}   |         1            0
+G3,3,3[E3]:phi{2,5}   |         2            0
+G3,3,3[E3^2]:phi{1,8} |         0            1
+,LusztigInduction
+                      |G3,3,3[E3] G3,3,3[E3^2]
+_______________________________________________
+G3,3,3[E3]:phi{1,0}   |        -1            0
+G3,3,3[E3]:phi{2,3}   |        -2            0
+G3,3,3[E3]:phi{2,1}   |        -2            0
+G3,3,3[E3^2]:phi{1,4} |         0           -1
+G3,3,3[E3^2]:phi{1,0} |         0           -1
+G3,3,3[E3^2]:phi{2,1} |         0           -2
+G3,3,3[E3]:phi{3,2}   |        -3            0
+G3,3,3[E3^2]:phi{3,2} |         0           -3
+G3,3,3[E3^2]:phi{2,5} |         0           -2
+G3,3,3[E3^2]:phi{2,3} |         0           -2
+G3,3,3[E3]:phi{1,8}   |        -1            0
+G3,3,3[E3]:phi{1,4}   |        -1            0
+G3,3,3[E3]:phi{2,5}   |        -2            0
+G3,3,3[E3^2]:phi{1,8} |         0           -1
+[LusztigInduction(G33)]Failed
+[LusztigInduction(G33)]non-positive RLG for untwisted L
+[LusztigInduction(G33) from G334<3,55,2,1>.(q-1)][14/64,6/23] of 
+HCInductionTable
+                      |G3,3,3[E3]:1 G3,3,3[E3]:E3 G3,3,3[E3]:E3^2
+__________________________________________________________________
+G3,3,3[E3]:phi{1,0}   |           1             0               0
+G3,3,3[E3]:phi{2,3}   |           1             0               1
+G3,3,3[E3]:phi{2,1}   |           1             1               0
+G3,3,3[E3^2]:phi{1,4} |           0             0               0
+G3,3,3[E3^2]:phi{1,0} |           0             0               0
+G3,3,3[E3^2]:phi{2,1} |           0             0               0
+G3,3,3[E3]:phi{3,2}   |           1             1               1
+G3,3,3[E3^2]:phi{3,2} |           0             0               0
+G3,3,3[E3^2]:phi{2,5} |           0             0               0
+G3,3,3[E3^2]:phi{2,3} |           0             0               0
+G3,3,3[E3]:phi{1,8}   |           0             0               1
+G3,3,3[E3]:phi{1,4}   |           0             1               0
+G3,3,3[E3]:phi{2,5}   |           0             1               1
+G3,3,3[E3^2]:phi{1,8} |           0             0               0
+
+                      |G3,3,3[E3^2]:1 G3,3,3[E3^2]:E3
+______________________________________________________
+G3,3,3[E3]:phi{1,0}   |             0               0
+G3,3,3[E3]:phi{2,3}   |             0               0
+G3,3,3[E3]:phi{2,1}   |             0               0
+G3,3,3[E3^2]:phi{1,4} |             0               1
+G3,3,3[E3^2]:phi{1,0} |             1               0
+G3,3,3[E3^2]:phi{2,1} |             1               1
+G3,3,3[E3]:phi{3,2}   |             0               0
+G3,3,3[E3^2]:phi{3,2} |             1               1
+G3,3,3[E3^2]:phi{2,5} |             0               1
+G3,3,3[E3^2]:phi{2,3} |             1               0
+G3,3,3[E3]:phi{1,8}   |             0               0
+G3,3,3[E3]:phi{1,4}   |             0               0
+G3,3,3[E3]:phi{2,5}   |             0               0
+G3,3,3[E3^2]:phi{1,8} |             0               0
+
+                      |G3,3,3[E3^2]:E3^2
+_________________________________________
+G3,3,3[E3]:phi{1,0}   |                0
+G3,3,3[E3]:phi{2,3}   |                0
+G3,3,3[E3]:phi{2,1}   |                0
+G3,3,3[E3^2]:phi{1,4} |                0
+G3,3,3[E3^2]:phi{1,0} |                0
+G3,3,3[E3^2]:phi{2,1} |                0
+G3,3,3[E3]:phi{3,2}   |                0
+G3,3,3[E3^2]:phi{3,2} |                1
+G3,3,3[E3^2]:phi{2,5} |                1
+G3,3,3[E3^2]:phi{2,3} |                1
+G3,3,3[E3]:phi{1,8}   |                0
+G3,3,3[E3]:phi{1,4}   |                0
+G3,3,3[E3]:phi{2,5}   |                0
+G3,3,3[E3^2]:phi{1,8} |                1
+,LusztigInduction
+                      |G3,3,3[E3]:1 G3,3,3[E3]:E3 G3,3,3[E3]:E3^2
+__________________________________________________________________
+G3,3,3[E3]:phi{1,0}   |          -1             0               0
+G3,3,3[E3]:phi{2,3}   |          -1             0              -1
+G3,3,3[E3]:phi{2,1}   |          -1            -1               0
+G3,3,3[E3^2]:phi{1,4} |           0             0               0
+G3,3,3[E3^2]:phi{1,0} |           0             0               0
+G3,3,3[E3^2]:phi{2,1} |           0             0               0
+G3,3,3[E3]:phi{3,2}   |          -1            -1              -1
+G3,3,3[E3^2]:phi{3,2} |           0             0               0
+G3,3,3[E3^2]:phi{2,5} |           0             0               0
+G3,3,3[E3^2]:phi{2,3} |           0             0               0
+G3,3,3[E3]:phi{1,8}   |           0             0              -1
+G3,3,3[E3]:phi{1,4}   |           0            -1               0
+G3,3,3[E3]:phi{2,5}   |           0            -1              -1
+G3,3,3[E3^2]:phi{1,8} |           0             0               0
+
+                      |G3,3,3[E3^2]:1 G3,3,3[E3^2]:E3
+______________________________________________________
+G3,3,3[E3]:phi{1,0}   |             0               0
+G3,3,3[E3]:phi{2,3}   |             0               0
+G3,3,3[E3]:phi{2,1}   |             0               0
+G3,3,3[E3^2]:phi{1,4} |             0              -1
+G3,3,3[E3^2]:phi{1,0} |            -1               0
+G3,3,3[E3^2]:phi{2,1} |            -1              -1
+G3,3,3[E3]:phi{3,2}   |             0               0
+G3,3,3[E3^2]:phi{3,2} |            -1              -1
+G3,3,3[E3^2]:phi{2,5} |             0              -1
+G3,3,3[E3^2]:phi{2,3} |            -1               0
+G3,3,3[E3]:phi{1,8}   |             0               0
+G3,3,3[E3]:phi{1,4}   |             0               0
+G3,3,3[E3]:phi{2,5}   |             0               0
+G3,3,3[E3^2]:phi{1,8} |             0               0
+
+                      |G3,3,3[E3^2]:E3^2
+_________________________________________
+G3,3,3[E3]:phi{1,0}   |                0
+G3,3,3[E3]:phi{2,3}   |                0
+G3,3,3[E3]:phi{2,1}   |                0
+G3,3,3[E3^2]:phi{1,4} |                0
+G3,3,3[E3^2]:phi{1,0} |                0
+G3,3,3[E3^2]:phi{2,1} |                0
+G3,3,3[E3]:phi{3,2}   |                0
+G3,3,3[E3^2]:phi{3,2} |               -1
+G3,3,3[E3^2]:phi{2,5} |               -1
+G3,3,3[E3^2]:phi{2,3} |               -1
+G3,3,3[E3]:phi{1,8}   |                0
+G3,3,3[E3]:phi{1,4}   |                0
+G3,3,3[E3]:phi{2,5}   |                0
+G3,3,3[E3^2]:phi{1,8} |               -1
+[Series(G33)]non-positive RLG for untwisted L
+[Series(G33)]non-positive RLG for untwisted L
+[Series(G33)]Failed
+[Series(G33)]E(4)-series R^{G33}_{4G333<24,3,4,63,87,103,79,104>.(q^2+1)}(4G3,
+3,3[E3^2]) W_G(L,c)=Z4:RLG failed
+[Series(G33)]Failed
+[Series(G33)]E(4)-series R^{G33}_{4G333<24,3,4,63,87,103,79,104>.(q^2+1)}(4G3,
+3,3[E3]) W_G(L,c)=Z4:RLG failed
+[Series(G33)]fixing dimension of variety to be divisible by e=3
+[Series(G33)]fixing dimension of variety by xiL-xiG=8
+[Series(G33)]E(3)-series R^{G33}_{3D4[E3^2]<11,68,165,176>.(q-E3)}(3D4[-1]) 
+W_G(L,c)=Z6 actual eigen differ from predicted eigen
+[Series(G33)]predicted=E(3)^2*actual
+[Series(G33)]E(4)-series R^{G33}_{A1.(q^2+1)^2}(11) H_G(L,c)=Hecke(G6((-3+
+ER(3))/2)<2,1>,[[1,E3q^4,E3^2q^4],[1,q^2]]) actual eigen differ from 
+predicted eigen
+[Series(G33)]Permuted columns:
+phi{40,14}''->D4:E3->phi{40,14}'->D4:E3^2->phi{24,4}
+[Series(G33)]E(4)-series R^{G33}_{A1.(q^2+1)^2}(2) H_G(L,c)=Hecke(G6((-3+
+ER(3))/2)<2,1>,[[-Iq^5,E12q,E12^5q],-q^2]) actual eigen differ from predicted 
+eigen
+[Series(G33)]Permuted columns:
+D4:-1->phi{40,5}''->phi{40,5}'->phi{24,19}
+[Series(G33)]should not have perm
+[Series(G33)]-E(3)^2-series R^{G33}_{(q+1)^2(q+E3^2)^3}() H_G(L,c)=Hecke(G26,
+[-E3q,[E3^2q^2,E3,-q],[E3^2q^2,E3,-q]]) actual eigen differ from predicted 
+eigen
+[Series(G33)]Permuted columns:
+D4:-E3^2->phi{30,6} G33[I]->G33[-I]
+[Series(G33)]should not have perm
+[HCSeries(G33)]non-positive RLG for untwisted L
+[HCSeries(G33)]non-positive RLG for untwisted L
+[HCSeries(G33)]charnum=Permuted(stored),(1,2,3)(4,5,6)
+[HCSeries(G33)]para[1] not found
+[HCSeries(G33)]para[2] not found
+ 0:00:46.787
+======== diagnostics for 2D6 =========
+[UnipotentClasses(2D6)]1.1=111111111111. dimBu=>30 and Springer[1.1]=>15
+[UnipotentClasses(2D6)]2.1=3111111111. dimBu=>20 and Springer[1.4]=>21
+[UnipotentClasses(2D6)]3.1=2211111111. dimBu=>21 and Springer[1.2]=>15
+[UnipotentClasses(2D6)]4.1=51111111. dimBu=>12 and Springer[1.15]=>8
+[UnipotentClasses(2D6)]5.2=33111111.2 dimBu=>13 and Springer[1.6]=>14
+[UnipotentClasses(2D6)]6.1=32211111. dimBu=>14 and Springer[1.9]=>13
+[UnipotentClasses(2D6)]7.1=711111. dimBu=>6 and Springer[1.24]=>5
+[UnipotentClasses(2D6)]8.2=531111.2 dimBu=>7 and Springer[1.17]=>6
+[UnipotentClasses(2D6)]10.1=441111. dimBu=>8 and Springer[1.10]=>20
+[UnipotentClasses(2D6)]11.1=333111. dimBu=>9 and Springer[1.11]=>8
+[UnipotentClasses(2D6)]12.1=522111. dimBu=>8 and Springer[1.19]=>9
+[UnipotentClasses(2D6)]13.1=9111. dimBu=>2 and Springer[1.29]=>6
+[UnipotentClasses(2D6)]15.2=7311.2 dimBu=>3 and Springer[1.26]=>8
+[UnipotentClasses(2D6)]16.2=5511.2 dimBu=>4 and Springer[1.21]=>7
+[UnipotentClasses(2D6)]17.2=5331.2 dimBu=>5 and Springer[1.22]=>12
+[UnipotentClasses(2D6)]18.1=4431. dimBu=>6 and Springer[1.14]=>9
+[UnipotentClasses(2D6)]19.1=322221. dimBu=>12 and Springer[1.13]=>7
+[UnipotentClasses(2D6)]20.1=7221. dimBu=>4 and Springer[1.27]=>3
+[UnipotentClasses(2D6)]21.1=(11,1). dimBu=>0 and Springer[1.31]=>3
+[UnipotentClasses(2D6)]22.1=3333. dimBu=>8 and Springer[1.12]=>7
+[UnipotentClasses(2D6)]23.1=5322. dimBu=>6 and Springer[1.18]=>12
+[UnipotentClasses(2D6)]24.1=93. dimBu=>1 and Springer[1.30]=>4
+[UnipotentClasses(2D6)]25.1=75. dimBu=>2 and Springer[1.28]=>3
+[UnipotentClasses(2D6)]order bad
+[UnipotentClasses(2D6)]1.1=111111111111. dimBu=>30 and Springer[1.1]=>15
+[UnipotentClasses(2D6)]2.1=2211111111. dimBu=>20 and Springer[1.4]=>21
+[UnipotentClasses(2D6)]3.1=(22)11111111. dimBu=>21 and Springer[1.2]=>15
+[UnipotentClasses(2D6)]4.1=42111111. dimBu=>12 and Springer[1.15]=>8
+[UnipotentClasses(2D6)]5.2=33111111.2 dimBu=>13 and Springer[1.6]=>14
+[UnipotentClasses(2D6)]6.1=22221111. dimBu=>14 and Springer[1.9]=>13
+[UnipotentClasses(2D6)]7.2=621111.2 dimBu=>6 and Springer[1.24]=>5
+[UnipotentClasses(2D6)]8.2=441111.2 dimBu=>7 and Springer[1.17]=>6
+[UnipotentClasses(2D6)]10.1=(44)1111. dimBu=>8 and Springer[1.10]=>20
+[UnipotentClasses(2D6)]11.1=422211. dimBu=>8 and Springer[1.19]=>9
+[UnipotentClasses(2D6)]12.1=332211. dimBu=>9 and Springer[1.11]=>8
+[UnipotentClasses(2D6)]13.2=8211.2 dimBu=>2 and Springer[1.29]=>6
+[UnipotentClasses(2D6)]14.2=6411.2 dimBu=>3 and Springer[1.26]=>8
+[UnipotentClasses(2D6)]16.2=5511.2 dimBu=>4 and Springer[1.21]=>7
+[UnipotentClasses(2D6)]17.1=222222. dimBu=>12 and Springer[1.13]=>7
+[UnipotentClasses(2D6)]18.2=6222.2 dimBu=>4 and Springer[1.27]=>3
+[UnipotentClasses(2D6)]19.1=4422. dimBu=>5 and Springer[1.22]=>12
+[UnipotentClasses(2D6)]20.1=(44)22. dimBu=>6 and Springer[1.14]=>9
+[UnipotentClasses(2D6)]21.1=4332. dimBu=>6 and Springer[1.23]=>5
+[UnipotentClasses(2D6)]22.2=[10]2.2 dimBu=>0 and Springer[1.31]=>3
+[UnipotentClasses(2D6)]23.1=3333. dimBu=>8 and Springer[1.12]=>7
+[UnipotentClasses(2D6)]24.2=84.2 dimBu=>1 and Springer[1.30]=>4
+[UnipotentClasses(2D6)]25.1=44(22). dimBu=>6 and Springer[1.18]=>12
+[UnipotentClasses(2D6)]26.1=66. dimBu=>2 and Springer[1.28]=>3
+[UnipotentClasses(2D6)]order bad
+[UnipotentCentralizers(2D6)]33111111.1:q^16.2A3.(q+1)?Z2 => 2q^22P1^2P2^4P4P6 
+(is 2q^22P1^3P2^3P4P6)
+[UnipotentCentralizers(2D6)]33111111.2:q^16.2A3.(q+1)?Z2 => 2q^22P1^2P2^4P4P6 
+(is 2q^22P1^3P2^3P3P4)
+[UnipotentCentralizers(2D6)]531111.2:q^14.(A1xA1)?Z2 => 2q^16P1P2P4 (is 
+2q^16P1^2P2^2)
+[UnipotentCentralizers(2D6)]332211.1:q^21.A1.(q+1)^2?Z2 => 2q^22P1P2^3 (is 
+2q^22P1^2P2^2)
+[UnipotentCentralizers(2D6)]332211.2:q^21.A1.(q+1)^2?Z2 => 2q^22P1P2^3 (is 
+2q^22P1^2P2^2)
+[UnipotentCentralizers(2D6)]7311.2:q^11.(q+1)?Z2 => 2q^11P2 (is 2q^11P1)
+[UnipotentCentralizers(2D6)]5511.1:q^12.(q+1)^2?Z2 => 2q^12P2^2 (is 2q^12P1P2)
+[UnipotentCentralizers(2D6)]5511.2:q^12.(q+1)^2?Z2 => 2q^12P2^2 (is 2q^12P1P2)
+[UnipotentCentralizers(2D6)]5331.1:q^15.(q+1)?Z2 => 2q^15P2 (is 2q^15P1)
+[Series(2D6)]# WGL:4/8 fix c
+[Series(2D6)]# WGL:4/8 fix c
+[Series(2D6)]-1-series R^{2D6}_{(q-1)(q+1)^5}() H_G(L,c)=Hecke(B5,[q^2,-q,-q,
+-q,-q]) actual eigen differ from predicted eigen
+[Series(2D6)][1/1,18/36] of 
+
+          |1111.1 .311 .11111 21.11 211.1 2111. 2.111 21.2 22.1
+________________________________________________________________
+actual    |     1    1      1     1     1     1     1    1    1
+
+          |.221 11.3 .5 11.111 2.3 .32 41. 4.1 31.1
+____________________________________________________
+actual    |   1    1  1      1   1   1   1   1    1
+,
+          |1111.1 .311 .11111 21.11 211.1 2111. 2.111 21.2 22.1
+________________________________________________________________
+predicted |    -1   -1     -1    -1    -1    -1    -1   -1   -1
+
+          |.221 11.3 .5 11.111 2.3 .32 41. 4.1 31.1
+____________________________________________________
+predicted |  -1   -1 -1     -1  -1  -1  -1  -1   -1
+[Series(2D6)][ 2, 3, 2, 3, 4, 3, 2, 3, 2, 4, 1 ]^2 not equal to 
+pi(G423(rec()))
+[Series(2D6)]E(4)-series R^{2D6}_{(q^2+1)^3}() H_G(L,c)=Hecke(G423(rec()),
+-q^2) actual eigen differ from predicted eigen
+[Series(2D6)]predicted=-1*actual
+ 0:00:49.094
+======== diagnostics for D6 =========
+[UnipotentCentralizers(D6)]33111111.2:q^16.A3.(q-1)?Z2 => 2q^22P1^4P2^2P3P4 
+(is 2q^22P1^2P2^4P4P6)
+[UnipotentCentralizers(D6)]531111.2:q^14.A1xA1?Z2 => 2q^16P1^2P2^2 (is 
+2q^16P1P2P4)
+[UnipotentCentralizers(D6)]332211.2:q^21.A1.(q-1)^2?Z2 => 2q^22P1^3P2 (is 
+2q^22P1P2^3)
+[UnipotentCentralizers(D6)]7311.2:q^11.(q-1)?Z2 => 2q^11P1 (is 2q^11P2)
+[UnipotentCentralizers(D6)]5511.2:q^12.(q-1)^2?Z2 => 2q^12P1^2 (is 2q^12P2^2)
+[UnipotentCentralizers(D6)]5331.2:q^15.(q-1)?Z2 => 2q^15P1 (is 2q^15P2)
+[Series(D6)]# WGL:16/32 fix c
+[Series(D6)]# WGL:16/32 fix c
+[Series(D6)]E(4)-series R^{D6}_{A1<2>xA1<1>.(q^2+1)^2}(11,2) H_G(L,c)=
+Hecke(G422(rec()),[[1,q^2],[1,q^2],[1,q^6]]) actual eigen differ from 
+predicted eigen
+[Series(D6)]Permuted columns:
+.321->D4:1.1->3-->3+->1.221
+[Series(D6)]E(4)-series R^{D6}_{A1<2>xA1<1>.(q^2+1)^2}(2,11) H_G(L,c)=
+Hecke(G422(rec()),[[1,q^2],[1,q^2],[1,q^6]]) actual eigen differ from 
+predicted eigen
+[Series(D6)]Permuted columns:
+.321->D4:1.1->3-->3+->1.221
+[Series(D6)]-E(3)^2-series R^{D6}_{(q+1)^2(q^2-q+1)^2}() H_G(L,c)=
+Hecke(G622(rec())<3,1,2>,[-q^3,-q^3,[E3q^4,E3,E3q^2]]) actual eigen differ 
+from predicted eigen
+[Series(D6)]Permuted columns:
+1.311->D4:11.->D4:1.1->.3111->21-->21+->11.211->111-->111+
+ 0:00:35.811
+======== diagnostics for B6 =========
+[UnipotentCentralizers(B6)]31111111111.2:q^11.D5?Z2 => 
+2q^31P1^5P2^4P3P4^2P5P6P8 (is 2q^31P1^4P2^5P3P4^2P6P8P10)
+[UnipotentCentralizers(B6)]511111111.2:q^10.D4?Z2 => 2q^22P1^4P2^4P3P4^2P6 
+(is 2q^22P1^3P2^3P3P4P6P8)
+[UnipotentCentralizers(B6)]331111111.2:q^18.B3.(q-1)?Z2 => 
+2q^27P1^4P2^3P3P4P6 (is 2q^27P1^3P2^4P3P4P6)
+[UnipotentCentralizers(B6)]322111111.2:q^24.A3xA1?Z2 => 2q^31P1^4P2^3P3P4 (is 
+2q^31P1^3P2^4P4P6)
+[UnipotentCentralizers(B6)]7111111.2:q^9.A3?Z2 => 2q^15P1^3P2^2P3P4 (is 
+2q^15P1^2P2^3P4P6)
+[UnipotentCentralizers(B6)]3331111.2:q^21.A1xA1xA1?Z2 => 2q^24P1^3P2^3 (is 
+2q^24P1^2P2^2P4)
+[UnipotentCentralizers(B6)]5221111.2:q^19.A1xA1xA1?Z2 => 2q^22P1^3P2^3 (is 
+2q^22P1^2P2^2P4)
+[UnipotentCentralizers(B6)]91111.2:q^8.A1xA1?Z2 => 2q^10P1^2P2^2 (is 
+2q^10P1P2P4)
+[UnipotentCentralizers(B6)]3322111.2:q^25.A1xA1.(q-1)?Z2 => 2q^27P1^3P2^2 (is 
+2q^27P1^2P2^3)
+[UnipotentCentralizers(B6)]55111.2:q^14.A1.(q-1)?Z2 => 2q^15P1^2P2 (is 
+2q^15P1P2^2)
+[UnipotentCentralizers(B6)]53311.2:q^18.(q-1)^2?Z2xZ2 => 4q^18P1^2 (is 
+4q^18P1P2)
+[UnipotentCentralizers(B6)]53311.3:q^18.(q-1)^2?Z2xZ2 => 4q^18P1^2 (is 
+4q^18P1P2)
+[UnipotentCentralizers(B6)]53311.4:q^18.(q-1)^2?Z2xZ2 => 4q^18P1^2 (is 
+4q^18P2^2)
+[UnipotentCentralizers(B6)]44311.2:q^18.A1.(q-1)?Z2 => 2q^19P1^2P2 (is 
+2q^19P1P2^2)
+[UnipotentCentralizers(B6)]3222211.2:q^25.B2<2,1>.(q-1)?Z2 => 2q^29P1^3P2^2P4 
+(is 2q^29P1^2P2^3P4)
+[UnipotentCentralizers(B6)]72211.2:q^14.A1.(q-1)?Z2 => 2q^15P1^2P2 (is 
+2q^15P1P2^2)
+[UnipotentCentralizers(B6)](11,1,1).2:q^7.(q-1)?Z2 => 2q^7P1 (is 2q^7P2)
+[UnipotentCentralizers(B6)]33331.2:q^20.A1xA1?Z2 => 2q^22P1^2P2^2 (is 
+2q^22P1P2P4)
+[UnipotentCentralizers(B6)]733.2:q^13.(q-1)?Z2 => 2q^13P1 (is 2q^13P2)
+[UnipotentCentralizers(B6)]553.2:q^15.(q-1)?Z2 => 2q^15P1 (is 2q^15P2)
+[Series(B6)]E(8)-series R^{B6}_{B2.(q^4+1)}(11.) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(B6)]predicted=-1*actual
+[Series(B6)]E(8)-series R^{B6}_{B2.(q^4+1)}(B2) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(B6)]predicted=-1*actual
+ 0:01:06.474
+======== diagnostics for C6 =========
+[UnipotentCentralizers(C6)]222222.2:q^21.A3?Z2 => 2q^27P1^3P2^2P3P4 (is 
+2q^27P1^2P2^3P4P6)
+[UnipotentCentralizers(C6)]4422.2:q^18.(q-1)^2?Z2xZ2 => 4q^18P1^2 (is 
+4q^18P1P2)
+[UnipotentCentralizers(C6)]4422.3:q^18.(q-1)^2?Z2xZ2 => 4q^18P1^2 (is 
+4q^18P1P2)
+[UnipotentCentralizers(C6)]4422.4:q^18.(q-1)^2?Z2xZ2 => 4q^18P1^2 (is 
+4q^18P2^2)
+[UnipotentCentralizers(C6)]332211.2:q^23.A1xA1.(q-1)?Z2 => 2q^25P1^3P2^2 (is 
+2q^25P1^2P2^3)
+[UnipotentCentralizers(C6)]22221111.2:q^26.B2<2,1>xA1xA1?Z2 => 
+2q^32P1^4P2^4P4 (is 2q^32P1^3P2^3P4^2)
+[UnipotentCentralizers(C6)]2211111111.2:q^19.C4.(q-1)?Z2 => 
+2q^35P1^5P2^4P3P4^2P6P8 (is 2q^35P1^4P2^5P3P4^2P6P8)
+[UnipotentCentralizers(C6)]441111.2:q^15.B2<2,1>.(q-1)?Z2 => 2q^19P1^3P2^2P4 
+(is 2q^19P1^2P2^3P4)
+[UnipotentCentralizers(C6)]66.2:q^11.(q-1)?Z2 => 2q^11P1 (is 2q^11P2)
+[UnipotentCentralizers(C6)]42222.2:q^20.A1xA1?Z2 => 2q^22P1^2P2^2 (is 
+2q^22P1P2P4)
+[UnipotentCentralizers(C6)]822.2:q^11.(q-1)?Z2 => 2q^11P1 (is 2q^11P2)
+[UnipotentCentralizers(C6)]62211.2:q^16.A1.(q-1)?Z2 => 2q^17P1^2P2 (is 
+2q^17P1P2^2)
+[UnipotentCentralizers(C6)]44211.2:q^18.A1.(q-1)?Z2 => 2q^19P1^2P2 (is 
+2q^19P1P2^2)
+[UnipotentCentralizers(C6)]4221111.2:q^21.B2<2,1>.(q-1)?Z2 => 2q^25P1^3P2^2P4 
+(is 2q^25P1^2P2^3P4)
+[Series(C6)]E(8)-series R^{C6}_{B2<2,1>.(q^4+1)}(.2) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(C6)]predicted=-1*actual
+[Series(C6)]E(8)-series R^{C6}_{B2<2,1>.(q^4+1)}(B2) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(C6)]predicted=-1*actual
+ 0:01:08.480
+======== diagnostics for E7 =========
+[Series(E7)]# WGL:32/96 fix c
+[Series(E7)]# WGL:32/96 fix c
+[Series(E7)]# WGL:32/96 fix c
+[Series(E7)]# WGL:32/96 fix c
+[Series(E7)]# WGL:32/96 fix c
+[Series(E7)]# WGL:32/96 fix c
+[Series(E7)]E(3)-series R^{E7}_{(q-1)(q^2+q+1)^3}() H_G(L,c)=Hecke(G26,[q^3,
+[E3q^2,E3,E3q],[E3q^2,E3,E3q]]) actual eigen differ from predicted eigen
+[Series(E7)]Permuted columns:
+E6[E3]:11->E6[E3^2]:11 E6[E3]:2->E6[E3^2]:2
+[Series(E7)]E(4)-series R^{E7}_{A1<2>xA1<5>xA1<7>.(q^2+1)^2}(11,11,11) H_G(L,
+c)=Hecke(G8,[[q^4,-q^3,-1,q^3]]) actual eigen differ from predicted eigen
+[Series(E7)]Permuted columns:
+phi{336,14}->D4:.21
+[Series(E7)]E(4)-series R^{E7}_{A1<2>xA1<5>xA1<7>.(q^2+1)^2}(2,2,2) H_G(L,c)=
+Hecke(G8,[[-Iq^5,-Iq^2,Iq,Iq^2]]) actual eigen differ from predicted eigen
+[Series(E7)]Permuted columns:
+D4:21.->phi{336,11}
+[Series(E7)]should not have perm
+[Series(E7)]-E(3)^2-series R^{E7}_{(q+1)(q^2-q+1)^3}() H_G(L,c)=Hecke(G26,
+[-q^3,[E3^2q^2,-E3^2q,E3^2],[E3^2q^2,-E3^2q,E3^2]]) actual eigen differ from 
+predicted eigen
+[Series(E7)]Permuted columns:
+phi{315,16}->D4:1.11
+[Series(E7)]should not have perm
+[Series(E7)]should not have perm
+[Series(E7)]-E(5)^3-series R^{E7}_{2A2<3,4>.(q+1)(q^4-q^3+q^2-q+1)}(2A2) 
+W_G(L,c)=Z10 actual eigen differ from predicted eigen
+[Series(E7)]predicted=-1*actual
+ 0:01:28.285
+======== diagnostics for D7 =========
+[UnipotentCentralizers(D7)]3311111111.2:q^20.D4.(q-1)?Z2 => 
+2q^32P1^5P2^4P3P4^2P6 (is 2q^32P1^3P2^4P3P4P6P8)
+[UnipotentCentralizers(D7)]53111111.2:q^18.A3?Z2 => 2q^24P1^3P2^2P3P4 (is 
+2q^24P1^2P2^3P4P6)
+[UnipotentCentralizers(D7)]33221111.2:q^29.A1xA1xA1.(q-1)?Z2 => 2q^32P1^4P2^3 
+(is 2q^32P1^2P2^3P4)
+[UnipotentCentralizers(D7)]731111.2:q^15.A1xA1?Z2 => 2q^17P1^2P2^2 (is 
+2q^17P1P2P4)
+[UnipotentCentralizers(D7)]551111.2:q^16.A1xA1.(q-1)?Z2 => 2q^18P1^3P2^2 (is 
+2q^18P1P2^2P4)
+[UnipotentCentralizers(D7)]533111.2:q^21.A1.(q-1)?Z2 => 2q^22P1^2P2 (is 
+2q^22P1P2^2)
+[UnipotentCentralizers(D7)]333311.2:q^24.A1xA1.(q-1)?Z2 => 2q^26P1^3P2^2 (is 
+2q^26P1P2^2P4)
+[UnipotentCentralizers(D7)]532211.2:q^23.A1.(q-1)?Z2 => 2q^24P1^2P2 (is 
+2q^24P1P2^2)
+[UnipotentCentralizers(D7)]9311.2:q^12.(q-1)?Z2 => 2q^12P1 (is 2q^12P2)
+[UnipotentCentralizers(D7)]7511.2:q^14.(q-1)?Z2 => 2q^14P1 (is 2q^14P2)
+[UnipotentCentralizers(D7)]7331.2:q^16.(q-1)?Z2 => 2q^16P1 (is 2q^16P2)
+[UnipotentCentralizers(D7)]5531.2:q^18.(q-1)?Z2 => 2q^18P1 (is 2q^18P2)
+[Series(D7)]# WGL:3/6 fix c
+[Series(D7)]# WGL:3/6 fix c
+[Series(D7)]# WGL:3/6 fix c
+[Series(D7)]# WGL:3/6 fix c
+[Series(D7)]# WGL:5/10 fix c
+[Series(D7)]# WGL:5/10 fix c
+[HCSeries(D7)]para=Permuted(stored para),(1,2)
+ 0:01:45.803
+======== diagnostics for G27 =========
+[GaloisAutomorphisms(G27)]k_W=NF(15,[ 1, 4 ]) but matrices over CF(15)
+[Series(G27)]fixing dimension of variety to be divisible by e=12
+[Series(G27)]fixing dimension of variety by xiL-xiG=8
+[Series(G27)]-1-series R^{G27}_{I2(5)[-1]<34,235>.(q+1)}(I2(5)[1,2]) W_G(L,c)=
+Z6 actual eigen differ from predicted eigen
+[Series(G27)]predicted=-E(4)*actual
+[Series(G27)]-1-series R^{G27}_{I2(5)[-1]<34,235>.(q+1)}(I2(5)[1,3]) W_G(L,c)=
+Z6 actual eigen differ from predicted eigen
+[Series(G27)]predicted=-E(4)*actual
+[Series(G27)]should not have perm
+[Series(G27)]E(3)-series R^{G27}_{I2(5)[E3]<40,89>.(q-E3)}(I2(5)[1,2]) W_G(L,
+c)=Z6 actual eigen differ from predicted eigen
+[Series(G27)]predicted=E(3)*actual
+[Series(G27)]should not have perm
+[Series(G27)]E(3)-series R^{G27}_{I2(5)[E3]<40,89>.(q-E3)}(I2(5)[1,3]) W_G(L,
+c)=Z6 actual eigen differ from predicted eigen
+[Series(G27)]predicted=E(3)*actual
+[Series(G27)]E(3)-series R^{G27}_{B?2(((-3+ER(-15))(-3+ER(-3))/3)/4)[E3]<7,
+3>.(q-E3)}(B2) W_G(L,c)=Z6 actual eigen differ from predicted eigen
+[Series(G27)]predicted=E(3)*actual
+[Series(G27)]E(3)-series R^{G27}_{(q-E3)^3}() H_G(L,c)=Hecke(G27,E3^2q) 
+actual eigen differ from predicted eigen
+[Series(G27)]Permuted columns:
+G27^2[E9^2]->G27[E9^5]->G27^2[E9^8]
+[Series(G27)]should not have perm
+[Series(G27)]should not have perm
+[Series(G27)]should not have perm
+[Series(G27)]-E(3)^2-series R^{G27}_{(q+E3^2)^3}() H_G(L,c)=Hecke(G27,-E3q) 
+actual eigen differ from predicted eigen
+[Series(G27)]Permuted columns:
+G27^2[E9^7]->G27[E9]->G27[E9^4] G27^2[E9^5]->G27[E9^8]->G27[E9^2]
+[Series(G27)]should not have perm
+[Series(G27)]should not have perm
+ 0:02:12.514
+======== diagnostics for G18 =========
+ 0:00:58.798
+======== diagnostics for G21 =========
+ 0:01:13.907
+======== diagnostics for G32 =========
+[LusztigInduction(G32)]Failed
+[LusztigInduction(G32)]Failed
+[LusztigInduction(G32)]Failed
+[Series(G32)]Failed
+[Series(G32)]-1-series R^{G32}_{G25[-1].(q+1)}(G25[-E3]) W_G(L,c)=Z6:RLG 
+failed
+[Series(G32)]Failed
+[Series(G32)]-1-series R^{G32}_{G25[-1].(q+1)}(G25[E3]) W_G(L,c)=Z6:RLG failed
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-1]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-1-series R^{G25[-1].(q+1)}_{G4.(q+1)^2}(phi{2,5}) W_G(L,c)=
+Z3:RLG failed
+[Series(G32)]scals=[ [ -1 ], [ 1 ] ] unimplemented
+[Series(G32)]-1-series R^{Z3[-1]<193>xG4<1,2>.(q+1)}_{G4.(q+1)^2}(phi{2,5}) 
+W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 1 ]
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-1]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-1-series R^{G25[-1].(q+1)}_{Z3[-1]xZ3[-1]<3>.(q+1)^2}(Z3,Z3) 
+W_G(L,c)=Z6:RLG failed
+[Series(G32)]scals=[ [ 1 ], [ -1 ] ] unimplemented
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-1-series R^{Z3[-1]<134>xZ3[-1]<1>.(q+1)^2}_{Z3[-1].(q+1)^3}(Z3) 
+W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 1 ]
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-1-series R^{Z3[-1]<193>xZ3[-1]<1>.(q+1)^2}_{Z3[-1].(q+1)^3}(Z3) 
+W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 1 ]
+[Series(G32)]scals=[ [ E(3) ], [ 1 ] ] unimplemented
+[Series(G32)]E(3)-series R^{G4[E3]<30,
+203>xZ3.(q-E3)}_{Z3xZ3<3>.(q-E3)^2}(E3^2,E3^2) W_G(L,c)=Z2non-integral ratio=
+2/3
+[Series(G32)]scals=[ [ 1 ], [ E(3) ] ] unimplemented
+[Series(G32)]E(3)-series R^{Z3<193>xG4[E3]<1,2>.(q-E3)}_{G4[E3].(q-E3)^2}(G4) 
+W_G(L,c)=Z3 eigenvalue ratios=[ 1, 1, E(3)^2 ]
+[Series(G32)]E(4)-series R^{G32}_{(Z3xZ3)[-1,1]<109,3>.(q^2+1)}(Z3,Z3) W_G(L,
+c)=Z12non-integral ratio=2/3
+[Series(G32)]scal=[ 1, -1 ] unimplemented
+[Series(G32)]Failed
+[Series(G32)]-E(3)^2-series R^{G32}_{G25[-1].(q+E3^2)}(phi{9,5}) W_G(L,c)=
+Z6:RLG failed
+[Series(G32)]Failed
+[Series(G32)]-E(3)^2-series R^{G32}_{G25[-1].(q+E3^2)}(G4:E3^2) W_G(L,c)=
+Z6:RLG failed
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-E(3)^2]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-E(3)^2-series R^{G25[-1].(q+E3^2)}_{G4[E3^2].(q+E3^2)^2}(phi{2,
+5}) W_G(L,c)=Z3:RLG failed
+[Series(G32)]scals=[ [ -1 ], [ E(3)^2 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{Z3[-1]<193>xG4[E3^2]<1,2>.(q+
+E3^2)}_{G4[E3^2].(q+E3^2)^2}(phi{2,5}) W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 
+E(3)^2 ]
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-E(3)^2]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-E(3)^2-series R^{G25[-1].(q+E3^2)}_{Z3[-1]xZ3[-1]<3>.(q+
+E3^2)^2}(E3,E3) W_G(L,c)=Z6:RLG failed
+[Series(G32)]scals=[ [ E(3)^2 ], [ -1 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{G4[E3^2]<30,203>xZ3[-1].(q+
+E3^2)}_{Z3[-1]xZ3[-1]<3>.(q+E3^2)^2}(E3,E3) W_G(L,c)=Z2non-integral ratio=2/3
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{Z3[-1]<134>xZ3[-1]<1>.(q+E3^2)^2}_{Z3[-1].(q+
+E3^2)^3}(E3) W_G(L,c)=Z3 eigenvalue ratios=[ -E(3)^2, E(3)^2, 1 ]
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{Z3[-1]<193>xZ3[-1]<1>.(q+E3^2)^2}_{Z3[-1].(q+
+E3^2)^3}(E3) W_G(L,c)=Z3 eigenvalue ratios=[ -E(3)^2, E(3)^2, 1 ]
+[Series(G32)]fixing dimension of variety to be divisible by e=18
+[Series(G32)]scal=[ -1, 1 ] unimplemented
+[Series(G32)]fixing dimension of variety by xiL-xiG=9
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-1]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-1-series R^{G25[-1].(q+1)}_{G4.(q+1)^2}(phi{2,5}) W_G(L,c)=
+Z3:RLG failed
+[Series(G32)]scals=[ [ -1 ], [ 1 ] ] unimplemented
+[Series(G32)]-1-series R^{Z3[-1]<193>xG4<1,2>.(q+1)}_{G4.(q+1)^2}(phi{2,5}) 
+W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 1 ]
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-1-series R^{Z3[-1]<134>xZ3[-1]<1>.(q+1)^2}_{Z3[-1].(q+1)^3}(Z3) 
+W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 1 ]
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-1-series R^{Z3[-1]<193>xZ3[-1]<1>.(q+1)^2}_{Z3[-1].(q+1)^3}(Z3) 
+W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 1 ]
+[Series(G32)]-1-series R^{G32}_{(q+1)^4}() H_G(L,c)=Hecke(G32,-q) actual 
+eigen differ from predicted eigen
+[Series(G32)]Permuted columns:
+G32^2[I]->G32^3[-I] G32^3[I]->G32^2[-I]
+[Series(G32)]scals=[ [ E(3) ], [ 1 ] ] unimplemented
+[Series(G32)]E(3)-series R^{G4[E3]<30,
+203>xZ3.(q-E3)}_{Z3xZ3<3>.(q-E3)^2}(E3^2,E3^2) W_G(L,c)=Z2non-integral ratio=
+2/3
+[Series(G32)]scals=[ [ 1 ], [ E(3) ] ] unimplemented
+[Series(G32)]E(3)-series R^{Z3<193>xG4[E3]<1,2>.(q-E3)}_{G4[E3].(q-E3)^2}(G4) 
+W_G(L,c)=Z3 eigenvalue ratios=[ 1, 1, E(3)^2 ]
+[Series(G32)]E(3)-series R^{G32}_{(q-E3)^4}() H_G(L,c)=Hecke(G32,E3^2q) 
+actual eigen differ from predicted eigen
+[Series(G32)]Permuted columns:
+G32[E9^2]->G32^2[E9^8]->G32^2[E9^5]
+[Series(G32)]E(4)-series R^{G32}_{(Z3xZ3)[-1,1]<109,3>.(q^2+1)}(Z3,Z3) W_G(L,
+c)=Z12non-integral ratio=2/3
+[Series(G32)]scal=[ 1, -1 ] unimplemented
+[Series(G32)]should not have perm
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-E(3)^2]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-E(3)^2-series R^{G25[-1].(q+E3^2)}_{G4[E3^2].(q+E3^2)^2}(phi{2,
+5}) W_G(L,c)=Z3:RLG failed
+[Series(G32)]scals=[ [ -1 ], [ E(3)^2 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{Z3[-1]<193>xG4[E3^2]<1,2>.(q+
+E3^2)}_{G4[E3^2].(q+E3^2)^2}(phi{2,5}) W_G(L,c)=Z3 eigenvalue ratios=[ -1, 1, 
+E(3)^2 ]
+[Series(G32)]ReflectionType failed: no element of G312(rec()).(q-1).[[-1,0,0],
+[0,-1,0],[0,0,-E(3)^2]] acts as scalar on orbits: scalars=[ 1, -1 ] twist=()
+[Series(G32)]-E(3)^2-series R^{G25[-1].(q+E3^2)}_{Z3[-1]xZ3[-1]<3>.(q+
+E3^2)^2}(E3,E3) W_G(L,c)=Z6:RLG failed
+[Series(G32)]scals=[ [ E(3)^2 ], [ -1 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{G4[E3^2]<30,203>xZ3[-1].(q+
+E3^2)}_{Z3[-1]xZ3[-1]<3>.(q+E3^2)^2}(E3,E3) W_G(L,c)=Z2non-integral ratio=2/3
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{Z3[-1]<134>xZ3[-1]<1>.(q+E3^2)^2}_{Z3[-1].(q+
+E3^2)^3}(E3) W_G(L,c)=Z3 eigenvalue ratios=[ -E(3)^2, E(3)^2, 1 ]
+[Series(G32)]scals=[ [ -1 ], [ -1 ] ] unimplemented
+[Series(G32)]-E(3)^2-series R^{Z3[-1]<193>xZ3[-1]<1>.(q+E3^2)^2}_{Z3[-1].(q+
+E3^2)^3}(E3) W_G(L,c)=Z3 eigenvalue ratios=[ -E(3)^2, E(3)^2, 1 ]
+[Series(G32)]-E(3)^2-series R^{G32}_{(q+E3^2)^4}() H_G(L,c)=Hecke(G32,-E3q) 
+actual eigen differ from predicted eigen
+[Series(G32)]Permuted columns:
+G32[E12^11]->G32[E12^5] G32^2[I]->G32^2[-I] G32[E9^5]->G32^2[E9^2]->G32[E9^8]
+[Series(G32)]should not have perm
+[Series(G32)]should not have perm
+[Series(G32)]should not have perm
+[Series(G32)]-E(9)^4-E(9)^7-series R^{G32}_{Z3.(q^3-E3)}(E3^2) W_G(L,c)=Z18 
+actual eigen differ from predicted eigen
+[Series(G32)]predicted=E(3)^2*actual
+[Series(G32)]should not have perm
+[Series(G32)]-E(9)^4-E(9)^7-series R^{G32}_{Z3.(q^3-E3)}(Z3) W_G(L,c)=Z18 
+actual eigen differ from predicted eigen
+[Series(G32)]predicted=E(3)^2*actual
+[Series(G32)]should not have perm
+[Series(G32)]-E(12)^7-series R^{G32}_{G4[E3].(q^2+E3^2)}(phi{1,8}) W_G(L,c)=
+Z12 actual eigen differ from predicted eigen
+[Series(G32)]predicted=E(3)*actual
+[Series(G32)]-E(12)^7-series R^{G32}_{G4[E3].(q^2+E3^2)}(Z3:11) W_G(L,c)=Z12 
+actual eigen differ from predicted eigen
+[Series(G32)]predicted=E(3)*actual
+[Series(G32)]scal=[ -1, 1 ] unimplemented
+[Series(G32)]should not have perm
+[Series(G32)]-E(9)^5-series R^{G32}_{Z3[-1].(q^3+E3^2)}(Z3) W_G(L,c)=Z18 
+actual eigen differ from predicted eigen
+[Series(G32)]predicted=-E(3)^2*actual
+[ParameterExponents(G32)]indices computed=34 stored=43
+ 0:04:20.102
+======== diagnostics for B7 =========
+[UnipotentCentralizers(B7)]3111111111111.2:q^13.D6?Z2 => 
+2q^43P1^6P2^6P3^2P4^2P5P6^2P8P10 (is 2q^43P1^5P2^5P3P4^3P5P6P8P10P12)
+[UnipotentCentralizers(B7)]51111111111.2:q^12.D5?Z2 => 
+2q^32P1^5P2^4P3P4^2P5P6P8 (is 2q^32P1^4P2^5P3P4^2P6P8P10)
+[UnipotentCentralizers(B7)]33111111111.2:q^22.B4.(q-1)?Z2 => 
+2q^38P1^5P2^4P3P4^2P6P8 (is 2q^38P1^4P2^5P3P4^2P6P8)
+[UnipotentCentralizers(B7)]32211111111.2:q^30.D4xA1?Z2 => 
+2q^43P1^5P2^5P3P4^2P6 (is 2q^43P1^4P2^4P3P4P6P8)
+[UnipotentCentralizers(B7)]711111111.2:q^11.D4?Z2 => 2q^23P1^4P2^4P3P4^2P6 
+(is 2q^23P1^3P2^3P3P4P6P8)
+[UnipotentCentralizers(B7)]333111111.2:q^27.A3xA1?Z2 => 2q^34P1^4P2^3P3P4 (is 
+2q^34P1^3P2^4P4P6)
+[UnipotentCentralizers(B7)]522111111.2:q^25.A3xA1?Z2 => 2q^32P1^4P2^3P3P4 (is 
+2q^32P1^3P2^4P4P6)
+[UnipotentCentralizers(B7)]9111111.2:q^10.A3?Z2 => 2q^16P1^3P2^2P3P4 (is 
+2q^16P1^2P2^3P4P6)
+[UnipotentCentralizers(B7)]332211111.2:q^33.B2xA1.(q-1)?Z2 => 2q^38P1^4P2^3P4 
+(is 2q^38P1^3P2^4P4)
+[UnipotentCentralizers(B7)]5511111.2:q^18.B2.(q-1)?Z2 => 2q^22P1^3P2^2P4 (is 
+2q^22P1^2P2^3P4)
+[UnipotentCentralizers(B7)]5331111.2:q^24.A1xA1.(q-1)?Z2xZ2 => 4q^26P1^3P2^2 
+(is 4q^26P1^2P2^3)
+[UnipotentCentralizers(B7)]5331111.3:q^24.A1xA1.(q-1)?Z2xZ2 => 4q^26P1^3P2^2 
+(is 4q^26P1^2P2P4)
+[UnipotentCentralizers(B7)]5331111.4:q^24.A1xA1.(q-1)?Z2xZ2 => 4q^26P1^3P2^2 
+(is 4q^26P1P2^2P4)
+[UnipotentCentralizers(B7)]4431111.2:q^24.A1xA1xA1?Z2 => 2q^27P1^3P2^3 (is 
+2q^27P1^2P2^2P4)
+[UnipotentCentralizers(B7)]322221111.2:q^35.A1xA1xB2<4,3>?Z2 => 
+2q^41P1^4P2^4P4 (is 2q^41P1^3P2^3P4^2)
+[UnipotentCentralizers(B7)]7221111.2:q^20.A1xA1xA1?Z2 => 2q^23P1^3P2^3 (is 
+2q^23P1^2P2^2P4)
+[UnipotentCentralizers(B7)](11,1,1,1,1).2:q^9.A1xA1?Z2 => 2q^11P1^2P2^2 (is 
+2q^11P1P2P4)
+[UnipotentCentralizers(B7)]3333111.2:q^28.A1xA1xA1?Z2 => 2q^31P1^3P2^3 (is 
+2q^31P1^2P2^2P4)
+[UnipotentCentralizers(B7)]73311.2:q^19.(q-1)^2?Z2xZ2 => 4q^19P1^2 (is 
+4q^19P1P2)
+[UnipotentCentralizers(B7)]73311.3:q^19.(q-1)^2?Z2xZ2 => 4q^19P1^2 (is 
+4q^19P1P2)
+[UnipotentCentralizers(B7)]73311.4:q^19.(q-1)^2?Z2xZ2 => 4q^19P1^2 (is 
+4q^19P2^2)
+[UnipotentCentralizers(B7)]55311.2:q^21.(q-1)^2?Z2xZ2 => 4q^21P1^2 (is 
+4q^21P1P2)
+[UnipotentCentralizers(B7)]55311.3:q^21.(q-1)^2?Z2xZ2 => 4q^21P1^2 (is 
+4q^21P2^2)
+[UnipotentCentralizers(B7)]55311.4:q^21.(q-1)^2?Z2xZ2 => 4q^21P1^2 (is 
+4q^21P1P2)
+[UnipotentCentralizers(B7)]3332211.2:q^32.A1xA1.(q-1)?Z2 => 2q^34P1^3P2^2 (is 
+2q^34P1^2P2^3)
+[UnipotentCentralizers(B7)]5222211.2:q^26.B2<2,1>.(q-1)?Z2 => 2q^30P1^3P2^2P4 
+(is 2q^30P1^2P2^3P4)
+[UnipotentCentralizers(B7)]92211.2:q^15.A1.(q-1)?Z2 => 2q^16P1^2P2 (is 
+2q^16P1P2^2)
+[UnipotentCentralizers(B7)]54411.2:q^21.A1.(q-1)?Z2 => 2q^22P1^2P2 (is 
+2q^22P1P2^2)
+[UnipotentCentralizers(B7)](13,1,1).2:q^8.(q-1)?Z2 => 2q^8P1 (is 2q^8P2)
+[UnipotentCentralizers(B7)]44331.2:q^25.A1.(q-1)?Z2 => 2q^26P1^2P2 (is 
+2q^26P1P2^2)
+[UnipotentCentralizers(B7)]3322221.2:q^32.B2<2,1>.(q-1)?Z2 => 2q^36P1^3P2^2P4 
+(is 2q^36P1^2P2^3P4)
+[UnipotentCentralizers(B7)]55221.2:q^21.A1.(q-1)?Z2 => 2q^22P1^2P2 (is 
+2q^22P1P2^2)
+[UnipotentCentralizers(B7)]771.2:q^14.(q-1)?Z2 => 2q^14P1 (is 2q^14P2)
+[UnipotentCentralizers(B7)]933.2:q^14.(q-1)?Z2 => 2q^14P1 (is 2q^14P2)
+[UnipotentCentralizers(B7)]53322.2:q^25.A1.(q-1)?Z2 => 2q^26P1^2P2 (is 
+2q^26P1P2^2)
+[Series(B7)]-E(3)^2-series R^{B7}_{B4.(q+1)(q^2-q+1)}(211.) W_G(L,c)=Z6 
+actual eigen differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]-E(3)^2-series R^{B7}_{B4.(q+1)(q^2-q+1)}(B2:1.1) W_G(L,c)=Z6 
+actual eigen differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]E(8)-series R^{B7}_{B3.(q^4+1)}(111.) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]E(8)-series R^{B7}_{B3.(q^4+1)}(21.) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]E(8)-series R^{B7}_{B3.(q^4+1)}(B2:2) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]E(8)-series R^{B7}_{B3.(q^4+1)}(B2:11) W_G(L,c)=Z8 actual eigen 
+differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]-E(5)^3-series R^{B7}_{B2.(q+1)(q^4-q^3+q^2-q+1)}(11.) W_G(L,c)=
+Z10 actual eigen differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+[Series(B7)]-E(5)^3-series R^{B7}_{B2.(q+1)(q^4-q^3+q^2-q+1)}(B2) W_G(L,c)=
+Z10 actual eigen differ from predicted eigen
+[Series(B7)]predicted=-1*actual
+ 0:06:17.261
+======== diagnostics for C7 =========

@@ -536,6 +536,42 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
   end::CharTable
 end
 
+#---------------------- Hecke Cosets
+@doc """
+`HeckeCoset`s  are  `Hϕ`  where  `H`  is  an  Iwahori-Hecke algebra of some
+Coxeter  group `W` on which the automorphism `ϕ` of some Spets `Wϕ` acts by
+`ϕ(T_w)=T_{ϕ(w)}`.  For Weyl groups, this corresponds  to the action of the
+Frobenius  automorphism  on  the  commuting  algebra  of the induced of the
+trivial  representation from the  rational points of  some `F`-stable Borel
+subgroup to `𝐆 ^F`.
+
+```julia-repl
+julia> WF=rootdatum(:u,3)
+u₃
+
+julia> HF=hecke(WF,Pol(:v)^2;rootpara=Pol())
+hecke(u₃,v²,rootpara=v)
+
+julia> CharTable(HF)
+CharTable(hecke(u₃,v²,rootpara=v))
+┌───────────┬──────────┐
+│centralizer│   6  2  3│
+├───────────┼──────────┤
+│           │ 111 21  3│
+├───────────┼──────────┤
+│111        │  -1  1 -1│
+│21         │-2v³  .  v│
+│3          │  v⁶  1 v²│
+└───────────┴──────────┘
+```
+Thanks  to the work  of [hn12](@cite), 'class_polynomials'  also make sense
+for these cosets. This is used to compute such character tables.
+""" HeckeCoset
+@GapObj struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
+  H::TH
+  W::TW
+end
+
 using SparseArrays
 """
 `representation(H::HeckeAlgebra or HeckeCoset,i)`
@@ -583,21 +619,42 @@ julia> representation(H,7)
  [-1 0 0 0; 0 -1 0 0; 0 0 1/(-q³-q²-q-1) (-q³-q²-q)/(-q³-q²-q-1); 0 0 (q⁴+q³+q²+q+1)/(q³+q²+q+1) q⁴/(q³+q²+q+1)]
 ```
 """
-function Chars.representation(H::HeckeAlgebra,i::Integer)
+function Chars.representation(H::Union{HeckeAlgebra,HeckeCoset},i::Integer)
   tt=refltype(H.W)
+  pt=perm(inv(sortPerm(indices(tt))))
   if isempty(tt) return Matrix{Int}[] end
+  if isempty(tt) 
+   return H isa HeckeCoset ? (gens=Matrix{Int}[], F=fill(0,0,0)) : Matrix{Int}[]
+  end
   dims=chevieget.(tt,:nconjugacy_classes)
-  mm=map((t,j)->chevieget(t,:HeckeRepresentation,H.para[t.indices],
-                      H.rootpara[t.indices],j),tt,lin2cart(dims,i))
-  if any(isnothing,mm) return nothing end
+  mm=map(tt,lin2cart(dims,i))do t,j
+    if H isa HeckeCoset
+      r=representation(t,j,
+        chevieget(t,:HeckeRepresentation,H.H.para[indices(t.orbit[1])],
+                  rootpara(H.H),j))
+      if r==nothing return nothing end
+      r isa Vector ? (gens=r,F=one(r[1])) : r # untwisted component
+    else
+      r=chevieget(t,:HeckeRepresentation,H.para[indices(t)],
+                  H.rootpara[indices(t)],j)
+      if r==nothing return nothing end
+      r
+    end
+  end
+  if H isa HeckeCoset 
+    gens=getindex.(mm,:gens); F=getindex.(mm,:F)
+    F=length(F)==1 ? F[1] : kron(F...)
+  else gens=mm end
 # if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm) end
   n=length(tt)
-  if n==1 return mm[1] end
-  vcat(map(1:n) do i
-     map(mm[i]) do m
-       kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
-    end
-  end...)
+  gens= if n==1 gens[1]
+  else vcat(map(1:n) do i
+      map(gens[i]) do m
+        kron(map(j->j==i ? m : one(gens[j][1]),1:n)...)
+      end
+    end...)
+  end
+  H isa HeckeCoset ? (gens=gens[pt], F=F) : gens[pt]
 end
 
 """
@@ -1579,42 +1636,6 @@ function hecke_subalgebra(H::HeckeAlgebra,I)
   hecke(WI,H.para[simple_reps(H.W)[I]];rootpara=H.rootpara[simple_reps(H.W)[I]])
 end
 
-#---------------------- Hecke Cosets
-@doc """
-`HeckeCoset`s  are  `Hϕ`  where  `H`  is  an  Iwahori-Hecke algebra of some
-Coxeter  group `W` on which the automorphism `ϕ` of some Spets `Wϕ` acts by
-`ϕ(T_w)=T_{ϕ(w)}`.  For Weyl groups, this corresponds  to the action of the
-Frobenius  automorphism  on  the  commuting  algebra  of the induced of the
-trivial  representation from the  rational points of  some `F`-stable Borel
-subgroup to `𝐆 ^F`.
-
-```julia-repl
-julia> WF=rootdatum(:u,3)
-u₃
-
-julia> HF=hecke(WF,Pol(:v)^2;rootpara=Pol())
-hecke(u₃,v²,rootpara=v)
-
-julia> CharTable(HF)
-CharTable(hecke(u₃,v²,rootpara=v))
-┌───────────┬──────────┐
-│centralizer│   6  2  3│
-├───────────┼──────────┤
-│           │ 111 21  3│
-├───────────┼──────────┤
-│111        │  -1  1 -1│
-│21         │-2v³  .  v│
-│3          │  v⁶  1 v²│
-└───────────┴──────────┘
-```
-Thanks  to the work  of [hn12](@cite), 'class_polynomials'  also make sense
-for these cosets. This is used to compute such character tables.
-""" HeckeCoset
-@GapObj struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
-  H::TH
-  W::TW
-end
-
 Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? HeckeElt(Val(:T),H,H.W()) : HeckeElt(Val(:T),H,x...)
 HeckeElt(::Val{b},::HeckeCoset,h::HeckeElt)where b=HeckeElt{b}(h)
 HeckeElt(::Val{:T},H::HeckeCoset,w::Vector{<:Integer})=HeckeElt(Val(:T),H,H.W(w...))
@@ -1656,7 +1677,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
   get!(H,:chartable)do
     W=H.W
     cts=map(refltype(W))do t
-      inds=t.orbit[1].indices
+      inds=indices(t.orbit[1])
       ct=chevieget(t,:HeckeCharTable,H.H.para[inds],H.H.rootpara[inds])
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
       else                     names=charnames(t;opt...,TeX=true)
@@ -1672,28 +1693,6 @@ function Chars.CharTable(H::HeckeCoset;opt...)
     ct.group=H
     ct
   end::CharTable
-end
-
-function Chars.representation(H::HeckeCoset,i::Int)
-  tt=refltype(H.W)
-  if isempty(tt) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
-  dims=chevieget.(tt,:nconjugacy_classes)
-  mm=map(tt,lin2cart(dims,i)) do t,j
-    r=chevieget(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rootpara(H.H),j)
-    if r==nothing return nothing
-    elseif r isa Vector # untwisted component
-      (gens=r,F=one(r[1]))
-    else r
-    end
-  end
-  if any(isnothing,mm) return nothing end
-  n=length(tt)
-  if n==1 return (gens=mm[1].gens,F=mm[1].F) end
-  (gens=vcat(map(1:n) do i
-     map(mm[i].gens) do m
-       kron(map(j->j==i ? m : one(mm[j].gens[1]),1:n)...)
-     end
-   end...), F=kron(getindex.(mm,:F)...))
 end
 
 """
