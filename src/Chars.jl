@@ -20,8 +20,8 @@ are  again partitions or partition tuples  for the infinite series, and for
 the  exceptional groups they are pairs of two integers `(d,b)` where `d` is
 the  degree of the character and `b` is the smallest symmetric power of the
 reflection  representation containing  the character  as a constituent (the
-valuation of the [fakedegree](@ref)); further a `'` or `''` may be added to
-disambiguate  pairs with  the same  `(d,b)`. These  labels are shown by the
+valuation  of the [`fakedegree`](@ref)); further a `'` or `''` may be added
+to  disambiguate pairs with the same `(d,b)`. These labels are shown by the
 functions   [`classinfo`](@ref)  and   [`charinfo`](@ref).  Displaying  the
 character table also shows the labelings for classes and characters.
 
