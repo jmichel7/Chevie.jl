@@ -904,6 +904,57 @@ Groups.transporting_elt(H::FC,R::FC,G::FC)=
   transporting_elt(H.G,sort(inclusiongens(R)),sort(inclusiongens(G)),onsets)
 end
 
+"""
+`parabolic_subgroups(W,l=1:semisimplerank(W))`
+ 
+returns  the list of all parabolic subgroups of `W` whose semisimplerank is
+in `l`. These are the conjugates of the groups returned by
+`parabolic_reps(W)`;  they  are  also  in  bijection  with the flats of the
+hyperplane arrangement defined by `W`. To save memory, the list is given as
+a  list of generating reflections  for each group. For  each element `I` of
+this  list, one has to call  `reflection_subgroup(W,I)` to actually get the
+corresponding group.
+ 
+```julia-repl
+julia> Weyl.parabolic_subgroups(coxgroup(:A,3))
+15-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [2]
+ [3]
+ [4]
+ [5]
+ [6]
+ [1, 2]
+ [1, 3]
+ [1, 5]
+ [2, 3]
+ [2, 6]
+ [3, 4]
+ [4, 5]
+ [1, 2, 3]
+```
+"""
+function parabolic_subgroups(W::FiniteCoxeterGroup,J=0:semisimplerank(W))
+  if !haskey(W,:parabolic_subgroups) 
+    W.parabolic_subgroups=Vector{Vector{Vector{Int}}}(undef,semisimplerank(W)+1)
+    W.parabolic_subgroups[1]=[Int[]]
+  end
+  for i in J
+   if !isassigned(W.parabolic_subgroups,i+1)
+     W.parabolic_subgroups[i+1]=
+       sort!(vcat(map(parabolic_reps(W,i))do I
+         I1=sort!(inclusion(W,I))
+         I2=vcat(I,filter(y->!(y in I) && I1==onsets(I1,refls(W,y)),1:nref(W)))
+         R=reflection_subgroup(W,I2)
+         r=vcat(reduced(R,W)...)
+         restriction.(Ref(W),unique!(onsets.(Ref(I1),r)))
+        end...))
+    end
+  end
+  vcat(W.parabolic_subgroups[collect(J).+1]...)
+end
+
 #--------------- FCG -----------------------------------------
 function Base.show(io::IO, W::FCG)
   if haskey(W,:callname)
@@ -1404,57 +1455,6 @@ function Perms.reflength(W::Affine,w)
   dimw=minimum(length.(filter(x->GenLinearAlgebra.rank(vcat(mov,
      roots(W0,x)))==length(x),parabolic_subgroups(W0))))
   2*dimw-p
-end
-
-"""
-`parabolic_subgroups(W,l=1:semisimplerank(W))`
- 
-returns  the list of all parabolic subgroups of `W` whose semisimplerank is
-in `l`. These are the conjugates of the groups returned by
-`parabolic_reps(W)`;  they  are  also  in  bijection  with the flats of the
-hyperplane arrangement defined by `W`. To save memory, the list is given as
-a  list of generating reflections  for each group. For  each element `I` of
-this  list, one has to call  `reflection_subgroup(W,I)` to actually get the
-corresponding group.
- 
-```julia-repl
-julia> Weyl.parabolic_subgroups(coxgroup(:A,3))
-15-element Vector{Vector{Int64}}:
- []
- [1]
- [2]
- [3]
- [4]
- [5]
- [6]
- [1, 2]
- [1, 3]
- [1, 5]
- [2, 3]
- [2, 6]
- [3, 4]
- [4, 5]
- [1, 2, 3]
-```
-"""
-function parabolic_subgroups(W::FiniteCoxeterGroup,J=0:semisimplerank(W))
-  if !haskey(W,:parabolic_subgroups) 
-    W.parabolic_subgroups=Vector{Vector{Vector{Int}}}(undef,semisimplerank(W)+1)
-    W.parabolic_subgroups[1]=[Int[]]
-  end
-  for i in J
-   if !isassigned(W.parabolic_subgroups,i+1)
-     W.parabolic_subgroups[i+1]=
-       sort!(vcat(map(parabolic_reps(W,i))do I
-         I1=sort!(inclusion(W,I))
-         I2=vcat(I,filter(y->!(y in I) && I1==onsets(I1,refls(W,y)),1:nref(W)))
-         R=reflection_subgroup(W,I2)
-         r=vcat(reduced(R,W)...)
-         restriction.(Ref(W),unique!(onsets.(Ref(I1),r)))
-        end...))
-    end
-  end
-  vcat(W.parabolic_subgroups[collect(J).+1]...)
 end
 
 # a benchmark on julia 1.0.2
