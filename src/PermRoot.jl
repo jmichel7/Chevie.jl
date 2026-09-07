@@ -35,12 +35,13 @@ It  is much  more efficient  to compute  with permutation  groups than with
 matrix  groups; hence we use for computing with a finite complex reflection
 group  `W` a permutation representation on  a `W`-invariant set of root and
 coroot vectors for reflections of `W`; that is, a set `R` of pairs `(r,rᵛ)∈
-V×Vᵛ`  invariant by `W` and such that every distinguished reflection in `W`
-is determined by some pair in `R` (see [`reflectionMatrix`](@ref)). Using a
-`W`-invariant set implies that there are several pairs determining the same
-reflection,  which differ  by roots  of unity.  This generalizes  the usual
-construction  for Coxeter groups (the case `K=ℝ `) where to each reflection
-of `W` is associated two roots, one positive and one negative.
+V×Vᵛ`  invariant by `W` and such that every distinguished `s` reflection in
+`W` is determined by some pair `(r,rᵛ)` in `R` (as the map `s(x)=x-rᵛ(x)r`;
+see [`reflectionMatrix`](@ref)). Using a `W`-invariant set `R` implies that
+there  are several pairs  determining the same  reflection, which differ by
+roots  of unity. This generalizes the usual construction for Coxeter groups
+(the  case `K=ℝ `) where to each reflection of `W` is associated two roots,
+one positive and one negative.
 
 A  complex reflection group  is *irreducible* if  the representation `V` is
 irreducible.  For irreducible complex reflection groups, there are at least
@@ -50,8 +51,8 @@ of the reflection and of the order of the center of `W`.
 The following methods are defined for finite complex reflection groups:
 
   - [`generators`](@extref PermGroups :jl:function:`PermGroups.Groups.generators`)`(W)`, 
-    abbreviated `gens`: the (distinguished) reflections which
-    generate `W`, given as permutations of the roots.
+    abbreviated `gens`: the (distinguished) reflections which generate `W`,
+    given as permutations of the roots.
     [`reflection_representation`](@ref)`(W)`  (abbreviated `reflrep`) gives
     them as matrices.
 
@@ -67,6 +68,12 @@ The following methods are defined for finite complex reflection groups:
     corresponding roots are in bijection with the distinguished reflections
     of `W`.
 
+  - [`reflections`](@ref)`(W)` gives a list without repetitions of all 
+    reflections  of `W`  (not only  the distinguished  ones), as objects of
+    type  [`Reflection`](@ref), starting with the distinguished reflections
+    in  the  same  order  as  `unique_refls`.  These  objects  contain a lot
+    of information on each reflection.
+
 The  lists `roots`, `coroots` and `refls` starts with those attached to the
 reflections  `gens(W)`;  these  are  called  *simple*  roots,  coroots  and
 reflections.
@@ -74,12 +81,6 @@ reflections.
   - [`simpleroots`](@ref)`(W)`:  the simple roots as a matrix.
 
   - [`simplecoroots`](@ref)`(W)`:  the simple coroots as a matrix.
-
-  - [`reflections`](@ref)`(W)` gives a list without repetitions of all 
-    reflections  of `W`  (not only  the distinguished  ones), as objects of
-    type  [`Reflection`](@ref), starting with the distinguished reflections
-    in  the  same  order  as  `unique_refls`.  These  objects  contain more
-    information on each reflection.
 
 The  finite irreducible complex  reflection groups have  been classified in
 [st54](@cite). They consist of one infinite family `G(de,e,r)` depending on
@@ -94,16 +95,20 @@ abbreviated `coxgroup` (see the module [`Weyl`](@ref)).
 
 The  group  `G(de,e,r)`  consists  of  the  `r×r`  monomial  matrices whose
 non-zero  coefficients  are  `de`-th  roots  of  unity and whose product of
-coefficients  is a `d`-th root of unity. We have the following isomorphisms
-with infinite families of finite Coxeter groups:
+coefficients  is  a  `d`-th  root  of  unity;  these groups are also called
+imprimitive  irreducible complex reflection group  since they have a system
+of  imprimitivity  (consisting  of  one-dimensional  subspeces)  as  linear
+groups. We have the following isomorphisms with infinite families of finite
+Coxeter groups:
 ```
 crg(1,1,r)  coxgroup(:A,r-1)
 crg(2,1,r)  coxgroup(:B,r)
 crg(2,2,r)  coxgroup(:D,r)
 crg(e,e,2)  coxgroup(:I,2,e)
 ```
-The  exceptional groups include  the exceptional finite  Coxeter groups; we
-have the following isomorphisms:
+The  exceptional groups include the exceptional finite Coxeter groups; they
+are   primitive  as  linear  groups  so  they  are  also  called  primitive
+irreducible complex reflection groups. We have the following isomorphisms:
 ```
 crg(23)     coxgroup(:H,3)
 crg(28)     coxgroup(:F,4)
@@ -114,24 +119,25 @@ crg(37)     coxgroup(:E,8)
 ```
 We  can also build any  finite reflection group by  giving a list of simple
 roots  and simple coroots  (see [`PRG`](@ref)). We  can get non-irreducible
-groups  by  the  `*`  operation  (they  also naturally appear as reflection
-subgroups).
+groups  by  the  `*`  operation  (or by constructing reflection subgroups).
 
 An irreducible complex reflection group in rank `r` can always be generated
 by   `r+1`  reflections,  but   is  often  generated   by  `r`  reflections
-("well-generated").  The  non  well-generated  groups  are `G(de,e,r)` when
-`d≠1` and `e≠1`, and `G₇, G₁₁, G₁₂, G₁₃, G₁₅, G₁₉, G₂₂, G₃₁`.
+("well-generated").   The   non   well-generated   irreducible  groups  are
+`G(de,e,r)`  when `d≠1` and `e≠1`,  and `G₇, G₁₁, G₁₂,  G₁₃, G₁₅, G₁₉, G₂₂,
+G₃₁`.
 
 There  is not yet a general theory on  how to construct a nice set of roots
 for  a  non-real  reflection  group;  the  roots chosen here where obtained
-case-by-case; however, they satisfy several important properties:
+by ad hoc methods; however, they satisfy several important properties:
 
   - The simple reflections  satisfy braid relations  which present the
     braid group associated to `W` (see [`diagram`](@ref)).
 
   - The *field  of definition*  of `W`  is the  field `K` generated by the
     traces  of the elements of `W` acting on  `V`. It is a theorem that `W`
-    may be realized as a reflection group over `K`.
+    may be realized as a reflection group over `K`. In most cases our roots
+    and roots have entries in `K`.
 
   - The Cartan matrix `rᵛ(r')` where `r` and `r'` runs over the simple roots
     and  coroots has entries in  the ring `ℤₖ` of  integers of `K`, and the
@@ -141,7 +147,7 @@ case-by-case; however, they satisfy several important properties:
 It  turns out that all representations of `W` are defined over the field of
 definition  `K`, see  [ben76](@cite) and  D.~Bessis' thesis.  This has been
 known  for a long time in  the case `K=ℚ `, the  case of Weyl groups, whose
-representations are all integral.
+representations can all be realized over the integers.
 ```julia-repl
 julia> W=complex_reflection_group(4)
 G₄
@@ -230,6 +236,25 @@ julia> fakedegrees(W,Pol(:x))
  x³+x
  x⁶+x⁴+x²
 ```
+### Classification
+
+Complex  reflection groups are automatically classified when constructed in
+`CHEVIE`;  that is,  an isomorphism  with a  product of irreducible complex
+reflection  groups  in  a  *standard*  representation is computed. The main
+functions  to explore  that are  [`refltype`](@ref) and  [`diagram`](@ref). 
+
+The  function `refltype(W)` returns  a vector of  `TypeIrred`, containing a
+`TypeIrred` object for each irreducible component of `W`. A
+[`TypeIrred`](@ref)  `T` describes the  irreducible component. The function
+`indices(T)`  returns the indices  `I` in `gens(W)`  such that `gens(W)[I]`
+are  the generators  of that  component. Printing  a `TypeIrred`  shows the
+Shephard-Todd  classification  of  the  component.  Using  `diagram` give a
+graphical description of the presentation of that component.
+
+Many  properties  of  complex  reflection  groups  are  computed  from this
+classification. The `Chevie` tables contains information (such as character
+tables)  for each irreducible type, and this is consulted for computing the
+global property for `W`.
 """
 module PermRoot
 

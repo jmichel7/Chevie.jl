@@ -12,7 +12,7 @@ InfoChevie(a...)=if CHEVIE.info xprint(a...) end
 
 ChevieErr(x...)=printstyled(rio(),"Error: ",x...;color=:red)
 
-" chevieget(t::Symbol,w::Symbol) returns CHEVIE.t[w] or nothing if absent"
+" `chevieget(t::Symbol,w::Symbol)` returns `CHEVIE.t[w]` or `nothing` if absent"
 function chevieget(t::Symbol,w::Symbol)
   get!(CHEVIE[t],w)do
     if verbose_chevieget println("CHEVIE.$t has no $w") end
@@ -21,6 +21,7 @@ end
 
 chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
 
+" `chevieset(t::Union{Symbol,String},w::Symbol,o)` sets `CHEVIE.t[w]=o`"
 function chevieset(t::Symbol,w::Symbol,o)
   get!(CHEVIE.prop,t,Dict{Symbol,Any}())[w]=o
 end

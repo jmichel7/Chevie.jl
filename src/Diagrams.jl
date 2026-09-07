@@ -59,12 +59,14 @@ The  nodes of the diagram represent  the generating reflections of `W`. For
 complex  reflection groups, the nodes circle an integer noting the order of
 the corresponding reflection.
 
-The  edges of the diagram represent braid  relations in the same way as for
-Dynkin  diagrams  (see  [`Weyl`](@ref)). Nodes  not  adjacent  by  an  edge
-represent  commuting  generators.  Braid  relations  using  more  than  two
-generators are listed separately.
+The edges of the diagram represent braid relations involving two generators
+in  the same  way as  for Dynkin  diagrams (see  [`Weyl`](@ref)). Nodes not
+adjacent  by an edge represent  commuting generators. Braid relations using
+more than two generators are listed separately.
 """
 diagram(W)=Diagram.(refltype(W))
+diagram(t::TypeIrred)=Diagram(t)
+diagram(v::Vector{TypeIrred})=Diagram.(v)
 
 hbar="\u2014"
 rdarrow(n)="\u21D0"^(n-1)*" "

@@ -541,60 +541,63 @@ end)
 """
 `drinfeld_double(g;lu=false,pivotal=nothing)`
 
-Given  a (usually small) finite group  `Γ`, Lusztig has associated a family
-(a  Fourier matrix, a list of eigenvalues of Frobenius) which describes the
-representation ring of the Drinfeld double of the group algebra of `Γ`, and
-for   some  appropriate  small  groups  describes  a  family  of  unipotent
-characters. We do not explain the details of this construction, but explain
-how its final result building Lusztig's Fourier matrix, and a variant of it
-that we use in Spetses, from `Γ`.
+To  a  (usually  small)  finite  group  `Γ`,  Lusztig associates a *Fourier
+matrix*,  and a *vector  of eigenvalues of  Frobenius*, both indexed by the
+representations  of the Drinfeld double of the group algebra of `Γ`. For an
+appropriate  `Γ` these  representations also  index a  *family of unipotent
+characters*.  A variant of this construction  also occurs for many families
+of unipotent characters of Spetses.
 
-The  elements of the family are in bijection  with the set `𝓜 (Γ)` of pairs
-`(x,φ)`  taken up to  `Γ`-conjugacy, where `x∈Γ`  and `φ` is an irreducible
-complex-valued   character  of  `C_Γ(x)`.  To  such  a  pair  `ρ=(x,φ)`  is
-associated  an  eigenvalue  of  Frobenius  defined  by  ``ω_ρ:=φ(x)/φ(1)``.
-Lusztig  then defines a Fourier matrix `S₀` whose coefficient is given, for
-`ρ=(x,φ)` and `ρ'=(x', φ')`, by:
+The elements of the family (the representations of the Drinfeld double) are
+in   bijection  with  the  set  `𝓜  (Γ)`  of  pairs  `(x,φ)`  taken  up  to
+`Γ`-conjugacy,  where  `x∈Γ`  and  `φ`  is  an  irreducible  complex-valued
+character   of  `C_Γ(x)`.  To  such  a  pair  `ρ=(x,φ)`  is  associated  an
+*eigenvalue  of Frobenius* defined by ``ω_ρ:=φ(x)/φ(1)``. Lusztig's Fourier
+matrix `S₀` has coefficient for `ρ=(x,φ)` and `ρ'=(x', φ')` given by:
 
 ``{S_0}_{\\rho,\\rho'}:=|C_Γ(x)⁻¹|∑_{\\rho_1=(x_1,φ_1)}φ_1(x)φ(y_1)``
 
 where  the sum is over all pairs `ρ₁∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
 and  such that ``y₁∈ C_Γ(x)``. This  coefficient also represents the scalar
-product ``⟨ρ,ρ'⟩_{𝐆^F}`` of the corresponding unipotent characters.
+product  ``⟨ρ,R_{ρ'}⟩_{𝐆^F}``  of  an  unipotent  character  with an almost
+character.
 
-A  way to understand the formula  for ``{S_0}_{\\rho,\\rho'}`` better is to
-consider  another basis  of the  complex vector  space with  basis `𝓜 (Γ)`,
-indexed  by the pairs `(x,y)` taken up  to `Γ`-conjugacy, where `x` and `y`
-are  commuting elements of  `Γ`. This basis  is called the  basis of Mellin
+A  way to understand better the  formula for ``{S_0}_{\\rho,\\rho'}`` is to
+consider  another basis of the complex vector space of basis `𝓜 (Γ)`, which
+is  indexed by the pairs  `(x,y)` taken up to  `Γ`-conjugacy, where `x` and
+`y` are commuting elements of `Γ`. This basis is called the basis of Mellin
 transforms, and given by:
 
 ``(x,y)=∑_{φ∈ Irr(C_Γ(x))}φ(y)(x,φ)``
 
-In  the  basis  of  Mellin  transforms,  the  linear  map  `S₀` is given by
+In  this basis,  the linear  map `S₀`  is given  by the  permutation matrix
 `(x,y)↦(x⁻¹,y⁻¹)`  and  the  linear  transformation  `T` which sends `ρ` to
-`ω_ρρ`   becomes  `(x,y)↦(x,xy)`.   These  are   particular  cases  of  the
-permutation  representation of `GL₂(ℤ)`  on the basis  of Mellin transforms
-where ``\\begin{pmatrix}a&b\\cr c&d\\end{pmatrix}`` acts by
+`ω_ρρ` by the permutation matrix `(x,y)↦(x,xy)`. These are particular cases
+of  the  permutation  representation  of  `GL₂(ℤ)`  on  the basis of Mellin
+transforms  where  ``\\begin{pmatrix}a&b\\cr  c&d\\end{pmatrix}``  acts  by
 `(x,y)↦(xᵃyᵇ,xᶜyᵈ)`.
 
-Fourier  matrices in finite reductive groups  are given by the above matrix
-`S₀`.  But for non-rational Spetses, we use a different matrix `S` which in
+Fourier  matrices for finite reductive groups are given by the above matrix
+`S₀`.  But in non-rational Spetses, we use  a different matrix `S` which in
 the  basis of Mellin transforms  is given by `(x,y)↦(y⁻¹,x)`. Equivalently,
 the  formula ``S_{ρ,ρ'}`` differs from  the formula for ``{S_0}_{ρ,ρ'}`` in
 that  there is no complex conjugation of `χ₁`; thus the matrix `S` is equal
 to `S₀` multiplied on the right by the permutation matrix which corresponds
-to  `(x,φ)↦(x,φ)`. The advantage  of the matrix  `S` over `S₀`  is that the
-pair  `S,T` satisfies directly the axioms for fusion data (see below); also
-the matrix `S` is symmetric, while `S₀` is Hermitian.
+to   ``(x,\\phi)↦(x,\\overline\\phi)``.  In  reductive  groups  this  would
+correspond  to re-indexing almost characters  by applying complex conjugacy
+to  them. The advantage of the matrix `S`  over `S₀` is that the pair `S,T`
+satisfies the axioms for fusion data `S⁴=(ST)³=1` where `T` is the diagonal
+matrix of eigenvalues of Frobenius; also the matrix `S` is symmetric, while
+`S₀` is Hermitian.
 
 Thus there are two variants of `drinfeld_double`:
 
-`drinfeld_double(g;lu=false)`
+`drinfeld_double(g;lu=true)`
 
-returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and an extra
+returns  a `Family` containing Lusztig's Fourier  matrix `S₀`, and an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
-`(x,φ)↦(x,φ)`,  which allows  to recover  `S`, as  well as  an extra field
-`:lusztig', set to 'true'.
+``(x,\\phi)↦(x,\\overline\\phi)``,  which allows to recover `S`, as well as
+an extra field `:lusztig', set to 'true'.
 
 `drinfeld_double(g)`
 
@@ -603,21 +606,21 @@ or '.perm'.
 
 The family object 'f' returned also has the properties:
 
-  - `:group`: the group `Γ`.
+  - `.group`: the group `Γ`.
 
-  - `:charLabels`: a list of labels describing the pairs `(x,φ)`, and thus also specifying in which order they are taken.
+  - `.charLabels`: a list of labels describing the pairs `(x,φ)`, and thus also specifying in which order they are taken.
 
-  - `:fourierMat`: the Fourier matrix (the matrix `S` or `S₀` depending on the call).
+  - `.fourierMat`: the Fourier matrix (the matrix `S` or `S₀` depending on the call).
 
-  - `:eigenvalues`: the eigenvalues of Frobenius.
+  - `.eigenvalues`: the eigenvalues of Frobenius.
 
-  - `:xy`: a list of pairs `(x,y)` which are representatives of the `Γ`-orbits of pairs of commuting elements.
+  - `.xy`: a list of pairs `(x,y)` which are representatives of the `Γ`-orbits of pairs of commuting elements.
 
-  - `:mellinLabels`: a list of labels describing the pairs `(x,y)`.
+  - `.mellinLabels`: a list of labels describing the pairs `(x,y)`.
 
-  - `:mellin`:  the base change matrix between  the basis `(x,φ)` and the basis of   Mellin  transforms,   so  that   `f.fourierMat^(f.mellin^-1)`  is  the permutation  matrix (for `(x,y)↦(y⁻¹,x)`  or `(x,y)↦(y⁻¹,x⁻¹)` depending on the call).
+  - `.mellin`:  the base change matrix between  the basis `(x,φ)` and the basis of   Mellin  transforms,   so  that   `f.fourierMat^(f.mellin^-1)`  is  the permutation  matrix (for `(x,y)↦(y⁻¹,x)`  or `(x,y)↦(y⁻¹,x⁻¹)` depending on the call).
 
-  - `:special`: the index of the special element, which is `(x,φ)=(1,1)`.
+  - `.special`: the index of the special element, which is `(x,φ)=(1,1)`.
 
 ```julia-rep1
 julia> drinfeld_double(coxsym(3)) # needs "using GAP"
@@ -636,7 +639,7 @@ Family(drinfeld_double(coxsym(3))) Drinfeld double D(coxsym(3))
 └───────┴────────────────────────────────────────────────────┘
 
 julia> drinfeld_double(coxsym(3);lu=true)
-Family(Ldrinfeld_double(coxsym(3))) Lusztig′sDrinfeld double D(coxsym(3))
+Family(Ldrinfeld_double(coxsym(3))) Lusztig′s Drinfeld double D(coxsym(3))
 ┌───────┬────────────────────────────────────────────────────┐
 │label  │eigen                                               │
 ├───────┼────────────────────────────────────────────────────┤
@@ -651,9 +654,10 @@ Family(Ldrinfeld_double(coxsym(3))) Lusztig′sDrinfeld double D(coxsym(3))
 └───────┴────────────────────────────────────────────────────┘
 ```
 
-The  keyword `pivotal`  describes the  pivotal structure  as a tuple of the
-pivotal  element and the vector  of values of the  pivotal character on the
-generators of `g`.
+The  keyword `pivotal` allows to specify a non-trivial pivotal structure on
+the  category  of  representations.  If  given  it  describes  the  pivotal
+structure as a tuple of the pivotal element and the vector of values of the
+pivotal character on the generators of `g`.
 """
 function drinfeld_double(g;lu=false,pivotal=nothing)
 # pivotal=(pivotal element, value of pivotal char on gens(g))
@@ -700,7 +704,7 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     r[:chars][:,position_class(r[:centralizer],one(g))],res.classinfo)...)
   if lu
     res.name="L"
-    res.explanation="Lusztig's"
+    res.explanation="Lusztig's "
   else
     res.name=""
     res.explanation=""
