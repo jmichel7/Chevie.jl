@@ -381,7 +381,7 @@ function Groups.elements(W::CoxeterGroup{T}, l::Integer)::Vector{T} where T
   else
     if l==1 return gens(W) end
     v=elements(W,l-1)
-    res=Set(empty(v))
+    res=OrderedSet(empty(v))
     for e in v, i in 1:ngens(W)
       if !isleftdescent(W,e,i) push!(res,W(i)*e) end
     end
@@ -663,9 +663,9 @@ inversions(W::CoxeterGroup,w)=filter(x->isleftdescent(W,w,x),1:nref(W))
 # assumes isleftdescent works for all reflections
 
 function parabolic_category(W,I::AbstractVector{<:Integer})
-   Category(sort(I);action=(J,e)->sort!(action.(Ref(W),J,e)))do J
+  Category(sort(I);action=(J,e)->sort!(action.(Ref(W),J,e)))do J
     map(setdiff(1:ngens(W),J)) do i
-      longest(W,J)*longest(W,push!(copy(J),i))
+      longest(W,J)*longest(W,vcat(J,i))
     end
   end
 end
@@ -688,7 +688,7 @@ julia> CoxGroups.standard_parabolic_class(coxgroup(:E,8),[7,8])
  [1, 3]
 ```
 """
-standard_parabolic_class(W,I::Vector{Int})=parabolic_category(W,I).obj
+standard_parabolic_class(W,I::AbstractVector{<:Integer})=parabolic_category(W,I).obj
 
 # representatives of parabolic classes
 function PermRoot.parabolic_reps(W::CoxeterGroup,s)

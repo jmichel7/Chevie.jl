@@ -295,8 +295,8 @@ julia> b^d
 
 julia> centralizer_gens(b)
 3-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- 321432.213243
  21.1
+ 321432.213243
  4
 
 julia> C=conjcat(b;ss=Val(:ss)) # SS(b) as a category
@@ -1826,7 +1826,7 @@ julia> "the right-lcms of the `δⁱ`-orbits on `leftdescents(b)`"
          if isnothing(di) error(b," is not δ^\$i-stable") end
          map(o->M(rightlcm(M,ld[o]...)),orbits(di,eachindex(ld)))
        end
-satoms
+satoms (generic function with 1 method)
 
 julia> Category(x->satoms(x,15),s;action=(o,m)->inv(m)*o*δad(m,8))
 category with 88 objects and 660 generating maps
@@ -1913,8 +1913,8 @@ BraidMonoid(𝔖 ₄)
 
 julia> endomorphisms(conjcat(M(1,1,2,2,3)),1) # generators of centralizer
 2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
- 213.1232
  12.213
+ 213.1232
 ```
 """
 function endomorphisms(C::Category{TO,TM},o::Integer)where {TO,TM}
@@ -2286,14 +2286,14 @@ julia> w=B(4,4,4)
 
 julia> cc=centralizer_gens(w)
 8-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- 1
+ 34.43
+ 4
  (31432)⁻¹231432
- (1)⁻¹34.431
+ 1
+ 2
  (2)⁻¹34.432
  (32431)⁻¹132431
- 4
- 34.43
- 2
+ (1)⁻¹34.431
 
 julia> shrink(cc)
 5-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
@@ -2311,8 +2311,8 @@ julia> F=Frobenius(spets(W,Perm(1,2,4)));
 
 julia> centralizer_gens(w,F)
 2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- 124
  312343123
+ 124
 ```
 """
 function centralizer_gens(b,F::Function=(x,_=1)->x;ss=Val(:sc))

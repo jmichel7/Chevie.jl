@@ -1494,7 +1494,7 @@ parabolic_reps(t::TypeIrred,s)=chevieget(t,:parabolic_reps,s)
 
 function recompute_parabolic_reps(W) # W irreducible
   by=1+ngens(W)-semisimplerank(W)
-  stoi=s->findfirst(i->refls(W,i)==s,eachindex(roots(W)))
+  stoi=s->findfirst(==(s),refls(W))
   l=[map(x->reflection_subgroup(W,[x]),sort(unique(simple_reps(W))))]
   for i in 2:semisimplerank(W)-1
     new=[];ref=Vector{Pair{Int,Int}}[]
@@ -1502,10 +1502,10 @@ function recompute_parabolic_reps(W) # W irreducible
       InfoChevie("# Extending ",v)
       S=normalizer(W,v)
       if ngens(v)==i-1
-        c=union(map(i->combinations(unique_refls(W),i),1:by)...)
-      else c=combinations(unique_refls(W),1)
+        c=union(map(j->combinations(unique_refls(W),j),1:by)...)
+       else c=map(x->[x],unique_refls(W))
       end
-      c=map(x->union(x,restriction(W,inclusiongens(v))),c)
+      c=map(x->union(x,inclusiongens(v,W)),c)
       c=filter(x->GenLinearAlgebra.rank(toM(roots(W,x)))==i,c)
       InfoChevie(" ",length(c)," new subgroups")
       c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
@@ -1530,7 +1530,8 @@ function recompute_parabolic_reps(W) # W irreducible
   end
   l=map(vcat(l...))do v
     p=standard_parabolic(W,v;all=true)
-    if p!==nothing v=v^p end
+    if p!==nothing && !isone(p)
+      v=v^p end
     v
   end
   l=collectby(semisimplerank,l)
