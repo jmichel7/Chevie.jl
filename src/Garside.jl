@@ -296,8 +296,8 @@ julia> b^d
 julia> centralizer_gens(b)
 3-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  21.1
- 321432.213243
  4
+ 321432.213243
 
 julia> C=conjcat(b;ss=Val(:ss)) # SS(b) as a category
 category with 10 objects and 32 generating maps
@@ -1939,7 +1939,7 @@ function endomorphisms(C::Category{TO,TM},o::Integer)where {TO,TM}
   end
   foo()
   # here paths[p] describes a path to get from obj o to  obj p
-  gens=Set(empty(maps))
+  gens=OrderedSet(empty(maps))
   for i in eachindex(C.obj)
     t=C.atoms[i]
     for j in eachindex(t)
@@ -2286,14 +2286,14 @@ julia> w=B(4,4,4)
 
 julia> cc=centralizer_gens(w)
 8-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- 34.43
- 4
- (31432)⁻¹231432
  1
  2
- (2)⁻¹34.432
- (32431)⁻¹132431
+ 4
+ 34.43
+ (31432)⁻¹231432
  (1)⁻¹34.431
+ (32431)⁻¹132431
+ (2)⁻¹34.432
 
 julia> shrink(cc)
 5-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
