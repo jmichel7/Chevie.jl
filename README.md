@@ -9,7 +9,7 @@ as  a port  to Julia  of the  `GAP3` package  with the  same name.  All new
 developments  are  now  carried  out  in  this  version.  If  you are using
 `Chevie.jl`   in  a  paper  and  wish  to  acknowledge  it,  you  can  cite
 
-  - Michel, J.(2015). *The development version of the CHEVIE package of GAP3.* J. of Algebra **435**, 308--336.
+  - Michel, J. *The development version of the CHEVIE package of GAP3.* J. of Algebra **435**(2015), 308--336.
 
 The  package has  no yet  reached version  1, thus  some function  names or
 interfaces may yet change. Pull requests and issues are welcomed.
@@ -44,6 +44,7 @@ but may eventually become separate packages:
   * factorizing polynomials over finite fields (module `FFfac`)
   * factorizing polynomials over the rationals (module `Fact`)
   * Number fields which are subfields of the Cyclotomics (module `Nf`)
+  * Symmetric Functions (module `SymFuncs`)
   * Truncated Laurent series (module `Truncs`)
 
 For permutation groups I have often replaced GAP's sophisticated algorithms

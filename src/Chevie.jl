@@ -39,6 +39,7 @@ but may eventually become separate packages:
   * factorizing polynomials over finite fields (module `FFfac`)
   * factorizing polynomials over the rationals (module `Fact`)
   * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
+  * Symmetric Functions (module [`SymFuncs`](@ref))
   * Truncated Laurent series (module [`Truncs`](@ref))
 
 For permutation groups I have often replaced GAP's sophisticated algorithms

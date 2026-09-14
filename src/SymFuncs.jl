@@ -123,7 +123,7 @@ of the basis `π` in the basis `s`.
 To use the basis `π`, we recommend that you do
 ```julia-rep1
 julia> Pi=SymFuncs.π;
-```end
+```
 in order not to destroy the constant `π`.
 
 The following are equivalent
