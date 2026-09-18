@@ -208,7 +208,7 @@ chevieset(:F4, :HeckeCharTable, function (param, _)
    -8+8u,v^2*(u-1)*(2*u^2*v-3u-3*u*v^2+2*u*v+2v),
    u*v^2-3*u*v-v^2+3v-1+u,v-u*v,2*u*v-2*u^2*v,-8+8v,
    -u^2*(v-1)*(-2*u*v^2+3*u^2*v+3v-2*u*v-2u),(u^2-3u+1)*(v-1),
-   -u*v+u,-2*u*v*(v-1),4*(v-1)*(u-1),2*(v-1)*(u-1),0,0]]*u^0*v^0
+   -u*v+u,-2*u*v*(v-1),4*(v-1)*(u-1),2*(v-1)*(u-1),0,0]]
   AdjustHeckeCharTable(tbl,param)
 end)
 

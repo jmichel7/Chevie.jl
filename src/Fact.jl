@@ -339,7 +339,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
 #   xprint("g=",g)
     g,cor1,cor2=gcdx(g,dis)
 #   xprintln(" dis=",dis," g=",g," cor1=",cor1," cor2=",cor2)
-    rep*=cor1
+    rep.*=cor1
     push!(rep, cor2)
   end
 # for (i,u) in pairs(rep) xprintln("rep[$i]=",rep[i]) end

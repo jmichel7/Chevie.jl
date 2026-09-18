@@ -794,7 +794,7 @@ function PermRoot.reflection_representation(H::HeckeAlgebra)
       a[j,j]=q
       a[j,i]-=C[i,j]
     end
-    -H.para[1][2]*a
+    -H.para[1][2].*a
   end)
 end
 
@@ -828,8 +828,8 @@ function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
   if !equalpara(H)
     error("cell representations for unequal parameters not yet implemented")
   end
-  S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
-                                         rootpara(H)[1]//H.para[1][2])
+  S=map(x->x.*-H.para[1][2],WGraphToRepresentation(length(H.para),gr,
+                                         rootpara(H)[1]//H.para[1][2]))
   if !isrepresentation(H,S;details=true) error() end
   improve_type(S)
 end
@@ -962,12 +962,12 @@ function Chars.representation(h::HeckeElt,r)
   if H isa HeckeCoset
     res=zero(r.gens[1])
     for (p,c) in h
-      res+=c*prod(r.gens[word(H.W,p)],init=one(r.gens[1]))*r.F
+      res+=c.*prod(r.gens[word(H.W,p)],init=one(r.gens[1]))*r.F
     end
   else
     res=zero(r[1])
     for (p,c) in h
-      res+=c*prod(r[word(H.W,p)],init=one(r[1]))
+      res+=c.*prod(r[word(H.W,p)],init=one(r[1]))
     end
   end
   res

@@ -1235,7 +1235,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   res.locsys=ss[:locsys]
 # res.L=tbl[2]*GenericOrder(W,q)/prod(ReflectionDegrees(R),d->q^d-1)/
 #   q^(W.semisimplerank-R.semisimplerank);
-  res.L=tbl[2]*q^(nref(W)+semisimplerank(R)-semisimplerank(W))
+  res.L=tbl[2].*q^(nref(W)+semisimplerank(R)-semisimplerank(W))
   res.uc=uc
   res.levi=reflection_subgroup(W,ss[:levi])
   if haskey(ss,:parameter) res.parameter=ss[:parameter]

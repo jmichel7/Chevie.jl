@@ -1222,7 +1222,7 @@ function Tfeginduce(W,J)
     ud=fakedegrees(W,q)
     index=exactdiv(generic_sign(L)*generic_order(W,q),generic_order(L,q))//generic_sign(W)
     index=shift(index,-valuation(index))
-    pred=hd*index
+    pred=hd.*index
     found=(permutedims(ud)*t.scalar)[1,:]
     InfoChevie("  # R^{",W,"}_{",L,"}\n")
     if pred!=found ChevieErr("quotients ",CycPol.(pred).//CycPol.(found),"\n")
@@ -1450,7 +1450,7 @@ function TdegsHCinduce(W,J)
   index=shift(index,-index.v)
   if W isa Spets index*=generic_sign(L)//generic_sign(W) end
   uL=UnipotentCharacters(L)
-  pred=degrees(uL,q)*index
+  pred=degrees(uL,q).*index
   tbl=hc_induction_table(L,W)
   ind=map(x->unichar(W,x),eachcol(tbl.scalar))
   inddeg=improve_type(degree.(ind))

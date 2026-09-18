@@ -114,7 +114,7 @@ chevieset(:A, :HeckeRepresentation, function (n, param, _, i)
     return Murphy.Murphycache[(n,param[1][1])].SpechtModels[pp[i]]
   end
   H=hecke(coxgroup(:A,n),-param[1][1]//param[1][2])
-  -param[1][2]*Spechtmodel(H,pp[i])
+  map(x->x.*-param[1][2],Spechtmodel(H,pp[i]))
 end)
 
 chevieset(:A, :Representation, function (n, i)

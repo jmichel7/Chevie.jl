@@ -109,7 +109,7 @@ chevieset(:G25, :HeckeCharTable, function (para,_)
    -u*v*w,-u*v*w,-(u^5)*v^5*w^5],f31(v,u,w),f31(u,w,v),f31(w,v,u),f31(w,u,v),
   f31(u,v,w),f31(v,w,u),f62(w,u,v),f62(v,w,u),f62(u,v,w),f62(v,u,w),f62(w,v,u),
   f62(u,w,v),f83(u,v,w),f83(w,v,u),f83(v,u,w),
-  f97(u,v,w,E(3,2)),f97(u,v,w,E(3))])*c
+  f97(u,v,w,E(3,2)),f97(u,v,w,E(3))]).*c
   res
 end)
 

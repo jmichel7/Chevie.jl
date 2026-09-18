@@ -80,7 +80,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     r^11*u^20,r^4*u^7,r*u^2,r^2*u^4,r^3*u^6,r^4*u^8,r^5*u^10,r^6*u^12,r^9*u^18,
     r^12*u^24,r^15*u^30,r*u,r^4*u^7,r^7*u^13,r*u^2,r^2*u^5,u,r^2*u^3,r*u^6,
     r^3*u^7,r^6*u^13,r^9*u^19,u^2,r^3*u^5,u^4,u^2,r^3*u^8,r^6*u^14,u^6,r^3*u^12,
-    r^6*u^18,u^3,r^3*u^3,r^2*u^3,r^3*u^9,r^12*u^27,r*u^3]*c
+    r^6*u^18,u^3,r^3*u^3,r^2*u^3,r^3*u^9,r^12*u^27,r*u^3].*c
   f23(r,_,u,v,_)=[2,2r,r*(u^2+v^2),-2*r^2*u^3*v^3,
     r^3*u^3*v^3*(u+v)*(v^2-u*v+u^2),r*(u+v),r^2*(u^2+v^2),r^4*(u^4+v^4),
     -r*u*v*(u^2+v^2),-(u^3)*v^3*r^5*(u^2+v^2),r^2*u^2*v^2*(u^4+v^4),
@@ -91,7 +91,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     r^2*(u+v)*((v^2-u*v)+u^2),-2*r*u^3*v^3,-(u^3)*v^3*r^3*(u+v),
     u^6*r^6*v^6*(u+v),-(u^9)*r^9*v^9*(u+v),u^2+v^2,-(u^2)*r^3*v^2*(u+v),
     -u*v*(u^2+v^2),u*v,-(r^3)*u^4*v^4,r^6*u^7*v^7,-2*u^3*v^3,2*r^3*u^6*v^6,
-    -2*r^6*u^9*v^9,0,0,0,0,0,0]*c
+    -2*r^6*u^9*v^9,0,0,0,0,0,0].*c
   f36(r,_,u,v,w)=[3,3r,r*(u^2+v^2+w^2),3*r^2*u^2*v^2*w^2,
     r^3*u*v*w*(w^3*v^3+w^3*u^3+u^3*v^3),r*(u+v+w),r^2*(u^2+v^2+w^2),
     r^4*(u^4+v^4+w^4),r*(u^2*v^2+u^2*w^2+v^2*w^2),u^2*r^5*v^2*w^2*(u^2+v^2+w^2),
@@ -103,7 +103,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     u^2*r^3*v^2*w^2*(u+v+w),u^4*r^6*v^4*w^4*(u+v+w),u^6*r^9*v^6*w^6*(u+v+w),
     u^2+v^2+w^2,u*v*r^3*w*(v*w+u*v+u*w),u^2*v^2+u^2*w^2+v^2*w^2,0,0,0,
     3*u^2*v^2*w^2,3*r^3*u^4*v^4*w^4,3*r^6*u^6*v^6*w^6,-u*v*w,-(r^3)*u*v*w,
-    -(r^2)*u*v*w,-(r^3)*u^3*v^3*w^3,-(r^12)*u^9*v^9*w^9,-r*u*v*w]*c
+    -(r^2)*u*v*w,-(r^3)*u^3*v^3*w^3,-(r^12)*u^9*v^9*w^9,-r*u*v*w].*c
   f31(r,p,u,v,_)=[3,p+2r,u*((-p*v-r*v)+r*u),u^4*v^2*r*(2p+r),p^2*r*u^5*v^4,u*r,
     u*r*(r*u-2*p*v),r^2*u^2*(2*p^2*v^2+r^2*u^2),-(u^2)*v*(-p*v+2*r*u),
     u^5*r^3*v^2*p*(r*u-2*p*v),u^4*v^2*(p^2*v^2+2*r^2*u^2),
@@ -116,7 +116,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     2*u^2+v^2,u^3*p*r^2*v*(2v+u),u*((-(v^3)-u^2*v)+u^3),u*(u+v),
     u^5*r^2*v^2*p*(u+v),u^9*r^4*v^4*p^2*(u+v),u^3*(-2*v^3+u^3),
     u^7*v^2*r^2*p*(-2*v^3+u^3),u^11*v^4*r^4*p^2*(-2*v^3+u^3),u^3,p*r^2*u*v^2,
-    -p*r*u^2*v,-(r^3)*u^6*v^3,p^4*r^8*u^19*v^8,-(u^2)*r*v]*c
+    -p*r*u^2*v,-(r^3)*u^6*v^3,p^4*r^8*u^19*v^8,-(u^2)*r*v].*c
   f62(r,p,u,v,w)=[6,2p+4r,(((-p*u*v-p*u*w)-r*u*v)-r*u*w)+r*u^2+r*v^2,
     -2*u^3*v^2*r*w*(2p+r),u^3*p^2*r*v*w^2*(u+v)*((v^2-u*v)+u^2),r*(u+v),
     r*((-2*p*u*v-2*p*u*w)+r*u^2+r*v^2),
@@ -138,7 +138,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     -(u^4)*p*r^2*v^2*w*(u+v),u^7*r^4*v^4*p^2*w^2*(u+v),
     u^2*((3*v^2*w^2-2*u*v^3)+u^4),-p*r^2*u^5*v^2*w*((3*v^2*w^2-2*u*v^3)+u^4),
     p^2*r^4*u^8*v^4*w^2*((3*v^2*w^2-2*u*v^3)+u^4),u*(-v*w+u^2),
-    v*r^2*p*(-v*w+u^2),0,0,u^13*v^8*p^4*r^8*w^4*(-v*w+u^2),0]*c
+    v*r^2*p*(-v*w+u^2),0,0,u^13*v^8*p^4*r^8*w^4*(-v*w+u^2),0].*c
   function f83(r,p,u,v,w,eps)
     s=eps*root(-r*p*v*w)
     [8,4p+4r,(p+r)*(((-u*v-u*w)-v*w)+u^2),-4*u^3*v*s*w*(p+r),
@@ -165,7 +165,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     u^2*(((3*v^2*w^2-2*u*v^3)-2*u*w^3)+u^4),
     -p*r*s*u^5*v*w*(((3*v^2*w^2-2*u*v^3)-2*u*w^3)+u^4),
     -(p^3)*r^3*u^8*v^3*w^3*(((3*v^2*w^2-2*u*v^3)-2*u*w^3)+u^4),u*(-v*w+u^2),
-    p*r*s*(-v*w+u^2),0,0,u^13*v^6*p^6*r^6*w^6*(-v*w+u^2),0]*c
+    p*r*s*(-v*w+u^2),0,0,u^13*v^6*p^6*r^6*w^6*(-v*w+u^2),0].*c
       end
   f97(r,p,u,v,w,j)=[9,3p+6r,
     (((((-p*u*v-p*u*w)-v*p*w)-r*u*v)-r*u*w)-v*r*w)+r*u^2+r*v^2+r*w^2,
@@ -193,7 +193,7 @@ chevieset(:G26, :HeckeCharTable, function (para, _)
     -(j^2)*p*r^2*u^2*v^2*w^2*(-3*u^2*v^2*w^2+2*u^3*v^3+2*w^3*u^3+2*w^3*v^3),
     -j*p^2*r^4*u^4*v^4*w^4*(-3*u^2*v^2*w^2+2*u^3*v^3+2*w^3*u^3+2*w^3*v^3),
     -u*v*w,-(j^2)*p*r^2*u*v*w,j*p*r*u*v*w,r^3*u^3*v^3*w^3,
-    -(j^2)*p^4*r^8*u^9*v^9*w^9,j*r*u*v*w]*c
+    -(j^2)*p^4*r^8*u^9*v^9*w^9,j*r*u*v*w].*c
   r,p=para[1]
   u,v,w=para[2]
   res[:irreducibles]=toM([f10(r,u),f10(p,u),f10(p,w),f10(p,v),f10(r,w),f10(r,v),

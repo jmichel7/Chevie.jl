@@ -97,10 +97,10 @@ chevieset("2I", :HeckeRepresentation, function (m, param, rootpara, i)
   v=ismissing(rootpara[1]) ? root(q) : rootpara[1]
   e=E(2m)
   if i==1 (gens=[[v^2;;],[v^2;;]],F=[1;;])
-  elseif i==2 (gens=[[-1;;],[-1;;]]*v^0,F=[1;;])
+  elseif i==2 (gens=[[-v^0;;],[-v^0;;]],F=[1;;])
   else i-=2 
     (gens=[[-1 0;v*(e^i+e^-i) v^2],
-           [v^2 v*(e^i+e^-i);0 -1]]*v^0,F=-[0 1;1 0])
+           [v^2 v*(e^i+e^-i);0 -1]],F=-[0 1;1 0])
   end
 end)
 

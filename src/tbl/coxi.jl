@@ -83,7 +83,7 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
   end)
   tbl=Dict{Symbol, Any}(:identifier => string("H(I2(", m, "))"), 
     :cartan=>cartan(:I,2,m),:size=>2m,
-   :parameter=>[u,v],:irreducibles=>ct*v^0)
+    :parameter=>[u,v],:irreducibles=>toM(ct).*v^0)
   merge!(tbl, cl)
   merge!(tbl, chevieget(:I, :charinfo)(m))
   tbl[:centralizers]= div.(tbl[:size],tbl[:classes])

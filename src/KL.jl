@@ -1063,7 +1063,7 @@ julia> sum(l.*map(i->almostchar(W,i),eachindex(l)))
 """
 function Lusztigaw(W,w)
   v=Pol()
-  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*(-v)^-length(W,w)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w)).*(-v)^-length(W,w)
   map((c,a)->c[-a],l,charinfo(W).a)
 end
 
@@ -1094,7 +1094,7 @@ julia> sum(l.*map(i->almostchar(W,i),eachindex(l)))
 """
 function LusztigAw(W,w)
   v=Pol()
-  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*v^-length(W,w)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w)).*v^-length(W,w)
   map((c,a)->c[nref(W)-a],l,charinfo(W).A)
 end
 

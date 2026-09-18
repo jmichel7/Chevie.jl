@@ -367,7 +367,7 @@ information  about  it  necessary  to  compute  the  function `Δ` in [hr98;
   end
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])
   res[:parameter]=para
-  res[:irreducibles]=improve_type(res[:irreducibles]*one(prod(prod,para)))
+  res[:irreducibles]=improve_type(res[:irreducibles].*one(prod(prod,para)))
   res
 end)
 
@@ -1435,14 +1435,14 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
     x=-para[2][1]//para[2][2]
     f(x,j)=[[-1 0 0;0 0 1;0 x -1+x],[-1 0 0;x-x^2 -1+x j^2;j*x-j*x^2 j*x 0],
             [0 1 0;x -1+x 0;0 0 -1]]
-    r=x^0*[[[-1 0;-1 x],[x -x;0 -1],[x -x;0 -1]],
+    r=[[[-1 0;-1 x],[x -x;0 -1],[x -x;0 -1]],
           [[-1 0;-1 x],[x -x;0 -1],[-1 0;-1 x]],
           [[-1 0;-1 x],[x -x;0 -1],[-1+x 1;x 0]],
           f(x,E(3)),f(x,E(3,2)),
           [[-1;;],[-1;;],[-1;;]],
-          -x*f(x^-1,E(3,2)),-x*f(x^-1,E(3)),
+          map(m->-x.*m,f(x^-1,E(3,2))),map(m->-x.*m,f(x^-1,E(3))),
           [[-1 0;-1 x],[-1 0;-1 x],[x -x;0 -1]],[[x;;],[x;;],[x;;]]]
-    return -para[2][2]*r[i]
+    return map(m->-para[2][2].*m,r[i])
   elseif (p,q,r)==(2,2,4)
     x=-para[1][1]//para[1][2]
     r=[x->[[-1+x -1 0;-x 0 0;x-x^2 -1+x -1],[0 1 0;x -1+x 0;0 0 -1],
@@ -1484,7 +1484,8 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
   elseif (p, q, r) == (3, 3, 4)
     x=-para[2][1]//para[2][2]
     function m334(i)
-      function f1(x) x^0*[[x -1 0 0 0 0 0 0 0 0 1-x-x^2+x^3 0;
+      function f1(x) 
+        [[x -1 0 0 0 0 0 0 0 0 1-x-x^2+x^3 0;
         0 -1 0 0 0 0 0 0 0 0 0 0;0 0 -1+x 0 x 0 -x 0 0 0 x-x^2 0;
         0 0 0 -1+x 0 0 -x 0 0 0 x-x^2 0;0 0 1 -1 0 0 0 0 0 0 0 0;
         0 0 0 0 0 0 0 0 0 0 0 -x;0 0 0 -1 0 0 0 0 0 0 -1+x 0;
@@ -1527,7 +1528,7 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
        [x -1 0 0 1 x;0 -1 0 0 0 0;0 0 -1 0 0 0;0 0 -1 x 1 x;
         0 0 0 0 -1 0;0 0 0 0 0 -1]]
       end
-      f5(_)=[[-1;;],[-1;;],[-1;;],[-1;;]]
+      f5()=[[-1;;],[-1;;],[-1;;],[-1;;]]
       function f7(x,j) 
       [[-1 0 0 0 0 0;x x 0 0 0 0;x 0 x 0 0 0;0 0 0 -1 0 0;
         0 0 0 0 -1 0;0 0 0 -j*x^2 x x],
@@ -1556,13 +1557,28 @@ chevieset(:imp,:HeckeRepresentation,function(p,q,r,para,rootpara,i;gen=false)
       [[x 1 0;0 -1 0;0 0 -1],[x 1 0;0 -1 0;0 0 -1],
        [-1 0 0;x x 1;0 0 -1],[-1 0 0;0 -1 0;0 x x]]
       end
-      f13(x)=[[-1 0;x x],[-1 0;x x],[x 1;0 -1],[-1 0;x x]]
-      r=[f1(x),f2(x,E(3)),f3(x),f2(x,E(3,2)),f5(x),-x*f1(x^-1),f7(x,E(3)),
-         f8(x,E(3)),f8(x,E(3,2)),-x*f7(x^-1,E(3)),f11(x),-x*f3(x^-1),f13(x),
-         -x*f2(x^-1,E(3,2)),-x*f2(x^-1,E(3)),-x*f11(x^-1),-x*f5(x^-1)]
-      return x^0*r[i]
+      foo(r)=map(m->m.*-x,r)
+      if i==1 f1(x)
+      elseif i==2 f2(x,E(3))
+      elseif i==3 f3(x)
+      elseif i==4 f2(x,E(3,2))
+      elseif i==5 f5()
+      elseif i==6 foo(f1(x^-1))
+      elseif i==7 f7(x,E(3))
+      elseif i==8 f8(x,E(3))
+      elseif i==9 f8(x,E(3,2))
+      elseif i==10 foo(f7(x^-1,E(3)))
+      elseif i==11 f11(x)
+      elseif i==12 foo(f3(x^-1))
+      elseif i==13
+               [[-1 0;x x],[-1 0;x x],[x 1;0 -1],[-1 0;x x]]
+      elseif i==14 foo(f2(x^-1,E(3,2)))
+      elseif i==15 foo(f2(x^-1,E(3)))
+      elseif i==16 foo(f11(x^-1))
+      elseif i==17 foo(f5())
+      end
     end
-    return -para[2][2]*m334(i)
+    return map(m->-para[2][2].*m,m334(i))
   elseif (p,q,r)==(3,3,5)
     function f2(q)
      [[-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;

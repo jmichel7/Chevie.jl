@@ -120,14 +120,14 @@ chevieset(:G24,:galomorphisms,perm"(5,6)(9,10)")
 chevieset(:G24, :HeckeRepresentation, function (para, rootpara, i)
   f1(r)=map(_->[r;;],1:3)
   f3(p,r,b)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
-    [1,3,p,-r],[2,3,r*(b+1),p*b]]],[p,r]).*(p^0*r^0)
+    [1,3,p,-r],[2,3,r*(b+1),p*b]]],[p,r])
   f7(p,r)=WGraph2Representation([[[2,3],[2,3],[1,3],[1,3],[1,2],[1,2]],
     [[1,4,r,-p],[1,5,r,-p],[2,3,r,-p],[2,6,p,-r],[3,5,-p,0],[3,6,-2p,r],
-     [4,5,r,0],[4,6,2r,0]]],[r,p]).*(p^0*r^0)
+     [4,5,r,0],[4,6,2r,0]]],[r,p])
   f9(r,p)=WGraph2Representation([[[1],[1,2],[1,3],[2],[2],[3],[3]],
    [[1,2,0,-r],[1,3,0,p],[1,4,p,-r],[1,5,0,-r],[1,6,-p,r],[2,5,-p,0],[2,7,-p,r],
     [3,4,-p,0],[3,5,p,-r],[3,6,p,0],[3,7,p,0],[4,6,0,-p],[4,7,-r,p],[5,6,-r,p],
-    [5,7,-r,0]]], [p,r]).*(p^0*r^0)
+    [5,7,-r,0]]], [p,r])
   function f11(x, y, v)
     expandrep(3,8,Tuple{typeof(v),Vector{Int64}}[(-v*y,[105]),(-v*y+x*y,
       [79]),(v*y,[129]),(v*y-x^2-x*y, [153]), (-v, [113, 150]), (-v-y, [156,
