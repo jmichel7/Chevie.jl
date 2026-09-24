@@ -8,7 +8,7 @@ module FFfac
 using Primes: Primes, factor
 using LinearAlgebra: exactdiv
 
-using LaurentPolynomials: Pol, degree, shift, derivative, stringexp, coefficients
+using LaurentPolynomials: Pol, degree, shift, derivative, stringexp, coefficients, valuation
 using FiniteFields: FFE, GF, Z
 
 """
