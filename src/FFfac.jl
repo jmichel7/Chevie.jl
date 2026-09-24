@@ -23,7 +23,7 @@ function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
   g=copy(f)
   while true
     g=Pol(rand(F,2d))
-    k=maximum(degree.(f.c))
+    k=maximum(degree.(coefficients(f)))
     if p==2 # take g+g^2+g^(2^2)+ ... +g^(2^(k*d-1)) for GF(2^k)
       h=g
       for _ in 1:k*d-1
@@ -67,16 +67,15 @@ function factors_squarefree(f::Pol{FFE{p}},F)where p
   facs
 end
 
-# n-th root of a pol which is assumed to be an n-th power
-# not exported since does not check that f is a power
-function root(f::Pol{FFE{p}},n::Integer)where p
-  d=maximum(degree.(f.c))
+# p-th root of a pol which is assumed to be a p-th power
+function rootp(f::Pol{FFE{p}})where p
+  d=maximum(degree.(coefficients(f)))
   z=Z(p^d)
-  r=map(0:div(degree(f),n)) do i
-    e=f[i*n]
-    iszero(e) ? zero(z) : z^div(log(e),n)
+  r=map(0:div(degree(f),p)) do i
+    e=f[i*p]
+    iszero(e) ? zero(z) : z^(log(e)*p^(d-1))
   end
-  Pol(r,div(f.v,n))
+  Pol(r,div(valuation(f),p))
 end
 
 """
@@ -106,13 +105,14 @@ function Primes.factor(f::Pol{FFE{p}},
   # make the polynomial unitary, remember the leading coefficient for later
   l=f[end]
   f=f/l
-  if f.v>0 facs[Pol([FFE{p}(1)],1)]+=f.v end
-  f=shift(f,-f.v)
+  if valuation(f)>0 facs[Pol([FFE{p}(1)],1)]+=valuation(f) 
+    f=shift(f,-valuation(f))
+  end
   if degree(f)==1 facs[f]+=1
   elseif degree(f)>=2
     d=derivative(f)
     if iszero(d) # f is the p-th power of another polynomial
-      h=factor(root(f,p),F)
+      h=factor(rootp(f),F)
       for k in keys(h) facs[k]=p*h[k] end
     else
       g=gcd(f,d)
