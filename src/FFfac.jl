@@ -67,15 +67,13 @@ function factors_squarefree(f::Pol{FFE{p}},F)where p
   facs
 end
 
-# p-th root of a pol which is assumed to be a p-th power
+# `p`-th root of a `Pol{FFE{p}}` which is assumed to be a `p`-th power
 function rootp(f::Pol{FFE{p}})where p
-  d=maximum(degree.(coefficients(f)))
-  z=Z(p^d)
-  r=map(0:div(degree(f),p)) do i
-    e=f[i*p]
-    iszero(e) ? zero(z) : z^(log(e)*p^(d-1))
-  end
-  Pol(r,div(valuation(f),p))
+  Pol(map(valuation(f):p:degree(f))do i
+    e=f[i]
+    for j in 1:degree(e)-1 e=e^p end
+    e
+  end,div(valuation(f),p))
 end
 
 """
@@ -111,7 +109,7 @@ function Primes.factor(f::Pol{FFE{p}},
   if degree(f)==1 facs[f]+=1
   elseif degree(f)>=2
     d=derivative(f)
-    if iszero(d) # f is the p-th power of another polynomial
+    if iszero(d) # f is a p-th power
       h=factor(rootp(f),F)
       for k in keys(h) facs[k]=p*h[k] end
     else
