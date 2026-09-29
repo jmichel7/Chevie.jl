@@ -10,7 +10,7 @@ function test_surjective(W;ss=Val(:sc))
     Cb=Group(image.(centralizer_gens(b;ss)))
     lCw=ct.centralizers[position_class(W,w)]
     if lCw>length(Cb)
-      print(div(lCw,length(Cb)),",")
+      print(b,":",div(lCw,length(Cb)),",")
       push!(res,mot)
     end
   end

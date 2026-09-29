@@ -138,7 +138,7 @@ end)
 chevieset(:H3, :HeckeRepresentation, function (para, rootpara, i)
   v=ismissing(rootpara[1]) ? root(-para[1][1]//para[1][2]) :
          -rootpara[1]//para[1][2]
-  -para[1][2]*WGraphToRepresentation(3,chevieget(:H3, :WGraph)(i),v)
+  map(x->-para[1][2].*x,WGraphToRepresentation(3,chevieget(:H3, :WGraph)(i),v))
 end)
 
 chevieset(:H3, :UnipotentCharacters, function ()
