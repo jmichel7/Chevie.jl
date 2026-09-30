@@ -622,7 +622,6 @@ julia> representation(H,7)
 function Chars.representation(H::Union{HeckeAlgebra,HeckeCoset},i::Integer)
   tt=refltype(H.W)
   pt=perm(inv(sortPerm(indices(tt))))
-  if isempty(tt) return Matrix{Int}[] end
   if isempty(tt) 
    return H isa HeckeCoset ? (gens=Matrix{Int}[], F=fill(0,0,0)) : Matrix{Int}[]
   end
@@ -632,15 +631,16 @@ function Chars.representation(H::Union{HeckeAlgebra,HeckeCoset},i::Integer)
       r=representation(t,j,
         chevieget(t,:HeckeRepresentation,H.H.para[indices(t.orbit[1])],
                   rootpara(H.H),j))
-      if r==nothing return nothing end
+      if r==nothing return end
       r isa Vector ? (gens=r,F=one(r[1])) : r # untwisted component
     else
       r=chevieget(t,:HeckeRepresentation,H.para[indices(t)],
                   H.rootpara[indices(t)],j)
-      if r==nothing return nothing end
+      if r==nothing return end
       r
     end
   end
+  if nothing in mm return end
   if H isa HeckeCoset 
     gens=getindex.(mm,:gens); F=getindex.(mm,:F)
     F=length(F)==1 ? F[1] : kron(F...)

@@ -457,7 +457,7 @@ chevieset(:G33, :HeckeRepresentation, function (para, rootpara, i)
   f1(r)=map(_->[r;;],1:5)
   f5(x,y,j)=WGraph2Representation([[[2,3,4,5],[1,3,4,5],[1,2,4,5],[1,2,3,5],
     [1,2,3,4]],[[1,2,x,-y],[2,3,-j*y,j^2*x],[2,4,-y,x],[3,4,x,-y],[4,5,x,-y]]],
-    [x,y])*y^0*x^0
+    [x,y])
 # For the usual presentation 7th rep. does not have a W-graph. We use AltPres[1]
   function f7(y,x)
     rep=WGraph2Representation([[[1,5],[1,3,4],[2],[2,5],[3],[4]],[[1,2,-y,x],

@@ -2246,7 +2246,7 @@ chevieset(:G32, :HeckeRepresentation, function (para, _, i)
   f1=u->[[u;;],[u;;],[u;;],[u;;]]
   f4(w,v)=WGraph2Representation([[[1],[2],[3],[4]],[[1,2,w,-v],[2,3,w,-v],
                                                     [3,4,w,-v]]],[w,v])
-  f5(u,w,v)=u^0*v^0*w^0*WGraph2Representation([[[1,3],[1,4],[2],[2,4],[3]],
+  f5(u,w,v)=WGraph2Representation([[[1,3],[1,4],[2],[2,4],[3]],
     [[1,2,u,-w],[1,3,u,-w],[1,5,u,0],[2,4,u,-w],[3,4,0,-w],[4,5,-w,u]]],[u,w])
   f6(v,w)=map(x->exterior_power(x,2).//w,f4(v,w))
   f10(u,w,v)=WGraph2Representation([[[[2],[]],[[],[1,2]],[[1],[]],[[],[2,3]],

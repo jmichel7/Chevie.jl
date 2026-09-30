@@ -5148,9 +5148,9 @@ chevieset(:G34, :HeckeRepresentation, function (para, _, i)
   f1(p)=map(_->[p;;],1:6)
   f3(x,y,a)=WGraph2Representation([[[1,2,3,4,5],[1,2,3,4,6],[1,2,3,5,6],
     [1,2,4,5,6],[1,3,4,5,6],[2,3,4,5,6]],[[1,2,-y,x],[2,3,-y,x],
-    [3,4,a*x^-1*y^2,-(a^2)*x^2*y^-1],[3,5,-y,x],[4,5,x,-y],[5,6,x,-y]]],[x,y])*x^0*y^0
-  f7(p,r,a)=map(x->exterior_power(x,2)//p,f3(p,r,a))
-  f11(p,r,a)=map(x->exterior_power(x,3)//p^2,f3(p,r,a))
+    [3,4,a*x^-1*y^2,-(a^2)*x^2*y^-1],[3,5,-y,x],[4,5,x,-y],[5,6,x,-y]]],[x,y])
+  f7(p,r,a)=map(x->exterior_power(x,2).//p,f3(p,r,a))
+  f11(p,r,a)=map(x->exterior_power(x,3).//p^2,f3(p,r,a))
   f13(x,y)=expandrep(6,21,Tuple{typeof(x*y),Vector{Int64}}[(-x,[27,81,103,159,201,
  207, 229, 305, 336, 429, 459, 481, 520, 547, 594, 607, 612, 628, 713, 743,
  814, 844, 846, 853, 859, 864, 931, 934, 960, 1218, 1299, 1341, 1355, 1363,
