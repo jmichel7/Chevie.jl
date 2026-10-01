@@ -12,6 +12,9 @@ zeroes. The functions for partitions in this module are
   - [`partition_core_quotient`](@ref)`(μ::Partition,q)` which recovers a
     partition given its `e`-core `μ` and its `e`-quotient `q`.
 
+The  functions `partitions` and `Partitions` for enumerating partitions (as
+vectors of integers) are in the package `Combinat`.
+
 A  *β-set* is a strictly increasing `Vector` of nonnegative integers, up to
 *shift*,  the  equivalence  relation  generated  by the *elementary shifts*
 `[b₁,…,bₙ]∼[0,1+b₁,…,1+bₙ]`.  An equivalence  class has  exactly one member
@@ -21,7 +24,7 @@ To  a  normalized  partition  `p₁≥p₂≥…pₙ>0`  is  associated  a β-se
 normalized  representative is `pₙ,pₙ₋₁+1,…,p₁+n-1`. A mnemonic is that this
 is  the areas of  the hooks in  the Young diagram  going up along the first
 column.  Conversely, to each β-set `b₁<b₂<…<bₙ` is associated the partition
-`bₙ-n+1≥…≥b₂-1≥b₁`,  which may have some trailing  zeros if starting from a
+`bₙ-n+1≥…≥b₂-1≥b₁`,  which  has  some  trailing  zeros  if  starting from a
 non-normalized representative.
 
 The functions for βsets in this module are
@@ -91,8 +94,7 @@ In  the above parametrizations, periodic symbols,  that is symbols `S` such
 that  the  sequence  `S₁,…,Sₙ`  is  a  repetition  `k`  times  of a shorter
 sequence,  must be  repeated `k`  times. To  distinguish the `k` copies, an
 additional parameter, a `k`-th root of unity, is attached to the symbol. As
-an example, here are the symbols for `G₃,₃,₃`:
-
+an example, here are the symbols for unipotent characters of `G₃,₃,₃`:
 ```julia-repl
 julia> symbols(3,3,0)
 12-element Vector{CharSymbol}:
@@ -110,10 +112,13 @@ julia> symbols(3,3,0)
  (012,012,)
 ```
 when  the symbol has  a period, only  the period is  shown, followed by the
-root  of unity (where  `1` is shown  as `+` and  `-1` is shown  as `-`.
+root  of unity (where  `1` is shown  as `+` and  `-1` is shown as `-`). The
+symbols  for  unipotent  characters  are  represented  by  objects  of type
+`CharSymbol`which  in addition  to the  underlying list  of βsets, hold for
+periodic symbols the information on the period and root of unity.
 
 The functions for symbols in this module are
-  - [`CharSymbol`](@ref), which constructs a symbol
+  - [`CharSymbol`](@ref), the constructor of a symbol from a vector of βsets
   - [`Symbol_partition_tuple`](@ref) which constructs a symbol of a given shape from a partition tuple
   - [`rank`](@ref) which computes the rank of a symbol
   - [`defect`](@ref) which returns the defect  of a 2-symbol
@@ -163,12 +168,12 @@ julia> length(p) # how many parts
 julia> rank(p) # the sum of the parts
 4
 ```
-some basic operations on partitions is the union and the conjugate partition
+some basic operations on partitions are the union and the conjugate partition
 ```julia-repl
 julia> union(p,p)
 Partition: 221111
 
-julia> p'
+julia> p'  # conjugate partition
 Partition: 31
 ```
 we  get the `i`-th part by indexing with the convention that we get `0` for
@@ -180,7 +185,7 @@ julia> p[1]
 julia> p[4]
 0
 ```
-The partitions are ordered by rank, and then lexicographically.
+When sorted, the partitions are ordered by rank, and then lexicographically.
 """
 struct Partition
   l::Vector{Int}
@@ -495,9 +500,9 @@ end
 """
 `CharSymbol(v::Vector{Vector{Int}},repeat::Int=1,no::Int=0)`
 
-`CharSymbol` makes a vector of βsets into a symbol. If the vector of βsets
-has a period this is specified by giving a number `repeats` of repetitions
-and a number `0≤no<repat`.
+`CharSymbol`  makes a vector of βsets into a symbol. If the vector of βsets
+has a period it corresponds to several symbols: this is specified by giving
+the number `repeat` of repetitions and `no`, a number `0≤no<repeat`.
 ```julia-repl
 julia> CharSymbol([[1],Int[],[2]])
 (1,,2)
@@ -1076,12 +1081,13 @@ end
 `XSP(ρ,s,n,even=false)` Lusztig-Spaltenstein symbols.
 
 returns  the union of the  [lusp85](@cite) symbols ``X̃^{ρ-s,s}_{n,d}`` for
-all  `d`  even  when  `even=true`,  all  `d`  odd  otherwise; these symbols
-parametrize  local  systems  on  unipotent  conjugacy classes for classical
-groups.  In [lus04;  13.2](@cite) the  notation is  ``{}^ρ X^s_{n,d}``. The
-result  is a vector of vectors, each inner vector regrouping the symbols in
-a  similarity class (the local systems  whose support is the same conjugacy
-class). If `s==0`, only positive defects `d` are considered.
+all  `d` even  when `even=true`,  all `d`  odd otherwise; these symbols are
+certain  pairs  of  lists  of  integers  which parametrize local systems on
+unipotent  conjugacy classes for classical  groups. In [lus04; 13.2](@cite)
+the notation is ``{}^ρ X^s_{n,d}``. The result is a vector of vectors, each
+inner  vector  regrouping  the  symbols  in  a  similarity class (the local
+systems  whose  support  is  the  same  conjugacy  class).  If `s==0`, only
+positive defects `d` are considered.
 
   - `XSP(2,1,n)` gives Lusztig-Spaltenstein symbols for Sp₂ₙ
   - `XSP(4,2,n)` gives Lusztig-Spaltenstein symbols for Sp₂ₙ in char.2
@@ -1089,7 +1095,9 @@ class). If `s==0`, only positive defects `d` are considered.
   - `XSP(2,0,n,true)` gives Lusztig-Spaltenstein symbols for SO₂ₙ of even defect
   - `XSP(4,0,n,true)` gives Lusztig-Spaltenstein symbols for SO₂ₙ in char 2
 
-Each  Lusztig-Spaltenstein symbol  is represented  by a  `LocSys`.
+The result is a vector of vectors of objects of type [`LocSys`](@ref), which
+describe a local system (by a Lusztig-Spaltenstein symbol and some derived
+information).
 """
 function XSP(rho,s,n,even=false)
   d=Int(!Bool(even))

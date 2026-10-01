@@ -25,5 +25,6 @@ degree_gendeg
 valuation_gendeg
 symbols
 ennola(::CharSymbol)
+Symbols.LocSys
 XSP
 ```
