@@ -262,3 +262,21 @@ function smallroots(W)
   end  
   end
 end
+
+function euler(W,c::Vector{Int})
+  C=cartan(W)
+  n=size(C,1)
+  [i<j ? 0 : i==j ? 1 : C[c[i],c[j]] for i in 1:n, j in 1:n]
+end
+
+# computes a symmetric word for a reflection
+function symmetricword(W,w)
+  old_w=w
+  res=Int[]
+  for i in 1:div(length(W,w),2)
+    j=firstleftdescent(W,w)
+    w=W(j)*w
+    push!(res,j)
+  end 
+  vcat(res,firstleftdescent(W,w),reverse(res))
+end
