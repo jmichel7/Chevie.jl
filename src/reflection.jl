@@ -101,7 +101,11 @@ end
 
 Perms.order(r::Reflection)=order(r.eigen) 
 
-simple_rep(r::Reflection)=simple_reps(r.W)[r.rootno]
+function simple_rep(r::Reflection)
+  get!(r,:simple_rep)do
+    simple_reps(r.W)[r.rootno]
+  end
+end
 
 Base.exponent(r::Reflection)=Int(r.eigen.r*ordergens(r.W)[simple_rep(r)])
 
@@ -177,20 +181,16 @@ julia> reflections(W)
 """
 function reflections(W::PermRootGroup)
   get!(W,:reflections)do
-    sreps=sort(unique(simple_reps(W)))
+    sr=simple_reps(W)
+    sreps=unique_sorted!(sort(sr[1:ngens(W)]))
     pnts=refls(W,sreps)
-    if W isa PermRootGroup
-      dd=map(x->Groups.words_transversal(gens(W),x),pnts)
-    end
+    dd=map(x->Groups.words_transversal(gens(W),x),pnts)
     res=map(_->Reflection{typeof(W)}[],1:maximum(ordergens(W))-1)
     for i in unique_refls(W)
-      e=ordergens(W)[simple_reps(W)[i]]
-      if W isa CoxeterGroup w=word(W,refls(W,i))
-      else
-        rep=simple_reps(W)[i]
-        w=dd[findfirst(==(rep),sreps)][refls(W,i)]
-        w=vcat(invert_word(W,w),[rep],w)
-      end
+      rep=sr[i]
+      e=ordergens(W)[rep]
+      w=dd[findfirst(==(rep),sreps)][refls(W,i)]
+      w=vcat(invert_word(W,w),[rep],w)
       for j in 1:e-1
         push!(res[j],Reflection(W,i,E(e,j),repeat(w,j),Dict{Symbol,Any}()))
       end

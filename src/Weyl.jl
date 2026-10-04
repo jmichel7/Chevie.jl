@@ -869,7 +869,6 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.degrees, PermRoot.codegrees, PermRoot.hyperplane_orbits,
  PermRoot.invariant_form, PermRoot.YMatrix, PermRoot.PermX, PermRoot.PermY, 
  Symbols.rank, 
- PermRoot.Reflection, PermRoot.reflections,
  PermRoot.roots, PermRoot.refleigen, PermRoot.reflrep,
  PermRoot.refltype, PermRoot.restriction, PermRoot.simplecoroots,
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,

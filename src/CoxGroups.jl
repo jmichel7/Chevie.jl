@@ -859,6 +859,27 @@ end
 
 abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
 
+# computes a symmetric word for a reflection
+function symmetric_word(W,w)
+  old_w=w
+  res=Int[]
+  for i in 1:div(length(W,w),2)
+    j=firstleftdescent(W,w)
+    w=W(j)*w
+    push!(res,j)
+  end 
+  vcat(res,firstleftdescent(W,w),reverse(res))
+end
+
+function PermRoot.reflections(W::FiniteCoxeterGroup)
+  get!(W,:reflections)do
+    map(1:nref(W),refls(W),simple_reps(W))do i,r,o
+      w=symmetric_word(W,r)
+      Reflection(W,i,E(2),w,Dict{Symbol,Any}(:simple_rep=>o))
+    end
+  end::Vector{Reflection{typeof(W)}}
+end
+
 # FiniteCoxeterGroup  should  be  derived  from PermGroup and CoxeterGroup.
 # Since  such inheritance  is impossible  in Julia,  we have  to choose. We
 # derive  it  from  CoxeterGroup  and  represent  the  other inheritance by
