@@ -555,8 +555,8 @@ const coxnum=coxeter_number
 for  each root, the index  of the first simple  root conjugate to it (it is
 the index of a generator of `W`).
 """
-function simple_reps(W::PermRootGroup) # fills .simple_conjugating and .refls
-  get!(W,:simple_reps)do
+function simple_reps(W::PermRootGroup;iscoxeter=false)
+  get!(W,:simple_reps)do #fills also .simple_conjugating, .refls, .unique_refls
     reps=fill(0,length(roots(W)))
     repelts=fill(one(W),length(roots(W)))
     for i in eachindex(gens(W))
@@ -570,7 +570,9 @@ function simple_reps(W::PermRootGroup) # fills .simple_conjugating and .refls
     end
     W.simple_conjugating=repelts
     W.refls=map((i,p)->gens(W)[i]^p,reps,repelts)
-    W.unique_refls=unique(i->W.refls[i],eachindex(W.refls))
+    W.unique_refls=if iscoxeter collect(1:div(length(W.refls),2))
+    else unique(i->W.refls[i],eachindex(W.refls))
+    end
     reps
   end::Vector{Int}
 end
@@ -591,7 +593,7 @@ representing  a distinguished reflection.  In particular this  list is much
 longer  than `unique(refls(W))`  since in  general there  are several roots
 corresponding to a reflection.
 """
-refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:refls)::Vector{Perm{T1}}
+refls(W)=getp(simple_reps,W,:refls)
 
 """
 `refls(W::ComplexReflectionGroup,i)`
@@ -1543,6 +1545,7 @@ function recompute_parabolic_reps(W) # W irreducible
 end
 
 function parabolic_reps(W::PermRootGroup,s)
+  if s==0 return [Int[]] end
   t=refltype(W)
   sols=filter(l->sum(l)==s,tcartesian(map(x->0:rank(x),t)...))
   vcat(map(sols)do c
@@ -1752,17 +1755,16 @@ function PRG(r::AbstractVector{<:AbstractVector},
     newroots=false
     for (j,refl) in pairs(gens_)
       lr=length(r)
-      if length(refl)<lr
-      for y in eachrow(toM(r[length(refl)+1:end])*matgens[j])
-        p=findfirst(==(y),r)
-	if p===nothing || p>lr
-          push!(r,y)
+      if length(refl)>=lr continue end
+      ll=eachrow(toM(r[length(refl)+1:end])*matgens[j])
+      for (i,p) in enumerate(indexin(ll,r))
+        if p===nothing || p>lr
+          push!(r,ll[i])
 #         println("j=$j r[$(length(refl)+1)...] ",length(r),":",y)
           newroots=true
           push!(refl,length(r))
         else push!(refl,p)
-	end
-      end
+        end
       end
     end
 #   println(" ",length(r))

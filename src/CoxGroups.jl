@@ -873,7 +873,8 @@ end
 
 function PermRoot.reflections(W::FiniteCoxeterGroup)
   get!(W,:reflections)do
-    map(1:nref(W),refls(W),simple_reps(W))do i,r,o
+    ss=simple_reps(W)
+    map(1:nref(W),refls(W),ss)do i,r,o
       w=symmetric_word(W,r)
       Reflection(W,i,E(2),w,Dict{Symbol,Any}(:simple_rep=>o))
     end
@@ -978,7 +979,6 @@ end
 PermRoot.inclusiongens(W::CoxSym)=W.d[1:end-1]
 Perms.reflength(::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=length(W.inversions)
-PermRoot.refls(W::CoxSym)=W.refls
 PermRoot.simple_reps(W::CoxSym)=W.simple_reps
 Symbols.rank(W::CoxSym)=ngens(W)+1
 PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.n)
@@ -1106,17 +1106,13 @@ Symbols.rank(W::CoxHyp)=W.n
 CoxGroups.maxpara(W::CoxHyp)=1:W.n-1
 PermRoot.inclusiongens(W::CoxHyp)=1:W.n
 
-function PermRoot.refls(W::CoxHyp{T})where T
-  get!(W,:refls)do
-    refs=map(t->SPerm{T}(t...),W.roots)
-    W.simple_reps=map(x->x[1]==-x[2] ? 1 : 2,W.roots)
+function PermRoot.simple_reps(W::CoxHyp{T})where T
+  get!(W,:simple_reps)do
+    W.refls=map(t->SPerm{T}(t...),W.roots)
     W.unique_refls=collect(1:nref(W))
-    refs
-  end::Vector{SPerm{T}}
+    map(x->x[1]==-x[2] ? 1 : 2,W.roots)
+  end::Vector{Int}
 end
-
-PermRoot.simple_reps(W::CoxHyp)=getp(refls,W,:simple_reps)
-PermRoot.unique_refls(W::CoxHyp)=getp(refls,W,:unique_refls)
 
 function Perms.reflength(::CoxHyp,w)
   sym=nsym=0

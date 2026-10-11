@@ -871,11 +871,12 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  Symbols.rank, 
  PermRoot.roots, PermRoot.refleigen, PermRoot.reflrep,
  PermRoot.refltype, PermRoot.restriction, PermRoot.simplecoroots,
- PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
+ PermRoot.simple_conjugating, PermRoot.simpleroots,
  PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
  PermRoot.invbaseX, PermRoot.central_action, 
  Perms.reflection_length, Perms.last_moved
 
+ PermRoot.simple_reps(W::FC)=simple_reps(W.G;iscoxeter=true)
  PermRoot.refls(W::FC)=refls(W.G)
 
 if false # slower now with changes in PermGroups
