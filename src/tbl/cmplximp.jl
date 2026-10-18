@@ -30,10 +30,13 @@ chevieset(:imp,:simplecoroots,function(p,q,r)
   Cyc{Int}.(toM(coroot.(eachrow(rt),eigen)))
 end)
 
-chevieset(:imp,:cartan,function(p,q,r)
-  rt=chevieget(:imp, :simpleroots)(p,q,r)
-  cr=chevieget(:imp, :simplecoroots)(p,q,r)
-  [sum(x.*y) for x in eachrow(cr), y in eachrow(rt)]
+chevieset(:imp,:cartan,function(p,q,r,cartanType=1)
+  c=chevieget(:imp,:simplecoroots)(p,q,r)*
+      transpose(chevieget(:imp,:simpleroots)(p,q,r))
+  if cartanType==1 return c end
+  if r==1 || p==q  error("G",(p,q,r)," has no cartanType≠1") end
+  D=Diagonal(vcat(1,fill(cartanType,size(c,1)-1)))
+  inv(D//1)*c*D
 end)
 
 chevieset(:imp, :braid_relations, function (p, q, r)

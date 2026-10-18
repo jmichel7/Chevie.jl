@@ -29,7 +29,7 @@ chevieset(:H4, :InvariantModel, Dict{Symbol, Any}(
         [-2 * root5, 1, 0, 0],
         [2 * root5, 1, 0, 0],
         [(5-root5)//4,(-1+root5)//4,(-3-root5)//2,(60-12*root5)//25]]))
-# usual matgens^conj=invariant matgens
+# usual reflrep^conj=Galois-invariant reflrep
 end
 
 let a=E(5,2)+E(5,3)
@@ -95,7 +95,7 @@ chevieset(:H4, :charinfo, function ()
 end)
 
 let root5=root(5)
-chevieset(:H4, :vpolheckeirreducibles,map(v->map(x->Pol(t...),v),
+chevieset(:H4, :vpolheckeirreducibles,map(v->map(x->Pol(x...),v),
 Vector{Tuple{Vector{Cyc{Int64}}, Int64}}[[([1], 0), ([1], 2), ([1], 4), ([1],
  4), ([1], 4), ([1], 6), ([1], 6), ([1], 6), ([1], 6), ([1], 8), ([1], 8),
  ([1], 10), ([1], 10), ([1], 12), ([1], 16), ([1], 18), ([1], 20), ([1], 24),

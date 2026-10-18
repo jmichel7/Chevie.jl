@@ -1023,7 +1023,7 @@ julia> indices(t)
 function refltype(W::PermRootGroup;verbose=false)
   get!(W,:refltype)do
     if isempty(gens(W)) return TypeIrred[] end
-    map(diagblocks(cartan(W))) do I
+    t=map(diagblocks(cartan(W))) do I
       R=I==eachindex(gens(W)) ? W : reflection_subgroup(W,I;NC=true)
       CR=cartan(R)
       d=TypeIrred(R)
@@ -1725,7 +1725,7 @@ end
 @GapObj struct PRG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}
   one::Perm{T1}
-  matgens::Vector{Matrix{T}}
+  reflrep::Vector{Matrix{T}}
   roots::Vector{Vector{T}}
   coroots::Vector{Vector{T}}
 end
@@ -1737,8 +1737,8 @@ function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};NC=false,T1=Perms.Idef)
 # println("r=",r,"\ncr=",cr)
   if isempty(r) error("should call torus instead") end
-  matgens=reflectionMatrix.(r,cr)
-  T=eltype(matgens[1])  # promotion of r and cr types
+  reflrep=reflectionMatrix.(r,cr)
+  T=eltype(reflrep[1])  # promotion of r and cr types
   r=convert.(Vector{T},r)
   cr=convert.(Vector{T},cr)
 
@@ -1749,17 +1749,17 @@ function PRG(r::AbstractVector{<:AbstractVector},
   # root values.
 
 # println("# roots: ")
-  gens_=map(_->T1[],matgens)
+  gens_=map(_->T1[],reflrep)
   newroots=true
   while newroots
     newroots=false
     for (j,refl) in pairs(gens_)
       lr=length(r)
       if length(refl)>=lr continue end
-      ll=eachrow(toM(r[length(refl)+1:end])*matgens[j])
+      ll=eachrow(toM(r[length(refl)+1:end])*reflrep[j])
       for (i,p) in enumerate(indexin(ll,r))
         if p===nothing || p>lr
-          push!(r,ll[i])
+@inbounds push!(r,ll[i])
 #         println("j=$j r[$(length(refl)+1)...] ",length(r),":",y)
           newroots=true
           push!(refl,length(r))
@@ -1771,11 +1771,11 @@ function PRG(r::AbstractVector{<:AbstractVector},
   end
   coroots_=Vector{eltype(cr)}(undef,length(r))
   coroots_[eachindex(cr)].=cr
-  W=PRG(Perms.Perm_.(gens_),Perm{T1}(),matgens,r,coroots_,Dict{Symbol,Any}())
+  W=PRG(Perms.Perm_.(gens_),Perm{T1}(),reflrep,r,coroots_,Dict{Symbol,Any}())
   if !NC
     t=refltype(W)
     l=indices(t)
-    if sort(l)!=eachindex(l)
+    if sort(l)!=eachindex(gens(W))
       InfoChevie("# changing gens to <",join(l,","),"> for ",
                                              t,"<",ngens(W)," refs>\n")
       save=haskey(W,:fromparent) # a relative_group
@@ -1856,14 +1856,14 @@ end
 returns  `reflrep.(Ref(W),gens(W))`,  that  is  the  generators  of  `W` as
 matrices.
 """
-reflection_representation(W::PRG)=W.matgens
+reflection_representation(W::PRG)=W.reflrep
 
 """
 `reflection_representation(W,i::Integer)`  or `reflrep(W,i)`
 
 the matrix for the distinguished reflection around the `i`-th root of `W`.
 """
-reflection_representation(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
+reflection_representation(W::PRG,i::Integer)=i<=ngens(W) ? W.reflrep[i] : reflrep(W,refls(W,i))
 
 #--------------- subgroups of PRG. Another implementation of PermRootGroup -----
 @GapObj struct PRSG{T,T1}<:PermRootGroup{T,T1}

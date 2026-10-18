@@ -1442,8 +1442,18 @@ chevieset(:G4_22, :SemisimpleRank, 2)
 chevieset(:G4_22,:nconjugacy_classes,ST->
   [7,21,14,42,16,32,48,96,8,16,24,48,45,90,135,270,27,54,18][ST-3])
 
-chevieset(:G4_22,:cartan,ST->chevieget(:G4_22,:simplecoroots)(ST)*
-                   transpose(chevieget(:G4_22,:simpleroots)(ST)))
+chevieset(:G4_22,:cartan,function(ST,cartanType=1)
+  C=chevieget(:G4_22,:simplecoroots)(ST)*
+    transpose(chevieget(:G4_22,:simpleroots)(ST))
+  if cartanType==1 return convert(Matrix{Cyc{Int}},C) end
+  if ST in (4,8,12,16,20,22) 
+    error("G",ST," has no cartanType≠1")
+  elseif ST in (7,11,13,15,19)
+    error("cartanType≠1 not implemented for G",ST) 
+  end
+  D=Diagonal([cartanType,1])
+  D*C*inv(D//1)
+end)
 
 chevieset(:G4_22,:ReflectionCoDegrees,ST->[0,
   [2,6,8,12,4,16,12,24,10,16,18,24,10,40,30,60,18,48,28][ST-3]])

@@ -1101,7 +1101,7 @@ end
 @test mytest("complexr.jl","length(G)","24")
 @test mytest("complexr.jl","G*coxgroup(:A,2)","G₄×A₂")
 @test mytest("complexr.jl","complex_reflection_group(1,1,3)","gl₃")
-@test mytest("complexr.jl","crg(4)","G₄")
+@test mytest("complexr.jl","crg(5,3)","G(3)₅")
 end
 @testset "cp.jl" begin
 @test mytest("cp.jl","C=CorranPicantinMonoid(3,3)","CorranPicantinMonoid(3,3,3)")

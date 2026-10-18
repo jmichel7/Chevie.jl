@@ -17,7 +17,7 @@ chevieset(:H3, :InvariantModel, Dict{Symbol, Any}(
   :coroots=>[[(5+root(5))//40,(-1-root(5))//4,(-3+root(5))//16],
      [-3root(5)//20,1//2,(2-root(5))//8],[3root(5)//20,1//2,(2+root(5))//8]],
   :conj=>[[(5-root(5))//2,-root(5),-1+root(5)],[-2root(5),1,0],[2root(5),1,0]]))
-# usual matgens^conj=invariant matgens
+# usual reflrep^conj=invariant reflrep
 
 chevieset(:H3, :nconjugacy_classes, 10)
 
