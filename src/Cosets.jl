@@ -1417,6 +1417,8 @@ rootdata[:su]=r->r==2 ? spets(rootdatum(:sl,r)) :
     spets(rootdatum(:sl,r),prod(i->Perm(i,r-i),1:div(r-1,2)))
 rootdata[:psu]=function(r)g=rootdatum(:pgl,r)
   r==2 ? g : spets(g,prod(i->Perm(i,r-i),1:div(r-1,2))) end
+rootdata[Symbol("2A")]=function(r)g=coxgroup(:A,r)
+  r==1 ? g : spets(g,prod(i->Perm(i,r+1-i),1:div(r,2))) end
 rootdata[Symbol("3gpin8")]=()->spets(rootdatum(:gpin,8),[1 1 1 0 0 0;
  -2 0 -1 -1 -1 -1;-1 0 -1 0 0 -1;-1 0 -1 0 -1 0;
  -1 0 -1 -1 0 0;-1 -1 0 0 0 0])
@@ -1429,6 +1431,7 @@ rootdata[Symbol("gpin-")]=function(r)
   spets(rootdatum(:gpin,r),F)
 end
 rootdata[Symbol("so-")]=r->spets(rootdatum(:so,r),Perm(1,2))
+rootdata[Symbol("2D")]=r->spets(coxgroup(:D,r),Perm(1,2))
 rootdata[Symbol("pso-")]=r->spets(rootdatum(:pso,r),Perm(1,2))
 rootdata[Symbol("spin-")]=r->spets(rootdatum(:spin,r),Perm(1,2))
 rootdata[Symbol("2I2")]=e->spets(coxgroup(:Isym,2,e),Perm(1,2))

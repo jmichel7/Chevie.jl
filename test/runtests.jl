@@ -4,8 +4,7 @@ function mytest(file::String,cmd::String,man::String)
   println(file," ",cmd)
   exec=repr(MIME("text/plain"),eval(Meta.parse(cmd)),context=:limit=>true)
   if endswith(cmd,";") return true end
-  exec=replace(exec,r"\s*$"m=>""); exec=replace(exec,r"\s*$"s=>"")
-  exec=replace(exec,r"^\s*"=>"")
+  exec=replace(exec,r"\s*$"m=>"",r"\s*$"s=>"",r"^\s*"=>"")
   if exec==man return true end
   inds=collect(eachindex(exec))
   i=findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)
@@ -13,7 +12,7 @@ function mytest(file::String,cmd::String,man::String)
   print("exec=$(repr(exec[i:end]))\nmanl=$(repr(man[i:end]))\n")
   false
 end
-@testset verbose = true "Chevie" begin
+@testset verbose=true showtiming=true "Chevie" begin
 @testset "Algebras.jl" begin
 @test mytest("Algebras.jl","Algebras.ppart(Perm(1,2,3,4,5,6),2)","(1,4)(2,5)(3,6)")
 @test mytest("Algebras.jl","Algebras.ppart(Perm(1,2,3,4,5,6),3)","(1,5,3)(2,6,4)")

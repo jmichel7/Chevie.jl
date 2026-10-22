@@ -1,4 +1,7 @@
-"generates a runtests.jl from julia-repl docstrings in file arguments"
+"""
+generates a runtests.jl from julia-repl docstrings in file arguments
+also collect from the arguments the #@test
+"""
 function gentests(ff::Vector{String};module_="Chevie")
   open("runtests.jl","w")do outio
     write(outio,
@@ -9,8 +12,7 @@ function mytest(file::String,cmd::String,man::String)
   println(file," ",cmd)
   exec=repr(MIME("text/plain"),eval(Meta.parse(cmd)),context=:limit=>true)
   if endswith(cmd,";") return true end
-  exec=replace(exec,r"\\s*\$"m=>""); exec=replace(exec,r"\\s*\$"s=>"")
-  exec=replace(exec,r"^\\s*"=>"")
+  exec=replace(exec,r"\\s*\$"m=>"",r"\\s*\$"s=>"",r"^\\s*"=>"")
   if exec==man return true end
   inds=collect(eachindex(exec))
   i=findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)
@@ -18,7 +20,7 @@ function mytest(file::String,cmd::String,man::String)
   print("exec=\$(repr(exec[i:end]))\\nmanl=\$(repr(man[i:end]))\\n")
   false
 end
-@testset verbose = true "$module_" begin
+@testset verbose=true showtiming=true "$module_" begin
 """
 )
     for f in ff 
@@ -42,12 +44,11 @@ end
               cmd=t[1:i-1]
               cmd=replace(cmd,r"\s*(#.*)?(\n\s*)?$"=>"") # replace final comment
               man=t[i:end]
-    #         if !('"' in man)  man=replace(man,"\\\\"=>"\\") end # hack
               man=replace(man,r"\s*$"m=>"")
               man=replace(man,r"\s*$"s=>"")
               if isempty(man) man="nothing" end
               if !occursin(r"^ERROR:",man)
-                println(outio,"@test mytest(",repr(f),",",repr(cmd),",",repr(man),")")
+                println(outio,"@test mytest(",join(repr.((f,cmd,man)),","),")")
               end
             end
           end

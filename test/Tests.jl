@@ -3,7 +3,7 @@ This module defines tests to thoroughly test the Chevie data.
 
 The tests available are printed by Tests.tests()
 
-The spets to which they are applied are Tests.all_ex
+The spets to which they are applied are printed by Tests.spets()
 
 See the helpstring for Tests.RG  to see how to apply them.
 
@@ -25,7 +25,7 @@ curW=coxgroup()
 curio::IO=stdout
 
 isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
-isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
+isweyldatum(W)=isweylgroup(W) || (W isa Spets && isweylgroup(Group(W)))
 isspetsial=W->UnipotentCharacters(W)!==nothing
 
 nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,21,22,31])
@@ -47,12 +47,12 @@ spets_ex=vcat(
   crg.([4, 6, 8, 14, 24, 25, 26, 27, 29, 32, 33, 34]),
   [crg(3,1,2), crg(3,3,3), crg(3,3,4), crg(4,4,3)])
 
-twisted=[rootdatum(:psu,3), rootdatum("2B2"), rootdatum("2G2"),
-  rootdatum("2I2",5), rootdatum("2I2",8), rootdatum(:psu,4),
-  rootdatum("3D4"), rootdatum(:psu,5), rootdatum("pso-",8),
-  rootdatum(:psu,6), rootdatum("2F4"), rootdatum(:psu,7),
-  rootdatum("pso-",10), rootdatum("2E6"), rootdatum(:psu,8),
-  rootdatum("pso-",12), rootdatum("pso-",14)]
+twisted=[rootdatum("2A",2), rootdatum("2B2"), rootdatum("2G2"),
+  rootdatum("2I2",5), rootdatum("2I2",8), rootdatum("2A",3),
+  rootdatum("3D4"), rootdatum("2A",4), rootdatum("2D",4),
+  rootdatum("2A",5), rootdatum("2F4"), rootdatum("2A",6),
+  rootdatum("2D",5), rootdatum("2E6"), rootdatum("2A",7),
+  rootdatum("2D",6), rootdatum("2D",7)]
 
 all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
@@ -62,6 +62,11 @@ function tests()
     print(rpad("$i",3),rpad(repr(s),18)," ")
     printstyled(t.comment,"\n";color=:green)
   end
+end
+  
+function Cosets.spets()
+  t=hcat(xrepr.(all_ex,limit=true),nconjugacy_classes.(all_ex))
+  showtable(permutedims(t),row_labels=["","#Cl"],row_seps=Int[],col_seps=Int[])
 end
   
 """
@@ -530,7 +535,7 @@ function Tunipotentclasses(W,p=nothing)
   end
 end
 
-test[:unipotentclasses]=(applicable=isrootdatum,
+test[:unipotentclasses]=(applicable=isweyldatum,
    comment="dimBu from DR, from b, with < ; BalaCarter, dimred")
 
 #---------------- test: unipotentcentralizers ------------------------
@@ -567,7 +572,7 @@ function Tunipotentcentralizers(W,p=0)
   end
 end
 
-test[:unipotentcentralizers]=(applicable=isrootdatum,
+test[:unipotentcentralizers]=(applicable=isweyldatum,
                          comment="info on them agrees with ICCTable")
 
 #---------------- test: Au ------------------------
@@ -989,7 +994,7 @@ function THCdegrees(W,i,rel=false)
 end
 
 test[:HCdegrees]=(applicable=isspetsial,
-  comment="unidegs using relative Hecke algebras of 1-HC cuspidals")
+  comment="unidegs from relative Hecke algebras of 1-HC cuspidals")
 
 # EigenAndDegHecke(s) 
 # s is a series. Uses only s.Hecke, s.d, 
@@ -1113,7 +1118,7 @@ function Textrefl(W)
   checkfield(:positionId,extRefl[1])
 end
 
-test[:extrefl]=(applicable=x->x isa Group,comment="check")
+test[:extrefl]=(applicable=x->x isa Group,comment="check agrees with recomputation")
 
 #---------------- test: degrees ------------------------
 """
@@ -1205,7 +1210,7 @@ function Tfeg(W)
   cmpvec(degree.(fd),charinfo(W).B;na="computed B",nb="charinfo B")
 end
 
-test[:feg]=(applicable=x->true, comment="recompute fegs")
+test[:feg]=(applicable=x->true, comment="fegs agree with recomputation")
 
 #---------------- test: fakedegrees induce ------------------------
 
@@ -1248,7 +1253,7 @@ end
 
 test[:invariants]=(applicable=W->!(W isa Spets) && length(W)<51840,
  # G33 first painful client
- comment="check")
+ comment="check they are invariant")
 
 #---------------- test: classical ud fd  ------------------------
 
@@ -1285,7 +1290,7 @@ test[:udfdimprimitive]=(applicable=function(W)
     else n.series in [:A,:B,:C,:D,:G,:I] || (n.series==:ST && haskey(n,:p))
     end
   end,
-comment="unideg and feg agree with formulae")
+comment="unideg and feg agree with formulae from symbols")
 
 """
 `Tfamilies(W[,famno];hard=false)`
@@ -1305,31 +1310,31 @@ function Tfamilies(W,i;hard=false)
   if length(f.eigenvalues)==1 return end # nothing interesting to test
   function check(a,msg)
     if !a InfoChevie("\n");ChevieErr("failed:",msg,"\n| ");
-    elseif hard InfoChevie(" ",msg,",") 
+    elseif hard InfoChevie(" ",msg) 
     end
   end
   O=Diagonal(Cyc.(f.eigenvalues))
   if haskey(f,:sh) Sh=Diagonal(Cyc.(f.sh)) end
   S=fourier(f,lusztig=false)
-  if !haskey(f,:sh) check(S==permutedims(S),"S=ᵗS") end
   Sbar=conj(S)
   Id=one(S)
   tS=permutedims(S)
   v*="#$(size(S,1))"
   if haskey(f,:name) v*="("*Format.unicodeTeX(f.name)*")" end
-  InfoChevie("  # family ",v)
-  ps=SPerm(Sbar,S;dims=1)
-  if isnothing(ps) ChevieErr("S* is not ps(S)\n| ") end
   wreal=haskey(f,:perm)
-  if !haskey(f,:sh) && wreal!=all(>(0),perm(ps))
-    ChevieErr("weakly real=",wreal," but ps=",ps,"\n")
-  end
   if wreal # S^2 is perm
     real=Perm(conj(f.eigenvalues),f.eigenvalues)
     if !isnothing(real) v*="+" else v*="P" end
   else real=false
   end
-  if hard print("[",v,"] ...\n| ") end
+  InfoChevie("  # family ",v)
+  ps=SPerm(Sbar,S;dims=1)
+  if isnothing(ps) ChevieErr("S* is not ps(S)\n| ") end
+  if !haskey(f,:sh) && wreal!=all(>(0),perm(ps))
+    ChevieErr("weakly real=",wreal," but ps=",ps,"\n")
+  end
+  if hard print("\n| ") end
+  if !haskey(f,:sh) check(S==tS,"S=ᵗS") end
   inds=1:length(f.eigenvalues)
   if @isdefined W
     ud=CycPoldegrees(uc)[f.charNumbers]
@@ -1345,28 +1350,23 @@ function Tfamilies(W,i;hard=false)
       ChevieErr("special or cospecial not unique")
     else special=special[1];cospecial=cospecial[1]
     end
-    print(" s=$special cs=$cospecial ")
+    print(" minb=$special maxB=$cospecial ")
     if haskey(f,:special)
-      check(f.special==special,".special=$(f.special) min b=$special")
+      check(f.special==special,".special=$(f.special)==minB")
     elseif special!=1
       ChevieErr(" .special is not bound; should be ",special,"\n| ")
     end
     if special!=cospecial
       if !haskey(f,:cospecial)
         ChevieErr(" .cospecial is not bound; should be ",cospecial,"\n| ")
-      else check(f.cospecial==cospecial,
-                 ".cospecial=$(f.cospecial) max B=$cospecial")
+      else check(f.cospecial==cospecial,".cospecial=$(f.cospecial)==maxB")
       end
     elseif haskey(f,:cospecial) && f.special!=f.cospecial
       ChevieErr("\n.cospecial=$(f.cospecial) should be $special\n")
     end
-    check(conj(ud)==invpermute(ud,ps),"ud*=ud^p")
-    if real!==nothing && real!=false && haskey(f,:lusztig)
-      check(invpermute(f.eigenvalues,real/f.perm)==f.eigenvalues,"eig*=eig^perm")
-    end
     if hard
       if S==Sbar print("\n|  S real")
-      else print("\n|  S->S* is p=",ps,"\n| ")
+      else xprint("\n|  S->conj(S) is p=",ps,"\n| ")
       end
       if wreal # check ps is a sub-permutation of perm
         if !all(x->x^ps==x || x^ps==x^f.perm,inds)
@@ -1374,18 +1374,23 @@ function Tfamilies(W,i;hard=false)
         end
       end
     end
+    check(conj(ud)==invpermute(ud,ps),"conj(ud)=ud^p")
+    if real!==nothing && real!=false && haskey(f,:lusztig)
+      check(invpermute(f.eigenvalues,real/f.perm)==f.eigenvalues,
+            "conj(eig)=eig^.perm")
+    end
     # check Shintani preserves ud. We have Sh=O^-1 SO^-1
     ud=map(x->x(Pol()),ud)
-    if haskey(f,:sh) check(Sh*S*ud==S*ud,"Shud=ud")
+    if haskey(f,:sh) check(Sh*S*ud==S*ud,"Sh(ud)=ud")
     else
-      if haskey(f,:lusztig) check(fourier(f)*O*ud==O*ud,"Shud=ud") end
-      check(S*conj(O)*ud==O*ud,"Shud=ud")
+      if haskey(f,:lusztig) check(fourier(f)*O*ud==O*ud,"Sh+(ud)=ud") end
+      check(S*conj(O)*ud==O*ud,"Sh(ud)=ud")
     end
   elseif haskey(f,:special) special=f.special
   else ChevieErr(".special not bound\n| ");special=1
   end
-  check(!(0 in S[special]),"not 0 in S[special]")
-  check(S*permutedims(Sbar)==Id,"S unitary")
+  check(!(0 in S[special]),"0∉S[special]")
+  check(S*permutedims(Sbar)==Id,"S∈unitary")
   if wreal P=invpermute(Id,f.perm);check(S*P==P*S,"[S,P]=1") end
   if haskey(f,:sh)
     check((O*permutedims(fourier(f))*inv(Sh//1)*fourier(f))^2==Id,"(O⋅ᵗS⋅Sh⁻¹⋅S)²=1")
@@ -1396,7 +1401,7 @@ function Tfamilies(W,i;hard=false)
       check((O*fourier(f)*P)^3==Id,"(OSP)³=1")
     end
     check((O*S)^3==Id,"(OS)³=1")
-    check(S==tS,"\n|  S symmetric")
+    check(S==tS,"\n|  S∈symmetric")
     check(O*S^2==S^2*O,"[S²,O]=1")
   end
   check((S*tS)^2==Id,"(S⋅ᵗS)²=1")
@@ -1571,7 +1576,7 @@ function TaA(W)
   end
 end
 
-test[:aA]=(applicable=isspetsial,comment="check with unipotent degrees")
+test[:aA]=(applicable=isspetsial,comment="check agree with unipotent degrees")
 
 #------------------------- eigen -----------------------------
 # check eigenvalues/qEigen in families agree with those in HC series
@@ -1703,7 +1708,7 @@ function Trootsystem(W)
 end
 
 test[:rootsystem]=(applicable=W->!(W isa Spets),comment=
-  "roots(W) is a distinguished root system in the sense of BCM")
+  "roots(W) is a \"distinguished root system\" of BCM")
  
 #------------------------- galois auts -----------------------------
 function Tgaloisauts(W)
