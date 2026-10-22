@@ -576,7 +576,7 @@ function QuotientAu(Au,chars)
     q=Group(AbGens(q))
     h=Hom(Au,q,NormalCoset.(Ref(k),gens(Au)))
     f=map(x->word(q,h(x)),gens(Au))
-#  Print(prod(map(x->Z(order(x)),gens(q)))," ",f,"\n");
+# println(prod(map(x->Z(order(x)),gens(q)))," ",f)
     return finish(prod(map(x->Z(order(x)),gens(q))),f)
   else
     p=findfirst(t->all(x->x in reflection_subgroup(Au,t.indices),
@@ -584,8 +584,8 @@ function QuotientAu(Au,chars)
     if !isnothing(p)
       p=refltype(Au)[p].indices
       if length(k)==length(reflection_subgroup(Au,p))
-       return finish(reflection_subgroup(Au,setdiff(eachindex(gens(Au)),p)),
-                     map(i->i in p ? [] : [i],eachindex(gens(Au))))
+        R=reflection_subgroup(Au,setdiff(eachindex(gens(Au)),p))
+        return finish(R,map(i->i in p ? Int[] : [restriction(R,i)],eachindex(gens(Au))))
       elseif length(p)==1
         t=copy(refltype(Au))
         p=findfirst(t->t.indices==p,refltype(Au))

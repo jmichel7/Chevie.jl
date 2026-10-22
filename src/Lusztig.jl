@@ -35,17 +35,27 @@ function FindSeriesInParent(h,HF,WF,ww)
 end
 
 # find the number of cuspidal of name n in UnipotentCharacters(HF)
+#function FindCuspidalInLevi(n,HF)
+#  strip=function(n,s)
+#    n=replace(n,Regex("^($s)*")=>"")
+#    replace(n,Regex("($s)*\$")=>"")
+#  end
+#  cusp=findfirst(==(strip(n,"\\\\otimes ")),
+#    strip.(charnames(UnipotentCharacters(HF);TeX=true),"\\\\otimes "))
+#  if isnothing(cusp) error("cuspidal ",n," not found in ",HF,"\n") end
+#  cusp
+#end
+
 function FindCuspidalInLevi(n,HF)
-  strip=function(n,s)
-    n=replace(n,Regex("^($s)*")=>"")
-    replace(n,Regex("($s)*\$")=>"")
+  strip=function(n)
+    n=sort(filter(!(x->isempty(x) || x=="Id"),split(n,"\\otimes ")))
+    join(n,"|")
   end
-  cusp=findfirst(==(strip(n,"\\\\otimes ")),
-    strip.(charnames(UnipotentCharacters(HF);TeX=true),"\\\\otimes "))
+  cusp=findfirst(==(strip(n)),
+    strip.(charnames(UnipotentCharacters(HF);TeX=true)))
   if isnothing(cusp) error("cuspidal ",n," not found in ",HF,"\n") end
   cusp
 end
-
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.
 function FindIntSol(l)

@@ -956,7 +956,7 @@ function THCdegrees(W,i,rel=false)
   if n=="" n="." end
   cusp=CycPoldegrees(UnipotentCharacters(L))[Lusztig.FindCuspidalInLevi(n,L)]
   InfoChevie("  #HC_",L,"(cusp=",fromTeX(rio(),n),":",cusp,")[G:L]=",index,"\n")
-  R=reflection_group(hw[:relativeType]...)
+  R=reflection_group(hw[:relativeType])
 # check parameters of relative algebra by the formula
 # uₛ,ⱼ=ζₛʲ  q^(([a+A]_ρ_{detₛʲ}-[a+A]_ρ_{\Id})/order#class(s)
 # where ρₓ is the unip. char corresp. to χ in relative group
@@ -1790,7 +1790,7 @@ function Tminusculeweights(W)
   if l!=w[:minusculeWeights] ChevieErr("minuscule weights") end
 end
 
-test[:minusculeweights]=(applicable=isweylgroup,
+test[:minusculeweights]=(applicable=W->isweylgroup(W) && length(refltype(W))==1,
   comment="are where coeffs==1 of highest coroot on simple coroots")
 
 #------------------------- CharTable(3D4) -----------------------------
@@ -2003,8 +2003,8 @@ function Tdiscriminant(W)
   if r*last(term(j,1))!=j*last(term(r,1)) ChevieErr("disagrees\n") end
 end
 
-test[:discriminant]=(
-  applicable=W->!(W isa Spets) && length(W)<1152, # F4 first painful client
+test[:discriminant]=(applicable=function(W) # F4 first painful client
+  !(W isa Spets) && length(W)<1152 && length(refltype(W))==1 end,
   comment="agrees with product of hyperplanes")
 
 #----------------------- tests not translated from GAP3 ---------------------
