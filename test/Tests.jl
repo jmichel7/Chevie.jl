@@ -54,7 +54,10 @@ twisted=[rootdatum("2A",2), rootdatum("2B2"), rootdatum("2G2"),
   rootdatum("2D",5), rootdatum("2E6"), rootdatum("2A",7),
   rootdatum("2D",6), rootdatum("2D",7)]
 
-all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
+nonirred=[coxgroup(:A,2)*coxgroup(:G,2),
+          reflection_subgroup(coxgroup(:D,5),[1,2,3,5])]
+
+all_ex=vcat(cox_ex,spets_ex,nspets,twisted,nonirred)
 sort!(all_ex,by=nconjugacy_classes)
 
 function tests()
@@ -504,7 +507,7 @@ function Tunipotentclasses(W,p=nothing)
     for cl in uc.classes
       j=findfirst(x->x[1]==cl.dynkin,bc)
       if haskey(cl,:balacarter)
-        if cl.balacarter!=bc[j][2] error("balacarter") end
+        if sort(cl.balacarter,by=abs)!=bc[j][2] error("balacarter") end
       else print("bala-carter[",cl.name,"] unbound, should be",bc[j][2])
       end
     end
@@ -1193,7 +1196,7 @@ function Tdegrees(W)
   d1=sort(reflectiondegrees(W))
   cmpvec(d,d1;na="degrees",nb="reflectiondegrees")
   if isweylgroup(W)
-   cmpvec(d,mcdonalddegrees(W);na="degrees",nb="mcdonald formula")
+    cmpvec(filter(≠(1),d),mcdonalddegrees(W);na="degrees",nb="mcdonald formula")
   end
 end
 
@@ -1500,11 +1503,11 @@ function TalmostHC(W::Spets)
     r=relative_coset(W,h[:levi])
     t=refltype(r)
     if length(t)!=length(h[:relativeType]) error() end
-    for i in eachindex(t)
-      if length(t[i].orbit)>1 error("not irred") end
-      tt=t[i].orbit[1]
+    for (i,ti) in enumerate(t)
+      if length(ti.orbit)>1 error("not irred") end
+      tt=ti.orbit[1]
       if !haskey(h[:relativeType][i],:orbit)
-        if t[i].twist!=Perm() error("should be twisted") end
+        if ti.twist!=Perm() error("should be twisted") end
         hh=h[:relativeType][i]
       else hh=h[:relativeType][i].orbit[1]
       end
@@ -1527,8 +1530,7 @@ function TalmostHC(W)
     end
     t=refltype(r)
     if length(t)!=length(h[:relativeType]) error() end
-    for i in eachindex(t)
-      tt=t[i]
+    for (i,tt) in enumerate(t)
       if h[:relativeType][i].orbit[1].series!=tt.series
        ChevieErr("stored series is ",h[:relativeType][i].orbit[1].series,
                 " should be ",tt.series,"\n") end
@@ -1771,9 +1773,9 @@ function Tminusculeweights(W)
   w=weightinfo(W)
   l=map(refltype(W)) do t
     n=t.indices
-    r=map(i->sum(roots(W,i)[n]),1:2*nref(W))
+    r=map(i->sum(W.rootdec[i][n]),1:2*nref(W))
     r=argmax(r)
-    vcat(filter(i->roots(W,r)[i]==1,n),[0])
+    vcat(filter(i->W.rootdec[r][i]==1,n),[0])
   end
   l=map(x->filter(!iszero,x),cartesian(l...))
   l=filter(!isempty,l)
@@ -1891,7 +1893,7 @@ function Thgal(W)
   end
 end
 
-test[:hgal]=(applicable=W->!(W isa Spets) && length(refltype(W))==1,
+test[:hgal]=(applicable=W->!(W isa Spets),
              comment="recompute Opdam involution using hecke(W,Pol()^|ZW|)")
 
 #------------------------- ParameterExponents -----------------------------
@@ -2003,8 +2005,10 @@ function Tdiscriminant(W)
   if r*last(term(j,1))!=j*last(term(r,1)) ChevieErr("disagrees\n") end
 end
 
-test[:discriminant]=(applicable=function(W) # F4 first painful client
-  !(W isa Spets) && length(W)<1152 && length(refltype(W))==1 end,
+test[:discriminant]=(applicable=function(W)
+    length(refltype(W))==1 && haskey(refltype(W)[1],:ST) &&
+    4<=refltype(W)[1].ST<=27 # F4 first painful client
+  end,
   comment="agrees with product of hyperplanes")
 
 #----------------------- tests not translated from GAP3 ---------------------

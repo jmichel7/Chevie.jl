@@ -708,7 +708,7 @@ function Eigenspaces.relative_group(s::Series)
     return WGL
   end
   if W isa FiniteCoxeterGroup 
-    N1=graph_automorphisms(W,inclusiongens(L))
+    N1=graph_automorphisms(W,inclusiongens(L,W))
     N=Group(vcat(gens(N1),gens(L)))
   else N=normalizer(W,L)
   end

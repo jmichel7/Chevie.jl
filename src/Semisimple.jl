@@ -679,7 +679,7 @@ function semisimple_centralizer_representatives(W,p=0)
         push!(cent,R)
       end
     end
-    cent=inclusiongens.(cent)
+    cent=inclusiongens.(cent,Ref(W))
     if p==0 return cent end
     filter(I->all(x->x==0 || x%p!=0, smith(toM(W.rootdec[I]))),cent)
   end

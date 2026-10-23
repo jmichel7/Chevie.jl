@@ -1438,7 +1438,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   end
   v=lin2cart(chevieget.(tt,:nconjugacy_classes),i)
   mm=map((t,j)->representation(t,j,chevieget(t,:Representation,j)),tt,v)
-  if any(isnothing,mm) || any(==(false),mm) return nothing end
+  if any(isnothing,mm) return nothing end
   if W isa Spets
     FF=getindex.(mm,:F)
     F=length(FF)==1 ? FF[1] : kron(FF...)
@@ -2002,9 +2002,10 @@ Mvp{Int64}: x³-y²
 function LaurentPolynomials.discriminant(W::Group)
   t=refltype(W)
   if isempty(t) return ()->Mvp(1)
-  elseif length(t)==1 return chevieget(t[1],:Discriminant)
-  else error("not implemented for non-irreducible ",W)
+  elseif length(t)==1 res=chevieget(t[1],:Discriminant)
+    if !isnothing(res) return res end
   end
+  error("not implemented for ",W)
 end
 
 function decomposition_matrix(t::TypeIrred,p)

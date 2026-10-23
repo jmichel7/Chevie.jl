@@ -383,10 +383,8 @@ function graph_automorphisms(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if !isparabolic(W,H)
     return stabilizer(W,sort(inclusiongens(H)),onsets)
   end
-  if issubset(inclusiongens(H),1:ngens(W)) p=one(W)
-  else p=standard_parabolic(W,H); H=H^p
-  end
-  J=inclusiongens(H)
+  p=standard_parabolic(W,H); H=H^p
+  J=inclusiongens(H,W)
   C=collect(endomorphisms(CoxGroups.parabolic_category(W,J),1))
   Group(C.^inv(p))
 end

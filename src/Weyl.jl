@@ -768,7 +768,7 @@ julia> standard_parabolic(W,R)
 ```
 """
 function standard_parabolic(W::FC,I::AbstractVector{<:Integer})
-  if isempty(I) return Perm() end
+  if issubset(I,1:ngens(W)) return one(W) end
   b=W.rootdec[I]
   heads=map(x->findfirst(!iszero,x),toL(rowspace(toM(b))))
   b=vcat(W.rootdec[setdiff(1:ngens(W),heads)],b)
@@ -1195,6 +1195,7 @@ Base.:*(W1::FC,W2::PermRootGroup)=W1.G*W2
 Base.:*(W1::PermRootGroup,W2::FC)=W1*W2.G
 
 function Base.:^(W::FC,p::Perm)
+  if isone(p) return W end
   WW=parent(W)
   if !(p in WW) error("can only conjugate in parent") end
   reflection_subgroup(WW,inclusiongens(W).^p)
