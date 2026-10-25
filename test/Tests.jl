@@ -428,12 +428,12 @@ test[:positionclasses]=(applicable=W->true,
 
 #---------------- test: unipotentclasses ------------------------
 function Tunipotentclasses(W,p=nothing)
-  function PosetFromICC(t)local l,o
+  function PosetFromICC(uc,t)local l,o
     l=uc.springerseries[1][:locsys]
     o=map(i->map(j->any(a->any(b->!iszero(t.scalar[a,b]),
                         findall(x->x[1]==j,l)),findall(x->x[1]==i,l)),
         eachindex(uc.classes)),eachindex(uc.classes))
-    Poset(CPoset(toM(o)))
+    Poset(CPoset(transitive_closure(toM(o))))
   end
   if W isa Spets WF=W;W=Group(WF)
   else WF=spets(W)
@@ -444,7 +444,7 @@ function Tunipotentclasses(W,p=nothing)
   end
   uc=UnipotentClasses(WF,p)
   s=uc.springerseries[1]
-  b=charinfo(W)[:b]
+  b=charinfo(WF)[:b]
   du=[]
   pl(n0,u,i)=string("$n0.$i=",u.name,".",charnames(u.Au)[i])
   for (n0,u) in enumerate(uc.classes)
@@ -497,7 +497,7 @@ function Tunipotentclasses(W,p=nothing)
       end
     end
     if s==uc.springerseries[1]
-      if incidence(uc.orderclasses)!=incidence(PosetFromICC(t))
+      if incidence(uc.orderclasses)!=incidence(PosetFromICC(uc,t))
         ChevieErr("order bad")
       end
     end
@@ -533,7 +533,7 @@ function Tunipotentclasses(W,p=nothing)
   for u in uc.classes
     if haskey(u,:dimred) && haskey(u,:red) && u.dimred!=dimension(u.red)
        ChevieErr("for ",u.name," dimred=",u.dimred,"!= Dim(",
-          isomorphism_type(u.red,torus=true),")=",dimension(u.red))
+          isomorphism_type(u.red,torus=true),")=",dimension(u.red),"\n")
     end
   end
 end
@@ -1265,6 +1265,15 @@ function Tudfdimprimitive(W)
   ud=CycPoldegrees(uc)
   cs=first.(uc.charSymbols)
   vud=gendeg.(cs).*signs(uc)
+  n=refltype(W)[1]
+  if haskey(n,:orbit)
+    if n.orbit[1].series==:A && order(n.twist)==2
+      vud=map(x->subs(x,Pol([E(2)],1))*(-1)^degree(x),vud)
+    end
+    if length(n.orbit)>1
+      vud=map(x->subs(x,Pol([1],length(n.orbit))),vud)
+    end
+  end
   for i in eachindex(cs)
    cmpcycpol(vud[i],ud[i];na=string("Deg",xrepr(rio(),cs[i])),nb="ud");
   end
@@ -1504,7 +1513,6 @@ function TalmostHC(W::Spets)
     t=refltype(r)
     if length(t)!=length(h[:relativeType]) error() end
     for (i,ti) in enumerate(t)
-      if length(ti.orbit)>1 error("not irred") end
       tt=ti.orbit[1]
       if !haskey(h[:relativeType][i],:orbit)
         if ti.twist!=Perm() error("should be twisted") end
@@ -1782,7 +1790,7 @@ function Tminusculeweights(W)
   if l!=w[:minusculeCoweights] ChevieErr("minuscule coweights") end
   l=map(refltype(W))do t
     n=t.indices
-    m=toM(coroots.(Ref(W),n))
+    m=toM(coroots.(Ref(W),1:2*nref(W)))
     r=map(i->sum(solutionmat(m,coroots(W,i))[n]),1:2*nref(W))
     r=argmax(r)
     vcat(filter(i->solutionmat(m,coroots(W,r))[i]==1,n),[0])
@@ -1792,7 +1800,7 @@ function Tminusculeweights(W)
   if l!=w[:minusculeWeights] ChevieErr("minuscule weights") end
 end
 
-test[:minusculeweights]=(applicable=W->isweylgroup(W) && length(refltype(W))==1,
+test[:minusculeweights]=(applicable=W->isweylgroup(W),
   comment="are where coeffs==1 of highest coroot on simple coroots")
 
 #------------------------- CharTable(3D4) -----------------------------

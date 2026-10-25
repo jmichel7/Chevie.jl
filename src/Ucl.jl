@@ -645,7 +645,7 @@ end
 
 # unipotent classes for the simply connected quasisimple group of type t
 function UnipotentClasses(t::TypeIrred,p=0)
-  rankt=rank(t)
+  rankt=haskey(t,:orbit) ? rank(t.orbit[1]) : rank(t)
   if haskey(t,:series) && t.series==:B && rankt==2 && indices(t)==[2,1] #neutralize locally C2->B2
     t.cartanType=1
     uc=chevieget(t,:UnipotentClasses,p)
