@@ -1,4 +1,4 @@
-# Reflection cosets and Spets
+# Reflection cosets, twisted reductive groups and Spets
 ```@index
 Pages=["cosets.md"]
 ```
@@ -7,11 +7,11 @@ Pages=["cosets.md"]
 Cosets
 rootdatum(::Symbol,::Int)
 degrees(::Spets)
-spets
+reflection_coset
 twistings
 torus(::AbstractMatrix)
 torus(::Spets,::Integer)
 graph_automorphisms
-subspets
+reflection_subcoset
 Frobenius
 ```

@@ -1,60 +1,61 @@
 """
+## Coxeter cosets
+
 Let  `R` be a  root system in  the real vector  space `V`. We say that `F₀∈
 GL(V)`  is an  *automorphism of  `R`* if  it permutes  `R` and is of finite
-order  (finite  order  is  automatic  if  `R` generates `V`). It follows by
-[bou68;  chap.  VI,  §1.1,  lemme  1](@cite)  that  the  dual `F₀ᵛ∈ GL(Vᵛ)`
-permutes  the coroots `Rᵛ⊂  Vᵛ`; thus `F₀`  normalizes the reflection group
-`W` associated to `R`, that is `w↦ F₀wF₀⁻¹` is an automorphism of `W`. Thus
-we get a reflection coset `WF₀`, which we call a *Coxeter coset*.
+order  --- finite order  is automatic if  `R` generates `V`.  It follows by
+[bou68;  chap. VI, §1.1,  lemme 1](@cite) that  the dual `F₀ᵛ∈ GL(Vᵛ)` then
+permutes  the coroots `Rᵛ⊂ Vᵛ`; thus  `F₀` normalizes the Coxeter group `W`
+associated to `R`, that is `w↦ F₀wF₀⁻¹` is an automorphism of `W`. We get a
+*reflection coset* `WF₀`, which we call also a *Coxeter coset*.
 
-The  motivation for introducing Coxeter  cosets comes from automorphisms of
-algebraic  reductive groups, giving rise to non-split reductive groups over
-finite fields. Let `𝐆` be a connected reductive algebraic group `𝐆` over an
-algebraic  closure `𝔽̄_q` of a finite field `𝔽_q`, defined over `𝔽_q`; this
-corresponds  to a  Frobenius endomorphism  `F` so  that the finite group of
-rational  points `𝐆(𝔽_q)` identifies to the  subgroup `𝐆^F` of fixed points
-under `F`.
+A  motivation  for  introducing  such  cosets  comes  from automorphisms of
+algebraic   reductive  groups,  giving  rise  in  particular  to  non-split
+reductive  groups  over  finite  fields.  Let  `𝐆` be a connected reductive
+algebraic  group  over  an  algebraic  closure  ``𝔽̄_q``  of a finite field
+``𝔽_q``, defined over ``𝔽_q``; this corresponds to a Frobenius endomorphism
+`F`  so that the  finite group of  rational points ``𝐆(𝔽_q)`` identifies to
+the subgroup ``𝐆^F`` of fixed points under `F`.
 
 Let  `𝐓`  be  a  maximal  torus  of  `𝐆`, and let `(X(𝐓),Φ,Y(𝐓),Φᵛ)` be the
 corresponding  root datum (see [`Rootdata`](@ref))  which determines `𝐆` up
-to  isomorphism; this corresponds to give a root system in the vector space
-`V=ℚ ⊗ X(𝐓)` and a rational reflection group `W=N_𝐆(𝐓)/𝐓` acting on it.
+to  isomorphism; this determines a  root system in the  vector space `V=ℚ ⊗
+X(𝐓)` and a rational reflection group `W=N_𝐆(𝐓)/𝐓` acting on it.
 
 If  `𝐓` is `F`-stable the Frobenius endomorphism `F` acts also naturally on
 `X(T)`  and defines thus  an endomorphism of  `V`, which is  of the form `q
 F₀`, where `F₀∈ GL(V)` is of finite order and normalizes `W`. We get thus a
 Coxeter  coset `WF₀⊂GL(V)`.  The data  `(X(𝐓), Φ,  Y(𝐓), Φᵛ,  F₀)`, and the
-integer   `q`  completely  determine  up   to  isomorphism  the  associated
-*reductive  finite  group*  `𝐆^F`.  Thus  these  data  hold  the  essential
-information  which determines a  finite reductive group.  All properties of
-Chevalley  groups that  we provide  are computed  from that  datum: symbols
-representing conjugacy classes, characters, and finally the whole character
-table of `𝐆^F`.
+integer  `q` completely determine up  to isomorphism the associated *finite
+reductive  group* `𝐆^F`. All properties of Chevalley groups that we provide
+are  computed  from  that  datum:  symbols  representing conjugacy classes,
+characters, and finally the whole character table of `𝐆^F`.
 
-It  turns out that  many interesting objects  attached to this datum depend
-only on `(V,W, F₀)`: the order of the maximal tori, the
+Many interesting objects attached to this datum depend only on `(V,W, F₀)`,
+thus  not on the  isogeny type of  `𝐆`: the order  of the maximal tori, the
 [`fakedegrees`](@ref),  the order of  `𝐆^F`, [`symbols`](@ref) representing
 unipotent characters, Deligne-Lusztig induction in terms of
 [`almost_character`](@ref)s,  the  Fourier  matrix  relating characters and
 almost  characters, etc… see, e.g., [bmm14](@cite).  It is thus possible to
 extend  their construction to non-crystallographic  groups (or even to more
-general complex reflection groups, see [`spets`](@ref)); this is why we did
-not include a root system in the definition of a reflection coset. However,
-unipotent conjugacy classes for instance depend on the root system.
+general complex reflection groups, see [`reflection_coset`](@ref)); this is
+why  we did  not include  a root  system in  the definition of a reflection
+coset. However, unipotent conjugacy classes for instance depend on the root
+system.
 
-We assume now that `𝐓` is contained in an `F`-stable Borel subgroup of `𝐆`.
-This  defines an order  on the roots,  and there is  a unique element `ϕ∈ W
+Assume  now that `𝐓` is  contained in an `F`-stable  Borel subgroup of `𝐆`.
+This  defines an order  on the roots,  and there is  a unique element `φ∈ W
 F₀`,  the  *reduced  element*  of  the  coset,  which  preserves the set of
 positive  roots.  It  thus  defines  a  *diagram  automorphism*, that is an
 automorphism  of the Coxeter system `(W,S)`.  This element is stored in the
 component  `.phi` of the coset record. It may be defined without mentioning
 the  roots,  as  follows:  `(W,F₀(S))`  is  another  Coxeter  system,  thus
 conjugate to `S` by a unique element of `W`, thus there is a unique element
-`ϕ∈  WF₀` which  stabilizes `S`;  a proof  follows from [bou68; Theoreme 1,
-chap.  V, §3](@cite). We  consider thus cosets  of the form  `Wϕ` where `ϕ`
-stabilizes  `S`. The coset  `W ϕ` is  completely defined by the permutation
-`.phi`  when `𝐆` is semi-simple --- equivalently when `Φ` generates `V`; in
-this case we just need to specify `phi` to define the coset.
+`φ∈  WF₀` which  stabilizes `S`;  a proof  follows from [bou68; Theoreme 1,
+chap. V, §3](@cite). Our Coxeter cosets are thus of the form `Wφ` where `φ`
+stabilizes  `S`. The coset  `W φ` is  completely defined by the permutation
+`.phi`  of `S` when `𝐆` is  semi-simple --- equivalently when `Φ` generates
+`V`; in this case we just need to specify `phi` to define the coset.
 
 There is a slight generalisation of the above setup, covering in particular
 the  case of the Ree  and Suzuki groups. We  consider `𝐆^F` where `F` not a
@@ -65,97 +66,95 @@ an  `𝔽_{qⁿ}`-structure. Then we still have `F=q F₀` where `F₀` is of fi
 order  but `q` is no more an integer.  Thus `F₀∈ GL(V⊗ ℝ)` but `F₀∉ GL(V)`.
 For  instance, for the  Ree and Suzuki  groups, `F₀` is  an automorphism of
 order  `2` of `W`, which is  of type `G₂`, `B₂` or  `F₄`, and `q` is an odd
-power  of `√2` for `B₂` and `F₄` and an odd power of `√3` for `G₂` This can
+power of `√2` for `B₂` and `F₄` and an odd power of `√3` for `G₂`. This can
 be  constructed starting from root systems for `G₂`, `B₂` or `F₄` where all
 the   roots  have   the  same   length;  these   root  systems   are  *not*
 crystallographic.  We will call here *Weyl cosets* the cosets corresponding
 to rational forms of algebraic groups, which include thus some non-rational
 roots systems for `B₂`, `G₂` and `F₄`.
 
-## Spets
+## Spets and general reflection cosets
 
 We  now extend the above notions  to general complex reflection groups. Let
-`W⊂  GL(V)` be a complex reflection group  on the vector space `V`. Let `ϕ`
-be  an element  of `GL(V)`  which normalizes  `W`. Then  the coset  `Wϕ` is
+`W⊂  GL(V)` be a complex reflection group  on the vector space `V`. Let `φ`
+be  an element  of `GL(V)`  which normalizes  `W`. Then  the coset  `Wφ` is
 called a reflection coset.
 
 A  reference for  these cosets  is [bmm99](@cite).  When `W` is a so-called
 *Spetsial*  group,  they  are  the  basic  object for the construction of a
-*Spetses*,  which is an object attached  to a complex reflection group from
-which  one can  derive combinatorially  some attributes  shared with finite
-reductive groups, like unipotent degrees, etc….
+*Spetses*,  which is  an object  attached to  a spetsial complex reflection
+group from which one can derive combinatorially some attributes shared with
+finite reductive groups, like unipotent degrees, etc….
 
 We  say that  a reflection  coset is  irreducible if  `W` is irreducible. A
 general  coset is a direct  product of *descents of  scalars*, which is the
-case  where `ϕ`  is transitive  on the  irreducible components  of `W`. The
+case  where `φ`  is transitive  on the  irreducible components  of `W`. The
 irreducible   cosets  have   been  classified   in  [bmm99](@cite):  up  to
-multiplication  of  `ϕ`  by  a  scalar,  there  is  usually only one or two
-possible cosets for a given irreducible group.
+multiplication  of  `φ`  by  a  scalar,  there  is  usually only one or two
+possible  cosets for a given irreducible group, for which `φ` can be chosen
+of finite order.
 
 We  deal only  with *finite  order* cosets,  that is,  we assume there is a
-(minimal) integer `δ` such that `(Wϕ)^δ=W`. Then the group generated by `W`
-and `ϕ` is finite, of order `δ|W|`.
+(minimal) integer `δ` such that `(Wφ)^δ=W`. Then the group generated by `W`
+and `φ` is finite, of order `δ|W|`.
 
-A  subset `C`  of a  `Wϕ` is  called a  *conjugacy class*  if one of the
+A  subset `C`  of a  `Wφ` is  called a  *conjugacy class*  if one of the
 following equivalent conditions is fulfilled:
 
-  * `C` is the orbit of an element in `Wϕ` under the conjugation action of `W`.
+  * `C` is an orbit in `Wφ` under the conjugation action of `W`.
 
-  * `C` is a conjugacy class of `⟨W,ϕ⟩` contained in `Wϕ`.
+  * `C` is a conjugacy class of `⟨W,φ⟩` contained in `Wφ`.
 
-  * The set `{w∈ W|wϕ∈ C}` is  a `ϕ`-conjugacy  class of `W` (two elements
-`v,w∈  W` are called `ϕ`-conjugate, if and only if there exists `x∈ W` with
-`v=xwϕ(x⁻¹)`).
+  * The set `{w∈ W|wφ∈ C}` is  a `φ`-conjugacy  class of `W` (two elements
+   `v,w∈  W` are called `φ`-conjugate,  if and only if  there exists `x∈ W`
+   `with v=xwφ(x⁻¹)`).
 
-An irreducible character of `⟨W,ϕ⟩` has some non-zero values on `Wϕ` if and
-only if its restriction to `W` is irreducible. Further, two characters `χ₁`
-and  `χ₂`  which  have  same  irreducible  restriction  to  `W` differ by a
-character  of  the  cyclic  group  `⟨ϕ⟩`  (which identifies to the quotient
-`⟨W,ϕ⟩/W`). A set containing one extension to `⟨W,ϕ⟩` of each `ϕ`-invariant
-character  of `W` is called a *set  of irreducible characters* of `Wϕ`. Two
-such  characters  are  orthogonal  for  the  scalar  product  on  the class
-functions on `Wϕ` given by ``⟨χ,ψ⟩:=|W|¹∑_{w∈ W}χ(wϕ)\\overline{ψ(wϕ)}.``
-For rational groups (Weyl groups), Lusztig has defined a choice of a set of
-irreducible  characters for  `Wϕ` (called  the *preferred extensions*), but
-for  more  general  reflection  cosets  we  have made some rather arbitrary
-choices,  which  however  have  the  property  that their values lie in the
-smallest possible field.
+An irreducible character of `⟨W,φ⟩` does not vanish `Wφ` if and only if its
+restriction  to `W` is  irreducible. Further, two  characters `χ₁` and `χ₂`
+which have same irreducible restriction to `W` differ by a character of the
+cyclic  group `⟨φ⟩`  (which identifies  to the  quotient `⟨W,φ⟩/W`).  A set
+containing  one extension to `⟨W,φ⟩` of each `φ`-invariant character of `W`
+is  called a *set  of irreducible characters*  of `Wφ`. Two such characters
+are  orthogonal for the scalar product on the class functions on `Wφ` given
+by ``⟨χ,ψ⟩:=|W|¹∑_{w∈ W}χ(wφ)\\overline{ψ(wφ)}.`` For rational groups (Weyl
+groups),  Lusztig has defined  a choice of  a set of irreducible characters
+for  `Wφ`  (called  the  *preferred  extensions*),  but  for  more  general
+reflection cosets we have made some rather arbitrary choices, which however
+have the property that their values lie in the smallest possible field.
 
-The  *character  table*  of  `Wϕ`  is  the  table  of  values  of  a set of
+The  *character  table*  of  `Wφ`  is  the  table  of  values  of  a set of
 irreducible characters on the conjugacy classes.
 
-A *subcoset* `Lwϕ` of `Wϕ` is given by a reflection subgroup `L` of `W` and
-an element `w` of `W` such that `wϕ` normalizes `L`.
+A *subcoset* `Lwφ` of `Wφ` is given by a reflection subgroup `L` of `W` and
+an element `w` of `W` such that `wφ` normalizes `L`.
 
-We  then have a natural notion of  *restriction* of class functions on `Wϕ`
-to  class  functions  on  `Lwϕ`  as  well  as  of  *induction* in the other
+We  then have a natural notion of  *restriction* of class functions on `Wφ`
+to  class  functions  on  `Lwφ`  as  well  as  of  *induction* in the other
 direction.  These  maps  are  adjoint  with  respect  to the scalar product
 defined above, see [bmm99](@cite).
 
 In  this package the most general construction  of a reflection coset is by
-starting  from a reflection datum, and giving in addition the matrix `F` of
-the map `ϕ:V→ V` (see [`spets`](@ref)). However, at present, general cosets
-are  only implemented for groups represented as permutation groups on a set
-of roots, and it is required that the automorphism given preserves this set
-up  to a scalar (it is allowed that  these scalars depend on the pair of an
-irreducible  component and its image). It is also allowed to specify `ϕ` by
-the  permutation it induces on  the roots; in this  case it is assumed that
-`ϕ`  acts trivially on the orthogonal of  the roots, but the roots could be
-those  of a parent  group, generating a  larger space. Thus  in any case we
-have  a permutation representation of `⟨W,ϕ⟩`  and we consider the coset to
-be a set of permutations.
+starting  from a reflection group, and giving in addition the matrix `F` of
+the  map `φ:V→ V` (see  [`reflection_coset`](@ref)). At present, cosets are
+only  implemented for groups represented as  permutation groups on a set of
+roots,  and it is required that the  automorphism `φ` preserves this set up
+to  a scalar  (it is  allowed that  these scalars  depend on the pair of an
+irreducible  component and its image). When  `φ` preserves the roots, it is
+also  allowed to specify `φ` by a permutation of the roots; in this case it
+is  assumed that `φ` acts trivially on  the orthogonal of the roots --- but
+the roots could be those of a parent group, generating a larger space. Thus
+in any case we have a permutation representation of `⟨W,φ⟩` and we consider
+the coset to be a set of permutations.
 
-Reflection  cosets  are  implemented  in  by  a  `struct` which points to a
-reflection  group  record  and  has  additional  fields holding `F` and the
-corresponding  permutation `phi`. In the general case, on each component of
-`W`  which is  a descent  of scalars,  `F` will  permute the components and
-differ  by a scalar on each  component from an automorphism which preserves
-the  roots. In this case, we have  a permutation `phi` and a `scalar` which
-is stored for that component.
+Reflection  cosets are  implemented in  by a  `struct` whose  fields hold a
+reflection  group `.W`, the  matrix `.F` and  the corresponding permutation
+`.phi`.  In the most general case, `W`  is a product of descent of scalars,
+of  which `F` will  permute the components  and differ by  a scalar on each
+component from an automorphism which preserves the roots. In this case, the
+permutation `.phi` does on the components and the scalars are stored.
 
 The  most common situation where cosets  with non-trivial `phi` arise is as
-sub-cosets  of reflection groups. Here is an "exotic" example, see the next
-chapter for more classical examples involving Coxeter groups.
+sub-cosets  of reflection groups. Here is an "exotic" example.
 
 ```julia-repl
 julia> W=complex_reflection_group(14)
@@ -164,7 +163,7 @@ G₁₄
 julia> R=reflection_subgroup(W,[2,4])
 G₁₄₍₂₄₎=G(-ζ₃²√-2)₅
 
-julia> RF=spets(R,W(1))
+julia> RF=spets(R,W(1)) # spets and reflection_coset are synonyms
 G₁₄₍₂₄₎=²G(-ζ₃²√-2)₅
 ```
 
@@ -183,113 +182,117 @@ julia> degrees(RF)
 ```
 
 The  last line shows for each  reflection degree the corresponding *factor*
-of  the coset, which is  the scalar by which  `ϕ` acts on the corresponding
+of  the coset, which is  the scalar by which  `φ` acts on the corresponding
 fundamental reflection invariant. The factors characterize the coset.
 
 A  spets by default is  printed in an abbreviated  form which describes its
-type,  as above (`G₅` twisted by 2, with a Cartan matrix which differs from
-the  standard one by  a factor of  `√6`). The function  `repr` gives a form
+type,  as above --- `G₅`  twisted by 2, with  a Cartan matrix which differs
+from the standard one by a factor of `√6`. The function `repr` gives a form
 which could be input back in Julia. With the same data as above we have:
 
 ```julia-rep1
 julia> print(RF)
 spets(reflection_subgroup(complex_reflection_group(14),[2, 4]),perm"(1,3)(2,4)(5,9)(6,10)(7,11)(8,12)(13,21)(14,22)(15,23)(16,24)(17,25)(18,26)(19,27)(20,28)(29,41)(30,42)(31,43)(32,44)(33,45)(34,46)(35,47)(36,48)(37,49)(38,50)(39,51)(40,52)(53,71)(54,72)(55,73)(56,74)(57,75)(58,76)(59,77)(60,78)(62,79)(64,80)(65,81)(66,82)(67,69)(68,70)(83,100)(84,101)(85,102)(87,103)(89,99)(90,97)(91,98)(92,96)(93,104)(94,95)(105,113)(106,114)(109,111)(110,112)(115,118)(116,117)(119,120)")
 ```
+## Coxeter cosets
 
 Conjugacy  classes and irreducible characters of Coxeter cosets are defined
 as  for  general  reflection  cosets.  For  irreducible  characters of Weyl
-cosets,  we choose (following Lusztig) for each `ϕ`-stable character of `W`
-a  particular extension to a character of  `W⋊ ⟨ϕ⟩`, which we will call the
-*preferred extension*. The *character table* of the coset `Wϕ` is the table
-of  the restrictions to  `Wϕ` of the  preferred extensions. The question of
+cosets,  we choose (following Lusztig) for each `φ`-stable character of `W`
+a  particular extension to a character of  `W⋊ ⟨φ⟩`, which we will call the
+*preferred extension*. The *character table* of the coset `Wφ` is the table
+of  the restrictions to  `Wφ` of the  preferred extensions. The question of
 finding the conjugacy classes and character table of a Coxeter coset can be
 reduced to the case of irreducible root systems `R`.
 
-  * The automorphism `ϕ` permutes the irreducible components of `W`, and
-    `Wϕ`  is a direct  product of cosets  where `ϕ` permutes cyclically the
+  * The automorphism `φ` permutes the irreducible components of `W`, and
+    `Wφ`  is a direct  product of cosets  where `φ` permutes cyclically the
     irreducible components of `W`. The preferred extension is defined to be
     the  direct  product  of  the  preferred  extension  in  each  of these
     situations.
 
-  * Assume now that `Wϕ` is a descent of scalars, that is the decomposition
-    in irreducible components `W=W₁× ⋯ × Wₖ` is cyclically permuted by `ϕ`.
-    Then there are natural bijections from the `ϕ`-conjugacy classes of `W`
-    to  the `ϕᵏ`-conjugacy classes  of `W₁` as  well as from the `ϕ`-stable
-    characters  of `W` to the `ϕᵏ`-stable  characters of `W₁`, which reduce
-    the  definition of preferred  extensions on `Wϕ`  to the definition for
-    `W₁ϕᵏ`.
+  * Assume now that `Wφ` is a descent of scalars, that is the decomposition
+    in irreducible components `W=W₁× ⋯ × Wₖ` is cyclically permuted by `φ`.
+    Then there are natural bijections from the `φ`-conjugacy classes of `W`
+    to  the `φᵏ`-conjugacy classes  of `W₁` as  well as from the `φ`-stable
+    characters  of `W` to the `φᵏ`-stable  characters of `W₁`, which reduce
+    the  definition of preferred  extensions on `Wφ`  to the definition for
+    `W₁φᵏ`.
 
   * Assume now  that `W`  is the  Coxeter group  of an  irreducible root
-    system.   `ϕ`  permutes  the  simple   roots,  hence  induces  a  graph
-    automorphism  on  the  corresponding  Dynkin  diagram.  If  `ϕ=1`  then
+    system.   `φ`  permutes  the  simple   roots,  hence  induces  a  graph
+    automorphism  on  the  corresponding  Dynkin  diagram.  If  `φ=1`  then
     conjugacy  classes and  characters coincide  with those  of the Coxeter
     group `W`.
 
 The  nontrivial cases for crystallographic roots  systems are (the order of
-`ϕ`  is written as left exponent to  the type): `²Aₙ`, `²Dₙ`, `³D₄`, `²E₆`.
+`φ`  is written as left exponent to  the type): `²Aₙ`, `²Dₙ`, `³D₄`, `²E₆`.
 For  non-crystallographic root  systems where  all the  roots have the same
 length the additional cases `²B₂`, `²G₂`, `²F₄` and `²I₂(k)` arise.
 
-  *   In  case  `³D₄`  the  group  `W⋊ ⟨ϕ⟩`  can be embedded into the
+  *   In  case  `³D₄`  the  group  `W⋊ ⟨φ⟩`  can be embedded into the
     Coxeter  group of type `F₄`, which induces a labeling for the conjugacy
     classes of the coset. The preferred extension is chosen as the (single)
     extension with rational values.
 
-  * In case  `²Dₙ` the  group `W⋊ ⟨ϕ⟩`  is isomorphic  to a Coxeter
+  * In case  `²Dₙ` the  group `W⋊ ⟨φ⟩`  is isomorphic  to a Coxeter
     group of type `Bₙ`. This induces a canonical labeling for the conjugacy
     classes  of the coset and allows to define the preferred extension in a
     combinatorial  way  using  the  labels  (pairs  of  partitions) for the
     characters of the Coxeter group of type `Bₙ`.
 
-  *  In the remaining crystallographic cases `ϕ` identifies to `-w₀` where
+  *  In the remaining crystallographic cases `φ` identifies to `-w₀` where
     `w₀`  is the longest element of `W`.  So, there is a canonical labeling
-    of  the conjugacy classes and characters of  the coset by those of `W`.
-    The  preferred extensions  are defined  by describing  the signs of the
-    character values on `-w₀`.
+    of  the conjugacy classes and characters of  the coset by those of `W`,
+    translated by `-w₀`. The preferred extensions are defined by describing
+    the signs of the character values on `-w₀`.
 
 The  most general  construction of  a Coxeter  coset is  by starting from a
 Coxeter   datum   specified   by   the   matrices   of   `simpleRoots`  and
-`simplecoroots`,  and  giving  in  addition  the  matrix `F0Mat` of the map
-`F₀:V→ V` (see the commands  `CoxeterCoset` and `CoxeterSubCoset`). As for
-Coxeter  groups,  the  elements  of  `Wϕ`  are  uniquely  determined by the
-permutation  they  induce  on  the  set  of  roots  `R`.  We consider these
-permutations as `elements` of the Coxeter coset.
+`simplecoroots`, and constructing the reflection coset by giving the matrix
+`F`   of  the  map   `F₀:V→  V`  ---   see  [`reflection_coset`](@ref)  and
+[`reflection_subcoset`](@ref).  For  Coxeter  groups,  `F`  *must* induce a
+permutation  of  the  roots.  As  for  Coxeter  groups, once given `F`, the
+elements  of `Wφ` are uniquely determined by the permutation they induce on
+the  set of roots `R`. We consider  these permutations as `elements` of the
+Coxeter  coset.  It  is  possible  to  give  instead  of  the  matrix `F` a
+permutation, actually just a permutation specifying the image of the simple
+roots.  Then `F` is computed assuming it is trivial on the orthogoal of the
+roots.
 
-Coxeter  cosets are implemented by a struct which points to a Coxeter datum
-record  and  has  additional  fields  holding `F0Mat` and the corresponding
-element  `phi`. Functions on the coset (for example, `classinfo`) are about
-properties  of  the  group  coset  `W  ϕ`  ;  however, most definitions for
+Functions  on  the  coset  (for  example,  [`classinfo`](@ref))  are  about
+properties  of  the  group  coset  `W  φ`  ;  however, most definitions for
 elements of untwisted Coxeter groups apply without change to elements in `W
-ϕ`:  e.g., if we define the length of  an element `wϕ∈ Wϕ` as the number of
+φ`:  e.g., if we define the length of  an element `wφ∈ Wφ` as the number of
 positive  roots it sends to negative ones, it  is the same as the length of
-`w`,  i.e., `ϕ` is of length `0`, since `ϕ` has been chosen to preserve the
-set of positive roots. Similarly, the Coxeter `word` describing `wϕ` is the
+`w`,  i.e., `φ` is of length `0`, since `φ` has been chosen to preserve the
+set of positive roots. Similarly, the Coxeter `word` describing `wφ` is the
 same as the one for `w`, etc…
 
-We associate to a Coxeter coset `Wϕ` a *twisted Dynkin diagram*, consisting
-of  the Dynkin diagram of `W` and  the graph automorphism induced by `ϕ` on
+We associate to a Coxeter coset `Wφ` a *twisted Dynkin diagram*, consisting
+of  the Dynkin diagram of `W` and  the graph automorphism induced by `φ` on
 this  diagram (this  specifies the  group `W⋊  ⟨F⟩`, mentioned above, up to
-isomorphism).  See  the  functions  `refltype`,  `print`  and `diagram` for
-Coxeter cosets.
+isomorphism).  See the  functions [`refltype`](@ref)  and [`diagram`](@ref)
+for Coxeter cosets.
 
 Below  is an example showing first how to *not* define, then how to define,
-the Weyl coset for a Suzuki group:
+the Weyl coset defining a Suzuki group:
 
 ```julia-repl
 julia> W=coxgroup(:B,2)
 B₂
 
-julia> spets(W,Perm(1,2))
+julia> reflection_coset(W,Perm(1,2)) # cannot exchange short and long roots
 ERROR: matrix F must preserve the roots
 Stacktrace:
  [1] error(::String) at ./error.jl:33
  [2] spets(::Chevie.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}, ::Matrix{Int64}) at /home/jmichel/julia/Chevie/src/Cosets.jl:241 (repeats 2 times)
  [3] top-level scope at REPL[19]:1
 
-julia> W=coxgroup(:Bsym,2)
+julia> W=coxgroup(:Bsym,2) # all the roots have the same length
 Bsym₂
 
-julia> WF=spets(W,Perm(1,2))
+julia> WF=reflection_coset(W,Perm(1,2)) # the image of the simple roots suffices
 ²Bsym₂
 
 julia> CharTable(WF)
@@ -305,12 +308,11 @@ CharTable(²Bsym₂)
 │1.1        │. -√2  √2│
 └───────────┴─────────┘
 ```
-
-A *subcoset* `Hwϕ` of `Wϕ` is given by a reflection subgroup `H` of `W` and
-an  element `w` of `W`  such that `wϕ` induces  an automorphism of the root
+A *subcoset* `Hwφ` of `Wφ` is given by a reflection subgroup `H` of `W` and
+an  element `w` of `W`  such that `wφ` induces  an automorphism of the root
 system of `H`. For algebraic groups, this corresponds to a rational form of
-a  reductive subgroup of maximal rank.  For example, if `Wϕ` corresponds to
-the  algebraic group `𝐆` and  `H` is the trivial  subgroup, the coset `Hwϕ`
+a  reductive subgroup of maximal rank.  For example, if `Wφ` corresponds to
+the  algebraic group `𝐆` and  `H` is the trivial  subgroup, the coset `Hwφ`
 corresponds to a maximal torus `𝐓_w` of type `w`.
 
 ```julia-repl
@@ -320,10 +322,9 @@ Bsym₂
 julia> WF=spets(W,Perm(1,2))
 ²Bsym₂
 
-julia> subspets(WF,Int[],W(1))
+julia> subspets(WF,Int[],W(1)) # same as reflection_subcoset
 ²Bsym₂₍₎=Φ‴₈
 ```
-
 A subgroup `H` which is a parabolic subgroup corresponds to a rational form
 of  a Levi  subgroup of  `𝐆`. The  command `twistings`  gives all rational
 forms of such a Levi.
@@ -342,27 +343,27 @@ julia> twistings(W,[2])
  B₂₍₂₎=A₁Φ₁
  B₂₍₂₎=A₁Φ₂
 ```
-
-Notice how we distinguish between subgroups generated by short roots and by
-long  roots. A general  `H` corresponds to  a reductive subgroup of maximal
-rank.  Here we consider the subgroup generated  by the long roots in `B₂`,
-which  corresponds to a  subgroup of type  `SL₂× SL₂` in `SP₄`, and
-show its possible rational forms.
+Notice  how we distinguish between `A₁`  subgroups generated by short roots
+or  by long  roots. A  general `H`  corresponds to  a reductive subgroup of
+maximal rank. Below we consider the subgroup generated by the long roots in
+`B₂`, which corresponds to a subgroup of type `SL₂× SL₂` in `SP₄`, and show
+its possible rational forms.
 
 ```julia-repl
 julia> W=coxgroup(:B,2)
 B₂
 
-julia> twistings(W,[2,4])
+julia> twistings(W,[2,4]) #bracketed list means components permuted by Frobenius
 2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₂₄₎=A₁×A₁
- B₂₍₂₄₎=(A₁A₁)
+ B₂₍₂₄₎=(A₁A₁) 
 ```
 """
 module Cosets
 
 using ..Chevie
-export twistings, spets, Frobenius, Spets, subspets,
+export twistings, spets, reflection_coset, Frobenius, Spets, subspets,
+  reflection_subcoset,
   relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms,
   CoxeterCoset, twisted_power, torusfactors
 
@@ -417,16 +418,16 @@ CoxGroups.word(WF::CoxeterCoset,w)=word(WF.W,w/WF.phi)
 """
 `twistings(W,I)`
 
-`W`  should be a  complex reflection group.
+`W`  should be a  complex reflection group or coset.
 
-The  function returns  the list,  up to  `W`-conjugacy, of  subspets of `W`
-whose  group is `reflection_subgroup(W,I)` --- In  the case of Weyl groups,
-it  corresponds to  representatives of  the possible  twisted forms  of the
-reductive subgroup of maximal rank `L` corresponding to
-`reflection_subgroup(W,I)`.   These  are  classified   by  the  classes  of
-`N_W(L)/L`.
+In  the first case, the function returns  the list, up to `W`-conjugacy, of
+subspets  of `W` whose group is  `reflection_subgroup(W,I)` --- In the case
+of  Weyl groups, it corresponds to  representatives of the possible twisted
+forms  of  the  reductive  subgroup  of  maximal  rank `L` corresponding to
+`reflection_subgroup(W,I)`.  These are classified  by the conjugacy classes
+of `N_W(L)/L`.
 
-`W`  could also be a coset `Wϕ`; then the subgroup `L` must be conjugate to
+If the argument is a coset `Wϕ`, then the subgroup `L` must be conjugate to
 `ϕ(L)`  for a  rational form  to exist.  If `wϕ`  normalizes `L`,  then the
 rational forms are classified by the the `wϕ`-classes of `N_W(L)/L`.
 
@@ -519,7 +520,7 @@ julia> twistings(coxgroup(:A,3)*coxgroup(:A,3))
  ²(A₃A₃)₍₁₂₃₆₅₄₎
  (A₃A₃)₍₁₂₃₆₅₄₎
 
-julia> twistings(coxgroup(:D,4))
+julia> twistings(coxgroup(:D,4)) # one for each element of 𝔖₃
 6-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  D₄
  ²D₄₍₂₄₃₁₎
@@ -531,7 +532,7 @@ julia> twistings(coxgroup(:D,4))
 julia> W=rootdatum(:so,8)
 so₈
 
-julia> twistings(W)
+julia> twistings(W) # no triality outside pso or spin
 2-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  D₄
  ²D₄
@@ -571,21 +572,27 @@ Groups.NormalCoset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
 """
-`spets(W::ComplexReflectionGroup, F₀::Matrix=I(rank(W)))`
+`spets(W::ComplexReflectionGroup, F₀::Matrix=I(rank(W)))` or `reflection_coset`
 
-This  function returns a `CoxeterCoset` or a  `Spets`. Let `V` be the space
-on which `W` acts. The matrix `F₀` must be in `GL(V)`, for a finite Coxeter
-group  induce  an  automorphism  of  the  root  system of `parent(W)` which
-stabilizes the roots of `W`, or for a more general complex reflection group
-just stabilize `parent(W)` and `W`.
+This  function returns a `Spets`.  Let `V` be the  space on which `W` acts.
+The  matrix `F₀` must be  in `GL(V)`, for a  finite Coxeter group induce an
+automorphism  of the root system of  `parent(W)` which stabilizes the roots
+of  `W`,  or  for  a  more  general complex reflection group just stabilize
+`parent(W)` and `W` and the roots up to scalars.
 
-The returned struct has in particular the following fields:
+The returned `Spets` struct has in particular the following fields:
 
   - `.W`: the group `W`
 
-  - `.F`: the matrix acting on `V` which represents the unique element `phi` in `WF₀` which preserves the positive roots (for finite Coxeter groups) or some "canonical" representative of the coset for more general complex reflection groups.
+  - `.F`: the matrix acting on `V` which represents the unique element `phi`
+    in `WF₀` which preserves the positive roots (for finite Coxeter groups)
+    or  some  "canonical"  representative  of  the  coset  for more general
+    complex reflection groups.
 
-  - `.phi`:  a `Perm`, the permutation of the roots of `W` induced by `.F` (for general  complex reflection groups this may be a permutation up to scalars) (also   for  Coxeter  groups   the  element  of   smallest  length  in  the `NormalCoset` `W .phi`).
+   - `.phi`: a `Perm`,  the permutation of  the roots of  `W` induced by `.F`
+     (for general complex reflection groups this may be a permutation up to
+     scalars)  (also for Coxeter  groups the element  of smallest length in
+     the `NormalCoset` `W .phi`).
 
 In the first example we create a Coxeter coset corresponding to the general
 unitary group `GU_3(q)` over the finite field `FF(q)`.
@@ -630,6 +637,8 @@ function spets(W::FiniteCoxeterGroup{Perm{T}}) where{T}
 end
 
 spets(W::FiniteCoxeterGroup,w::Perm)=spets(W,reflrep(W,w))
+
+const reflection_coset=spets
 
 PermRoot.radical(WF::CoxeterCoset)=torus(central_action(Group(WF),WF.F))
 
@@ -971,6 +980,7 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF));NC=fal
   RF
 end
 
+const reflection_subcoset=subspets
 PermRoot.reflection_subgroup(WF::Spets,I::AbstractVector{<:Integer})=subspets(WF,I)
 
 subspets(W::ComplexReflectionGroup,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)

@@ -6,7 +6,8 @@ using Chairmarks
 #1.9.3 51s (2.26M alloc: 150MiB, 0.10% gc, 1.59% compilation 78% recompilation)
 #1.10.2 40.6s (4.00M alloc: 301 MiB, 0.19% gc, 3.12% compilation 9% recompilation)
 #1.11.6 127.57s (4.28M alloc: 260.566 MiB, 0.25% gc, 0.99% compilation 83% recompilation)
-#1.13.2 144.94s (2.99 M alloc: 196.910 MiB, 0.09% gc, 0.25% compilation 60% recompilatio
+#1.13.2 144.94s (2.99 M alloc: 196.910 MiB, 0.09% gc, 0.25% compilation 60% recompilation)
+#1.14α2 131.41s (7.37 M alloc: 479.042 MiB, 0.28% gc, 2.13% compilation 93% recompilation)
 
 #julia> @b test_w0(coxsym(7))
 #1.9.4   10.091 ms (182390 allocs: 12.981 MiB)
@@ -68,6 +69,7 @@ end;
 #1.10.2  24.752 ms (403416 allocs: 43.278 MiB)
 #1.11.rc 22.338 ms (702087 allocs: 42.652 MiB)
 #1.13rc1 21.275 ms (662695 allocs: 42.389 MiB)
+#1.14α2 20.657 ms (666421 allocs: 42.435 MiB)
 function test_kl1(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)
@@ -164,6 +166,7 @@ end;
 #1.11.rc 15.460 μs (819 allocs: 29.016 KiB)
 #1.12.rc 13.428 μs (788 allocs: 27.719 KiB)
 #1.13rc1 12.333 μs (788 allocs: 27.719 KiB)
+#1.14α2  10.947 μs (776 allocs: 27.156 KiB)
 
 # @b ((x,y)=Mvp.(:x,:y);inv(Frac.([x+y x-y;x+1 y+1])))
 #1.6.3 187.233 μs (3941 allocations: 291.50 KiB)
