@@ -1342,12 +1342,16 @@ characters.  The  character  `λ`  is  given  as  its  index  in the list of
 unipotent  characters. If `d` was given as  an integer, it is returned as a
 `Root1` representing `E(d)`.
 
-If  the keyword  `proper=true` is  given, only  the data  where `LF!=W` (or
+For a  given `d`, the pairs `(levi=LF,cuspidal=λ)` are called `d`-cuspidal
+pairs.
+
+If  the keyword `proper=true`  is given, only  the tuples where `LF!=W` (or
 equivalently `ad>0`) are returned.
 
 If  `d` is omitted, data  for all `d` orders  of eigenvalues of elements of
 `W`  is returned. If in addition  the keyword argument `all=true` is given,
-data for all eigenvalues of elements of `W` is returned.
+data  for all eigenvalues of elements of `W`  is returned --- a pair may be
+cuspidal for some `E(d)^i` while not cuspidal for `E(d)`.
 
 ```julia-repl
 julia> cuspidal_data(coxgroup(:F,4),1)
@@ -1369,6 +1373,14 @@ julia> cuspidal_data(complex_reflection_group(4),3)
  (levi = G₄, cuspidal = 7, d = ζ₃)
  (levi = G₄, cuspidal = 10, d = ζ₃)
  (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)
+
+julia> cuspidal_data(crg(4),E(3,2))
+5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:
+ (levi = G₄, cuspidal = 2, d = ζ₃²)
+ (levi = G₄, cuspidal = 5, d = ζ₃²)
+ (levi = G₄, cuspidal = 7, d = ζ₃²)
+ (levi = G₄, cuspidal = 10, d = ζ₃²)
+ (levi = G₄₍₎=Φ₁Φ″₃, cuspidal = 1, d = ζ₃²)
 ```
 """
 cuspidal_data(W,d::Integer,ad)=cuspidal_data(W,E(d),ad)
