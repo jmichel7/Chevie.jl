@@ -96,7 +96,7 @@ end
 @test mytest("Cosets.jl","degrees(RF)","2-element Vector{Tuple{Int64, Cyc{Int64}}}:\n (6, 1)\n (12, -1)")
 @test mytest("Cosets.jl","W=coxgroup(:B,2)","B₂")
 @test mytest("Cosets.jl","W=coxgroup(:Bsym,2)","Bsym₂")
-@test mytest("Cosets.jl","WF=spets(W,Perm(1,2))","²Bsym₂")
+@test mytest("Cosets.jl","WF=reflection_coset(W,Perm(1,2))","²Bsym₂")
 @test mytest("Cosets.jl","CharTable(WF)","CharTable(²Bsym₂)\n┌───────────┬─────────┐\n│centralizer│2   4   4│\n│order      │2   8   8│\n├───────────┼─────────┤\n│           │    1 121│\n├───────────┼─────────┤\n│2.         │1   1   1│\n│.11        │1  -1  -1│\n│1.1        │. -√2  √2│\n└───────────┴─────────┘")
 @test mytest("Cosets.jl","W=coxgroup(:Bsym,2)","Bsym₂")
 @test mytest("Cosets.jl","WF=spets(W,Perm(1,2))","²Bsym₂")
@@ -150,6 +150,7 @@ end
 @test mytest("Cosets.jl","spets(\"3G333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
 @test mytest("Cosets.jl","spets(\"3pG333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
 @test mytest("Cosets.jl","spets(\"4G333\")","G₃‚₃‚₃₍₂‚₁₂‚₁₁‚₁₆‚₅₃‚₁₀‚₄₃‚₃₆₎=⁴G₃‚₃‚₃₍₁‚₂‚₃‚₃₂‚₁₆‚₃₆‚₃₀‚₁₀₎")
+@test mytest("Cosets.jl","rootdatum(:so,8)","so₈")
 end
 @testset "CoxGroups.jl" begin
 @test mytest("CoxGroups.jl","W=coxsym(4)","𝔖 ₄")
@@ -961,6 +962,7 @@ end
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(complex_reflection_group(4)),3)","4-element Vector{Int64}:\n  3\n  6\n  7\n 10")
 @test mytest("Uch.jl","cuspidal_data(coxgroup(:F,4),1)","9-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:\n (levi = F₄, cuspidal = 31, d = 1)\n (levi = F₄, cuspidal = 32, d = 1)\n (levi = F₄, cuspidal = 33, d = 1)\n (levi = F₄, cuspidal = 34, d = 1)\n (levi = F₄, cuspidal = 35, d = 1)\n (levi = F₄, cuspidal = 36, d = 1)\n (levi = F₄, cuspidal = 37, d = 1)\n (levi = F₄₍₂₃₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)\n (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)")
 @test mytest("Uch.jl","cuspidal_data(complex_reflection_group(4),3)","5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:\n (levi = G₄, cuspidal = 3, d = ζ₃)\n (levi = G₄, cuspidal = 6, d = ζ₃)\n (levi = G₄, cuspidal = 7, d = ζ₃)\n (levi = G₄, cuspidal = 10, d = ζ₃)\n (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)")
+@test mytest("Uch.jl","cuspidal_data(crg(4),E(3,2))","5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:\n (levi = G₄, cuspidal = 2, d = ζ₃²)\n (levi = G₄, cuspidal = 5, d = ζ₃²)\n (levi = G₄, cuspidal = 7, d = ζ₃²)\n (levi = G₄, cuspidal = 10, d = ζ₃²)\n (levi = G₄₍₎=Φ₁Φ″₃, cuspidal = 1, d = ζ₃²)")
 end
 @testset "Ucl.jl" begin
 @test mytest("Ucl.jl","UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(sl₄)\n1111<211<22<31<4\n┌────┬───────────────────────────────────────────────────────────────┐\n│u   │D-R dℬ ᵤ B-C   C_𝐆(u) A₃(Φ₁³) A₁(A₁×A₁Φ₁)/-1 .(A₃)/ζ₄ .(A₃)/ζ₄³│\n├────┼───────────────────────────────────────────────────────────────┤\n│4   │222    0 222    q³.Z₄     1:4           -1:2    ζ₄:Id    ζ₄³:Id│\n│31  │202    1 22.    q⁴.Φ₁   Id:31                                  │\n│22  │020    2 2.2 q⁴.A₁.Z₂    2:22          11:11                   │\n│211 │101    3 2..  q⁵.A₁Φ₁  Id:211                                  │\n│1111│000    6 ...       A₃ Id:1111                                  │\n└────┴───────────────────────────────────────────────────────────────┘")

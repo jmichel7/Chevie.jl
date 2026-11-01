@@ -13,13 +13,13 @@ returns a namedtuple with 2 fields: ser= series found
 function FindSeriesInParent(h,HF,WF,ww)
   if WF isa Spets W=Group(WF) else W=WF end
   n=sort(filter(!(x->isempty(x) || x=="Id"),split(h[:cuspidalName],"\\otimes ")))
+  incHW=inclusion(HF,WF,h[:levi])
   for w in ww
-#  println("h[:levi]=",h[:levi]," w[:levi]=",w[:levi])
-#  println("h[:eigenvalue]=",h[:eigenvalue]," w[:eigenvalue]=",w[:eigenvalue])
-   if h[:eigenvalue]==w[:eigenvalue] && length(h[:levi])==length(w[:levi])
+#  @show inclusion(HF,WF,h[:levi]),w[:levi],h[:eigenvalue],w[:eigenvalue]
+   if h[:eigenvalue]==w[:eigenvalue] && length(incHW)==length(w[:levi])
+#    @show h,w
      p=sort(filter(!(x->isempty(x) || x=="Id"),split(w[:cuspidalName],"\\otimes ")))
      if p==n
-       incHW=inclusion(HF,WF,h[:levi])
        p=transporting_elt(W,sort(incHW),sort(w[:levi]), 
                           (s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=w, op=p) end

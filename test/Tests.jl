@@ -1265,13 +1265,15 @@ function Tudfdimprimitive(W)
   ud=CycPoldegrees(uc)
   cs=first.(uc.charSymbols)
   vud=gendeg.(cs).*signs(uc)
-  n=refltype(W)[1]
-  if haskey(n,:orbit)
-    if n.orbit[1].series==:A && order(n.twist)==2
-      vud=map(x->subs(x,Pol([E(2)],1))*(-1)^degree(x),vud)
-    end
-    if length(n.orbit)>1
-      vud=map(x->subs(x,Pol([1],length(n.orbit))),vud)
+  if !isempty(refltype(W))
+    n=refltype(W)[1]
+    if haskey(n,:orbit)
+      if n.orbit[1].series==:A && order(n.twist)==2
+        vud=map(x->subs(x,Pol([E(2)],1))*(-1)^degree(x),vud)
+      end
+      if length(n.orbit)>1
+        vud=map(x->subs(x,Pol([1],length(n.orbit))),vud)
+      end
     end
   end
   for i in eachindex(cs)
@@ -2019,17 +2021,17 @@ test[:discriminant]=(applicable=function(W)
   end,
   comment="agrees with product of hyperplanes")
 
-#----------------------- tests not translated from GAP3 ---------------------
-#function frombraidrel(W)
-#  n=nbgens(W)
-#  F=FreeGroup(n)
-#  r=List(BraidRelations(W),x->List(x,y->prod(z->F.(z),y)))
-#  r=List(r,x->x[1]/x[2])
-#  append!(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
-#  Size(W)=Size(F/r)
-#end
-#W->not IsSpets(W) and Size(W)<64000,
-#"check that the finitely presented group defined by the",
-#" braid and order relations has the expected Size");
+#----------------------- braidrel ---------------------
+function Tgenbraidrel(W)
+  v=AbsWord.(Symbol.(('a':'z')[1:ngens(W)]))
+  F=FpGroup(v)
+  if ngens(W)==0 return length(W)==length(F) end
+  r=map(x->prod(v[x[1]])/prod(v[x[2]]),braid_relations(W))
+  append!(r,map(((i,o),)->v[i]^o,enumerate(ordergens(W))))
+  length(W)==length(F/r)
+end
+
+test[:genbraidrel]=(applicable=W->!(W isa Spets)  && length(W)<=64000,
+  comment="FpGroup(braid+order relations) has the expected length")
 
 end

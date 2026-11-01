@@ -323,9 +323,10 @@ function UnipotentCharacters(t::TypeIrred)
     if haskey(uc,:A) uc[:A]*=a end
     for s in uc[:harishChandra]
       s[:parameterExponents]*=a
-#     s[:eigenvalue]^=a
+      s[:eigenvalue]^=a
       if s[:cuspidalName]=="" s[:cuspidalName]="Id" end
-#     s[:cuspidalName]=join(fill(s[:cuspidalName],a),"\\otimes ")
+# next line iswrong but allows FindCuspidalInParent to work
+      s[:cuspidalName]=join(fill(s[:cuspidalName],a),"\\otimes ")
     end
   end
 
