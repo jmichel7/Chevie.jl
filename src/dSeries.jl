@@ -716,12 +716,7 @@ function Eigenspaces.relative_group(s::Series)
     if length(L)==1
       sz=length(conjugacy_classes(WF)[position_class(WF,s.levi.phi)])
       if sz>100000 
-        m=Base.get_extension(Chevie,:Gap4)
-        if isnothing(m)
-          error("*** class too big ($sz>100000)\n",
-           "need Gap4.centralizer; do 'using GAP' to make extension available") 
-        end
-        @time N=m.centralizer(N,s.levi.phi)
+        N=stabilizer(N,s.levi.phi,^;GAP=true)
       else
         N=centralizer(N,s.levi.phi)
       end

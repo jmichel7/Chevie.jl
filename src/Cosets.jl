@@ -378,6 +378,7 @@ extprod(W1::Spets,W2::FiniteCoxeterGroup)=extprod(W1,spets(W2))
 extprod(W1::FiniteCoxeterGroup,W2::Spets)=extprod(spets(W1),W2)
 extprod(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)=W1*W2
 
+# graph automorphisms induced by W on reflection_subgroup(W,J)
 function graph_automorphisms(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) return W end
   H=reflection_subgroup(W,J)

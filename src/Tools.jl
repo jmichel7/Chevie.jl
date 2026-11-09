@@ -179,18 +179,6 @@ function abelian_invariants(G::Group)
   order.(abelian_gens(G))
 end
 
-function Base.intersect(G::PermGroup, H::PermGroup)
-  if min(length(G),length(H))<=104000 
-    invoke(Base.intersect,Tuple{Group,Group},G,H) # horrible implementation
-  else
-    m=Base.get_extension(Chevie,:Gap4)
-    if isnothing(m)
-       error("*** too large intersect($G,$H)\n",
-           "need Gap4.intersect; do 'using GAP' to make extension available") 
-    end
-    m.intersect(G,H)
-  end
-end
 """
 `parent(W::Group)`
 

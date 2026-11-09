@@ -1817,36 +1817,35 @@ Induction table from Group((1,2),(3,4)) to Group((1,2),(2,3),(3,4))
 ```
 
 ```julia-repl
-julia> g=coxgroup(:G,2)
-G₂
+julia> g=coxgroup(:A,3)
+A₃
 
-julia> u=reflection_subgroup(g,[1,6])
-G₂₍₁₅₎=A₂
+julia> u=reflection_subgroup(g,[1,3])
+A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> t=induction_table(u,g)
-Induction table from G₂₍₁₅₎=A₂ to G₂
-┌─────┬────────┐
-│     │111 21 3│
-├─────┼────────┤
-│φ₁‚₀ │  .  . 1│
-│φ₁‚₆ │  1  . .│
-│φ′₁‚₃│  1  . .│
-│φ″₁‚₃│  .  . 1│
-│φ₂‚₁ │  .  1 .│
-│φ₂‚₂ │  .  1 .│
-└─────┴────────┘
+Induction table from A₃₍₁₃₎=A₁×A₁Φ₁ to A₃
+┌────┬───────────────────┐
+│    │11,11 11,2 2,11 2,2│
+├────┼───────────────────┤
+│1111│    1    .    .   .│
+│211 │    1    1    1   .│
+│22  │    1    .    .   1│
+│31  │    .    1    1   1│
+│4   │    .    .    .   1│
+└────┴───────────────────┘
 ```
 
 `IO` attributes can be transmitted to the table format method
 
 ```julia-rep1
 julia> xdisplay(t;rows=[5],cols=[3,2])
-Induction table from G₂₍₁₅₎=A₂ to G₂
-┌─────┬────┐
-│     │3 21│
-├─────┼────┤
-│φ₂‚₁ │.  1│
-└─────┴────┘
+Induction table from A₃₍₁₃₎=A₁×A₁Φ₁ to A₃
+┌────┬─────────┐
+│    │2,11 11,2│
+├────┼─────────┤
+│4   │   .    .│
+└────┴─────────┘
 ```
 
 It is also possible to TeX induction tables with `xdisplay(t;TeX=true)`.
