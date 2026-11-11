@@ -1715,11 +1715,17 @@ end
 function Groups.normalizer(W::PermGroup,L::PermRootGroup)
   if length(L)==1 return W end
   s=sort(refls(L,unique_refls(L)))
-# J=filter(x->refls(W,x) in s,eachindex(roots(W)))
-# C=stabilizer(W,J,onsets)
-  R=stabilizer(W,s,onsets)
-#  if length(R)<length(C) error("not expected") end
-  R
+  stabilizer(W,s,onsets)
+end
+
+# another attempt
+function normalizer2(W::PermGroup,L::PermRootGroup)
+  if length(L)==1 return W end
+  s=sort(refls(L,unique_refls(L)))
+  J=filter(x->refls(W,x) in s,eachindex(roots(W)))
+  test(g,l)=all(i->J[i]^g in J,1:min(l,length(J)))
+  property(g)=onsets(J,g)==J
+  subgroup_search(W,property;test,base=J,K=L)
 end
 #--------------- PRG: an implementation of PermRootGroups--------------------
 @GapObj struct PRG{T,T1}<:PermRootGroup{T,T1}
