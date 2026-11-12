@@ -1011,7 +1011,7 @@ For  how to  get various  information on  the root  system and  the Coxeter
 group,   see  the  functions   `nref,  coroots,  rootlengths,  simple_reps,
 simple_conjugating,  reflrep,  simpleroots,  simplecoroots,  PermX, cartan,
 inclusion, restriction, action, rank, semisimplerank`.
-```julia_repl
+```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
 

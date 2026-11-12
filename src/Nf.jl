@@ -213,11 +213,11 @@ generator  unless `n₂`  is a  multiple of  8, in  which case  there are two
 generators  5 and `n₂-1`. The function  returns a `Dict` recording for each
 `p`, the list of generators of `(ℤ/nₚ)ˣ`.
 
-```julia_repl
+```julia-repl
 julia> Nf.gens_prime_residues( 24 )
 Dict{Int64, Vector{Int64}} with 2 entries:
-  2 => [7, 13]
   3 => [17]
+  2 => [7, 13]
 ```
 """
 function gens_prime_residues(n::Integer)

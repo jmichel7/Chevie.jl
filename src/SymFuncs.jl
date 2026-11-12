@@ -462,7 +462,7 @@ and
 
 ``π(p([n]ᵢ))=(∑_{j=1}^{j=e}ζ_e^{(j-1)*(i-1)}π([n]ⱼ))/e``
 
-```julia_repl
+```julia-rep1
 julia> p(Pi(Int[],Int[],[3],Int[]))
 -ζ₄p...₃-p..₃.+ζ₄p.₃..+p₃...
 ```

@@ -343,7 +343,7 @@ When  `l` is  not given  this works  only if  `W` is finite; it returns the
 elements of `W` sorted by increasing Coxeter length. If the second argument
 is an integer `l`, the elements of `W` of Coxeter length `l` are returned.
 
-```julia_repl
+```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
 

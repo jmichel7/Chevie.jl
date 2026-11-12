@@ -1952,19 +1952,19 @@ or reflection subgroups.
 `reflection_subgroup(R)` where `R` is itself a reflection subgroup returns a 
 reflection subgroup of `parent(R)`.
 
-```julia_repl
+```julia-repl
 julia> W=coxgroup(:F,4)
 F₄
 
 julia> H=reflection_subgroup(W,[1,2,11,20])
-F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎
+F₄₍₁‚₂‚₉‚₁₆₎=D₄₍₃₂₁₄₎
 
 julia> [restriction(H)]
 1-element Vector{Vector{Int64}}:
  [1, 2, 0, 0, 5, 0, 0, 0, 3, 0  …  0, 16, 0, 19, 0, 21, 0, 22, 23, 24]
 
 julia> reflection_subgroup(H,[1,2,3])
-F₄₍₉₁₂₎=A₃₍₃₁₂₎Φ₁
+F₄₍₁₂₉₎=A₃₍₃₁₂₎Φ₁
 ```
 """
 function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)

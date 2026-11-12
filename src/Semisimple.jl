@@ -328,14 +328,14 @@ quotient  of the center  `pi` of the  simply connected covering  of `𝐆` (an
 incarnation of the fundamental group). It contains a list of elements given
 as  words  in  the  generators  of  `pi`  which  generate the kernel of the
 quotient map.
-```julia_repl
+```julia-repl
 julia> G=rootdatum(:sl,4)
 sl₄
 
 julia> L=reflection_subgroup(G,[1,3])
-A₃₍₁₃₎=A₁×A₁
+A₃₍₁₃₎=A₁×A₁Φ₁
 
-ulia> C=algebraic_center(L)
+julia> C=algebraic_center(L)
 (Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[<1,1,-1>]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[<-1,1,1>, <1,1,-1>]))
 
 julia> G=coxgroup(:A,3)

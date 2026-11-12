@@ -106,9 +106,9 @@ LaurentPolynomials.valuation(c::Rational{<:Integer},p::Integer)=
 reduction  of `z` mod.  `p`, an element  of some extension  `𝔽_{pʳ}` of the
 prime field `𝔽ₚ`.
 
-```julia_repl
+```julia-repl
 julia> FFE{3}(E(7))
-Z₇₂₉¹⁰⁴
+FFE{3}: Z₇₂₉¹⁰⁴
 ```
 """
 function FiniteFields.FFE{p}(c::Cyc)where p
