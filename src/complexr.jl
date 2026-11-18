@@ -3,19 +3,23 @@ export complex_reflection_group, crg, reflection_group
 """
 `complex_reflection_group(STnumber[,cartanType=1])`
 
-`complex_reflection_group(p,q,r[,cartanType=1])`
+`complex_reflection_group(p,q,r[,cartanType=1];T1=Perms.Idef)`
 
 `complex_reflection_group` can be abbreviated as `crg`.
 
 The  first form of `complex_reflection_group` returns the primitive complex
 reflection   group   which   has   Shephard-Todd   number  `STnumber`,  see
 [st54](@cite).  The second form returns  the imprimitive complex reflection
-group named `G(p,q,r)` by Shephard-Todd.
+group  named `G(p,q,r)` by Shephard-Todd.
 
 If  a `cartanType`  different from  1 is  given and  there are  2 orbits of
 hyperplanes  in the resulting group `W`, then the ratio of the root lengths
 between the two orbits is modified by `cartanType'.
 
+The  keyword  argument  `T1`  indicates  the  type  of `Perm` to be used as
+elements  of the  constructed group.  By default  it is  `Int16` indicating
+`Perm{Int16}`;  if the group to be constructed has more than 32768 roots, a
+larger type should be used.
 ```julia-repl
 julia> G=complex_reflection_group(4)
 G₄
@@ -66,7 +70,7 @@ function complex_reflection_group(i::Integer,cartanType=1)
   res
 end
 
-function complex_reflection_group(p,q,r,cartanType=1)
+function complex_reflection_group(p,q,r,cartanType=1;T1=Perms.Idef)
   if !iszero(p%q) || p<=0 || r<=0 || (r==1 && q!=1)
    error("complex_reflection_group(p,q,r) must satisfy: q|p, r>0, and r=1 => q=1")
   end
@@ -83,7 +87,7 @@ function complex_reflection_group(p,q,r,cartanType=1)
     cr=solutionmat(transpose(rr),c)
     if nothing in cr error("unexpected") end
   end
-  res=PRG(rr,cr;NC=true)
+  res=PRG(rr,cr;NC=true,T1)
   res.length=prod(degrees(t)) #speeds up refltype
   refltype(res)
   res

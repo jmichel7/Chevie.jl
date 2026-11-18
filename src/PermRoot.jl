@@ -1737,11 +1737,20 @@ end
 end
 
 """
-`PRG(roots,coroots)` complex reflection group with given roots and coroots
+`PRG(roots,coroots;T1=Perms.Idef)` 
+
+complex reflection group defined by the given lists of generating roots and
+coroots.  The roots and the coroots can be given as lists of vectors, or as
+matrices interpreted as the list of their rows.
+
+The  keyword  argument  `T1`  indicates  the  type  of `Perm` to be used as
+elements  of  the  constructed  group.  By  default  it is Int16 indicating
+Perm{Int16};  if the group to  be constructed has more  than 32768 roots, a
+larger type should be used.
 """
 function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};NC=false,T1=Perms.Idef)
-# println("r=",r,"\ncr=",cr)
+# NC=true means do not compute the type
   if isempty(r) error("should call torus instead") end
   reflrep=reflectionMatrix.(r,cr)
   T=eltype(reflrep[1])  # promotion of r and cr types
@@ -1786,7 +1795,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
                                              t,"<",ngens(W)," refs>\n")
       save=haskey(W,:fromparent) # a relative_group
       if save n=W.fromparent end
-      W=PRG(roots(W,l),coroots(W,l))
+      W=PRG(roots(W,l),coroots(W,l);T1)
       if save W.fromparent=n end
     end
   end
@@ -1795,6 +1804,7 @@ end
 
 PRG(a::Matrix,b::Matrix;k...)=PRG(toL(a),toL(b);k...)
 
+# torus of rank i
 PRG(i::Integer;T1=Perms.Idef)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],
           Vector{Int}[],Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
 """
@@ -1967,7 +1977,8 @@ julia> reflection_subgroup(H,[1,2,3])
 F₄₍₁₂₉₎=A₃₍₃₁₂₎Φ₁
 ```
 """
-function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
+function reflection_subgroup(W::PRG{T,T1},I::AbstractVector;NC=false)where{T,T1}
+# NC=true means do not compute the type
   if !haskey(W,:reflsubgroups)
     W.reflsubgroups=Dict(
          Int[]=>PRSG(empty(gens(W)),one(W),Int[],zeros(Int,length(W.roots)),W,
@@ -1978,7 +1989,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
     if I==eachindex(gens(W))
       inclu=collect(eachindex(roots(W)))
     else
-      G=PRG(roots(W,I),coroots(W,I);NC=true)
+      G=PRG(roots(W,I),coroots(W,I);NC=true,T1)
       inclu=Int.(indexin(G.roots,W.roots))
     end
     restr=zeros(Int,length(W.roots));restr[inclu]=eachindex(inclu)

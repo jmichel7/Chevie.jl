@@ -38,6 +38,7 @@ end;
 #1.10.3  240.491 ms (4043780 allocs: 336.001 MiB)
 #1.11.rc 189.171 ms (8083258 allocs: 335.999 MiB)
 #1.11.5 140.902 ms (8083222 allocs: 335.998 MiB)
+#1.14β1 135.155 ms (8083214 allocs: 335.995 MiB)
 #Elements(Group(List([1..9],i->(i,i+1)),()));; GAP3 takes 0.53s
 
 #julia> @b elements(coxgroup(:E,6))
