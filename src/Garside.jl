@@ -2337,13 +2337,13 @@ julia> M=DualBraidMonoid(coxgroup(:A,3))
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> p=Presentation(M,vars=Symbol.(collect("abcdef")))
-Presentation: 6 generators, 15 relators, total length 62
+Presentation: 6 generators, 15 relators of total length 62
 ```
 
 ```julia-rep1
 julia> simplify(p)
-<< presentation with 3 generators, 4 relators of total length 26>>
-<< presentation with 3 generators, 3 relators of total length 16>>
+Presentation: 3 generators, 4 relators of total length 26
+Presentation: 3 generators, 3 relators of total length 16
 
 julia> display_balanced(p)
 1: ab=ba

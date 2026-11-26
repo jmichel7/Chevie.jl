@@ -425,7 +425,7 @@ end
 @test mytest("Garside.jl","F=Frobenius(spets(W,Perm(1,2,4)));","nothing")
 @test mytest("Garside.jl","centralizer_gens(w,F)","2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n 312343123\n 124")
 @test mytest("Garside.jl","M=DualBraidMonoid(coxgroup(:A,3))","DualBraidMonoid(A₃,c=[1, 3, 2])")
-@test mytest("Garside.jl","p=Presentation(M,vars=Symbol.(collect(\"abcdef\")))","Presentation: 6 generators, 15 relators, total length 62")
+@test mytest("Garside.jl","p=Presentation(M,vars=Symbol.(collect(\"abcdef\")))","Presentation: 6 generators, 15 relators of total length 62")
 @test mytest("Garside.jl","B=BraidMonoid(coxsym(3))","BraidMonoid(𝔖 ₃)")
 @test mytest("Garside.jl","b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]","4-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:\n 1.1.1\n 2.2.2\n (1.12)⁻¹2.2.2.21.12\n 1.1.12")
 @test mytest("Garside.jl","shrink(b)","2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:\n 2\n 1")

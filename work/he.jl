@@ -41,24 +41,24 @@ function HeConjugate(WF,i,e;w=classreps(WF)[i],canonical=false)
     m=Cyc{Rational{Int}}.(reflrep(WF,w))
     V=lnullspace(m+m^-1-(l+l^-1)*one(m))
     println("   eigenspace V is ",size(V,1),"-dimensional")
-    i=filter(i->V*reflrep(W,i)==V,1:nref(W))
-    R=reflection_subgroup(W,i)
+    I=filter(i->V*reflrep(W,i)==V,1:nref(W))
+    R=reflection_subgroup(W,I)
     xprintln("   C_W(V).w=",spets(R,w))
     v=nothing
-    if issubset(inclusiongens(R),inclusiongens(W))
-# try to see if we can find  a regular vector in Cbar
-      m=V*permutedims(S)
-      v=all_ge_1(m[(!iszero).(eachrow(m)),:];approx=x->Float64(x))
-      if v===nothing
-        xprintln(R," is standard but contains no regular vector in C̄")
-      else v=permutedims(v)*V
-      end
-    end
+#    if issubset(inclusiongens(R),inclusiongens(W))
+## try to see if we can find  a regular vector in Cbar
+#      m=V*permutedims(S)
+#      v=all_ge_1(m[(!iszero).(eachrow(m)),:];approx=x->Float64(x))
+#      if v===nothing
+#        xprintln(R," is standard but contains no regular vector in C̄")
+#      else v=permutedims(v)*V
+#      end
+#    end
 # otherwise use random search for a regular vector
     if v===nothing
       while true
         v=permutedims(rand(-10:10,size(V,1)))*V
-        if filter(i->v*reflrep(W,i)==v,1:W.N)==i break end
+        if filter(i->v*reflrep(W,i)==v,1:W.N)==I break end
       end
     end
 # find a chamber in whose adherence v sits.
@@ -77,7 +77,7 @@ function HeConjugate(WF,i,e;w=classreps(WF)[i],canonical=false)
       xprintln("   conjugate to ",WF," by w1=",B(w1))
  #  fi;
     xprintln("   w1 conjugates w to ",B(w)," part in parabolic=",BraidMonoid(W)(w))
-    if isempty(i) return B(w) end # regular element
+    if isempty(I) return B(w) end # regular element
   end
 end
 
@@ -103,14 +103,14 @@ function LengthHe(WF,i,e;canonical=false)
   for l in e
     m=reflrep(WF,w)*E(1)//1
     V=lnullspace(m+m^-1-(l+l^-1)*one(m))
-    i=filter(i->V*reflrep(W,i)==V,1:nref(W))
-    R=reflection_subgroup(W,i)
+    I=filter(i->V*reflrep(W,i)==V,1:nref(W))
+    R=reflection_subgroup(W,I)
     r=l.r
     if canonical && isone(l) r=1 end
     res+=2*(nref(W)-nref(R))*r
     W=R
     WF=spets(W,w)
-    if isempty(i) return res end # regular element
+    if isempty(I) return res end # regular element
   end
   res
 end

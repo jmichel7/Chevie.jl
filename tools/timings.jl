@@ -8,6 +8,7 @@ using Chairmarks
 #1.11.6 127.57s (4.28M alloc: 260.566 MiB, 0.25% gc, 0.99% compilation 83% recompilation)
 #1.13.2 144.94s (2.99 M alloc: 196.910 MiB, 0.09% gc, 0.25% compilation 60% recompilation)
 #1.14α2 131.41s (7.37 M alloc: 479.042 MiB, 0.28% gc, 2.13% compilation 93% recompilation)
+#1.14β1 129.28s (6.10 M alloc: 404.066 MiB, 0.25% gc, 2.24% compilation 92% recompilation)
 
 #julia> @b test_w0(coxsym(7))
 #1.9.4   10.091 ms (182390 allocs: 12.981 MiB)

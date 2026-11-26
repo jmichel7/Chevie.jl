@@ -929,7 +929,7 @@ symbols(e,r,c=1,def=0)=vcat(Symbolsshape.(r,shapesSymbols(e,r,c,def))...)
 "`Δ(S::β-set,e)` is `CycPol(∏(x^{ei}-x^{ej}) for i>j, i,j∈S)`"
 function Δ(S,e)
   l=length(S)
-  if l<2 return one(CycPol) end
+  if l<2 return one(CycPol{Int}) end
   v=sum(e*S[i] for i in 1:l for _ in i+1:l)
   p=[k//(e*(S[j]-S[i])) for i in 1:l for j in i+1:l for k in 0:e*(S[j]-S[i])-1]
   CycPol(1,v,ModuleElt(p.=>1))
@@ -937,7 +937,7 @@ end
 
 "`Θ(S::β-set,e)` is `CycPol(∏(x^{eh}-1) for l in S for h in 1:l)`"
 function Θ(S,e)
-  if iszero(sum(S)) return one(CycPol) end
+  if iszero(sum(S)) return one(CycPol{Int}) end
   p=[i//(e*h) for l in S for h in 1:l for i in 0:e*h-1]
   CycPol(1,0,ModuleElt(p.=>1))
 end
@@ -955,7 +955,7 @@ a  first  argument  of  shape  `(0,…,0)`  representing  the  restriction of
 the character to `G(e,e,r)`, works for the coset `G(e,e,r).s₁ᵖ`.
 """
 function fakedegree(s::CharSymbol,p=0) # See Mal95, 2.11 and 5.7
-  if length(s)==0 return one(CycPol) end
+  if length(s)==0 return one(CycPol{Int}) end
   e=length(s)
   r=rank(s)
   ep=E(e,p)
@@ -1000,7 +1000,7 @@ function gendeg(S::CharSymbol)
   r=rank(S)
   e=length(S)
   sh=length.(S.S)
-  if e==0 return one(CycPol) end
+  if e==0 return one(CycPol{Int}) end
   m=div(sum(sh),e)
   d=sum(sh)% e
   defect=(binomial(e,2)*m-transpose(sh)*(0:e-1))%e
@@ -1011,8 +1011,8 @@ function gendeg(S::CharSymbol)
   res*=(-1)^(sum(((x,y),)->x*binomial(y,2),zip(0:e-1,sh)))*
     prod(i->prod(j->prod(map(l->prod(map(m->CycPol(l-m),
     filter(m->i<j || degree(m)<degree(l),
-       Pol.(Ref([E(e,j)]),S.S[j+1])));init=one(CycPol)),
-       Pol.(Ref([E(e,i)]),S.S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
+      Pol.(Ref([E(e,j)]),S.S[j+1])));init=one(CycPol{Int})),
+      Pol.(Ref([E(e,i)]),S.S[i+1]));init=one(CycPol{Int})),i:e-1),0:e-1)//
     (prod(x->Θ(x,e),S.S)*(E(4)^binomial(e-1,2)*root(e)^e)^m
       *CycPol(1,sum(binomial.(e.*(1:m-1).+d,2))))
   if d==0 res*=findfirst(i->circshift(S.S,-i)==S.S,1:e) end
